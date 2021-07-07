@@ -2,4 +2,4 @@ build: clean
 	gcc -o helloworld.out main.cpp -lvulkan
 
 clean:
-	rm helloworld.out
+	rm -f helloworld.out
