@@ -2,12 +2,12 @@ CFLAGS = -std=c++17 -O2
 LDFLAGS = -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 build: main.cpp
-	g++ $(CFLAGS) -o window.out main.cpp $(LDFLAGS)
+	g++ $(CFLAGS) -o triangle.out main.cpp $(LDFLAGS)
 
 .PHONY: test clean
 
-test: window.out
-	./window.out
+test: triangle.out
+	./triangle.out
 
 clean:
-	rm -f window.out
+	rm -f triangle.out
