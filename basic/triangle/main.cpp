@@ -18,8 +18,8 @@ const uint32_t HEIGHT = 600;
 const bool enableValidationLayers = true;
 const bool enableDebugMessenger = true;
 #else
-const bool enableValidationLayers = false;
-const bool enableDebugMessenger = false;
+const bool enableValidationLayers = true;
+const bool enableDebugMessenger = true;
 #endif
 
 
@@ -27,9 +27,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
                                                     VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                     void* pUserData) {
-    std::cerr << "messageSeverity : " << messageSeverity << std::endl;
-    std::cerr << "messageType : " << messageType << std::endl;
-    std::cerr << "pCallbackData->pMessage : " << pCallbackData->pMessage << std::endl;
+    // std::cerr << "messageSeverity : " << messageSeverity << std::endl;
+    // std::cerr << "messageType : " << messageType << std::endl;
+    if(messageType != 1) {
+        std::cerr << "pCallbackData->pMessage : " << pCallbackData->pMessage << std::endl;
+    }
 
     return VK_FALSE;
 }
@@ -75,6 +77,10 @@ private:
     VkDevice m_logicalDevice;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
+    VkSwapchainKHR m_swapChain;
+    std::vector<VkImage> m_vecSwapChainImages;
+    VkFormat m_swapChainImageFormat;
+    VkExtent2D m_swapChainExtent;
 
 private:
     void initWindow() {
@@ -103,6 +109,8 @@ private:
 
     void cleanup() {
 
+        vkDestroySwapchainKHR(m_logicalDevice, m_swapChain, nullptr);
+
         vkDestroyDevice(m_logicalDevice, nullptr);
 
         DestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
@@ -118,12 +126,12 @@ private:
     }
 
     void createInstance() {
-        const std::vector<const char*> requiredValidationLayers = getRequiredValidationLayers();
+        const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
         if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers)) {
             throw std::runtime_error("validation layers requested, but not available for instance!");
         }
 
-        const std::vector<const char*> requiredInstanceExtensions = getRequiredInstanceExtensions();
+        const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
         if(!checkInstanceExtensionSupport(requiredInstanceExtensions)) {
             throw std::runtime_error("instance extensions requested, but not available!");
         }
@@ -195,21 +203,27 @@ private:
         return queueFamilyIndices.isComplete() && deviceExtensionsSupported && swapChainAdequate;
     }
 
-    const std::vector<const char*> getRequiredInstanceExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    const std::vector<const char*>& getRequiredInstanceExtensions() {
+        static std::vector<const char*> requiredInstanceExtensions;
 
-        std::vector<const char*> requiredInstanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        if(requiredInstanceExtensions.size() == 0) {
+            uint32_t glfwExtensionCount = 0;
+            const char** glfwExtensions;
+            glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-        if (enableDebugMessenger) {
-            requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            std::vector<const char*> glfwRequiredInstanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+            requiredInstanceExtensions = glfwRequiredInstanceExtensions; 
+
+            if (enableDebugMessenger) {
+                requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            }
+
+            std::cout << "Required extensions :" << std::endl;
+            for (const auto& extension : requiredInstanceExtensions) {
+                std::cout << '\t' << extension << std::endl;
+            }
         }
 
-        std::cout << "Required extensions :" << std::endl;
-        for (const auto& extension : requiredInstanceExtensions) {
-            std::cout << '\t' << extension << std::endl;
-        }
 
         return requiredInstanceExtensions;
     }
@@ -245,13 +259,16 @@ private:
         return true;
     }
 
-    const std::vector<const char*> getRequiredValidationLayers() {
-        std::vector<const char*> requiredValidationLayers;        
-        requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+    const std::vector<const char*>& getRequiredValidationLayers() {
+        static std::vector<const char*> requiredValidationLayers;
 
-        std::cout << "Required Validataion Layers :" << std::endl;
-        for (const auto& validationLayer : requiredValidationLayers) {
-            std::cout << '\t' << validationLayer << std::endl;
+        if(requiredValidationLayers.size() == 0) {
+            requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+
+            std::cout << "Required Validataion Layers :" << std::endl;
+            for (const auto& validationLayer : requiredValidationLayers) {
+                std::cout << '\t' << validationLayer << std::endl;
+            }
         }
 
         return requiredValidationLayers;
@@ -393,7 +410,7 @@ private:
 
         // set validation layers to be compatible with older implementations:
         if (enableValidationLayers) {
-            const std::vector<const char*> requiredValidationLayers = getRequiredValidationLayers();
+            const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
             if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers)) {
                 throw std::runtime_error("validation layers requested, but not available for device!");
             }
@@ -509,15 +526,46 @@ private:
             imageCount = swapChainSupport.surfaceCapabilities.maxImageCount;
         }
 
-        VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = m_surface;
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = imageExtent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        VkSwapchainCreateInfoKHR swapchainCreateInfo{};
+        swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        swapchainCreateInfo.surface = m_surface;
+        swapchainCreateInfo.minImageCount = imageCount;
+        swapchainCreateInfo.imageFormat = surfaceFormat.format;
+        swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
+        swapchainCreateInfo.imageExtent = imageExtent;
+        swapchainCreateInfo.imageArrayLayers = 1;
+        swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        QueueFamilyIndices foundQueueFamilyIndices = findQueueFamilies(m_pickedPhysicalDevice);
+        uint32_t queueFamilyIndices[] = {foundQueueFamilyIndices.graphicsFamily.value(), foundQueueFamilyIndices.presentFamily.value()};
+
+        if (foundQueueFamilyIndices.graphicsFamily != foundQueueFamilyIndices.presentFamily) {
+            swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            swapchainCreateInfo.queueFamilyIndexCount = 2;
+            swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {
+            swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            swapchainCreateInfo.queueFamilyIndexCount = 0; // Optional
+            swapchainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
+        }
+
+        swapchainCreateInfo.preTransform = swapChainSupport.surfaceCapabilities.currentTransform;
+        swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        swapchainCreateInfo.presentMode = presentMode;
+        swapchainCreateInfo.clipped = VK_TRUE;
+
+        swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+
+        if (vkCreateSwapchainKHR(m_logicalDevice, &swapchainCreateInfo, nullptr, &m_swapChain) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create swap chain!");
+        }
+
+        vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, nullptr);
+        m_vecSwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_logicalDevice, m_swapChain, &imageCount, m_vecSwapChainImages.data());
+
+        m_swapChainImageFormat = surfaceFormat.format;
+        m_swapChainExtent = imageExtent;
     }
 
 };
