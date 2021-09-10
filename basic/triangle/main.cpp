@@ -112,6 +112,8 @@ private:
 
     VkPipeline m_graphicsPipeline;
 
+    std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
+
 private:
     void initWindow() {
         glfwInit();
@@ -132,6 +134,7 @@ private:
         createImageViews();
         createRenderPass();
         createGraphicsPipeline();
+        createFramebuffers();
     }
 
     void mainLoop() {
@@ -141,6 +144,9 @@ private:
     }
 
     void cleanup() {
+        for (auto framebuffer : m_vecSwapChainFramebuffers) {
+            vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
+        }
 
         vkDestroyPipeline(m_logicalDevice, m_graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(m_logicalDevice, m_pipelineLayout, nullptr);
@@ -822,6 +828,29 @@ private:
 
         if (vkCreateRenderPass(m_logicalDevice, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
+        }
+    }
+
+    void createFramebuffers() {
+        m_vecSwapChainFramebuffers.resize(m_vecSwapChainImageViews.size());
+
+        for (size_t i = 0; i < m_vecSwapChainImageViews.size(); i++) {
+            VkImageView attachments[] = {
+                m_vecSwapChainImageViews[i]
+            };
+
+            VkFramebufferCreateInfo framebufferCreateInfo{};
+            framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferCreateInfo.renderPass = m_renderPass;
+            framebufferCreateInfo.attachmentCount = 1;
+            framebufferCreateInfo.pAttachments = attachments;
+            framebufferCreateInfo.width = m_swapChainExtent.width;
+            framebufferCreateInfo.height = m_swapChainExtent.height;
+            framebufferCreateInfo.layers = 1;
+
+            if (vkCreateFramebuffer(m_logicalDevice, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create framebuffer!");
+            }
         }
     }
 
