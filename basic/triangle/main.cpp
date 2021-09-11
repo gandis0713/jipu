@@ -94,7 +94,7 @@ private:
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
     VkSurfaceKHR m_surface;
-    VkPhysicalDevice m_pickedPhysicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VkDevice m_logicalDevice;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
@@ -113,6 +113,13 @@ private:
     VkPipeline m_graphicsPipeline;
 
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
+
+    VkCommandPool m_commandPool;
+    
+    std::vector<VkCommandBuffer> m_vecCommandBuffers;
+
+    VkSemaphore m_imageAvailableSemaphore;
+    VkSemaphore m_renderFinishedSemaphore;
 
 private:
     void initWindow() {
@@ -135,15 +142,27 @@ private:
         createRenderPass();
         createGraphicsPipeline();
         createFramebuffers();
+        createCommandPool();
+        createCommandBuffers();
+        createSemaphores();
     }
 
     void mainLoop() {
         while (!glfwWindowShouldClose(m_pWindow)) {
             glfwPollEvents();
+            drawFrame();
         }
+
+        vkDeviceWaitIdle(m_logicalDevice);
     }
 
     void cleanup() {
+
+        vkDestroySemaphore(m_logicalDevice, m_renderFinishedSemaphore, nullptr);
+        vkDestroySemaphore(m_logicalDevice, m_imageAvailableSemaphore, nullptr);
+
+        vkDestroyCommandPool(m_logicalDevice, m_commandPool, nullptr);
+        
         for (auto framebuffer : m_vecSwapChainFramebuffers) {
             vkDestroyFramebuffer(m_logicalDevice, framebuffer, nullptr);
         }
@@ -225,12 +244,12 @@ private:
 
         for (const VkPhysicalDevice& physicalDevice : physicalDevices) {
             if (isDeviceSuitable(physicalDevice)) {
-                m_pickedPhysicalDevice = physicalDevice;
+                m_physicalDevice = physicalDevice;
                 break;
             }
         }
 
-        if (m_pickedPhysicalDevice == VK_NULL_HANDLE) {
+        if (m_physicalDevice == VK_NULL_HANDLE) {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
@@ -403,12 +422,12 @@ private:
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
-        std::cout << queueFamilies.size() << std::endl;
-        for(size_t i = 0; i < queueFamilies.size(); i++) {
-            const auto& queueFamily = queueFamilies[i];
+        std::cout << queueFamilyProperties.size() << std::endl;
+        for(size_t i = 0; i < queueFamilyProperties.size(); i++) {
+            const auto& queueFamily = queueFamilyProperties[i];
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 queueFamilyIndices.graphicsFamily = i;
             }
@@ -429,7 +448,7 @@ private:
     }
 
     void createLogicalDevice() {
-        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(m_pickedPhysicalDevice);
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(m_physicalDevice);
         std::set<uint32_t> uniqueQueueFamilieIndices = {queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value()};
 
         std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
@@ -467,7 +486,7 @@ private:
             deviceCreateInfo.enabledLayerCount = 0;
         }
 
-        if (vkCreateDevice(m_pickedPhysicalDevice, &deviceCreateInfo, nullptr, &m_logicalDevice) != VK_SUCCESS) {
+        if (vkCreateDevice(m_physicalDevice, &deviceCreateInfo, nullptr, &m_logicalDevice) != VK_SUCCESS) {
             throw std::runtime_error("failed to create logical device!");
         }
 
@@ -562,7 +581,7 @@ private:
     }
 
     void createSwapChain() {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(m_pickedPhysicalDevice);
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(m_physicalDevice);
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.surfaceFormats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -583,7 +602,7 @@ private:
         swapchainCreateInfo.imageArrayLayers = 1;
         swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-        QueueFamilyIndices foundQueueFamilyIndices = findQueueFamilies(m_pickedPhysicalDevice);
+        QueueFamilyIndices foundQueueFamilyIndices = findQueueFamilies(m_physicalDevice);
         uint32_t queueFamilyIndices[] = {foundQueueFamilyIndices.graphicsFamily.value(), foundQueueFamilyIndices.presentFamily.value()};
 
         if (foundQueueFamilyIndices.graphicsFamily != foundQueueFamilyIndices.presentFamily) {
@@ -819,12 +838,22 @@ private:
         subpassDescription.colorAttachmentCount = 1;
         subpassDescription.pColorAttachments = &colorAttachmentReference;
 
+        VkSubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependency.dstSubpass = 0;
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        subpassDependency.srcAccessMask = 0;
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
         VkRenderPassCreateInfo renderPassCreateInfo{};
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassCreateInfo.attachmentCount = 1;
         renderPassCreateInfo.pAttachments = &colorAttachmentDescription;
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDescription;
+        renderPassCreateInfo.dependencyCount = 1;
+        renderPassCreateInfo.pDependencies = &subpassDependency;
 
         if (vkCreateRenderPass(m_logicalDevice, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
@@ -854,6 +883,119 @@ private:
         }
     }
 
+    void createCommandPool() {
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(m_physicalDevice);
+
+        VkCommandPoolCreateInfo commandPoolCreateInfo{};
+        commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+        commandPoolCreateInfo.flags = 0; // Optional
+
+        if (vkCreateCommandPool(m_logicalDevice, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create command pool!");
+        }
+    }
+
+    void createCommandBuffers() {
+        m_vecCommandBuffers.resize(m_vecSwapChainFramebuffers.size());
+
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        commandBufferAllocateInfo.commandPool = m_commandPool;
+        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
+
+        if (vkAllocateCommandBuffers(m_logicalDevice, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate command buffers!");
+        }
+
+        for (size_t i = 0; i < m_vecCommandBuffers.size(); i++) {
+            VkCommandBufferBeginInfo commandBufferBeginInfo{};
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.flags = 0; // Optional
+            commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+
+            if (vkBeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS) {
+                throw std::runtime_error("failed to begin recording command buffer!");
+            }
+
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = m_renderPass;
+            renderPassInfo.framebuffer = m_vecSwapChainFramebuffers[i];
+
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = m_swapChainExtent;
+
+            VkClearValue clearValue = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+            renderPassInfo.clearValueCount = 1;
+            renderPassInfo.pClearValues = &clearValue;
+
+            vkCmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+            vkCmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+
+            vkCmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
+
+            vkCmdEndRenderPass(m_vecCommandBuffers[i]);
+
+            if (vkEndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to record command buffer!");
+            }
+        }
+    }
+
+    void drawFrame() {
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(m_logicalDevice, m_swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphore };
+        VkPipelineStageFlags waitPipelineStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitPipelineStages;
+
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_vecCommandBuffers[imageIndex];
+
+        VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphore};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+            throw std::runtime_error("failed to submit draw command buffer!");
+        }
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = {m_swapChain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+        presentInfo.pResults = nullptr; // Optional
+
+        vkQueuePresentKHR(m_presentQueue, &presentInfo);
+
+        vkQueueWaitIdle(m_presentQueue);
+    }
+
+    void createSemaphores() {
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        if (vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+            vkCreateSemaphore(m_logicalDevice, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS) {
+
+            throw std::runtime_error("failed to create semaphores!");
+        }
+    }
 
 };
 
