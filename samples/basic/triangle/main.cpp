@@ -19,8 +19,8 @@ const uint32_t HEIGHT = 600;
 const bool enableValidationLayers = true;
 const bool enableDebugMessenger = true;
 #else
-const bool enableValidationLayers = true;
-const bool enableDebugMessenger = true;
+const bool enableValidationLayers = false;
+const bool enableDebugMessenger = false;
 #endif
 
 static std::vector<char> readFile(const std::string& filename) {
@@ -329,7 +329,9 @@ private:
         static std::vector<const char*> requiredValidationLayers;
 
         if(requiredValidationLayers.size() == 0) {
-            requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+            if(enableValidationLayers) {
+                // requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+            }
 
             std::cout << "Required Validataion Layers :" << std::endl;
             for (const auto& validationLayer : requiredValidationLayers) {

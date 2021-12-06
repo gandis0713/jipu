@@ -36,3 +36,6 @@
 
 # shader
 *.spv
+
+# build
+build/
