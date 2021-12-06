@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
 
-# initilize project.
-set(PROJECT_NAME triangle)
-
 # The information about project.
 project(
 triangle
