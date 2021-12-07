@@ -22,6 +22,7 @@ set(IEL_DIR "${THIRD_PARTY_DIR}/iel")
 add_compile_definitions(VKS_NAME_SPACE=${VKS_PROJECT_NAME})
 
 # find package
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Vulkan REQUIRED)
 
 # set build project list
