@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.12)
+
+SET(VKS_TEST_BINARY test_vks)
+
+file(GLOB_RECURSE VKS_TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
+
+if(MSVC)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+
+add_executable(${VKS_TEST_BINARY} ${VKS_TEST_SOURCES})
+add_test(NAME ${VKS_TEST_BINARY} COMMAND ${VKS_TEST_BINARY})
+target_link_libraries(${VKS_TEST_BINARY} PUBLIC ${VKS_PROJECT_NAME} gtest)
