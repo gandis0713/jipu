@@ -5,7 +5,7 @@
 namespace vks 
 {
 
-  Instance::Instance(const char* instance_extensions, const char** layers, uint32_t vulkan_version, AllocationCallbacks* allocator)
+  Instance::Instance(const char** instance_extensions, const char** layers, uint32_t vulkan_version, AllocationCallbacks* allocator)
   {
     
   }
