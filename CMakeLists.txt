@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 
+
+# version
+set(VKS_VERSION_MAJOR 0)
+set(VKS_VERSION_MINOR 0)
+set(VKS_VERSION_PATCH 1)
+
 # initilize project.
 set(VKS_PROJECT_NAME vks)
 
@@ -8,7 +14,7 @@ option(VKS_TEST "Test VKS" ON)
 
 project(
   ${VKS_PROJECT_NAME}
-  VERSION 0.1
+  VERSION ${VKS_VERSION_MAJOR}.${VKS_VERSION_MINOR}.${VKS_VERSION_PATCH}
   DESCRIPTION "Vulkan samples"
   LANGUAGES CXX)
 
