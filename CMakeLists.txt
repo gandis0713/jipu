@@ -30,7 +30,9 @@ set(IEL_DIR "${THIRD_PARTY_DIR}/iel")
 set(GTEST_DIR "${THIRD_PARTY_DIR}/googletest")
 
 # set compile definitions.
-add_compile_definitions(VKS_NAME_SPACE=${VKS_PROJECT_NAME})
+add_compile_definitions(VKS_VERSION_MAJOR=${VKS_VERSION_MAJOR})
+add_compile_definitions(VKS_VERSION_MINOR=${VKS_VERSION_MINOR})
+add_compile_definitions(VKS_VERSION_PATCH=${VKS_VERSION_PATCH})
 
 # find package
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
