@@ -1,29 +1,28 @@
 #include <vulkan/vulkan.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 
-int main(void)
+int main()
 {
     // initialize the VkInstanceCreateInfo structure
-    VkInstanceCreateInfo inst_info = {};
-    inst_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    VkInstanceCreateInfo instanceCreateInfo = {};
+    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-    VkInstance inst;
-    VkResult res;
+    VkInstance instance;
+    VkResult result;
 
-    res = vkCreateInstance(&inst_info, NULL, &inst);
+    result = vkCreateInstance(&instanceCreateInfo, NULL, &instance);
     
-    if (res == VK_ERROR_INCOMPATIBLE_DRIVER) {
-        fprintf(stderr, "cannot find a compatible Vulkan ICD\n");
-        exit(-1);
+    if (result == VK_ERROR_INCOMPATIBLE_DRIVER) {
+        std::cerr << "cannot find a compatible Vulkan ICD" << std::endl;
+        return -1;
     }
-    else if (res) {
-        fprintf(stderr, "unknown error\n");
-        exit(-1);
+    else if (result) {
+        std::cerr << "unknown error" << std::endl;
+        return -1;
     }
     // else -> success
-    printf("Hello Vulkan\n");
+    std::cout << "hello vulkan" << std::endl;
     
-    vkDestroyInstance(inst, NULL);
+    vkDestroyInstance(instance, NULL);
     return 0;
 }
