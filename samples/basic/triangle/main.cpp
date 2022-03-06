@@ -76,7 +76,7 @@ const std::vector<const char*> requiredDeviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-class HelloTriangleApplication {
+class Application {
 
 
 public:
@@ -1002,7 +1002,7 @@ private:
 };
 
 int main() {
-    HelloTriangleApplication app;
+    Application app;
 
     try {
         app.run();
