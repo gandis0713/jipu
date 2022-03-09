@@ -11,6 +11,10 @@ namespace
     VkQueue graphicsQueue;
     GLFWwindow* pWindow = nullptr;
     VkSurfaceKHR surface;
+    VkSurfaceFormatKHR surfaceFormat;
+    VkSurfaceCapabilitiesKHR surfaceCapabilities;
+    VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBit;
+    VkSwapchainKHR swapchain;
 
     constexpr int32_t WIDTH = 512;
     constexpr int32_t HEIGHT = 512; 
@@ -42,6 +46,8 @@ VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32& supporte
 VkResult checkSurfacePresentMode();
 VkResult checkSurfaceFormat();
 VkResult checkSurfaceCapability();
+VkResult createSwapchain();
+VkResult getSwapchainImages();
 
 int main()
 {
@@ -120,10 +126,23 @@ int main()
         return -1;
     }
 
+    result = createSwapchain();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
+    result = getSwapchainImages();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
     while (!glfwWindowShouldClose(pWindow)) {
         glfwPollEvents();
     }
 
+    vkDestroySwapchainKHR(device, swapchain, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyDevice(device, nullptr);
     vkDestroyInstance(instance, nullptr);
@@ -452,13 +471,21 @@ VkResult checkSurfaceFormat()
         std::cout << "Color Space : " << surfaceFormats[index].colorSpace << std::endl;
     }
 
+    // use first supoorted format
+    if(surfaceFormatCount < 1)
+    {
+        std::cerr << "There is no surface format that supported." << std::endl;
+        return VK_ERROR_UNKNOWN;
+    }
+
+    surfaceFormat = surfaceFormats[0];
+
     return result;
 }
 
 VkResult checkSurfaceCapability()
 {
     uint32_t count;
-    VkSurfaceCapabilitiesKHR surfaceCapabilities;
     VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfaceCapabilities);
     if(result != VK_SUCCESS)
     {
@@ -468,16 +495,68 @@ VkResult checkSurfaceCapability()
     std::cout << "[Surface Capabilities]" << std::endl;
     std::cout << "maxImageCount : " << surfaceCapabilities.maxImageCount << std::endl;
     std::cout << "minImageCount : " << surfaceCapabilities.minImageCount << std::endl;
+    std::cout << "currentExtent.width : " << surfaceCapabilities.currentExtent.width << std::endl;
+    std::cout << "currentExtent.height : " << surfaceCapabilities.currentExtent.height << std::endl;
     std::cout << "supportedCompositeAlpha : " << surfaceCapabilities.supportedCompositeAlpha << std::endl;
     std::cout << "supportedUsageFlags : " << surfaceCapabilities.supportedUsageFlags << std::endl;
 
+
+    // check composite alpha flag.
     for(uint32_t index = 0; index < 32; ++index)
     {
-        if(surfaceCapabilities.supportedUsageFlags & static_cast<VkCompositeAlphaFlagBitsKHR>(0x1 << index))
+        VkCompositeAlphaFlagBitsKHR currentCompositeAlphaFlagBit = static_cast<VkCompositeAlphaFlagBitsKHR>(0x1 << index);
+        if(surfaceCapabilities.supportedUsageFlags & currentCompositeAlphaFlagBit)
         {
-            std::cout << "index : " << index << std::endl;
+            compositeAlphaFlagBit = currentCompositeAlphaFlagBit;
             break;
         }
+    }
+
+    return result;
+}
+
+VkResult createSwapchain()
+{
+    VkSwapchainCreateInfoKHR swapchainCreateInfo {};
+    swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchainCreateInfo.surface = surface;
+    swapchainCreateInfo.minImageCount = 2; // use double buffering.
+    swapchainCreateInfo.imageFormat = surfaceFormat.format;
+    swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
+    swapchainCreateInfo.imageExtent = surfaceCapabilities.currentExtent;
+    swapchainCreateInfo.imageArrayLayers = 1;
+
+    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
+    swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
+    swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+    VkResult result = vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create swapchain." << std::endl;
+    }
+
+    return result;
+}
+
+VkResult getSwapchainImages()
+{
+    uint32_t swapchainImageCount {0};
+    VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, nullptr);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to get swapchaing image count. [Error Code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    std::vector<VkImage> swapchainImages;
+    result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.data());
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to get swapchain images. [Error Code : " << result << "]" << std::endl;
+        return result;
     }
 
     return result;
