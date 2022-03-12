@@ -15,8 +15,11 @@ namespace
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBit;
     VkSwapchainKHR swapchain;
+    std::vector<VkImage> swapchainImages;
+    VkCommandPool commandPool;
+    std::vector<VkCommandBuffer> commandBuffers;
 
-    constexpr int32_t WIDTH = 512;
+    constexpr int32_t WIDTH = 1024;
     constexpr int32_t HEIGHT = 512; 
     constexpr float graphicsQueuePriority = 1.0f;
 
@@ -48,6 +51,11 @@ VkResult checkSurfaceFormat();
 VkResult checkSurfaceCapability();
 VkResult createSwapchain();
 VkResult getSwapchainImages();
+VkResult createCommandPool();
+VkResult AllocateCommandBuffer();
+VkResult AcquireAvailableSwapchainImage();
+VkResult setCommandBuffer();
+void render();
 
 int main()
 {
@@ -138,10 +146,26 @@ int main()
         return -1;
     }
 
+    result = createCommandPool();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
+    result = AllocateCommandBuffer();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
+    render();
+
     while (!glfwWindowShouldClose(pWindow)) {
         glfwPollEvents();
     }
 
+    vkFreeCommandBuffers(device, commandPool, 1, commandBuffers.data());
+    vkDestroyCommandPool(device, commandPool, nullptr);
     vkDestroySwapchainKHR(device, swapchain, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
     vkDestroyDevice(device, nullptr);
@@ -526,7 +550,7 @@ VkResult createSwapchain()
     swapchainCreateInfo.imageExtent = surfaceCapabilities.currentExtent;
     swapchainCreateInfo.imageArrayLayers = 1;
 
-    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
@@ -551,7 +575,7 @@ VkResult getSwapchainImages()
         return result;
     }
 
-    std::vector<VkImage> swapchainImages;
+    swapchainImages.clear();
     swapchainImages.resize(swapchainImageCount);
     result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.data());
     if(result != VK_SUCCESS)
@@ -560,6 +584,211 @@ VkResult getSwapchainImages()
         return result;
     }
 
+    std::cout << "Available swapchain image count : " << swapchainImages.size() << std::endl;
+
     return result;
+}
+
+VkResult createCommandPool()
+{
+    VkCommandPoolCreateInfo commandPoolCreateInfo {};
+    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    commandPoolCreateInfo.queueFamilyIndex = graphicsQueueFamilyIndex;
+
+    VkResult result = vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create command pool [Error code : " << result << "]" << std::endl;
+    }
+
+    return result;
+}
+
+VkResult AllocateCommandBuffer()
+{
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
+    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    commandBufferAllocateInfo.commandPool = commandPool;
+    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    commandBufferAllocateInfo.commandBufferCount = 1; // use only one in current.
+
+    commandBuffers.resize(1);
+    VkCommandBuffer& commandBuffer = commandBuffers[0];
+    VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to allocate command buffers [Error code : " << result << "]" << std::endl;
+    }
+
+    return result;
+}
+
+VkResult AcquireAvailableSwapchainImage(VkImage& swapchainImage)
+{
+    uint32_t swapchainImageIndex {0};
+    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
+    }
+
+    std::cout << "Acquired swapchain image index : " << swapchainImageIndex << std::endl;
+
+    swapchainImage = swapchainImages[swapchainImageIndex];
+
+    return result;
+}
+
+VkResult setCommandBuffer()
+{
+    VkCommandBuffer commandBuffer = commandBuffers[0];
+    VkResult result = vkResetCommandBuffer(commandBuffer, 0);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to reset command buffer [Error code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo {};
+    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to begin command buffer [Error code : " << result << "]" << std::endl;
+    }
+
+    return result;
+}
+
+void render()
+{
+    uint32_t swapchainImageIndex {0};
+    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
+        return;
+    }
+
+    std::cout << "Acquired swapchain image index : " << swapchainImageIndex << std::endl;
+
+    VkImage swapchainImage = swapchainImages[swapchainImageIndex];
+
+    // set command buffer.
+    result = setCommandBuffer();
+    if(result != VK_SUCCESS)
+    {
+        return;
+    }
+
+    VkCommandBuffer commandBuffer = commandBuffers[0];
+
+    // set image memory barrier.
+    {
+        VkImageMemoryBarrier imageMemoryBarrier {};
+        imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imageMemoryBarrier.srcAccessMask = 0;
+        imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageMemoryBarrier.srcQueueFamilyIndex = graphicsQueueFamilyIndex;
+        imageMemoryBarrier.dstQueueFamilyIndex = graphicsQueueFamilyIndex;
+        imageMemoryBarrier.image = swapchainImage;
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.levelCount = 1;
+        imageMemoryBarrier.subresourceRange.layerCount = 1;
+
+        vkCmdPipelineBarrier(commandBuffer,
+                             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             0,
+                             0, nullptr,
+                             0, nullptr,
+                             1, &imageMemoryBarrier);
+    }
+
+    // set clear color value command
+    VkClearColorValue clearColorValue {};
+    clearColorValue.float32[0] = 1.0f;
+    clearColorValue.float32[1] = 0.0f;
+    clearColorValue.float32[2] = 1.0f;
+    clearColorValue.float32[3] = 1.0f;
+
+    VkImageSubresourceRange imageSubresourceRange {};
+    imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageSubresourceRange.levelCount = 1;
+    imageSubresourceRange.layerCount = 1;
+    
+    vkCmdClearColorImage(commandBuffer,
+                         swapchainImage,
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                         &clearColorValue,
+                         1,
+                         &imageSubresourceRange);
+
+    // set image memory barrier.
+    {
+        VkImageMemoryBarrier imageMemoryBarrier;
+        imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        imageMemoryBarrier.dstAccessMask = 0;
+        imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        imageMemoryBarrier.srcQueueFamilyIndex = graphicsQueueFamilyIndex;
+        imageMemoryBarrier.dstQueueFamilyIndex = graphicsQueueFamilyIndex;
+        imageMemoryBarrier.image = swapchainImage;
+        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.levelCount = 1;
+        imageMemoryBarrier.subresourceRange.layerCount = 1;
+
+        vkCmdPipelineBarrier(commandBuffer,
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                            0,
+                            0, nullptr,
+                            0, nullptr,
+                            1, &imageMemoryBarrier);
+    }
+
+    // end command buffer recording.
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = commandBuffers.data();
+
+    // submit command buffer to queue.
+    result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to submit to queue [Error code " << result << "]" << std::endl;
+    }
+
+    // wait device idle state after executed command.
+    result = vkDeviceWaitIdle(device);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to wait device idle state. [Error code : " << result << "]" << std::endl;
+        return;
+    }
+
+    // render output 
+    VkPresentInfoKHR presentInfo {};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &swapchain;
+    presentInfo.pImageIndices = &swapchainImageIndex;
+
+    result = vkQueuePresentKHR(graphicsQueue, &presentInfo);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to pass present information to queue [Error code : " << result << result << std::endl;
+        return;
+    }
+
 }
 
