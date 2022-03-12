@@ -5,25 +5,42 @@
 #include <vector>
 namespace 
 {
-    VkInstance instance;
-    VkPhysicalDevice physical_device;
-    VkDevice device;
-    VkQueue graphicsQueue;
+    VkInstance instance = VK_NULL_HANDLE;
+    VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+    VkDevice device = VK_NULL_HANDLE;
+    VkQueue graphicsQueue = VK_NULL_HANDLE;
     GLFWwindow* pWindow = nullptr;
-    VkSurfaceKHR surface;
-    VkSurfaceFormatKHR surfaceFormat;
-    VkSurfaceCapabilitiesKHR surfaceCapabilities;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    VkSurfaceFormatKHR surfaceFormat {};
+    VkSurfaceCapabilitiesKHR surfaceCapabilities {};
     VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBit;
-    VkSwapchainKHR swapchain;
-    std::vector<VkImage> swapchainImages;
-    VkCommandPool commandPool;
-    std::vector<VkCommandBuffer> commandBuffers;
+    VkSwapchainKHR swapchain = VK_NULL_HANDLE;
+    std::vector<VkImage> swapchainImages {};
+    VkCommandPool commandPool = VK_NULL_HANDLE;
+    std::vector<VkCommandBuffer> commandBuffers {};
+    std::vector<VkFence> fences {};
+    std::vector<VkSemaphore> semaphores {};
 
     constexpr int32_t WIDTH = 1024;
     constexpr int32_t HEIGHT = 512; 
     constexpr float graphicsQueuePriority = 1.0f;
 
-    uint32_t graphicsQueueFamilyIndex = 0xffff;
+    uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
+
+    enum class FenceType: uint8_t
+    {
+        IMAGE_AVAILABLE = 0,
+        RENDERING_DONE = 1,
+        FENCE_TYPE_COUNT
+    };
+
+    enum class SemaphoreType: uint8_t
+    {
+        IMAGE_AVAILABLE = 0,
+        RENDERING_DONE = 1,
+        SEMAPHORE_TYPE_COUNT
+    };
+
 
     std::vector<const char*> instanceExtensionNames
     {
@@ -37,7 +54,7 @@ namespace
     };
 }
 
-
+// create
 VkResult checkInstanceLayer();
 VkResult checkInstanceExtension();
 VkResult createInstance();
@@ -53,8 +70,10 @@ VkResult createSwapchain();
 VkResult getSwapchainImages();
 VkResult createCommandPool();
 VkResult AllocateCommandBuffer();
-VkResult AcquireAvailableSwapchainImage();
 VkResult setCommandBuffer();
+VkResult createFence();
+VkResult createSemaphore();
+
 void render();
 
 int main()
@@ -152,18 +171,42 @@ int main()
         return -1;
     }
 
+    result = createFence();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
+    result = createSemaphore();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
     result = AllocateCommandBuffer();
     if(result != VK_SUCCESS)
     {
         return -1;
     }
 
+    // render just one time to test
     render();
 
     while (!glfwWindowShouldClose(pWindow)) {
         glfwPollEvents();
+        // render();
     }
 
+
+    // destroy
+    for(VkSemaphore& semaphore: semaphores)
+    {
+        vkDestroySemaphore(device, semaphore, nullptr);
+    }
+    for(VkFence& fence: fences)
+    {
+        vkDestroyFence(device, fence, nullptr);
+    }
     vkFreeCommandBuffers(device, commandPool, 1, commandBuffers.data());
     vkDestroyCommandPool(device, commandPool, nullptr);
     vkDestroySwapchainKHR(device, swapchain, nullptr);
@@ -624,26 +667,29 @@ VkResult AllocateCommandBuffer()
     return result;
 }
 
-VkResult AcquireAvailableSwapchainImage(VkImage& swapchainImage)
-{
-    uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
-    if(result != VK_SUCCESS)
-    {
-        std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
-    }
-
-    std::cout << "Acquired swapchain image index : " << swapchainImageIndex << std::endl;
-
-    swapchainImage = swapchainImages[swapchainImageIndex];
-
-    return result;
-}
-
 VkResult setCommandBuffer()
 {
     VkCommandBuffer commandBuffer = commandBuffers[0];
-    VkResult result = vkResetCommandBuffer(commandBuffer, 0);
+
+    VkResult result = vkGetFenceStatus(device, fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    if(result == VK_NOT_READY)
+    {
+        result = vkWaitForFences(device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)], VK_TRUE, UINT64_MAX);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to wait fence for checking rendering done [Error code : " << result << "]" << std::endl;
+            return result;
+        }
+    }
+
+    result = vkResetFences(device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to reset fence for rendering done. [Error code : " << result << std::endl;
+        return result;
+    }
+
+    result = vkResetCommandBuffer(commandBuffer, 0);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to reset command buffer [Error code : " << result << "]" << std::endl;
@@ -663,10 +709,65 @@ VkResult setCommandBuffer()
     return result;
 }
 
+VkResult createFence()
+{
+    // create fence to syncronize.
+    VkFenceCreateInfo fenceCreateInfo;
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    fences.resize(static_cast<uint8_t>(FenceType::FENCE_TYPE_COUNT));
+
+    // create image available fence.
+    VkResult result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::IMAGE_AVAILABLE)]);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create image available fence [Error code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create rendering done fence [Error code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    return result;
+}
+
+VkResult createSemaphore()
+{
+    VkSemaphoreCreateInfo semaphoreCreateInfo {};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    
+    semaphores.resize(static_cast<uint8_t>(SemaphoreType::SEMAPHORE_TYPE_COUNT));
+    VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)]);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create semaphore for checking image available [Error code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::RENDERING_DONE)]);
+    if(result != VK_SUCCESS)
+    {
+        std::cerr << "Failed to create semaphore for checking rendering done [Error code : " << result << "]" << std::endl;
+        return result;
+    }
+
+    return result;
+}
+
 void render()
 {
     uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
+    VkResult result = vkAcquireNextImageKHR(device,
+                                            swapchain,
+                                            UINT64_MAX, 
+                                            semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)], 
+                                            VK_NULL_HANDLE, 
+                                            &swapchainImageIndex);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
@@ -756,13 +857,19 @@ void render()
     // end command buffer recording.
     vkEndCommandBuffer(commandBuffer);
 
+    constexpr VkPipelineStageFlags waitDstStateMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
     VkSubmitInfo submitInfo {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
+    submitInfo.pWaitSemaphores = &semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)];
+    submitInfo.pWaitDstStageMask = &waitDstStateMask;
     submitInfo.pCommandBuffers = commandBuffers.data();
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &semaphores[static_cast<uint8_t>(SemaphoreType::RENDERING_DONE)];
 
     // submit command buffer to queue.
-    result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to submit to queue [Error code " << result << "]" << std::endl;
@@ -782,6 +889,8 @@ void render()
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &swapchain;
     presentInfo.pImageIndices = &swapchainImageIndex;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &semaphores[static_cast<uint8_t>(SemaphoreType::RENDERING_DONE)];
 
     result = vkQueuePresentKHR(graphicsQueue, &presentInfo);
     if(result != VK_SUCCESS)
@@ -790,5 +899,6 @@ void render()
         return;
     }
 
+    std::cout << static_cast<uint8_t>(FenceType::FENCE_TYPE_COUNT) << std::endl;
 }
 
