@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # The information about project.
 
-set(PROJECT_NAME "image view")
+set(PROJECT_NAME "image_view")
 project(
 ${PROJECT_NAME}
 VERSION 0.1
