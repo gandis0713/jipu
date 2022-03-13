@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.12)
 
 # The information about project.
 
-set(PROJECT_NAME "logical_device")
+set(PROJECT_NAME "framebuffer")
 project(
 ${PROJECT_NAME}
 VERSION 0.1
-DESCRIPTION "Vulkan Device Test"
+DESCRIPTION "Vulkan Framebuffer Test"
 LANGUAGES CXX
 )
 
