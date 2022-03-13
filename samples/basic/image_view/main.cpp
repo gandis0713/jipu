@@ -20,6 +20,7 @@ namespace
     std::vector<VkCommandBuffer> commandBuffers {};
     std::vector<VkFence> fences {};
     std::vector<VkSemaphore> semaphores {};
+    std::vector<VkImageView> imageViews {};
 
     constexpr int32_t WIDTH = 1024;
     constexpr int32_t HEIGHT = 512; 
@@ -73,6 +74,7 @@ VkResult AllocateCommandBuffer();
 VkResult setCommandBuffer();
 VkResult createFence();
 VkResult createSemaphore();
+VkResult createImageView();
 
 void render();
 
@@ -171,6 +173,12 @@ int main()
         return -1;
     }
 
+    result = AllocateCommandBuffer();
+    if(result != VK_SUCCESS)
+    {
+        return -1;
+    }
+
     result = createFence();
     if(result != VK_SUCCESS)
     {
@@ -183,7 +191,7 @@ int main()
         return -1;
     }
 
-    result = AllocateCommandBuffer();
+    result = createImageView();
     if(result != VK_SUCCESS)
     {
         return -1;
@@ -197,8 +205,11 @@ int main()
         // render();
     }
 
-
     // destroy
+    for(VkImageView& imageView: imageViews)
+    {
+        vkDestroyImageView(device, imageView, nullptr);
+    }
     for(VkSemaphore& semaphore: semaphores)
     {
         vkDestroySemaphore(device, semaphore, nullptr);
@@ -593,7 +604,7 @@ VkResult createSwapchain()
     swapchainCreateInfo.imageExtent = surfaceCapabilities.currentExtent;
     swapchainCreateInfo.imageArrayLayers = 1;
 
-    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
@@ -712,7 +723,7 @@ VkResult setCommandBuffer()
 VkResult createFence()
 {
     // create fence to syncronize.
-    VkFenceCreateInfo fenceCreateInfo;
+    VkFenceCreateInfo fenceCreateInfo {};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
@@ -902,3 +913,31 @@ void render()
     std::cout << static_cast<uint8_t>(FenceType::FENCE_TYPE_COUNT) << std::endl;
 }
 
+VkResult createImageView()
+{
+    VkResult result = VK_SUCCESS;
+
+    imageViews.resize(swapchainImages.size());
+
+    VkImageViewCreateInfo imageViewCreateinfo {};
+    imageViewCreateinfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageViewCreateinfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    imageViewCreateinfo.format = surfaceFormat.format;
+    imageViewCreateinfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageViewCreateinfo.subresourceRange.layerCount = 1;
+    imageViewCreateinfo.subresourceRange.levelCount = 1;
+    for(std::size_t index = 0; index < imageViews.size(); ++index)
+    {
+        imageViewCreateinfo.image = swapchainImages[index];
+
+        VkResult result = vkCreateImageView(device, &imageViewCreateinfo, nullptr, &imageViews[index]);
+        if(result != VK_SUCCESS)
+        {
+            std::cerr << "Failed to create image view [Error code : " << result << "]" << std::endl;
+            return result;
+        }
+    }
+
+
+    return result;
+}

@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.12)
 
 # The information about project.
 
-set(PROJECT_NAME "image rendering")
+set(PROJECT_NAME "image view")
 project(
 ${PROJECT_NAME}
 VERSION 0.1
-DESCRIPTION "Vulkan Image Rendering Test"
+DESCRIPTION "Vulkan Image View Test"
 LANGUAGES CXX
 )
 
