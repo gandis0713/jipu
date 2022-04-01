@@ -16,6 +16,7 @@ target_include_directories(
   ${PROJECT_NAME}
   PUBLIC
 	${Vulkan_INCLUDE_DIRS}
+  ${_glfw3_HEADER_SEARCH_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
