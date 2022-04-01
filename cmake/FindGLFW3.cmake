@@ -18,12 +18,14 @@ set( _glfw3_HEADER_SEARCH_DIRS
 "/usr/include"
 "/usr/include/GLFW"
 "/usr/local/include"
+"/usr/local/Cellar/glfw/3.3.6/include"
 "${CMAKE_SOURCE_DIR}/includes"
 "C:/Program Files (x86)/glfw/include" )
 set( _glfw3_LIB_SEARCH_DIRS
 "/usr/lib"
 "/usr/lib/x86_64-linux-gnu"
 "/usr/local/lib"
+"/usr/local/Cellar/glfw/3.3.6/lib"
 "${CMAKE_SOURCE_DIR}/lib"
 "C:/Program Files (x86)/glfw/lib-msvc110" )
 

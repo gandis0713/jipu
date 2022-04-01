@@ -63,8 +63,20 @@ elseif(UNIX AND NOT APPLE)
       PATHS
         "$ENV{VULKAN_SDK}/lib")
   endif()
-else()
-  # MAC
+elseif(APPLE)
+  if(EXISTS $ENV{VULKAN_ROOT})
+    set(Vulkan_INCLUDE_DIR "$ENV{VULKAN_ROOT}/macOS/include")
+    set(Vulkan_LIBRARY "$ENV{VULKAN_ROOT}/macOS/lib/libvulkan.dylib") 
+  else()
+  find_path(Vulkan_INCLUDE_DIR
+    NAMES vulkan/vulkan.h
+    PATHS
+      "$ENV{VULKAN_SDK}/include")
+  find_library(Vulkan_LIBRARY
+    NAMES vulkan
+    PATHS
+      "$ENV{VULKAN_SDK}/lib")
+  endif()
 endif()
 
 set(Vulkan_LIBRARIES ${Vulkan_LIBRARY})
