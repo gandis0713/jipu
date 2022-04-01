@@ -14,6 +14,7 @@ target_include_directories(
   triangle
   PUBLIC
 	${Vulkan_INCLUDE_DIRS}
+  ${GLFW3_INCLUDE_DIR}
 )
 
 target_link_libraries(triangle
