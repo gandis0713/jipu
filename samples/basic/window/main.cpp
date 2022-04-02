@@ -1,3 +1,5 @@
+
+#define VK_USE_PLATFORM_MACOS_MVK 1
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan.h>
@@ -21,7 +23,18 @@ namespace
     std::vector<const char*> instanceExtensionNames
     {
         "VK_KHR_surface",
+/*
+    https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+    https://sourceforge.net/p/predef/wiki/OperatingSystems/
+*/
+#if defined(__linux__)
         "VK_KHR_xcb_surface" // for glfw on linux(ubuntu)
+#elif defined(_WIN64)
+        "VK_KHR_win32_surface"
+#else
+        // "VK_MVK_macos_surface"
+        "VK_EXT_metal_surface"
+#endif
     };
 
     std::vector<const char*> deviceExtensionNames
@@ -336,6 +349,31 @@ bool createWindow()
 
 VkResult createSurface() 
 {
+    if (glfwVulkanSupported())
+    {
+        std::cout << "vulkan supported" << std::endl;
+        // Vulkan is available, at least for compute
+    }
+
+    std::vector<const char*> requiredInstanceExtensions;
+
+    if(requiredInstanceExtensions.size() == 0) {
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> glfwRequiredInstanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        requiredInstanceExtensions = glfwRequiredInstanceExtensions; 
+
+        // if (enableDebugMessenger) {
+            // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        // }
+
+        std::cout << "Required extensions :" << std::endl;
+        for (const auto& extension : requiredInstanceExtensions) {
+            std::cout << '\t' << extension << std::endl;
+        }
+    }
     VkResult result = glfwCreateWindowSurface(instance, pWindow, nullptr, &surface);
     if (result != VK_SUCCESS) 
     {
