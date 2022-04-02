@@ -349,31 +349,6 @@ bool createWindow()
 
 VkResult createSurface() 
 {
-    if (glfwVulkanSupported())
-    {
-        std::cout << "vulkan supported" << std::endl;
-        // Vulkan is available, at least for compute
-    }
-
-    std::vector<const char*> requiredInstanceExtensions;
-
-    if(requiredInstanceExtensions.size() == 0) {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> glfwRequiredInstanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        requiredInstanceExtensions = glfwRequiredInstanceExtensions; 
-
-        // if (enableDebugMessenger) {
-            // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        // }
-
-        std::cout << "Required extensions :" << std::endl;
-        for (const auto& extension : requiredInstanceExtensions) {
-            std::cout << '\t' << extension << std::endl;
-        }
-    }
     VkResult result = glfwCreateWindowSurface(instance, pWindow, nullptr, &surface);
     if (result != VK_SUCCESS) 
     {
