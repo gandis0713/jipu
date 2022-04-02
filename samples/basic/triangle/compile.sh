@@ -1,5 +1,9 @@
-rm -f vert.spv
-rm -f frag.spv
+#!/bin/zsh
 
-$HOME/.vulkan/1.2.176.1/x86_64/bin/glslc shader.vert -o ./vert.spv
-$HOME/.vulkan/1.2.176.1/x86_64/bin/glslc shader.frag -o ./frag.spv
+SPV_DIR=$(pwd)/$(dirname "$0")
+
+rm -f ${SPV_DIR}/vert.spv
+rm -f ${SPV_DIR}/frag.spv
+
+$VULKAN_SDK/bin/glslc ${SPV_DIR}/shader.vert -o ${SPV_DIR}/vert.spv
+$VULKAN_SDK/bin/glslc ${SPV_DIR}/shader.frag -o ${SPV_DIR}/frag.spv

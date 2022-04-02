@@ -1,3 +1,5 @@
+
+#define VK_USE_PLATFORM_MACOS_MVK 1
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 // #include <vulkan/vulkan.h>
@@ -21,7 +23,18 @@ namespace
     std::vector<const char*> instanceExtensionNames
     {
         "VK_KHR_surface",
+/*
+    https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+    https://sourceforge.net/p/predef/wiki/OperatingSystems/
+*/
+#if defined(__linux__)
         "VK_KHR_xcb_surface" // for glfw on linux(ubuntu)
+#elif defined(_WIN64)
+        "VK_KHR_win32_surface"
+#else
+        // "VK_MVK_macos_surface"
+        "VK_EXT_metal_surface"
+#endif
     };
 
     std::vector<const char*> deviceExtensionNames

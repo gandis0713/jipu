@@ -1,14 +1,21 @@
 #!/bin/zsh
 
-pushd $(dirname "$0")/../../../ # go to project root dir.
+SCRIPT_DIR=$(dirname "$0")
+ROOT_DIR=${FILE_DIR}/../../../ # go to project root dir.
+
+pushd ${ROOT_DIR}
 
 git submodule update --init
 
 rm -rf build
 
-cmake -S . -B build -DVKS_TEST=ON
-cmake --build build
+popd # ROOT_DIR
 
-popd
+pushd ${SCRIPT_DIR}
+
+./build_vks.sh
+
+popd # SCRIPT_DIR
+
 
 
