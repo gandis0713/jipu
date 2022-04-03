@@ -1,11 +1,10 @@
-# Vulkan-samples
+# Simple Skinned Character Animation (SSCA)
 
-Vulkan-samples was started to study Vulkan while directly implementing the samples.
+Simple Skinned Character Animation (SSCA) was started to study mesh animation and implement it on vulkan.
 
-## Requirements
- - vulkan
- - glfw3
-
+## Requirement
+ - TODO
 
 ## How to build
  - TODO
+
