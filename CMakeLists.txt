@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.20)
 
 
 # version
@@ -22,12 +22,12 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 
 # set variables.
-set(SRC_DIR src)
-set(SAMPLE_DIR samples)
-set(TEST_DIR test)
-set(THIRD_PARTY_DIR third_party)
-set(IEL_DIR "${THIRD_PARTY_DIR}/iel")
-set(GTEST_DIR "${THIRD_PARTY_DIR}/googletest")
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
+set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
+set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
+set(IEL_DIR ${THIRD_PARTY_DIR}/iel)
+set(GTEST_DIR ${THIRD_PARTY_DIR}/googletest)
 
 # set compile definitions.
 add_compile_definitions(VKS_VERSION_MAJOR=${VKS_VERSION_MAJOR})
@@ -41,6 +41,6 @@ find_package(Vulkan REQUIRED)
 # set build project list
 add_subdirectory(${SRC_DIR})
 add_subdirectory(${SAMPLE_DIR})
-add_subdirectory(${TEST_DIR})
 add_subdirectory(${IEL_DIR})
 add_subdirectory(${GTEST_DIR})
+add_subdirectory(${TEST_DIR})
