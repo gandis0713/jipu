@@ -37,6 +37,7 @@ add_compile_definitions(VKS_VERSION_PATCH=${VKS_VERSION_PATCH})
 # find package
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Vulkan REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 # set build project list
 add_subdirectory(${SRC_DIR})

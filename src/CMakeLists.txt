@@ -9,4 +9,4 @@ include_directories(
 
 add_library(${VKS_PROJECT_NAME} STATIC ${SRC_FILES})
 
-target_link_libraries(${VKS_PROJECT_NAME})
+# target_link_libraries(${VKS_PROJECT_NAME})

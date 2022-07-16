@@ -16,12 +16,13 @@ target_include_directories(
   ${PROJECT_NAME}
   PUBLIC
 	${Vulkan_INCLUDE_DIRS}
-  ${_glfw3_HEADER_SEARCH_DIRS}
 )
 
+# target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
 target_link_libraries(${PROJECT_NAME}
+  PRIVATE
 	${Vulkan_LIBRARIES}
-  ${GLFW3_LIBRARY}
+  glfw
 )
 
 # target_compile_options(triangle PUBLIC -Wall -Werror -fno-rtti)

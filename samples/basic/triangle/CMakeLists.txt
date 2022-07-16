@@ -11,15 +11,15 @@ LANGUAGES CXX
 add_executable(triangle main.cpp)
 
 target_include_directories(
-  triangle
+  ${PROJECT_NAME}
   PUBLIC
 	${Vulkan_INCLUDE_DIRS}
-  ${GLFW3_INCLUDE_DIR}
 )
 
-target_link_libraries(triangle
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
 	${Vulkan_LIBRARIES}
-  ${GLFW3_LIBRARY}
+  glfw
 )
 
 # target_compile_options(triangle PUBLIC -Wall -Werror -fno-rtti)
