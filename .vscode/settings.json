@@ -49,5 +49,6 @@
         "typeinfo": "cpp",
         "ios": "cpp",
         "cerrno": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": true
 }

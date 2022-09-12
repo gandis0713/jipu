@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "x64-windows",
+      "displayName": "x64-windows",
+      "binaryDir": "${sourceDir}/build/x64-windows",
+      "installDir": "${sourceDir}/install/x64-window",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE":"Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "x64-windows",
+      "displayName": "x64-windows",
+      "configuration": "x64-windows"
+    }
+  ]
+}
