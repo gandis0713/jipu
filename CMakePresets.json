@@ -1,26 +1,95 @@
 {
-  "version": 3,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 21,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "x64-windows",
-      "displayName": "x64-windows",
-      "binaryDir": "${sourceDir}/build/x64-windows",
-      "installDir": "${sourceDir}/install/x64-window",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE":"Debug"
-      }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "x64-windows",
-      "displayName": "x64-windows",
-      "configuration": "x64-windows"
-    }
-  ]
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 21,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name": "arm64-osx-ninja",
+			"displayName": "arm64-osx-ninja",
+			"binaryDir": "${sourceDir}/build/arm64-osx-ninja",
+			"installDir": "${sourceDir}/install/arm64-osx",
+			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+			"generator": "Ninja",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Darwin"
+			}
+		},
+		{
+			"name": "arm64-osx-xcode",
+			"displayName": "arm64-osx-xcode",
+			"binaryDir": "${sourceDir}/build/arm64-osx-xcode",
+			"installDir": "${sourceDir}/install/arm64-osx",
+			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+			"generator": "Xcode",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			},
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Darwin"
+			}
+		},
+		{
+			"name": "x64-windows",
+			"displayName": "x64-windows",
+			"binaryDir": "${sourceDir}/build/x64-windows",
+			"installDir": "${sourceDir}/install/x64-window",
+			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		}
+	],
+	"buildPresets": [
+		{
+			"name": "arm64-osx-ninja",
+			"configurePreset": "arm64-osx-ninja",
+			"configuration": "Debug"
+		},
+		{
+			"name": "arm64-osx-xcode",
+			"configurePreset": "arm64-osx-xcode",
+			"configuration": "Debug"
+		},
+		{
+			"name": "x64-windows",
+			"configurePreset": "x64-windows",
+			"configuration": "Debug"
+		}
+	],
+	"testPresets": [
+		{
+			"name": "arm64-osx-ninja",
+			"configurePreset": "arm64-osx-ninja",
+			"configuration": "Debug",
+			"output": {
+				"outputOnFailure": true
+			},
+			"execution": {
+				"noTestsAction": "error",
+				"stopOnFailure": false
+			}
+		},
+		{
+			"name": "arm64-osx-xcode",
+			"configurePreset": "arm64-osx-xcode",
+			"configuration": "Debug",
+			"output": {
+				"outputOnFailure": true
+			},
+			"execution": {
+				"noTestsAction": "error",
+				"stopOnFailure": false
+			}
+		}
+	]
 }

@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
 
-
 # version
 set(VKS_VERSION_MAJOR 0)
 set(VKS_VERSION_MINOR 0)
@@ -13,10 +12,10 @@ set(VKS_PROJECT_NAME vks)
 option(VKS_TEST "Test VKS" ON)
 
 project(
-  ${VKS_PROJECT_NAME}
-  VERSION ${VKS_VERSION_MAJOR}.${VKS_VERSION_MINOR}.${VKS_VERSION_PATCH}
-  DESCRIPTION "Vulkan samples"
-  LANGUAGES CXX)
+    ${VKS_PROJECT_NAME}
+    VERSION ${VKS_VERSION_MAJOR}.${VKS_VERSION_MINOR}.${VKS_VERSION_PATCH}
+    DESCRIPTION "Vulkan samples"
+    LANGUAGES CXX)
 
 # set compile options.
 set(CMAKE_CXX_STANDARD 17)
@@ -25,9 +24,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 set(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
-set(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)
-set(IEL_DIR ${THIRD_PARTY_DIR}/iel)
-set(GTEST_DIR ${THIRD_PARTY_DIR}/googletest)
 
 # set compile definitions.
 add_compile_definitions(VKS_VERSION_MAJOR=${VKS_VERSION_MAJOR})
@@ -42,6 +38,5 @@ find_package(glfw3 CONFIG REQUIRED)
 # set build project list
 add_subdirectory(${SRC_DIR})
 add_subdirectory(${SAMPLE_DIR})
-add_subdirectory(${IEL_DIR})
-add_subdirectory(${GTEST_DIR})
-add_subdirectory(${TEST_DIR})
+
+# add_subdirectory(${TEST_DIR})
