@@ -1,11 +1,7 @@
 #pragma once
 
-namespace vks 
-{
+namespace vkt {
 
-class PhysicalDevice
-{
+class PhysicalDevice {};
 
-};
-
-} // namespace vks
+} // namespace vkt

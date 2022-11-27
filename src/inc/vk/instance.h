@@ -1,20 +1,18 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <vector>
+#include <vulkan/vulkan.h>
 
 #include "allocation_callbacks.h"
 
-namespace vks 
-{
+namespace vkt {
 
-  class Instance
-  {
-  public:
-    Instance(const std::vector<const char*>& instance_extensions,
-              const std::vector<const char*>& layers,
-              uint32_t vulkan_api_version = VK_API_VERSION_1_2,
-              AllocationCallbacks* allocator = nullptr);
-  };
+class Instance {
+public:
+  Instance(const std::vector<const char *> &instance_extensions,
+           const std::vector<const char *> &layers,
+           uint32_t vulkan_api_version = VK_API_VERSION_1_2,
+           AllocationCallbacks *allocator = nullptr);
+};
 
-} // namespace vks
+} // namespace vkt

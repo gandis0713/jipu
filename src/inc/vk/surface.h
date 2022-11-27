@@ -1,11 +1,7 @@
 #pragma once
 
-namespace vks 
-{
+namespace vkt {
 
-class Surface
-{
+class Surface {};
 
-};
-
-} // namespace vks
+} // namespace vkt

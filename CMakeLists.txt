@@ -1,20 +1,20 @@
 cmake_minimum_required(VERSION 3.20)
 
 # version
-set(VKS_VERSION_MAJOR 0)
-set(VKS_VERSION_MINOR 0)
-set(VKS_VERSION_PATCH 1)
+set(VKT_VERSION_MAJOR 0)
+set(VKT_VERSION_MINOR 0)
+set(VKT_VERSION_PATCH 1)
 
 # initilize project.
-set(VKS_PROJECT_NAME vks)
+set(VKT_PROJECT_NAME vkt)
 
 # set options.
-option(VKS_TEST "Test VKS" ON)
+option(VKT_TEST "Test VKT" ON)
 
 project(
-    ${VKS_PROJECT_NAME}
-    VERSION ${VKS_VERSION_MAJOR}.${VKS_VERSION_MINOR}.${VKS_VERSION_PATCH}
-    DESCRIPTION "Vulkan samples"
+    ${VKT_PROJECT_NAME}
+    VERSION ${VKT_VERSION_MAJOR}.${VKT_VERSION_MINOR}.${VKT_VERSION_PATCH}
+    DESCRIPTION "Vulkan Test"
     LANGUAGES CXX)
 
 # set compile options.
@@ -26,14 +26,13 @@ set(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
 set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
 # set compile definitions.
-add_compile_definitions(VKS_VERSION_MAJOR=${VKS_VERSION_MAJOR})
-add_compile_definitions(VKS_VERSION_MINOR=${VKS_VERSION_MINOR})
-add_compile_definitions(VKS_VERSION_PATCH=${VKS_VERSION_PATCH})
+add_compile_definitions(VKT_VERSION_MAJOR=${VKT_VERSION_MAJOR})
+add_compile_definitions(VKT_VERSION_MINOR=${VKT_VERSION_MINOR})
+add_compile_definitions(VKT_VERSION_PATCH=${VKT_VERSION_PATCH})
 
 # find package
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Vulkan REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
 
 # set build project list
 add_subdirectory(${SRC_DIR})

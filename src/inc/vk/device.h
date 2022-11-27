@@ -1,51 +1,46 @@
-#pragma once 
+#pragma once
 
 #include <vulkan/vulkan.h>
 
-#include <memory>
 #include <list>
+#include <memory>
 #include <vector>
 
-namespace vks 
-{
-  class Instance;
-  class PhysicalDevice;
-  class AllocationCallbacks;
-  class DeviceFeatures;
-  class Queue;
+namespace vkt {
+class Instance;
+class PhysicalDevice;
+class AllocationCallbacks;
+class DeviceFeatures;
+class Queue;
 
-  struct QueueSetting
-  {
-      int queue_family_index = -1;
-      std::vector<float> queue_piorities;
-  };
+struct QueueSetting {
+  int queue_family_index = -1;
+  std::vector<float> queue_piorities;
+};
 
-  using QueueSettings = std::vector<QueueSetting>;
+using QueueSettings = std::vector<QueueSetting>;
 
-  class Device
-  {
-    
-    public:
-      Device(PhysicalDevice* physical_device,
-              const QueueSettings& queue_settings, 
-              const char** layers, 
-              const char** device_extensions, 
-              const DeviceFeatures* deviceFeatures = nullptr, 
-              AllocationCallbacks* allocator = nullptr);
-      Device(const Device& device) = delete;
-      Device(Device&& device) = delete;
+class Device {
 
-      Device& operator=(const Device& device) = delete;
-      Device& operator=(Device&& device) = delete;
+public:
+  Device(PhysicalDevice *physical_device, const QueueSettings &queue_settings,
+         const char **layers, const char **device_extensions,
+         const DeviceFeatures *deviceFeatures = nullptr,
+         AllocationCallbacks *allocator = nullptr);
+  Device(const Device &device) = delete;
+  Device(Device &&device) = delete;
 
-    private:
-      VkDevice device_;
+  Device &operator=(const Device &device) = delete;
+  Device &operator=(Device &&device) = delete;
 
-      std::shared_ptr<Instance> instance_;
-      std::shared_ptr<PhysicalDevice> physical_device_;
-      std::shared_ptr<AllocationCallbacks> allocation_callbacks_;
+private:
+  VkDevice device_;
 
-      std::list<std::shared_ptr<Queue>> queue_list_;
-  };
+  std::shared_ptr<Instance> instance_;
+  std::shared_ptr<PhysicalDevice> physical_device_;
+  std::shared_ptr<AllocationCallbacks> allocation_callbacks_;
 
-} // namespace vks
+  std::list<std::shared_ptr<Queue>> queue_list_;
+};
+
+} // namespace vkt

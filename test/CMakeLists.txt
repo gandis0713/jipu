@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.12)
 
-SET(VKS_TEST_BINARY test_vks)
+SET(VKT_TEST_BINARY test_vkt)
 
-file(GLOB_RECURSE VKS_TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
+file(GLOB_RECURSE VKT_TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 
 if(MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 endif()
 
-add_executable(${VKS_TEST_BINARY} ${VKS_TEST_SOURCES})
-add_test(NAME ${VKS_TEST_BINARY} COMMAND ${VKS_TEST_BINARY})
-target_link_libraries(${VKS_TEST_BINARY} PUBLIC ${VKS_PROJECT_NAME} gtest)
-target_include_directories(${VKS_TEST_BINARY} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/inc/" ${Vulkan_INCLUDE_DIRS})
+add_executable(${VKT_TEST_BINARY} ${VKT_TEST_SOURCES})
+add_test(NAME ${VKT_TEST_BINARY} COMMAND ${VKT_TEST_BINARY})
+target_link_libraries(${VKT_TEST_BINARY} PUBLIC ${VKT_PROJECT_NAME} gtest)
+target_include_directories(${VKT_TEST_BINARY} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/inc/" ${Vulkan_INCLUDE_DIRS})

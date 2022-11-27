@@ -7,6 +7,6 @@ include_directories(
     ${Vulkan_INCLUDE_DIR}
 )
 
-add_library(${VKS_PROJECT_NAME} STATIC ${SRC_FILES})
+add_library(${VKT_PROJECT_NAME} STATIC ${SRC_FILES})
 
-# target_link_libraries(${VKS_PROJECT_NAME})
+# target_link_libraries(${VKT_PROJECT_NAME})

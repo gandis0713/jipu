@@ -1,11 +1,7 @@
 #pragma once
 
-namespace vks 
-{
+namespace vkt {
 
-  class DeviceFeatures
-  {
-    
-  };
+class DeviceFeatures {};
 
-} // namespace vks
+} // namespace vkt

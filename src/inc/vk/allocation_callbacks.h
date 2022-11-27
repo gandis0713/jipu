@@ -1,18 +1,15 @@
-#pragma once 
+#pragma once
 
 #include <vulkan/vulkan.h>
 
-namespace vks 
-{
+namespace vkt {
 
-  class AllocationCallbacks : public VkAllocationCallbacks
-  {
-    public:
-        AllocationCallbacks() :
-            VkAllocationCallbacks{} {}
+class AllocationCallbacks : public VkAllocationCallbacks {
+public:
+  AllocationCallbacks() : VkAllocationCallbacks{} {}
 
-    protected:
-        virtual ~AllocationCallbacks() {}
-  };
+protected:
+  virtual ~AllocationCallbacks() {}
+};
 
-} // namespace vks
+} // namespace vkt

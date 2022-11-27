@@ -13,7 +13,7 @@ popd # ROOT_DIR
 
 pushd ${SCRIPT_DIR}
 
-./build_vks.sh
+./build_vkt.sh
 
 popd # SCRIPT_DIR
 

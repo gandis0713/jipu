@@ -1,10 +1,11 @@
-# Simple Skinned Character Animation (SSCA)
+# Vulkan Test
 
-Simple Skinned Character Animation (SSCA) was started to study mesh animation and implement it on vulkan.
+Valkan test was started to study vulkan.
 
 ## Requirement
- - TODO
+
+- TODO
 
 ## How to build
- - TODO
 
+- TODO
