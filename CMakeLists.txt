@@ -31,11 +31,13 @@ add_compile_definitions(VKT_VERSION_MINOR=${VKT_VERSION_MINOR})
 add_compile_definitions(VKT_VERSION_PATCH=${VKT_VERSION_PATCH})
 
 # find package
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Vulkan REQUIRED)
 
 # set build project list
 add_subdirectory(${SRC_DIR})
 add_subdirectory(${SAMPLE_DIR})
 
-# add_subdirectory(${TEST_DIR})
+if(VKT_TEST)
+  enable_testing()
+  add_subdirectory(${TEST_DIR})
+endif()

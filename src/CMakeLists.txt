@@ -2,11 +2,19 @@ cmake_minimum_required(VERSION 3.12)
 
 file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false *.h *.cpp)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/inc
-    ${Vulkan_INCLUDE_DIR}
-)
+# include_directories(
+#     ${CMAKE_CURRENT_SOURCE_DIR}/inc
+#     ${Vulkan_INCLUDE_DIR}
+# )
 
 add_library(${VKT_PROJECT_NAME} STATIC ${SRC_FILES})
 
-# target_link_libraries(${VKT_PROJECT_NAME})
+target_include_directories(${VKT_PROJECT_NAME}
+  PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/inc
+)
+
+target_link_libraries(${VKT_PROJECT_NAME}
+  PUBLIC
+    Vulkan::Vulkan
+)

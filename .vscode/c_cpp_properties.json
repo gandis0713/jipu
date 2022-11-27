@@ -19,7 +19,7 @@
             ],
             "defines": [],
             "macFrameworkPath": [
-              "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
@@ -27,13 +27,13 @@
             "intelliSenseMode": "clang-x64"
         },
         {
-          "name": "Window",
-          "includePath": [
-            "${workspaceFolder}/**"
-          ],
-          // "compilerPath": "C:"
-          "cppStandard": "c++17",
-          "intelliSenseMode": "windows-msvc-x64"
+            "name": "Window",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

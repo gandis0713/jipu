@@ -39,12 +39,12 @@
 			}
 		},
 		{
-			"name": "x64-windows-debug",
-			"displayName": "x64-windows-debug",
-			"binaryDir": "${sourceDir}/build/x64-windows-debug",
-			"installDir": "${sourceDir}/install/x64-window/debug",
+			"name": "x64-vs2022-debug",
+			"displayName": "x64-vs2022-debug",
+			"binaryDir": "${sourceDir}/build/x64-vs2022-debug",
+			"installDir": "${sourceDir}/install/x64-window-vs2022/debug",
 			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "generator": "Visual Studio 16 2019",
+      "generator": "Visual Studio 17 2022",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
@@ -62,8 +62,8 @@
 			"configuration": "Debug"
 		},
 		{
-			"name": "x64-windows-debug",
-			"configurePreset": "x64-windows-debug",
+			"name": "x64-vs2022-debug",
+			"configurePreset": "x64-vs2022-debug",
 			"configuration": "Debug"
 		}
 	],
@@ -83,6 +83,18 @@
 		{
 			"name": "arm64-osx-xcode",
 			"configurePreset": "arm64-osx-xcode",
+			"configuration": "Debug",
+			"output": {
+				"outputOnFailure": true
+			},
+			"execution": {
+				"noTestsAction": "error",
+				"stopOnFailure": false
+			}
+		},
+    {
+			"name": "x64-vs2022-debug",
+			"configurePreset": "x64-vs2022-debug",
 			"configuration": "Debug",
 			"output": {
 				"outputOnFailure": true
