@@ -28,12 +28,13 @@ namespace
     https://sourceforge.net/p/predef/wiki/OperatingSystems/
 */
 #if defined(__linux__)
-        "VK_KHR_xcb_surface" // for glfw on linux(ubuntu)
+        "VK_KHR_xcb_surface", // for glfw on linux(ubuntu)
 #elif defined(_WIN64)
-        "VK_KHR_win32_surface"
+        "VK_KHR_win32_surface",
 #else
-        // "VK_MVK_macos_surface"
-        "VK_EXT_metal_surface"
+        "VK_MVK_macos_surface",
+        "VK_EXT_metal_surface",
+        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 #endif
     };
 
@@ -188,6 +189,7 @@ VkResult createInstance()
 {
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     
     // extensions
     instanceCreateInfo.enabledExtensionCount = instanceExtensionNames.size();

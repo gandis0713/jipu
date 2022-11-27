@@ -26,6 +26,8 @@
 # Vulkan_INCLUDE_DIR    - the Vulkan include directory
 # Vulkan_LIBRARY        - the path to the Vulkan library
 #
+message(STATUS "Find Vulkan - ")
+
 if(WIN32)
     find_path(Vulkan_INCLUDE_DIR
         NAMES vulkan/vulkan.h
@@ -65,9 +67,13 @@ elseif(UNIX AND NOT APPLE)
             "$ENV{VULKAN_SDK}/lib")
     endif()
 elseif(APPLE)
+    message(STATUS "  Vulkan Platform is APPLE")
+
     if(EXISTS $ENV{VULKAN_ROOT})
+        message(STATUS "  VULKAN_ROOT is in Environment variables. $ENV{VULKAN_ROOT}")
+
         set(Vulkan_INCLUDE_DIR "$ENV{VULKAN_ROOT}/macOS/include")
-        set(Vulkan_LIBRARY "$ENV{VULKAN_ROOT}/macOS/lib/libMoltenVK.dylib")
+        set(Vulkan_LIBRARY "$ENV{VULKAN_ROOT}/macOS/lib/libvulkan.dylib")
     else()
         find_path(Vulkan_INCLUDE_DIR
             NAMES vulkan/vulkan.h
@@ -79,6 +85,10 @@ elseif(APPLE)
             "$ENV{VULKAN_SDK}/lib")
     endif()
 endif()
+
+message(STATUS "  Vulkan SDK Info")
+message(STATUS "    Vulkan_INCLUDE_DIR : ${Vulkan_INCLUDE_DIR}")
+message(STATUS "    Vulkan_LIBRARY : ${Vulkan_LIBRARY}")
 
 set(Vulkan_LIBRARIES ${Vulkan_LIBRARY})
 set(Vulkan_INCLUDE_DIRS ${Vulkan_INCLUDE_DIR})

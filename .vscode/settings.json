@@ -50,5 +50,6 @@
         "ios": "cpp",
         "cerrno": "cpp"
     },
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false
 }
