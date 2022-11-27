@@ -39,11 +39,12 @@
 			}
 		},
 		{
-			"name": "x64-windows",
-			"displayName": "x64-windows",
-			"binaryDir": "${sourceDir}/build/x64-windows",
-			"installDir": "${sourceDir}/install/x64-window",
+			"name": "x64-windows-debug",
+			"displayName": "x64-windows-debug",
+			"binaryDir": "${sourceDir}/build/x64-windows-debug",
+			"installDir": "${sourceDir}/install/x64-window/debug",
 			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "generator": "Visual Studio 16 2019",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
@@ -61,8 +62,8 @@
 			"configuration": "Debug"
 		},
 		{
-			"name": "x64-windows",
-			"configurePreset": "x64-windows",
+			"name": "x64-windows-debug",
+			"configurePreset": "x64-windows-debug",
 			"configuration": "Debug"
 		}
 	],
