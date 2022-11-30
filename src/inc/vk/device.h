@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace vkt {
+namespace vk {
 class Instance;
 class PhysicalDevice;
 class AllocationCallbacks;
@@ -43,4 +43,4 @@ private:
   std::list<std::shared_ptr<Queue>> queue_list_;
 };
 
-} // namespace vkt
+} // namespace vk

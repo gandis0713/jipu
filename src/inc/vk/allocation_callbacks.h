@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-namespace vkt {
+namespace vk {
 
 class AllocationCallbacks : public VkAllocationCallbacks {
 public:
@@ -12,4 +12,4 @@ protected:
   virtual ~AllocationCallbacks() {}
 };
 
-} // namespace vkt
+} // namespace vk

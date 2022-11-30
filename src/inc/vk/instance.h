@@ -5,7 +5,7 @@
 
 #include "allocation_callbacks.h"
 
-namespace vkt {
+namespace vk {
 
 class Instance {
 public:
@@ -13,6 +13,8 @@ public:
            const std::vector<const char *> &layers,
            uint32_t vulkan_api_version = VK_API_VERSION_1_2,
            AllocationCallbacks *allocator = nullptr);
+private:
+  VkInstance m_instance;
 };
 
-} // namespace vkt
+} // namespace vk

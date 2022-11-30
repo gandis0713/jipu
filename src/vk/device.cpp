@@ -5,7 +5,7 @@
 #include "vk/instance.h"
 #include "vk/physical_device.h"
 
-namespace vkt {
+namespace vk {
 
 Device::Device(PhysicalDevice *physical_device,
                const QueueSettings &queue_settings, const char **layers,
@@ -13,4 +13,4 @@ Device::Device(PhysicalDevice *physical_device,
                const DeviceFeatures *deviceFeatures,
                AllocationCallbacks *allocator) {}
 
-} // namespace vkt
+} // namespace vk

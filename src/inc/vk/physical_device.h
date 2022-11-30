@@ -1,7 +1,7 @@
 #pragma once
 
-namespace vkt {
+namespace vk {
 
 class PhysicalDevice {};
 
-} // namespace vkt
+} // namespace vk
