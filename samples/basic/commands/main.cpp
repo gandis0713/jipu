@@ -7,7 +7,7 @@ namespace
 {
     VkInstance instance;
     VkPhysicalDevice physical_device;
-    VkDevice device;
+    VkDevice context_device;
     VkQueue graphicsQueue;
     GLFWwindow* pWindow = nullptr;
     VkSurfaceKHR surface;
@@ -96,7 +96,7 @@ int main()
         return -1;
     }
 
-    vkGetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+    vkGetDeviceQueue(context_device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
 
     if(false == createWindow())
     {
@@ -164,11 +164,11 @@ int main()
         glfwPollEvents();
     }
 
-    vkFreeCommandBuffers(device, commandPool, 1, commandBuffers.data());
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroySwapchainKHR(device, swapchain, nullptr);
+    vkFreeCommandBuffers(context_device, commandPool, 1, commandBuffers.data());
+    vkDestroyCommandPool(context_device, commandPool, nullptr);
+    vkDestroySwapchainKHR(context_device, swapchain, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyDevice(device, nullptr);
+    vkDestroyDevice(context_device, nullptr);
     vkDestroyInstance(instance, nullptr);
     glfwDestroyWindow(pWindow);
     glfwTerminate();
@@ -373,7 +373,7 @@ VkResult createDevice()
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &device);
+    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &context_device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
@@ -556,7 +556,7 @@ VkResult createSwapchain()
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
     swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    VkResult result = vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain);
+    VkResult result = vkCreateSwapchainKHR(context_device, &swapchainCreateInfo, nullptr, &swapchain);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create swapchain." << std::endl;
@@ -568,7 +568,7 @@ VkResult createSwapchain()
 VkResult getSwapchainImages()
 {
     uint32_t swapchainImageCount {0};
-    VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, nullptr);
+    VkResult result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, nullptr);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchaing image count. [Error Code : " << result << "]" << std::endl;
@@ -577,7 +577,7 @@ VkResult getSwapchainImages()
 
     swapchainImages.clear();
     swapchainImages.resize(swapchainImageCount);
-    result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.data());
+    result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, swapchainImages.data());
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchain images. [Error Code : " << result << "]" << std::endl;
@@ -596,7 +596,7 @@ VkResult createCommandPool()
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsQueueFamilyIndex;
 
-    VkResult result = vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool);
+    VkResult result = vkCreateCommandPool(context_device, &commandPoolCreateInfo, nullptr, &commandPool);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create command pool [Error code : " << result << "]" << std::endl;
@@ -615,7 +615,7 @@ VkResult AllocateCommandBuffer()
 
     commandBuffers.resize(1);
     VkCommandBuffer& commandBuffer = commandBuffers[0];
-    VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer);
+    VkResult result = vkAllocateCommandBuffers(context_device, &commandBufferAllocateInfo, &commandBuffer);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to allocate command buffers [Error code : " << result << "]" << std::endl;
@@ -627,7 +627,7 @@ VkResult AllocateCommandBuffer()
 VkResult AcquireAvailableSwapchainImage(VkImage& swapchainImage)
 {
     uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
+    VkResult result = vkAcquireNextImageKHR(context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
@@ -666,7 +666,7 @@ VkResult setCommandBuffer()
 void render()
 {
     uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
+    VkResult result = vkAcquireNextImageKHR(context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
@@ -769,7 +769,7 @@ void render()
     }
 
     // wait device idle state after executed command.
-    result = vkDeviceWaitIdle(device);
+    result = vkDeviceWaitIdle(context_device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to wait device idle state. [Error code : " << result << "]" << std::endl;

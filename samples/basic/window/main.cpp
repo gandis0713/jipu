@@ -1,15 +1,17 @@
 
+#if defined(__APPLE__)
 #define VK_USE_PLATFORM_MACOS_MVK 1
-#define GLFW_INCLUDE_VULKAN
+#endif
+#include <vulkan/vulkan.h>
+// #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-// #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
+#include "vk/context.hpp"
 namespace 
 {
-    VkInstance instance;
-    VkPhysicalDevice physical_device;
-    VkDevice device;
+    vk::Context context;
+    // VkPhysicalDevice context.physicalDevice;
     VkQueue graphicsQueue;
     GLFWwindow* pWindow = nullptr;
     VkSurfaceKHR surface;
@@ -93,7 +95,7 @@ int main()
         return -1;
     }
 
-    vkGetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+    vkGetDeviceQueue(context.device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
 
     if(false == createWindow())
     {
@@ -117,9 +119,9 @@ int main()
         glfwPollEvents();
     }
 
-    vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyDevice(device, nullptr);
-    vkDestroyInstance(instance, nullptr);
+    vkDestroySurfaceKHR(context.instance, surface, nullptr);
+    vkDestroyDevice(context.device, nullptr);
+    vkDestroyInstance(context.instance, nullptr);
     glfwDestroyWindow(pWindow);
     glfwTerminate();
 
@@ -197,7 +199,7 @@ VkResult createInstance()
     instanceCreateInfo.enabledExtensionCount = instanceExtensionNames.size();
     instanceCreateInfo.ppEnabledExtensionNames = instanceExtensionNames.data();
 
-    VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);        
+    VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &context.instance);        
     if (result != VK_SUCCESS) 
     {
         std::cerr << "Failed to create instance [Error code : " << result  << "]" << std::endl;
@@ -210,7 +212,7 @@ VkResult createInstance()
 VkResult createPhysicalDevice()
 {
     uint32_t physicalDeviceCount {0};
-    VkResult result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+    VkResult result = vkEnumeratePhysicalDevices(context.instance, &physicalDeviceCount, nullptr);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get physical device count [Error code : " << result  << "]" << std::endl;
@@ -220,7 +222,7 @@ VkResult createPhysicalDevice()
     std::vector<VkPhysicalDevice> physicalDevices;
     physicalDevices.resize(static_cast<std::size_t>(physicalDeviceCount));
 
-    result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
+    result = vkEnumeratePhysicalDevices(context.instance, &physicalDeviceCount, physicalDevices.data());
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get physical devices [Error code : " << result  << "]" << std::endl;
@@ -257,7 +259,7 @@ VkResult createPhysicalDevice()
         }
     }
 
-    physical_device = physicalDevices[0];
+    context.physicalDevice = physicalDevices[0];
 
     return result;
 }
@@ -268,12 +270,12 @@ VkResult createDevice()
 
     uint32_t queueFamilyPropertyCount {0};
     
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyPropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(context.physicalDevice, &queueFamilyPropertyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilyProperties;
     queueFamilyProperties.resize(queueFamilyPropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyPropertyCount, queueFamilyProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(context.physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
 
     bool graphicsQueueFlag = false;
     bool computeQueueFlag = false;
@@ -326,7 +328,7 @@ VkResult createDevice()
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &device);
+    result = vkCreateDevice(context.physicalDevice, &deviceCreateInfo, nullptr, &context.device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
@@ -353,7 +355,7 @@ bool createWindow()
 
 VkResult createSurface() 
 {
-    VkResult result = glfwCreateWindowSurface(instance, pWindow, nullptr, &surface);
+    VkResult result = glfwCreateWindowSurface(context.instance, pWindow, nullptr, &surface);
     if (result != VK_SUCCESS) 
     {
         std::cerr << "Failed to create surface [Error code : " << result << "]" << std::endl;
@@ -366,7 +368,7 @@ VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32 &supporte
 {
     supported = false;
 
-    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, graphicsQueueFamilyIndex, surface, &supported);
+    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(context.physicalDevice, graphicsQueueFamilyIndex, surface, &supported);
     if(VK_SUCCESS != result)
     {
         std::cerr << "Failed to check surface supported [Error code : " << result << "]" << std::endl;

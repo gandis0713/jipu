@@ -7,7 +7,7 @@ namespace
 {
     VkInstance instance = VK_NULL_HANDLE;
     VkPhysicalDevice physical_device = VK_NULL_HANDLE;
-    VkDevice device = VK_NULL_HANDLE;
+    VkDevice context_device = VK_NULL_HANDLE;
     VkQueue graphicsQueue = VK_NULL_HANDLE;
     GLFWwindow* pWindow = nullptr;
     VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -119,7 +119,7 @@ int main()
         return -1;
     }
 
-    vkGetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+    vkGetDeviceQueue(context_device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
 
     if(false == createWindow())
     {
@@ -216,25 +216,25 @@ int main()
     // destroy
     for(VkFramebuffer& framebuffer: framebuffers)
     {
-        vkDestroyFramebuffer(device, framebuffer, nullptr);
+        vkDestroyFramebuffer(context_device, framebuffer, nullptr);
     }
     for(VkImageView& imageView: imageViews)
     {
-        vkDestroyImageView(device, imageView, nullptr);
+        vkDestroyImageView(context_device, imageView, nullptr);
     }
     for(VkSemaphore& semaphore: semaphores)
     {
-        vkDestroySemaphore(device, semaphore, nullptr);
+        vkDestroySemaphore(context_device, semaphore, nullptr);
     }
     for(VkFence& fence: fences)
     {
-        vkDestroyFence(device, fence, nullptr);
+        vkDestroyFence(context_device, fence, nullptr);
     }
-    vkFreeCommandBuffers(device, commandPool, 1, commandBuffers.data());
-    vkDestroyCommandPool(device, commandPool, nullptr);
-    vkDestroySwapchainKHR(device, swapchain, nullptr);
+    vkFreeCommandBuffers(context_device, commandPool, 1, commandBuffers.data());
+    vkDestroyCommandPool(context_device, commandPool, nullptr);
+    vkDestroySwapchainKHR(context_device, swapchain, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyDevice(device, nullptr);
+    vkDestroyDevice(context_device, nullptr);
     vkDestroyInstance(instance, nullptr);
     glfwDestroyWindow(pWindow);
     glfwTerminate();
@@ -439,7 +439,7 @@ VkResult createDevice()
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &device);
+    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &context_device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
@@ -622,7 +622,7 @@ VkResult createSwapchain()
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
     swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    VkResult result = vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain);
+    VkResult result = vkCreateSwapchainKHR(context_device, &swapchainCreateInfo, nullptr, &swapchain);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create swapchain." << std::endl;
@@ -634,7 +634,7 @@ VkResult createSwapchain()
 VkResult getSwapchainImages()
 {
     uint32_t swapchainImageCount {0};
-    VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, nullptr);
+    VkResult result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, nullptr);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchaing image count. [Error Code : " << result << "]" << std::endl;
@@ -643,7 +643,7 @@ VkResult getSwapchainImages()
 
     swapchainImages.clear();
     swapchainImages.resize(swapchainImageCount);
-    result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.data());
+    result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, swapchainImages.data());
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchain images. [Error Code : " << result << "]" << std::endl;
@@ -662,7 +662,7 @@ VkResult createCommandPool()
     commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsQueueFamilyIndex;
 
-    VkResult result = vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool);
+    VkResult result = vkCreateCommandPool(context_device, &commandPoolCreateInfo, nullptr, &commandPool);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create command pool [Error code : " << result << "]" << std::endl;
@@ -681,7 +681,7 @@ VkResult AllocateCommandBuffer()
 
     commandBuffers.resize(1);
     VkCommandBuffer& commandBuffer = commandBuffers[0];
-    VkResult result = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, &commandBuffer);
+    VkResult result = vkAllocateCommandBuffers(context_device, &commandBufferAllocateInfo, &commandBuffer);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to allocate command buffers [Error code : " << result << "]" << std::endl;
@@ -694,10 +694,10 @@ VkResult setCommandBuffer()
 {
     VkCommandBuffer commandBuffer = commandBuffers[0];
 
-    VkResult result = vkGetFenceStatus(device, fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    VkResult result = vkGetFenceStatus(context_device, fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
     if(result == VK_NOT_READY)
     {
-        result = vkWaitForFences(device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)], VK_TRUE, UINT64_MAX);
+        result = vkWaitForFences(context_device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)], VK_TRUE, UINT64_MAX);
         if(result != VK_SUCCESS)
         {
             std::cerr << "Failed to wait fence for checking rendering done [Error code : " << result << "]" << std::endl;
@@ -705,7 +705,7 @@ VkResult setCommandBuffer()
         }
     }
 
-    result = vkResetFences(device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    result = vkResetFences(context_device, 1, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to reset fence for rendering done. [Error code : " << result << std::endl;
@@ -742,14 +742,14 @@ VkResult createFence()
     fences.resize(static_cast<uint8_t>(FenceType::FENCE_TYPE_COUNT));
 
     // create image available fence.
-    VkResult result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::IMAGE_AVAILABLE)]);
+    VkResult result = vkCreateFence(context_device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::IMAGE_AVAILABLE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create image available fence [Error code : " << result << "]" << std::endl;
         return result;
     }
 
-    result = vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
+    result = vkCreateFence(context_device, &fenceCreateInfo, nullptr, &fences[static_cast<uint8_t>(FenceType::RENDERING_DONE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create rendering done fence [Error code : " << result << "]" << std::endl;
@@ -765,14 +765,14 @@ VkResult createSemaphore()
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     
     semaphores.resize(static_cast<uint8_t>(SemaphoreType::SEMAPHORE_TYPE_COUNT));
-    VkResult result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)]);
+    VkResult result = vkCreateSemaphore(context_device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create semaphore for checking image available [Error code : " << result << "]" << std::endl;
         return result;
     }
 
-    result = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::RENDERING_DONE)]);
+    result = vkCreateSemaphore(context_device, &semaphoreCreateInfo, nullptr, &semaphores[static_cast<uint8_t>(SemaphoreType::RENDERING_DONE)]);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create semaphore for checking rendering done [Error code : " << result << "]" << std::endl;
@@ -785,7 +785,7 @@ VkResult createSemaphore()
 void render()
 {
     uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(device,
+    VkResult result = vkAcquireNextImageKHR(context_device,
                                             swapchain,
                                             UINT64_MAX, 
                                             semaphores[static_cast<uint8_t>(SemaphoreType::IMAGE_AVAILABLE)], 
@@ -899,7 +899,7 @@ void render()
     }
 
     // wait device idle state after executed command.
-    result = vkDeviceWaitIdle(device);
+    result = vkDeviceWaitIdle(context_device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to wait device idle state. [Error code : " << result << "]" << std::endl;
@@ -942,7 +942,7 @@ VkResult createImageView()
     {
         imageViewCreateinfo.image = swapchainImages[index];
 
-        VkResult result = vkCreateImageView(device, &imageViewCreateinfo, nullptr, &imageViews[index]);
+        VkResult result = vkCreateImageView(context_device, &imageViewCreateinfo, nullptr, &imageViews[index]);
         if(result != VK_SUCCESS)
         {
             std::cerr << "Failed to create image view [Error code : " << result << "]" << std::endl;
@@ -970,7 +970,7 @@ VkResult createFramebuffer()
     for(std::size_t index = 0; index < framebuffers.size(); ++index)
     {
         framebufferCreateInfo.pAttachments = &imageViews[index];
-        result = vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &framebuffers[index]);
+        result = vkCreateFramebuffer(context_device, &framebufferCreateInfo, nullptr, &framebuffers[index]);
         if(result != VK_SUCCESS)
         {
             std::cerr << "Failed to create framebuffer [Error code : " << result << "]" << std::endl;

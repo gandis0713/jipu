@@ -7,7 +7,7 @@ namespace
 {
     VkInstance instance;
     VkPhysicalDevice physical_device;
-    VkDevice device;
+    VkDevice context_device;
     VkQueue graphicsQueue;
     GLFWwindow* pWindow = nullptr;
     VkSurfaceKHR surface;
@@ -88,7 +88,7 @@ int main()
         return -1;
     }
 
-    vkGetDeviceQueue(device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+    vkGetDeviceQueue(context_device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
 
     if(false == createWindow())
     {
@@ -142,9 +142,9 @@ int main()
         glfwPollEvents();
     }
 
-    vkDestroySwapchainKHR(device, swapchain, nullptr);
+    vkDestroySwapchainKHR(context_device, swapchain, nullptr);
     vkDestroySurfaceKHR(instance, surface, nullptr);
-    vkDestroyDevice(device, nullptr);
+    vkDestroyDevice(context_device, nullptr);
     vkDestroyInstance(instance, nullptr);
     glfwDestroyWindow(pWindow);
     glfwTerminate();
@@ -349,7 +349,7 @@ VkResult createDevice()
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &device);
+    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &context_device);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
@@ -532,7 +532,7 @@ VkResult createSwapchain()
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
     swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    VkResult result = vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &swapchain);
+    VkResult result = vkCreateSwapchainKHR(context_device, &swapchainCreateInfo, nullptr, &swapchain);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to create swapchain." << std::endl;
@@ -544,7 +544,7 @@ VkResult createSwapchain()
 VkResult getSwapchainImages()
 {
     uint32_t swapchainImageCount {0};
-    VkResult result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, nullptr);
+    VkResult result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, nullptr);
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchaing image count. [Error Code : " << result << "]" << std::endl;
@@ -553,7 +553,7 @@ VkResult getSwapchainImages()
 
     std::vector<VkImage> swapchainImages;
     swapchainImages.resize(swapchainImageCount);
-    result = vkGetSwapchainImagesKHR(device, swapchain, &swapchainImageCount, swapchainImages.data());
+    result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, swapchainImages.data());
     if(result != VK_SUCCESS)
     {
         std::cerr << "Failed to get swapchain images. [Error Code : " << result << "]" << std::endl;
