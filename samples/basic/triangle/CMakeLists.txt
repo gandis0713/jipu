@@ -27,4 +27,12 @@ target_link_libraries(${PROJECT_NAME}
   ${VKT_LIBRARIES}
 )
 
+set(GLSLC_EXE $ENV{VULKAN_SDK}/bin/glslc)
+add_custom_command(TARGET triangle POST_BUILD
+  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.vert -o ${CMAKE_BINARY_DIR}/samples/basic/triangle/${CMAKE_BUILD_TYPE}/vert.spv
+)
+add_custom_command(TARGET triangle POST_BUILD
+  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.frag -o ${CMAKE_BINARY_DIR}/samples/basic/triangle/${CMAKE_BUILD_TYPE}/frag.spv
+)
+
 # target_compile_options(triangle PUBLIC -Wall -Werror -fno-rtti)
