@@ -1,5 +1,5 @@
 del vert.spv
 del frag.spv
 
-call %VULKAN_SDK%/bin/glslc shader.vert -o vert.spv
-call %VULKAN_SDK%/bin/glslc shader.frag -o frag.spv
+call %VULKAN_SDK%/bin/glslc %~dp0/shader.vert -o %~dp0/vert.spv
+call %VULKAN_SDK%/bin/glslc %~dp0/shader.frag -o %~dp0/frag.spv

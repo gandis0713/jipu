@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.12)
 
 find_package(glfw3 CONFIG REQUIRED)
 
+if(WIN32)
+set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/vkt.lib")
+set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
+elseif(APPLE)
 set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/libvkt.a")
 set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
+endif()
 
 set(BASIC_PHYSICAL_DEVICE ${CMAKE_CURRENT_SOURCE_DIR}/basic/physical_device)
 set(BASIC_LOGICAL_DEVICE ${CMAKE_CURRENT_SOURCE_DIR}/basic/logical_device)
