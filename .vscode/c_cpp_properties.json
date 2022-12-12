@@ -1,9 +1,16 @@
-{
+{  
+    "env": {
+        "defaultIncludePath": [
+            "${workspaceFolder}/**",
+            "${env:VULKAN_SDK}/include/"
+        ],
+        "cppVersion": "c++17"
+    },
     "configurations": [
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${env:defaultIncludePath}"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
@@ -13,9 +20,10 @@
             "configurationProvider": "ms-vscode.makefile-tools"
         },
         {
-            "name": "Mac",
+            "name": "Mac-arm64",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${env:defaultIncludePath}",
+                "${env:VCPKG_ROOT}/installed/arm64-osx/include"
             ],
             "defines": [],
             "macFrameworkPath": [
@@ -23,13 +31,14 @@
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
+            // "cppStandard": "${env:cppVersion}",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"
         },
         {
             "name": "Window",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${env:defaultIncludePath}"
             ],
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-msvc-x64",
