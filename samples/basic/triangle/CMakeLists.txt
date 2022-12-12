@@ -1,38 +1,47 @@
 cmake_minimum_required(VERSION 3.12)
 
 # The information about project.
+set(PRJ_NAME "triangle")
 project(
-  triangle
+  ${PRJ_NAME}
   VERSION 0.1
-  DESCRIPTION "Triangle sample"
+  DESCRIPTION "${PRJ_NAME} sample"
   LANGUAGES CXX
 )
 
-add_executable(triangle main.cpp)
+add_executable(${PRJ_NAME} main.cpp)
+add_dependencies(${PRJ_NAME} vkt)
 
 target_include_directories(
-  ${PROJECT_NAME}
+  ${PRJ_NAME}
   PUBLIC
 
   # ${Vulkan_INCLUDE_DIRS}
   ${VKT_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PRJ_NAME}
   PRIVATE
 
   # ${Vulkan_LIBRARIES}
   Vulkan::Vulkan
   glfw
-  ${VKT_LIBRARIES}
+  # ${VKT_LIBRARIES}
+  vkt
 )
 
 set(GLSLC_EXE $ENV{VULKAN_SDK}/bin/glslc)
-add_custom_command(TARGET triangle POST_BUILD
-  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.vert -o ${CMAKE_BINARY_DIR}/samples/basic/triangle/${CMAKE_BUILD_TYPE}/vert.spv
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+  set(SHADER_OUTPUT ${CMAKE_BINARY_DIR}/samples/basic/${PRJ_NAME})
+else()
+  set(SHADER_OUTPUT ${CMAKE_BINARY_DIR}/samples/basic/${PRJ_NAME}/${CMAKE_BUILD_TYPE})
+endif()
+
+add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.vert -o ${SHADER_OUTPUT}/vert.spv
 )
-add_custom_command(TARGET triangle POST_BUILD
-  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.frag -o ${CMAKE_BINARY_DIR}/samples/basic/triangle/${CMAKE_BUILD_TYPE}/frag.spv
+add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+  COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shader.frag -o ${SHADER_OUTPUT}/frag.spv
 )
 
-# target_compile_options(triangle PUBLIC -Wall -Werror -fno-rtti)
+# target_compile_options(${PRJ_NAME} PUBLIC -Wall -Werror -fno-rtti)

@@ -1,26 +1,31 @@
 cmake_minimum_required(VERSION 3.12)
 
 # The information about project.
-set(PROJECT_NAME "window")
+set(PRJ_NAME "window")
 project(
-  ${PROJECT_NAME}
+  ${PRJ_NAME}
   VERSION 0.1
   DESCRIPTION "Vulkan Window Test"
   LANGUAGES CXX
 )
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PRJ_NAME} main.cpp)
+add_dependencies(${PRJ_NAME} vkt)
+# set_target_properties(${PRJ_NAME}
+#     PROPERTIES IMPORTED_LOCATION ${VKT_LIBRARIES}
+# )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PRJ_NAME}
   PRIVATE
 
   # ${Vulkan_LIBRARIES}
   Vulkan::Vulkan
   glfw
-  ${VKT_LIBRARIES}
+  # ${VKT_LIBRARIES}
+  vkt
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${PRJ_NAME}
   PRIVATE
 
   # ${Vulkan_INCLUDE_DIRS}
