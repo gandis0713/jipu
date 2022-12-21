@@ -7,15 +7,15 @@
 	},
 	"configurePresets": [
 		{
-			"name": "arm64-osx-ninja",
-			"displayName": "arm64-osx-ninja",
-			"binaryDir": "${sourceDir}/build/arm64-osx-ninja",
-			"installDir": "${sourceDir}/install/arm64-osx",
-			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-			"generator": "Ninja",
+			"name": "base-debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			},
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+			}
+		},
+		{
+			"name": "base-osx-debug",
+			"inherits": "base-debug",
 			"condition": {
 				"type": "equals",
 				"lhs": "${hostSystemName}",
@@ -23,54 +23,87 @@
 			}
 		},
 		{
-			"name": "arm64-osx-xcode",
-			"displayName": "arm64-osx-xcode",
-			"binaryDir": "${sourceDir}/build/arm64-osx-xcode",
-			"installDir": "${sourceDir}/install/arm64-osx",
-			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-			"generator": "Xcode",
+			"name": "base-arm64-osx-debug",
+			"inherits": "base-osx-debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
-			},
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Darwin"
+				"VCPKG_TARGET_TRIPLET": "arm64-osx"
 			}
 		},
 		{
-			"name": "x64-vs2022-debug",
-			"displayName": "x64-vs2022-debug",
-			"binaryDir": "${sourceDir}/build/x64-vs2022-debug",
-			"installDir": "${sourceDir}/install/x64-window-vs2022/debug",
-			"toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "generator": "Visual Studio 17 2022",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+			"name": "base-windows-debug",
+			"inherits": "base-debug",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
 			}
+		},
+		{
+			"name": "base-x64-windows-debug",
+			"inherits": "base-windows-debug",
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-windows"
+			}
+		},
+		{
+			"name": "arm64-osx-ninja-debug",
+			"inherits": "base-arm64-osx-debug",
+			"displayName": "arm64-osx-ninja-debug",
+			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/debug",
+			"installDir": "${sourceDir}/install/arm64-osx-ninja/debug",
+			"generator": "Ninja"
+		},
+		{
+			"name": "arm64-osx-xcode-debug",
+			"inherits": "base-arm64-osx-debug",
+			"displayName": "arm64-osx-xcode-debug",
+			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/debug",
+			"installDir": "${sourceDir}/install/arm64-osx-xcode/debug",
+			"generator": "Xcode"
+		},
+		{
+			"name": "x64-windows-vs2022-debug",
+			"inherits": "base-x64-windows-debug",
+			"displayName": "x64-windows-vs2022-debug",
+			"binaryDir": "${sourceDir}/build/x64-windows-vs2022/debug",
+			"installDir": "${sourceDir}/install/x64-windows-vs2022/debug",
+     		"generator": "Visual Studio 17 2022"
+		},
+		{
+			"name": "x64-windows-ninja-debug",
+			"inherits": "base-x64-windows-debug",
+			"displayName": "x64-windows-ninja-debug",
+			"binaryDir": "${sourceDir}/build/x64-windows-ninja/debug",
+			"installDir": "${sourceDir}/install/x64-window-ninja/debug",
+     		"generator": "Ninja"
 		}
 	],
 	"buildPresets": [
 		{
-			"name": "arm64-osx-ninja",
-			"configurePreset": "arm64-osx-ninja",
+			"name": "arm64-osx-ninja-debug",
+			"configurePreset": "arm64-osx-ninja-debug",
 			"configuration": "Debug"
 		},
 		{
-			"name": "arm64-osx-xcode",
-			"configurePreset": "arm64-osx-xcode",
+			"name": "arm64-osx-xcode-debug",
+			"configurePreset": "arm64-osx-xcode-debug",
 			"configuration": "Debug"
 		},
 		{
-			"name": "x64-vs2022-debug",
-			"configurePreset": "x64-vs2022-debug",
+			"name": "x64-windows-vs2022-debug",
+			"configurePreset": "x64-windows-vs2022-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "x64-windows-ninja-debug",
+			"configurePreset": "x64-windows-ninja-debug",
 			"configuration": "Debug"
 		}
 	],
 	"testPresets": [
 		{
-			"name": "arm64-osx-ninja",
-			"configurePreset": "arm64-osx-ninja",
+			"name": "arm64-osx-ninja-debug",
+			"configurePreset": "arm64-osx-ninja-debug",
 			"configuration": "Debug",
 			"output": {
 				"outputOnFailure": true
@@ -81,8 +114,8 @@
 			}
 		},
 		{
-			"name": "arm64-osx-xcode",
-			"configurePreset": "arm64-osx-xcode",
+			"name": "arm64-osx-xcode-debug",
+			"configurePreset": "arm64-osx-xcode-debug",
 			"configuration": "Debug",
 			"output": {
 				"outputOnFailure": true
@@ -92,9 +125,21 @@
 				"stopOnFailure": false
 			}
 		},
-    {
-			"name": "x64-vs2022-debug",
-			"configurePreset": "x64-vs2022-debug",
+		{
+			"name": "x64-windows-vs2022-debug",
+			"configurePreset": "x64-windows-vs2022-debug",
+			"configuration": "Debug",
+			"output": {
+				"outputOnFailure": true
+			},
+			"execution": {
+				"noTestsAction": "error",
+				"stopOnFailure": false
+			}
+		},
+		{
+			"name": "x64-windows-ninja-debug",
+			"configurePreset": "x64-windows-ninja-debug",
 			"configuration": "Debug",
 			"output": {
 				"outputOnFailure": true
