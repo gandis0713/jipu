@@ -10,7 +10,7 @@
 #include <vector>
 namespace
 {
-vk::Context context;
+vkt::Context context;
 // VkPhysicalDevice context.physicalDevice;
 VkQueue graphicsQueue;
 GLFWwindow* pWindow = nullptr;

@@ -2,7 +2,7 @@
 
 #include "vulkan.h"
 
-namespace vk
+namespace vkt
 {
 
 struct Context
@@ -12,4 +12,4 @@ struct Context
     VkDevice device;
 };
 
-} // namespace vk
+} // namespace vkt

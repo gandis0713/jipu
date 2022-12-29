@@ -100,7 +100,7 @@ private:
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
     VkSurfaceKHR m_surface;
-    vk::Context m_context;
+    vkt::Context m_context;
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
     VkSwapchainKHR m_swapChain;

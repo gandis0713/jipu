@@ -1,10 +1,11 @@
 #pragma once
 
-namespace vk
+namespace vkt
 {
 
 class Platform
 {
+    virtual void* createSurface(void* nativeWindow, void* instance) = 0;
 };
 
-} // namespace vk
+} // namespace vkt
