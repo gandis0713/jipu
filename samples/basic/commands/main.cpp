@@ -3,40 +3,35 @@
 // #include <vulkan/vulkan.h>
 #include <iostream>
 #include <vector>
-namespace 
+namespace
 {
-    VkInstance instance;
-    VkPhysicalDevice physical_device;
-    VkDevice context_device;
-    VkQueue graphicsQueue;
-    GLFWwindow* pWindow = nullptr;
-    VkSurfaceKHR surface;
-    VkSurfaceFormatKHR surfaceFormat;
-    VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBit;
-    VkSwapchainKHR swapchain;
-    std::vector<VkImage> swapchainImages;
-    VkCommandPool commandPool;
-    std::vector<VkCommandBuffer> commandBuffers;
+VkInstance instance;
+VkPhysicalDevice physical_device;
+VkDevice context_device;
+VkQueue graphicsQueue;
+GLFWwindow* pWindow = nullptr;
+VkSurfaceKHR surface;
+VkSurfaceFormatKHR surfaceFormat;
+VkSurfaceCapabilitiesKHR surfaceCapabilities;
+VkCompositeAlphaFlagBitsKHR compositeAlphaFlagBit;
+VkSwapchainKHR swapchain;
+std::vector<VkImage> swapchainImages;
+VkCommandPool commandPool;
+std::vector<VkCommandBuffer> commandBuffers;
 
-    constexpr int32_t WIDTH = 1024;
-    constexpr int32_t HEIGHT = 512; 
-    constexpr float graphicsQueuePriority = 1.0f;
+constexpr int32_t WIDTH = 1024;
+constexpr int32_t HEIGHT = 512;
+constexpr float graphicsQueuePriority = 1.0f;
 
-    uint32_t graphicsQueueFamilyIndex = 0xffff;
+uint32_t graphicsQueueFamilyIndex = 0xffff;
 
-    std::vector<const char*> instanceExtensionNames
-    {
-        "VK_KHR_surface",
-        "VK_KHR_xcb_surface" // for glfw on linux(ubuntu)
-    };
+std::vector<const char*> instanceExtensionNames{
+    "VK_KHR_surface",
+    "VK_KHR_xcb_surface" // for glfw on linux(ubuntu)
+};
 
-    std::vector<const char*> deviceExtensionNames
-    {
-        "VK_KHR_swapchain"
-    };
-}
-
+std::vector<const char*> deviceExtensionNames{ "VK_KHR_swapchain" };
+} // namespace
 
 VkResult checkInstanceLayer();
 VkResult checkInstanceExtension();
@@ -45,7 +40,8 @@ VkResult createPhysicalDevice();
 VkResult createDevice();
 bool createWindow();
 VkResult createSurface();
-VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32& supported);
+VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex,
+                             VkBool32& supported);
 VkResult checkSurfacePresentMode();
 VkResult checkSurfaceFormat();
 VkResult checkSurfaceCapability();
@@ -63,104 +59,106 @@ int main()
 
     // check instance extension.
     result = checkInstanceExtension();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
-    
+
     // check instance layer.
     result = checkInstanceLayer();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     // create instance.
     result = createInstance();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     // create physical device
     result = createPhysicalDevice();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     // create device
     result = createDevice();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
-    vkGetDeviceQueue(context_device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
+    vkGetDeviceQueue(context_device, graphicsQueueFamilyIndex, 0,
+                     &graphicsQueue);
 
-    if(false == createWindow())
+    if (false == createWindow())
     {
         return -1;
     }
 
     result = createSurface();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     VkBool32 surfaceSupported;
     result = checkSurfaceSupport(graphicsQueueFamilyIndex, surfaceSupported);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = checkSurfacePresentMode();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = checkSurfaceFormat();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = checkSurfaceCapability();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = createSwapchain();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = getSwapchainImages();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = createCommandPool();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     result = AllocateCommandBuffer();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return -1;
     }
 
     render();
 
-    while (!glfwWindowShouldClose(pWindow)) {
+    while (!glfwWindowShouldClose(pWindow))
+    {
         glfwPollEvents();
     }
 
@@ -178,30 +176,34 @@ int main()
 
 VkResult checkInstanceLayer()
 {
-    uint32_t layerCount {0};
+    uint32_t layerCount{ 0 };
     VkResult result = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-    if (result != VK_SUCCESS) 
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get layer count [Error code : " << result  << "]" << std::endl;
+        std::cerr << "Failed to get layer count [Error code : " << result << "]"
+                  << std::endl;
         return result;
     }
 
     std::vector<VkLayerProperties> layerProperties;
     layerProperties.resize(static_cast<std::size_t>(layerCount));
 
-    result = vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
-    if (result != VK_SUCCESS) 
+    result =
+        vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get layer properties [Error code : " << result  << "]" << std::endl;
+        std::cerr << "Failed to get layer properties [Error code : " << result
+                  << "]" << std::endl;
         return result;
     }
 
-    for (const VkLayerProperties& p : layerProperties) 
+    for (const VkLayerProperties& p : layerProperties)
     {
-        std::cout << "Layer Name             : " << p.layerName             << std::endl
-                  << "Spec Version           : " << p.specVersion           << std::endl
-                  << "Implementation Version : " << p.implementationVersion << std::endl
-                  << "Description            : " << p.description           << std::endl;
+        std::cout << "Layer Name             : " << p.layerName << std::endl
+                  << "Spec Version           : " << p.specVersion << std::endl
+                  << "Implementation Version : " << p.implementationVersion
+                  << std::endl
+                  << "Description            : " << p.description << std::endl;
         std::cout << std::endl;
     }
 
@@ -212,24 +214,29 @@ VkResult checkInstanceExtension()
 {
     VkResult result = VK_SUCCESS;
 
-    uint32_t instanceExtensionCount {0};
+    uint32_t instanceExtensionCount{ 0 };
 
-    result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
-    if(result != VK_SUCCESS)
+    result = vkEnumerateInstanceExtensionProperties(
+        nullptr, &instanceExtensionCount, nullptr);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get instance extension count [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get instance extension count [Error code : "
+                  << result << "]" << std::endl;
         return result;
     }
 
     std::vector<VkExtensionProperties> extensionProperties;
     extensionProperties.resize(instanceExtensionCount);
 
-    result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, extensionProperties.data());
-    for(uint32_t index = 0; index < extensionProperties.size(); ++index)
+    result = vkEnumerateInstanceExtensionProperties(
+        nullptr, &instanceExtensionCount, extensionProperties.data());
+    for (uint32_t index = 0; index < extensionProperties.size(); ++index)
     {
         std::cout << "[Instance extension]" << std::endl
-                  << "Name : " << extensionProperties[index].extensionName << std::endl
-                  << "specVersion : " << extensionProperties[index].specVersion << std::endl;
+                  << "Name : " << extensionProperties[index].extensionName
+                  << std::endl
+                  << "specVersion : " << extensionProperties[index].specVersion
+                  << std::endl;
     }
 
     return result;
@@ -239,15 +246,16 @@ VkResult createInstance()
 {
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    
+
     // extensions
     instanceCreateInfo.enabledExtensionCount = instanceExtensionNames.size();
     instanceCreateInfo.ppEnabledExtensionNames = instanceExtensionNames.data();
 
-    VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);        
-    if (result != VK_SUCCESS) 
+    VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create instance [Error code : " << result  << "]" << std::endl;
+        std::cerr << "Failed to create instance [Error code : " << result << "]"
+                  << std::endl;
         return result;
     }
 
@@ -256,51 +264,65 @@ VkResult createInstance()
 
 VkResult createPhysicalDevice()
 {
-    uint32_t physicalDeviceCount {0};
-    VkResult result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
-    if(result != VK_SUCCESS)
+    uint32_t physicalDeviceCount{ 0 };
+    VkResult result =
+        vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get physical device count [Error code : " << result  << "]" << std::endl;
+        std::cerr << "Failed to get physical device count [Error code : "
+                  << result << "]" << std::endl;
         return result;
     }
 
     std::vector<VkPhysicalDevice> physicalDevices;
     physicalDevices.resize(static_cast<std::size_t>(physicalDeviceCount));
 
-    result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
-    if(result != VK_SUCCESS)
+    result = vkEnumeratePhysicalDevices(instance, &physicalDeviceCount,
+                                        physicalDevices.data());
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get physical devices [Error code : " << result  << "]" << std::endl;
+        std::cerr << "Failed to get physical devices [Error code : " << result
+                  << "]" << std::endl;
         return result;
     }
 
-    for(const VkPhysicalDevice& physicalDevice : physicalDevices)
+    for (const VkPhysicalDevice& physicalDevice : physicalDevices)
     {
         VkPhysicalDeviceProperties physicalDeviceProperties;
 
-        vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+        vkGetPhysicalDeviceProperties(physicalDevice,
+                                      &physicalDeviceProperties);
 
         std::cout << physicalDeviceProperties.deviceName << std::endl;
     }
 
-    for(const VkPhysicalDevice& physicalDevice : physicalDevices)
+    for (const VkPhysicalDevice& physicalDevice : physicalDevices)
     {
-        uint32_t deviceExtensionCount {0};
+        uint32_t deviceExtensionCount{ 0 };
 
-        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
+                                             &deviceExtensionCount, nullptr);
 
-        std::cout << "deviceExtensionCount : " << deviceExtensionCount << std::endl;
+        std::cout << "deviceExtensionCount : " << deviceExtensionCount
+                  << std::endl;
 
         std::vector<VkExtensionProperties> deviceExtensionProperties;
         deviceExtensionProperties.resize(deviceExtensionCount);
 
-        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, deviceExtensionProperties.data());
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
+                                             &deviceExtensionCount,
+                                             deviceExtensionProperties.data());
 
-        for(uint32_t index = 0; index < deviceExtensionProperties.size(); ++index)
+        for (uint32_t index = 0; index < deviceExtensionProperties.size();
+             ++index)
         {
             std::cout << "[Device Extension]" << std::endl
-                      << "Name    : " << deviceExtensionProperties[index].extensionName << std::endl
-                      << "Version : " << deviceExtensionProperties[index].specVersion << std::endl;
+                      << "Name    : "
+                      << deviceExtensionProperties[index].extensionName
+                      << std::endl
+                      << "Version : "
+                      << deviceExtensionProperties[index].specVersion
+                      << std::endl;
         }
     }
 
@@ -313,70 +335,84 @@ VkResult createDevice()
 {
     VkResult result = VK_SUCCESS;
 
-    uint32_t queueFamilyPropertyCount {0};
-    
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyPropertyCount, nullptr);
+    uint32_t queueFamilyPropertyCount{ 0 };
+
+    vkGetPhysicalDeviceQueueFamilyProperties(
+        physical_device, &queueFamilyPropertyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilyProperties;
     queueFamilyProperties.resize(queueFamilyPropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyPropertyCount, queueFamilyProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(physical_device,
+                                             &queueFamilyPropertyCount,
+                                             queueFamilyProperties.data());
 
     bool graphicsQueueFlag = false;
     bool computeQueueFlag = false;
     bool transferQueueFlag = false;
     bool sparseQueueFlag = false;
-    for(uint32_t index = 0; index < queueFamilyProperties.size(); ++index)
+    for (uint32_t index = 0; index < queueFamilyProperties.size(); ++index)
     {
         std::cout << std::endl;
 
-        graphicsQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT);
-        computeQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_COMPUTE_BIT);
-        transferQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_TRANSFER_BIT);
-        sparseQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT);
+        graphicsQueueFlag =
+            (queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT);
+        computeQueueFlag =
+            (queueFamilyProperties[index].queueFlags & VK_QUEUE_COMPUTE_BIT);
+        transferQueueFlag =
+            (queueFamilyProperties[index].queueFlags & VK_QUEUE_TRANSFER_BIT);
+        sparseQueueFlag = (queueFamilyProperties[index].queueFlags &
+                           VK_QUEUE_SPARSE_BINDING_BIT);
 
-        std::cout << std::boolalpha << "graphicsQueueFlag : " << graphicsQueueFlag << std::endl;
-        std::cout << std::boolalpha << "computeQueueFlag : " << computeQueueFlag << std::endl;
-        std::cout << std::boolalpha << "transferQueueFlag : " << transferQueueFlag << std::endl;
-        std::cout << std::boolalpha << "sparseQueueFlag : " << sparseQueueFlag << std::endl;
-        
-        std::cout << "queueCount : " << queueFamilyProperties[index].queueCount << std::endl;
+        std::cout << std::boolalpha
+                  << "graphicsQueueFlag : " << graphicsQueueFlag << std::endl;
+        std::cout << std::boolalpha << "computeQueueFlag : " << computeQueueFlag
+                  << std::endl;
+        std::cout << std::boolalpha
+                  << "transferQueueFlag : " << transferQueueFlag << std::endl;
+        std::cout << std::boolalpha << "sparseQueueFlag : " << sparseQueueFlag
+                  << std::endl;
 
-        if(queueFamilyProperties[index].queueCount < 1)
+        std::cout << "queueCount : " << queueFamilyProperties[index].queueCount
+                  << std::endl;
+
+        if (queueFamilyProperties[index].queueCount < 1)
         {
             continue;
-        }     
+        }
 
-        if(graphicsQueueFlag)
+        if (graphicsQueueFlag)
         {
             graphicsQueueFamilyIndex = index;
             break;
         }
     }
 
-    if(graphicsQueueFamilyIndex == 0xffff)
+    if (graphicsQueueFamilyIndex == 0xffff)
     {
         std::cerr << "There is no queue family for graphics" << std::endl;
         return VK_ERROR_UNKNOWN;
     }
 
-    VkDeviceQueueCreateInfo deviceQueueCreateInfo {};
+    VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
     deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     deviceQueueCreateInfo.queueFamilyIndex = graphicsQueueFamilyIndex;
     deviceQueueCreateInfo.queueCount = 1;
     deviceQueueCreateInfo.pQueuePriorities = &graphicsQueuePriority;
 
-    VkDeviceCreateInfo deviceCreateInfo {};
+    VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = 1;
     deviceCreateInfo.pQueueCreateInfos = &deviceQueueCreateInfo;
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr, &context_device);
-    if(result != VK_SUCCESS)
+    result = vkCreateDevice(physical_device, &deviceCreateInfo, nullptr,
+                            &context_device);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
+        std::cerr << "Failed to create device [Error coce : " << result << "]"
+                  << std::endl;
     }
 
     return result;
@@ -390,38 +426,44 @@ bool createWindow()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     pWindow = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-    if(nullptr == pWindow)
+    if (nullptr == pWindow)
     {
         std::cerr << "Failed to create window" << std::endl;
     }
-    
+
     return pWindow != nullptr;
 }
 
-VkResult createSurface() 
+VkResult createSurface()
 {
-    VkResult result = glfwCreateWindowSurface(instance, pWindow, nullptr, &surface);
-    if (result != VK_SUCCESS) 
+    VkResult result =
+        glfwCreateWindowSurface(instance, pWindow, nullptr, &surface);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create surface [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to create surface [Error code : " << result << "]"
+                  << std::endl;
     }
 
     return result;
 }
 
-VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32 &supported)
+VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex,
+                             VkBool32& supported)
 {
     supported = false;
 
-    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, graphicsQueueFamilyIndex, surface, &supported);
-    if(VK_SUCCESS != result)
+    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
+        physical_device, graphicsQueueFamilyIndex, surface, &supported);
+    if (VK_SUCCESS != result)
     {
-        std::cerr << "Failed to check surface supported [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to check surface supported [Error code : "
+                  << result << "]" << std::endl;
     }
 
-    if(false == supported)
+    if (false == supported)
     {
-        std::cerr << "Surface is not supported [QueueFamilyIndex : " << queueFamilyIndex << "]" << std::endl;
+        std::cerr << "Surface is not supported [QueueFamilyIndex : "
+                  << queueFamilyIndex << "]" << std::endl;
     }
 
     return result;
@@ -430,39 +472,44 @@ VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32 &supporte
 VkResult checkSurfacePresentMode()
 {
     uint32_t surfacePresentModeCount;
-    VkResult result = vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &surfacePresentModeCount, nullptr);
+    VkResult result = vkGetPhysicalDeviceSurfacePresentModesKHR(
+        physical_device, surface, &surfacePresentModeCount, nullptr);
 
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to check surface present mode [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to check surface present mode [Error code : "
+                  << result << "]" << std::endl;
     }
 
     std::vector<VkPresentModeKHR> presentModes;
     presentModes.resize(surfacePresentModeCount);
-    result = vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &surfacePresentModeCount, presentModes.data());
-    if(result != VK_SUCCESS)
+    result = vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface,
+                                                       &surfacePresentModeCount,
+                                                       presentModes.data());
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get surface present mode [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get surface present mode [Error code : "
+                  << result << "]" << std::endl;
     }
 
     std::cout << "[Present Mode]" << std::endl;
-    for(const VkPresentModeKHR& mode : presentModes) 
+    for (const VkPresentModeKHR& mode : presentModes)
     {
-        switch(mode) 
+        switch (mode)
         {
-            case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        case VK_PRESENT_MODE_IMMEDIATE_KHR:
             std::cout << "VK_PRESENT_MODE_IMMEDIATE_KHR" << std::endl;
             break;
 
-            case VK_PRESENT_MODE_MAILBOX_KHR:
+        case VK_PRESENT_MODE_MAILBOX_KHR:
             std::cout << "VK_PRESENT_MODE_MAILBOX_KHR" << std::endl;
             break;
 
-            case VK_PRESENT_MODE_FIFO_KHR:
+        case VK_PRESENT_MODE_FIFO_KHR:
             std::cout << "VK_PRESENT_MODE_FIFO_KHR" << std::endl;
             break;
 
-            case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+        case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
             std::cout << "VK_PRESENT_MODE_FIFO_RELAXED_KHR" << std::endl;
             break;
         }
@@ -473,30 +520,36 @@ VkResult checkSurfacePresentMode()
 
 VkResult checkSurfaceFormat()
 {
-    uint32_t surfaceFormatCount {0};
-    VkResult result = vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surfaceFormatCount, nullptr);
-    if(result != VK_SUCCESS)
+    uint32_t surfaceFormatCount{ 0 };
+    VkResult result = vkGetPhysicalDeviceSurfaceFormatsKHR(
+        physical_device, surface, &surfaceFormatCount, nullptr);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get surface format count [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get surface format count [Error code : "
+                  << result << "]" << std::endl;
     }
 
     std::vector<VkSurfaceFormatKHR> surfaceFormats;
     surfaceFormats.resize(surfaceFormatCount);
-    result = vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &surfaceFormatCount, surfaceFormats.data());
-    if(result != VK_SUCCESS)
+    result = vkGetPhysicalDeviceSurfaceFormatsKHR(
+        physical_device, surface, &surfaceFormatCount, surfaceFormats.data());
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Faield to get surface format [Error code : " << result << "]" << std::endl;
+        std::cerr << "Faield to get surface format [Error code : " << result
+                  << "]" << std::endl;
     }
 
     std::cout << "[Surface Format]" << std::endl;
-    for(uint32_t index = 0; index < surfaceFormats.size(); ++index)
+    for (uint32_t index = 0; index < surfaceFormats.size(); ++index)
     {
-        std::cout << "Format      : " << surfaceFormats[index].format << std::endl;
-        std::cout << "Color Space : " << surfaceFormats[index].colorSpace << std::endl;
+        std::cout << "Format      : " << surfaceFormats[index].format
+                  << std::endl;
+        std::cout << "Color Space : " << surfaceFormats[index].colorSpace
+                  << std::endl;
     }
 
     // use first supoorted format
-    if(surfaceFormatCount < 1)
+    if (surfaceFormatCount < 1)
     {
         std::cerr << "There is no surface format that supported." << std::endl;
         return VK_ERROR_UNKNOWN;
@@ -510,26 +563,35 @@ VkResult checkSurfaceFormat()
 VkResult checkSurfaceCapability()
 {
     uint32_t count;
-    VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &surfaceCapabilities);
-    if(result != VK_SUCCESS)
+    VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+        physical_device, surface, &surfaceCapabilities);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get surface capabilities [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get surface capabilities [Error code : "
+                  << result << "]" << std::endl;
     }
 
     std::cout << "[Surface Capabilities]" << std::endl;
-    std::cout << "maxImageCount : " << surfaceCapabilities.maxImageCount << std::endl;
-    std::cout << "minImageCount : " << surfaceCapabilities.minImageCount << std::endl;
-    std::cout << "currentExtent.width : " << surfaceCapabilities.currentExtent.width << std::endl;
-    std::cout << "currentExtent.height : " << surfaceCapabilities.currentExtent.height << std::endl;
-    std::cout << "supportedCompositeAlpha : " << surfaceCapabilities.supportedCompositeAlpha << std::endl;
-    std::cout << "supportedUsageFlags : " << surfaceCapabilities.supportedUsageFlags << std::endl;
-
+    std::cout << "maxImageCount : " << surfaceCapabilities.maxImageCount
+              << std::endl;
+    std::cout << "minImageCount : " << surfaceCapabilities.minImageCount
+              << std::endl;
+    std::cout << "currentExtent.width : "
+              << surfaceCapabilities.currentExtent.width << std::endl;
+    std::cout << "currentExtent.height : "
+              << surfaceCapabilities.currentExtent.height << std::endl;
+    std::cout << "supportedCompositeAlpha : "
+              << surfaceCapabilities.supportedCompositeAlpha << std::endl;
+    std::cout << "supportedUsageFlags : "
+              << surfaceCapabilities.supportedUsageFlags << std::endl;
 
     // check composite alpha flag.
-    for(uint32_t index = 0; index < 32; ++index)
+    for (uint32_t index = 0; index < 32; ++index)
     {
-        VkCompositeAlphaFlagBitsKHR currentCompositeAlphaFlagBit = static_cast<VkCompositeAlphaFlagBitsKHR>(0x1 << index);
-        if(surfaceCapabilities.supportedUsageFlags & currentCompositeAlphaFlagBit)
+        VkCompositeAlphaFlagBitsKHR currentCompositeAlphaFlagBit =
+            static_cast<VkCompositeAlphaFlagBitsKHR>(0x1 << index);
+        if (surfaceCapabilities.supportedUsageFlags &
+            currentCompositeAlphaFlagBit)
         {
             compositeAlphaFlagBit = currentCompositeAlphaFlagBit;
             break;
@@ -541,7 +603,7 @@ VkResult checkSurfaceCapability()
 
 VkResult createSwapchain()
 {
-    VkSwapchainCreateInfoKHR swapchainCreateInfo {};
+    VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.surface = surface;
     swapchainCreateInfo.minImageCount = 2; // use double buffering.
@@ -556,8 +618,9 @@ VkResult createSwapchain()
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlagBit;
     swapchainCreateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    VkResult result = vkCreateSwapchainKHR(context_device, &swapchainCreateInfo, nullptr, &swapchain);
-    if(result != VK_SUCCESS)
+    VkResult result = vkCreateSwapchainKHR(context_device, &swapchainCreateInfo,
+                                           nullptr, &swapchain);
+    if (result != VK_SUCCESS)
     {
         std::cerr << "Failed to create swapchain." << std::endl;
     }
@@ -567,39 +630,48 @@ VkResult createSwapchain()
 
 VkResult getSwapchainImages()
 {
-    uint32_t swapchainImageCount {0};
-    VkResult result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, nullptr);
-    if(result != VK_SUCCESS)
+    uint32_t swapchainImageCount{ 0 };
+    VkResult result = vkGetSwapchainImagesKHR(context_device, swapchain,
+                                              &swapchainImageCount, nullptr);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get swapchaing image count. [Error Code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get swapchaing image count. [Error Code : "
+                  << result << "]" << std::endl;
         return result;
     }
 
     swapchainImages.clear();
     swapchainImages.resize(swapchainImageCount);
-    result = vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount, swapchainImages.data());
-    if(result != VK_SUCCESS)
+    result =
+        vkGetSwapchainImagesKHR(context_device, swapchain, &swapchainImageCount,
+                                swapchainImages.data());
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get swapchain images. [Error Code : " << result << "]" << std::endl;
+        std::cerr << "Failed to get swapchain images. [Error Code : " << result
+                  << "]" << std::endl;
         return result;
     }
 
-    std::cout << "Available swapchain image count : " << swapchainImages.size() << std::endl;
+    std::cout << "Available swapchain image count : " << swapchainImages.size()
+              << std::endl;
 
     return result;
 }
 
 VkResult createCommandPool()
 {
-    VkCommandPoolCreateInfo commandPoolCreateInfo {};
+    VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    commandPoolCreateInfo.flags =
+        VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     commandPoolCreateInfo.queueFamilyIndex = graphicsQueueFamilyIndex;
 
-    VkResult result = vkCreateCommandPool(context_device, &commandPoolCreateInfo, nullptr, &commandPool);
-    if(result != VK_SUCCESS)
+    VkResult result = vkCreateCommandPool(
+        context_device, &commandPoolCreateInfo, nullptr, &commandPool);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create command pool [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to create command pool [Error code : " << result
+                  << "]" << std::endl;
     }
 
     return result;
@@ -607,18 +679,22 @@ VkResult createCommandPool()
 
 VkResult AllocateCommandBuffer()
 {
-    VkCommandBufferAllocateInfo commandBufferAllocateInfo {};
-    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+    commandBufferAllocateInfo.sType =
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     commandBufferAllocateInfo.commandPool = commandPool;
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    commandBufferAllocateInfo.commandBufferCount = 1; // use only one in current.
+    commandBufferAllocateInfo.commandBufferCount =
+        1; // use only one in current.
 
     commandBuffers.resize(1);
     VkCommandBuffer& commandBuffer = commandBuffers[0];
-    VkResult result = vkAllocateCommandBuffers(context_device, &commandBufferAllocateInfo, &commandBuffer);
-    if(result != VK_SUCCESS)
+    VkResult result = vkAllocateCommandBuffers(
+        context_device, &commandBufferAllocateInfo, &commandBuffer);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to allocate command buffers [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to allocate command buffers [Error code : "
+                  << result << "]" << std::endl;
     }
 
     return result;
@@ -626,14 +702,18 @@ VkResult AllocateCommandBuffer()
 
 VkResult AcquireAvailableSwapchainImage(VkImage& swapchainImage)
 {
-    uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
-    if(result != VK_SUCCESS)
+    uint32_t swapchainImageIndex{ 0 };
+    VkResult result = vkAcquireNextImageKHR(
+        context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE,
+        &swapchainImageIndex);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to acquire swapchain image index [Error code : "
+                  << result << "]" << std::endl;
     }
 
-    std::cout << "Acquired swapchain image index : " << swapchainImageIndex << std::endl;
+    std::cout << "Acquired swapchain image index : " << swapchainImageIndex
+              << std::endl;
 
     swapchainImage = swapchainImages[swapchainImageIndex];
 
@@ -644,20 +724,22 @@ VkResult setCommandBuffer()
 {
     VkCommandBuffer commandBuffer = commandBuffers[0];
     VkResult result = vkResetCommandBuffer(commandBuffer, 0);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to reset command buffer [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to reset command buffer [Error code : " << result
+                  << "]" << std::endl;
         return result;
     }
 
-    VkCommandBufferBeginInfo commandBufferBeginInfo {};
+    VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     result = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to begin command buffer [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to begin command buffer [Error code : " << result
+                  << "]" << std::endl;
     }
 
     return result;
@@ -665,21 +747,25 @@ VkResult setCommandBuffer()
 
 void render()
 {
-    uint32_t swapchainImageIndex {0};
-    VkResult result = vkAcquireNextImageKHR(context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &swapchainImageIndex);
-    if(result != VK_SUCCESS)
+    uint32_t swapchainImageIndex{ 0 };
+    VkResult result = vkAcquireNextImageKHR(
+        context_device, swapchain, UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE,
+        &swapchainImageIndex);
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to acquire swapchain image index [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to acquire swapchain image index [Error code : "
+                  << result << "]" << std::endl;
         return;
     }
 
-    std::cout << "Acquired swapchain image index : " << swapchainImageIndex << std::endl;
+    std::cout << "Acquired swapchain image index : " << swapchainImageIndex
+              << std::endl;
 
     VkImage swapchainImage = swapchainImages[swapchainImageIndex];
 
     // set command buffer.
     result = setCommandBuffer();
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
         return;
     }
@@ -688,7 +774,7 @@ void render()
 
     // set image memory barrier.
     {
-        VkImageMemoryBarrier imageMemoryBarrier {};
+        VkImageMemoryBarrier imageMemoryBarrier{};
         imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         imageMemoryBarrier.srcAccessMask = 0;
         imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -697,37 +783,31 @@ void render()
         imageMemoryBarrier.srcQueueFamilyIndex = graphicsQueueFamilyIndex;
         imageMemoryBarrier.dstQueueFamilyIndex = graphicsQueueFamilyIndex;
         imageMemoryBarrier.image = swapchainImage;
-        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.aspectMask =
+            VK_IMAGE_ASPECT_COLOR_BIT;
         imageMemoryBarrier.subresourceRange.levelCount = 1;
         imageMemoryBarrier.subresourceRange.layerCount = 1;
 
-        vkCmdPipelineBarrier(commandBuffer,
-                             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                             VK_PIPELINE_STAGE_TRANSFER_BIT,
-                             0,
-                             0, nullptr,
-                             0, nullptr,
-                             1, &imageMemoryBarrier);
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &imageMemoryBarrier);
     }
 
     // set clear color value command
-    VkClearColorValue clearColorValue {};
+    VkClearColorValue clearColorValue{};
     clearColorValue.float32[0] = 1.0f;
     clearColorValue.float32[1] = 0.0f;
     clearColorValue.float32[2] = 0.0f;
     clearColorValue.float32[3] = 1.0f;
 
-    VkImageSubresourceRange imageSubresourceRange {};
+    VkImageSubresourceRange imageSubresourceRange{};
     imageSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageSubresourceRange.levelCount = 1;
     imageSubresourceRange.layerCount = 1;
-    
-    vkCmdClearColorImage(commandBuffer,
-                         swapchainImage,
-                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                         &clearColorValue,
-                         1,
-                         &imageSubresourceRange);
+
+    vkCmdClearColorImage(commandBuffer, swapchainImage,
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColorValue,
+                         1, &imageSubresourceRange);
 
     // set image memory barrier.
     {
@@ -740,55 +820,54 @@ void render()
         imageMemoryBarrier.srcQueueFamilyIndex = graphicsQueueFamilyIndex;
         imageMemoryBarrier.dstQueueFamilyIndex = graphicsQueueFamilyIndex;
         imageMemoryBarrier.image = swapchainImage;
-        imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageMemoryBarrier.subresourceRange.aspectMask =
+            VK_IMAGE_ASPECT_COLOR_BIT;
         imageMemoryBarrier.subresourceRange.levelCount = 1;
         imageMemoryBarrier.subresourceRange.layerCount = 1;
 
-        vkCmdPipelineBarrier(commandBuffer,
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                            0,
-                            0, nullptr,
-                            0, nullptr,
-                            1, &imageMemoryBarrier);
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0,
+                             nullptr, 0, nullptr, 1, &imageMemoryBarrier);
     }
 
     // end command buffer recording.
     vkEndCommandBuffer(commandBuffer);
 
-    VkSubmitInfo submitInfo {};
+    VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = commandBuffers.data();
 
     // submit command buffer to queue.
     result = vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to submit to queue [Error code " << result << "]" << std::endl;
+        std::cerr << "Failed to submit to queue [Error code " << result << "]"
+                  << std::endl;
     }
 
     // wait device idle state after executed command.
     result = vkDeviceWaitIdle(context_device);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to wait device idle state. [Error code : " << result << "]" << std::endl;
+        std::cerr << "Failed to wait device idle state. [Error code : "
+                  << result << "]" << std::endl;
         return;
     }
 
-    // render output 
-    VkPresentInfoKHR presentInfo {};
+    // render output
+    VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &swapchain;
     presentInfo.pImageIndices = &swapchainImageIndex;
 
     result = vkQueuePresentKHR(graphicsQueue, &presentInfo);
-    if(result != VK_SUCCESS)
+    if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to pass present information to queue [Error code : " << result << result << std::endl;
+        std::cerr
+            << "Failed to pass present information to queue [Error code : "
+            << result << result << std::endl;
         return;
     }
-
 }
-

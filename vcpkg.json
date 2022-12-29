@@ -5,6 +5,7 @@
   "dependencies": [
     "glfw3",
     "gtest",
+    "glm",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -22,6 +23,10 @@
     {
       "name": "gtest",
       "version": "1.12.0"
+    },
+    {
+      "name": "glm",
+      "version": "0.9.9.8"
     }
   ]
 }

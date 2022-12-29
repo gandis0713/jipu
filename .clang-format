@@ -1,0 +1,44 @@
+---
+# ref : https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: LLVM
+IndentWidth: 4
+---
+Language: Cpp
+PointerAlignment: Left
+
+BraceWrapping:
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: true
+  AfterStruct:     true
+  AfterUnion:      true
+  BeforeCatch:     true
+  BeforeElse:      true
+  IndentBraces:    true
+BreakBeforeBraces: Custom
+
+Cpp11BracedListStyle: false
+
+PointerAlignment: Left
+
+# class
+AccessModifierOffset: -4
+# IndentAccessModifiers: false
+EmptyLineAfterAccessModifier: Never
+
+# 
+IndentCaseBlocks: false
+IndentCaseLabels: false
+BreakBeforeBraces: Allman
+
+# namespace
+NamespaceIndentation: None
+
+# bracket
+AlignAfterOpenBracket: Align
+
+#
+IndentPPDirectives: BeforeHash

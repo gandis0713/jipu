@@ -1,15 +1,15 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "vulkan.h"
 
-namespace vk 
+namespace vk
 {
 
-struct Context 
+struct Context
 {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
     VkDevice device;
 };
 
-}
+} // namespace vk
