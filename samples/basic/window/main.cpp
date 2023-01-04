@@ -11,7 +11,6 @@
 namespace
 {
 vkt::Context context;
-// VkPhysicalDevice context.physicalDevice;
 VkQueue graphicsQueue;
 GLFWwindow* pWindow = nullptr;
 VkSurfaceKHR surface;
