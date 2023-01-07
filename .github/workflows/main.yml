@@ -39,8 +39,10 @@ jobs:
         with:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
-          text: "test...."
+          text: "${process.env.AS_MESSAGE}"
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          mention: "gandis0713"
+          if_mention: "success,failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: always() # Pick up events even if the job fails or is canceled.
