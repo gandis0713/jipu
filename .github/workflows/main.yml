@@ -40,8 +40,8 @@ jobs:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          mention: "${process.env.AS_AUTHOR}"
-          if_mention: "success,failure"
+          # mention: "gandis0713"
+          # if_mention: "failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: always() # Pick up events even if the job fails or is canceled.
@@ -78,9 +78,9 @@ jobs:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          mention: "gandis0713"
-          if_mention: "success,failure"
+          # mention: "gandis0713"
+          # if_mention: "failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        # if: always() # Pick up events even if the job fails or is canceled.
-        if: ${{ failure() }}
+        if: always() # Pick up events even if the job fails or is canceled.
+        # if: ${{ failure() }}
