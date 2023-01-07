@@ -33,72 +33,50 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: "arm64-osx-ninja-release"
           buildPreset: "arm64-osx-ninja-release"
+      # https://github.com/marketplace/actions/action-slack
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          author_name: Github Action Test # default: 8398a7@action-slack
+          author_name: ${process.env.AS_AUTHOR}
+          text: "test...."
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} # required
-        if: always() # Pick up events even if the job fails or is canceled.
-  # build-windows:
-  #   runs-on: windows-2019
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Prepare Vulkan SDK
-  #       uses: humbletim/setup-vulkan-sdk@v1.2.0
-  #       with:
-  #         vulkan-query-version: 1.3.204.0
-  #         vulkan-components: Vulkan-Headers, Vulkan-Loader
-  #         vulkan-use-cache: true
-  #     - name: Setup CMake
-  #       uses: lukka/get-cmake@latest
-  #     - name: Restore artifacts, or setup vcpkg (do not install any package)
-  #       uses: lukka/run-vcpkg@v10
-  #       with:
-  #         vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-  #         vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
-  #         vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
-  #         runVcpkgInstall: false
-  #     - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
-  #       uses: lukka/run-cmake@v10
-  #       with:
-  #         cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
-  #         configurePreset: "x64-windows-vs2019-release"
-  #         buildPreset: "x64-windows-vs2019-release"
-
-  # slack-notification:
-  #   name: Slcak No
-  #   runs-on: macos-12
-  #   steps:
-  #     - uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: custom
-  #         fields: workflow,job,commit,repo,ref,author,took
-  #         custom_payload: |
-  #           {
-  #             attachments: [{
-  #               color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-  #               text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-  #             }]
-  #           }
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-  #       if: always() # Pick up events even if the job fails or is canceled.
-
-  # slack-notification:
-  #   name: Slack Notification
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Slack Notification
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_CHANNEL: general
-  #         SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
-  #         SLACK_ICON: https://github.com/rtCamp.png?size=48
-  #         SLACK_MESSAGE: "Post Content :rocket:"
-  #         SLACK_TITLE: Post Title
-  #         SLACK_USERNAME: rtCamp
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        # if: always() # Pick up events even if the job fails or is canceled.
+        if: ${{ failure() }}
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.0
+        with:
+          vulkan-query-version: 1.3.204.0
+          vulkan-components: Vulkan-Headers, Vulkan-Loader
+          vulkan-use-cache: true
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+          vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+          runVcpkgInstall: false
+      - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
+        uses: lukka/run-cmake@v10
+        with:
+          cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
+          configurePreset: "x64-windows-vs2019-release"
+          buildPreset: "x64-windows-vs2019-release"
+      - name: action-slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          author_name: ${process.env.AS_AUTHOR}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        # if: always() # Pick up events even if the job fails or is canceled.
+        if: ${{ failure() }}
