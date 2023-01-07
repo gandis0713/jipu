@@ -58,18 +58,39 @@ jobs:
   #         cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
   #         configurePreset: "x64-windows-vs2019-release"
   #         buildPreset: "x64-windows-vs2019-release"
+
   slack-notification:
-    name: Slack Notification
-    runs-on: ubuntu-latest
+    name: Slcak No
+    runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+              }]
+            }
         env:
-          SLACK_CHANNEL: general
-          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
-          SLACK_ICON: https://github.com/rtCamp.png?size=48
-          SLACK_MESSAGE: "Post Content :rocket:"
-          SLACK_TITLE: Post Title
-          SLACK_USERNAME: rtCamp
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always() # Pick up events even if the job fails or is canceled.
+
+
+  # slack-notification:
+  #   name: Slack Notification
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Slack Notification
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_CHANNEL: general
+  #         SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+  #         SLACK_ICON: https://github.com/rtCamp.png?size=48
+  #         SLACK_MESSAGE: "Post Content :rocket:"
+  #         SLACK_TITLE: Post Title
+  #         SLACK_USERNAME: rtCamp
+  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
