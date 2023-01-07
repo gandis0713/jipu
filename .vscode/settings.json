@@ -63,7 +63,8 @@
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
             ],
-            "args": ["%comspec%", "/k", "${env:VS140COMNTOOLS}\\VsDevCmd.bat"],
+            "args": ["%comspec%", "/k", "${env:VS140COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"],
+            // "args": ["%comspec%", "/k", "${env:VS140COMNTOOLS}\\VsDevCmd.bat"], //  -arch=amd64 -host_arch=amd64
             "icon": "terminal-cmd"
         },
         "Cmd vs2022": {
@@ -71,7 +72,8 @@
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
             ],
-            "args": ["%comspec%", "/k", "${env:VS150COMNTOOLS}\\VsDevCmd.bat"],
+            "args": ["%comspec%", "/k", "${env:VS150COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"],
+            // "args": ["%comspec%", "/k", "${env:VS150COMNTOOLS}\\VsDevCmd.bat"], //  -arch=amd64 -host_arch=amd64
             "icon": "terminal-cmd"
         },
         "Git Bash": {

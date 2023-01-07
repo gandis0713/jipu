@@ -16,12 +16,12 @@ add_dependencies(${PRJ_NAME} vkt)
 add_test(NAME ${PRJ_NAME} COMMAND ${PRJ_NAME})
 
 target_link_libraries(${PRJ_NAME}
-  PUBLIC ${VKT_PROJECT_NAME} 
+  PUBLIC ${VKT_PROJECT_NAME}
   Vulkan::Vulkan
   GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main
   vkt
 )
 
 # target_include_directories(${PRJ_NAME}
-#   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/inc/"
+# PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/inc/"
 # )
