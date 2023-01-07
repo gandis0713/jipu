@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  build_matrix:
+  build:
     strategy:
       matrix:
         os: [macos-12, windows-2019]
@@ -45,7 +45,7 @@ jobs:
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
+          status: ${{ jobs.build.status }}
           author_name: ${process.env.AS_AUTHOR}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           # mention: "gandis0713"
