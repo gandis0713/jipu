@@ -140,7 +140,7 @@
 		},
 		{
 			"name": "x64-windows-ninja-debug",
-			"inherits": "base-x64-windows-vs2019",
+			"inherits": "base-x64-windows-ninja",
 			"displayName": "x64-windows-ninja-debug",
 			"binaryDir": "${sourceDir}/build/x64-windows-ninja/debug",
 			"installDir": "${sourceDir}/install/x64-window-ninja/debug",

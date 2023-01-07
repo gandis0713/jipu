@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  job1:
+  build-macos:
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v2
@@ -33,7 +33,7 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: "arm64-osx-ninja-release"
           buildPreset: "arm64-osx-ninja-release"
-  job2:
+  build-windows:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
