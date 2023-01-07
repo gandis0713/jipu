@@ -6,16 +6,15 @@
 		"patch": 0
 	},
 	"configurePresets": [
-		{
-			"name": "base-debug",
-			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
+    {
+      "name": "base",
+      "cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
 			}
-		},
+    },
 		{
-			"name": "base-osx-debug",
-			"inherits": "base-debug",
+			"name": "base-osx",
+			"inherits": "base",
 			"condition": {
 				"type": "equals",
 				"lhs": "${hostSystemName}",
@@ -23,26 +22,17 @@
 			}
 		},
 		{
+			"name": "base-osx-debug",
+			"inherits": "base-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
 			"name": "base-arm64-osx-debug",
 			"inherits": "base-osx-debug",
 			"cacheVariables": {
 				"VCPKG_TARGET_TRIPLET": "arm64-osx"
-			}
-		},
-		{
-			"name": "base-windows-debug",
-			"inherits": "base-debug",
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Windows"
-			}
-		},
-		{
-			"name": "base-x64-windows-debug",
-			"inherits": "base-windows-debug",
-			"cacheVariables": {
-				"VCPKG_TARGET_TRIPLET": "x64-windows"
 			}
 		},
 		{
@@ -60,6 +50,29 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/debug",
 			"generator": "Xcode"
+		},
+    {
+      "name": "base-windows",
+      "inherits": "base",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+		{
+			"name": "base-windows-debug",
+			"inherits": "base-windows",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+		},
+		{
+			"name": "base-x64-windows-debug",
+			"inherits": "base-windows-debug",
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-windows"
+			}
 		},
 		{
 			"name": "x64-windows-vs2022-debug",
