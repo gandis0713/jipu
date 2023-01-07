@@ -10,7 +10,7 @@ set(VKT_PROJECT_NAME vkt)
 
 # set options.
 option(VKT_TEST "VKT Test" ON)
-option(VKT_SAMPLES "VKT Samples" ON)
+option(VKT_SAMPLES "VKT Samples" OFF)
 
 project(
   ${VKT_PROJECT_NAME}
