@@ -43,8 +43,8 @@ jobs:
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        # if: always() # Pick up events even if the job fails or is canceled.
-        if: ${{ failure() }}
+        if: always() # Pick up events even if the job fails or is canceled.
+        # if: ${{ failure() }}
   build-windows:
     runs-on: windows-2019
     steps:
