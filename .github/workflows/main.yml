@@ -10,20 +10,19 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
-      # - uses: actions/checkout@main
-      - uses: lukka/get-cmake@latest
       - name: Prepare Vulkan SDK
         uses: humbletim/setup-vulkan-sdk@v1.2.0
         with:
           vulkan-query-version: 1.3.204.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader
           vulkan-use-cache: true
+      - uses: lukka/get-cmake@latest
       - name: Restore artifacts, or setup vcpkg (do not install any package)
         uses: lukka/run-vcpkg@v10
         with:
           # This is the default location of the directory containing vcpkg sources.
           # Change it to the right location if needed.
-          vcpkgDirectory: "${{ github.workspace }}/../vcpkg"
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
 
           # If not using a submodule for vcpkg sources, this specifies which commit
           # id must be checkout from a Git repo. It must not set if using a submodule
@@ -44,10 +43,6 @@ jobs:
           # It is highly suggested to let `run-cmake` to run vcpkg (i.e. `false`)
           # (i.e. let CMake run `vcpkg install`) using the vcpkg.cmake toolchain.
           runVcpkgInstall: false
-      # - name: Run a multi-line script
-      #   run: |
-      #     echo Add other actions to build,
-      #     echo test, and deploy your project.
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
         uses: lukka/run-cmake@v10
         with:
