@@ -23,7 +23,7 @@
 		},
 		{
 			"name": "base-osx-debug",
-			"inherits": "base-debug",
+			"inherits": "base-osx",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
@@ -54,18 +54,18 @@
     {
       "name": "base-windows",
       "inherits": "base",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			}
     },
 		{
 			"name": "base-windows-debug",
 			"inherits": "base-windows",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
 		},
 		{
 			"name": "base-x64-windows-debug",

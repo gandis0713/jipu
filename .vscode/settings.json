@@ -63,7 +63,7 @@
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
             ],
-            "args": ["%comspec%", "/k", "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\Common7\\Tools\\VsDevCmd.bat"],
+            "args": ["%comspec%", "/k", "${env:VS140COMNTOOLS}\\VsDevCmd.bat"],
             "icon": "terminal-cmd"
         },
         "Cmd vs2022": {
@@ -71,7 +71,7 @@
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
             ],
-            "args": ["%comspec%", "/k", "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"],
+            "args": ["%comspec%", "/k", "${env:VS150COMNTOOLS}\\VsDevCmd.bat"],
             "icon": "terminal-cmd"
         },
         "Git Bash": {
