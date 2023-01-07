@@ -2,17 +2,35 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-2019
     steps:
-    - uses: actions/checkout@v2
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+      # - uses: actions/checkout@v2
+      - uses: actions/checkout@main
+      - uses: lukka/get-cmake@latest
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@v10
+        run: echo Hello, world!
+      - name: Run a multi-line script
+        run: |
+          echo Add other actions to build,
+          echo test, and deploy your project.
+            - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
+          uses: lukka/run-cmake@v10
+          with:
+            # This is the default path to the CMakeLists.txt along side the
+            # CMakePresets.json. Change if you need have CMakeLists.txt and CMakePresets.json
+            # located elsewhere.
+            # cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+
+            # This is the name of the CMakePresets.json's configuration to use to generate
+            # the project files. This configuration leverages the vcpkg.cmake toolchain file to
+            # run vcpkg and install all dependencies specified in vcpkg.json.
+            configurePreset: 'x64-windows-vs2019-debug'
+
+            # This is the name of the CMakePresets.json's configuration to build the project.
+            buildPreset: 'x64-windows-vs2019-debug'

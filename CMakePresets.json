@@ -77,6 +77,14 @@
 			}
 		},
 		{
+			"name": "x64-windows-vs2019-debug",
+			"inherits": "base-x64-windows-debug",
+			"displayName": "x64-windows-vs2019-debug",
+			"binaryDir": "${sourceDir}/build/x64-windows-vs2019/debug",
+			"installDir": "${sourceDir}/install/x64-windows-vs2019/debug",
+      "generator": "Visual Studio 16 2019"
+		},
+		{
 			"name": "x64-windows-vs2022-debug",
 			"inherits": "base-x64-windows-debug",
 			"displayName": "x64-windows-vs2022-debug",
@@ -109,6 +117,11 @@
 			"configuration": "Debug"
 		},
 		{
+			"name": "x64-windows-vs2019-debug",
+			"configurePreset": "x64-windows-vs2019-debug",
+			"configuration": "Debug"
+		},
+		{
 			"name": "x64-windows-vs2022-debug",
 			"configurePreset": "x64-windows-vs2022-debug",
 			"configuration": "Debug"
@@ -135,6 +148,18 @@
 		{
 			"name": "arm64-osx-xcode-debug",
 			"configurePreset": "arm64-osx-xcode-debug",
+			"configuration": "Debug",
+			"output": {
+				"outputOnFailure": true
+			},
+			"execution": {
+				"noTestsAction": "error",
+				"stopOnFailure": false
+			}
+		},
+		{
+			"name": "x64-windows-vs2019-debug",
+			"configurePreset": "x64-windows-vs2019-debug",
 			"configuration": "Debug",
 			"output": {
 				"outputOnFailure": true
