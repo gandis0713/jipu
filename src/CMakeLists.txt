@@ -7,6 +7,8 @@ if(APPLE)
   list(APPEND SRC_FILES ${MM_FILES})
 endif()
 
+message(STATUS "SRC_FILES : ${SRC_FILES}")
+
 # include_directories(
 # ${CMAKE_CURRENT_SOURCE_DIR}/inc
 # ${Vulkan_INCLUDE_DIR}
