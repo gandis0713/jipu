@@ -39,7 +39,6 @@ jobs:
         with:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
-          text: "${process.env.AS_MESSAGE}"
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           mention: "gandis0713"
           if_mention: "success,failure"
@@ -72,12 +71,15 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: "x64-windows-vs2019-release"
           buildPreset: "x64-windows-vs2019-release"
+      # https://github.com/marketplace/actions/action-slack
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          mention: "gandis0713"
+          if_mention: "success,failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         # if: always() # Pick up events even if the job fails or is canceled.
