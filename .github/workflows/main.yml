@@ -40,7 +40,7 @@ jobs:
           status: ${{ job.status }}
           author_name: ${process.env.AS_AUTHOR}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          mention: "gandis0713"
+          mention: "${process.env.AS_AUTHOR}"
           if_mention: "success,failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
