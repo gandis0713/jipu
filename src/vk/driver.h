@@ -9,7 +9,10 @@ namespace vkt
 class Driver
 {
 public:
-    Driver(Platform* platform);
+    explicit Driver(Platform* platform = nullptr);
+    ~Driver();
+
+    void terminate();
 
 private:
     Context m_context;
