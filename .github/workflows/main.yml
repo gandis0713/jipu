@@ -47,7 +47,6 @@ jobs:
         with:
           status: ${{ job.status }} # TODO : please fix me.
           author_name: ${{ env.AS_AUTHOR }}
-          text: ${{ env.AS_AUTHOR }}
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           # mention: "gandis0713"
           # if_mention: "failure"
