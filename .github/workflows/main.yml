@@ -18,8 +18,9 @@ jobs:
             # cmake_preset: x64-windows-ninja-release
     runs-on: ${{ matrix.os }}
     steps:
-      env:
-        JOB_STATUS: ${{ matrix.job.status }}
+      - name: Set status environment variable
+        env:
+          JOB_STATUS: ${{ matrix.job.status }}
       - uses: actions/checkout@v2
       # - name: Prepare Vulkan SDK
       #   # https://github.com/marketplace/actions/setup-vulkan-sdk
