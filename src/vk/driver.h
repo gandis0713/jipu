@@ -15,7 +15,7 @@ public:
     void terminate();
 
 private:
-    Context m_context;
+    Context m_context{};
     Platform& m_platform;
 };
 

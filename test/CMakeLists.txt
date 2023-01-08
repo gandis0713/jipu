@@ -6,6 +6,8 @@ find_package(Gtest CONFIG REQUIRED)
 
 file(GLOB_RECURSE PRJ_SRCS LIST_DIRECTORIES false *.h *.cpp)
 
+message(STATUS ${PRJ_SRCS})
+
 if(MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
@@ -22,6 +24,6 @@ target_link_libraries(${PRJ_NAME}
   vkt
 )
 
-# target_include_directories(${PRJ_NAME}
-# PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/inc/"
-# )
+target_include_directories(${PRJ_NAME}
+  PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/"
+)
