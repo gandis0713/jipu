@@ -44,7 +44,7 @@ jobs:
       #     buildPreset: "${{ matrix.cmake_preset }}"
       # https://github.com/marketplace/actions/action-slack
       - name: action-slack
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v3.15.0
         with:
           status: ${{ job.status }}
           author_name: ${{ env.AS_AUTHOR }}
@@ -52,6 +52,7 @@ jobs:
           # mention: "gandis0713"
           # if_mention: "failure"
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         if: always() # Pick up events even if the job fails or is canceled.
