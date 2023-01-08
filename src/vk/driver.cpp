@@ -20,17 +20,23 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
     bool portabilityEnumerationSupport = false;
     for (const VkExtensionProperties& extProp : extProps)
     {
+#if VK_HEADER_VERSION >= 216
+        // https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Instance#page_Encountered-VK_ERROR_INCOMPATIBLE_DRIVER
+        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_portability_enumeration.html
         if (!strcmp(extProp.extensionName,
                     VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME))
             portabilityEnumerationSupport = true;
+#endif
     }
 
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 224
+#if VK_HEADER_VERSION >= 216
+    // https://vulkan-tutorial.com/Drawing_a_triangle/Setup/Instance#page_Encountered-VK_ERROR_INCOMPATIBLE_DRIVER
+    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_portability_enumeration.html
+    #if defined(__APPLE__)
     if (portabilityEnumerationSupport)
         instanceCreateInfo.flags |=
             VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
@@ -54,6 +60,7 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
     if (result != VK_SUCCESS)
     {
         // TODO : logging
+        return;
     }
     // Select Physical device.
 }
