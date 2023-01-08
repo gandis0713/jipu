@@ -12,7 +12,7 @@ jobs:
         os: [macos-12, windows-2019]
         include:
           - os: macos-12
-            cmake_preset: arm64-osx-ninja-release
+            cmake_preset: x64-osx-ninja-release
           - os: windows-2019
             cmake_preset: x64-windows-ninja-release
     runs-on: ${{ matrix.os }}
@@ -45,7 +45,7 @@ jobs:
           testPreset: "${{ matrix.cmake_preset }}"
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
-        uses: 8398a7/action-slack@v3.15.0
+        uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }} # TODO : please fix me.
           author_name: ${{ env.AS_AUTHOR }}
