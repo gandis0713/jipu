@@ -45,8 +45,8 @@ jobs:
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
-          author_name: ${{ process.env.AS_AUTHOR }}
+          status: ${{ jobs.build.result }}
+          author_name: ${ process.env.AS_AUTHOR }
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           # mention: "gandis0713"
           # if_mention: "failure"
