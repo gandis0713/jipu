@@ -19,8 +19,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set status environment variable
-        env:
-          JOB_STATUS: ${{ matrix.job.status }}
       - uses: actions/checkout@v2
       # - name: Prepare Vulkan SDK
       #   # https://github.com/marketplace/actions/setup-vulkan-sdk
@@ -56,5 +54,6 @@ jobs:
           # if_mention: "failure"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          JOB_STATUS: ${{ matrix.job.status }}
         if: always() # Pick up events even if the job fails or is canceled.
         # if: ${{ failure() }}
