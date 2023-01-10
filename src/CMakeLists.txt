@@ -31,8 +31,10 @@ if(APPLE)
   )
 endif()
 
-target_compile_options(${VKT_PROJECT_NAME}
-  PUBLIC
-  "-fvisibility=hidden"
-  "-fvisibility-inlines-hidden"
-)
+if(APPLE)
+  target_compile_options(${VKT_PROJECT_NAME}
+    PUBLIC
+    "-fvisibility=hidden"
+    "-fvisibility-inlines-hidden"
+  )
+endif()
