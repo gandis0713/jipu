@@ -26,3 +26,17 @@ target_link_libraries(${PRJ_NAME}
 target_include_directories(${PRJ_NAME}
   PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../src/"
 )
+
+if(WIN32)
+  get_property(TEST_TARGETS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY TESTS)
+
+  if(CMAKE_GENERATOR STREQUAL "Ninja")
+    set(VKT_BUILD_DIR ${CMAKE_BINARY_DIR}/src)
+  else()
+    set(VKT_BUILD_DIR ${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE})
+  endif()
+
+  foreach(TEST_TARGET ${TEST_TARGETS})
+    set_property(TEST "${TEST_TARGET}" PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_append:${VKT_BUILD_DIR}")
+  endforeach()
+endif()
