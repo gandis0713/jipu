@@ -7,9 +7,13 @@ if(APPLE)
   list(APPEND SRC_FILES ${MM_FILES})
 endif()
 
-add_library(${VKT_PROJECT_NAME} STATIC ${SRC_FILES})
-
 # set_target_properties(${VKT_PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
+add_library(${VKT_PROJECT_NAME} SHARED ${SRC_FILES})
+
+if(VKT_SHARED_LIB)
+  add_compile_definitions(VKT_SHARED_LIBRARY) # add_definitions(-DVKT_SHARED_LIBRARY="1")
+endif()
+
 target_include_directories(${VKT_PROJECT_NAME}
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -26,3 +30,9 @@ if(APPLE)
     "-framework Metal"
   )
 endif()
+
+target_compile_options(${VKT_PROJECT_NAME}
+  PUBLIC
+  "-fvisibility=hidden"
+  "-fvisibility-inlines-hidden"
+)

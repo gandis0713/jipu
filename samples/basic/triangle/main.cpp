@@ -548,7 +548,8 @@ private:
         vkGetPhysicalDeviceQueueFamilyProperties(
             physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
-        std::cout << queueFamilyProperties.size() << std::endl;
+        std::cout << "queueFamilyProperties size : "
+                  << queueFamilyProperties.size() << std::endl;
         for (size_t i = 0; i < queueFamilyProperties.size(); i++)
         {
             const auto& queueFamily = queueFamilyProperties[i];
@@ -577,6 +578,7 @@ private:
 
     void createLogicalDevice()
     {
+        m_context.print();
         QueueFamilyIndices queueFamilyIndices =
             findQueueFamilies(m_context.physicalDevice);
         std::set<uint32_t> uniqueQueueFamilieIndices = {

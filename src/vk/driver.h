@@ -2,11 +2,12 @@
 
 #include "vk/context.h"
 #include "vk/platform.h"
+#include "vk/visibility.h"
 
 namespace vkt
 {
 
-class Driver
+class VKT_EXPORT Driver
 {
 public:
     explicit Driver(Platform* platform = nullptr);

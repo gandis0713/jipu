@@ -12,22 +12,9 @@ project(
 add_executable(${PRJ_NAME} main.cpp)
 add_dependencies(${PRJ_NAME} vkt)
 
-target_include_directories(
-  ${PRJ_NAME}
-  PUBLIC
-
-  # ${Vulkan_INCLUDE_DIRS}
-  ${VKT_INCLUDE_DIRS}
-)
-
 target_link_libraries(${PRJ_NAME}
   PRIVATE
-
-  # ${Vulkan_LIBRARIES}
-  Vulkan::Vulkan
   glfw
-
-  # ${VKT_LIBRARIES}
   vkt
 )
 

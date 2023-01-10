@@ -1,12 +1,14 @@
 #pragma once
 
-#include "vulkan.h"
+#include "vk/visibility.h"
+#include "vk/vulkan.h"
 
 namespace vkt
 {
 
-struct Context
+class VKT_EXPORT Context
 {
+public:
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
     VkDevice device;
