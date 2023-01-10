@@ -7,12 +7,9 @@ if(APPLE)
   list(APPEND SRC_FILES ${MM_FILES})
 endif()
 
-# include_directories(
-# ${CMAKE_CURRENT_SOURCE_DIR}/inc
-# ${Vulkan_INCLUDE_DIR}
-# )
 add_library(${VKT_PROJECT_NAME} STATIC ${SRC_FILES})
 
+# set_target_properties(${VKT_PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
 target_include_directories(${VKT_PROJECT_NAME}
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}

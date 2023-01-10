@@ -12,11 +12,12 @@ if(MSVC)
 endif()
 
 add_executable(${PRJ_NAME} ${PRJ_SRCS})
+
 add_dependencies(${PRJ_NAME} vkt)
 add_test(NAME ${PRJ_NAME} COMMAND ${PRJ_NAME})
 
 target_link_libraries(${PRJ_NAME}
-  PUBLIC ${VKT_PROJECT_NAME}
+  PUBLIC
   Vulkan::Vulkan
   GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main
   vkt

@@ -10,7 +10,8 @@
 			"name": "base",
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-				"VKT_TEST": "ON"
+				"VKT_TEST": "ON",
+				"VKT_SHARED_LIB": "OFF"
 			}
 		},
 		{

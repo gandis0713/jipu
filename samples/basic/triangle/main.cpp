@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -23,6 +24,9 @@ const bool enableDebugMessenger = true;
 const bool enableValidationLayers = false;
 const bool enableDebugMessenger = false;
 #endif
+
+std::filesystem::path applicationPath;
+std::filesystem::path applicationDir;
 
 static std::vector<char> readFile(const std::string& filename)
 {
@@ -258,8 +262,10 @@ private:
                 (const void*)&m_debugMessengerUtilsCreateInfo;
         }
 
-        if (vkCreateInstance(&instanceCreateInfo, nullptr,
-                             &m_context.instance) != VK_SUCCESS)
+        VkResult result =
+            vkCreateInstance(&instanceCreateInfo, nullptr, &m_context.instance);
+
+        if (result != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create instance!");
         }
@@ -884,8 +890,13 @@ private:
 
     void createGraphicsPipeline()
     {
-        const std::vector<char> vertShaderCode = readFile("./vert.spv");
-        const std::vector<char> fragShaderCode = readFile("./frag.spv");
+        std::filesystem::path vertexShaderPath = applicationDir / "./vert.spv";
+        std::filesystem::path fragmentShaderPath =
+            applicationDir / "./frag.spv";
+        const std::vector<char> vertShaderCode =
+            readFile(vertexShaderPath.c_str());
+        const std::vector<char> fragShaderCode =
+            readFile(fragmentShaderPath.c_str());
 
         m_vertShaderModule = createShaderModule(vertShaderCode);
         m_fragShaderModule = createShaderModule(fragShaderCode);
@@ -1292,9 +1303,12 @@ private:
     }
 };
 
-int main()
+int main(int argc, char** argv)
 {
     Application app;
+
+    applicationPath = argv[0];
+    applicationDir = applicationPath.parent_path();
 
     try
     {

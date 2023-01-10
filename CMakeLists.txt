@@ -11,6 +11,7 @@ set(VKT_PROJECT_NAME vkt)
 # set options.
 option(VKT_TEST "VKT Test" ON)
 option(VKT_SAMPLES "VKT Samples" OFF)
+option(VKT_SHARED_LIB "VKT Shared library or not" ON)
 
 project(
   ${VKT_PROJECT_NAME}
