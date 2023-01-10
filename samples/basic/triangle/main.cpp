@@ -11,6 +11,7 @@
 #include <iostream>
 #include <optional>
 #include <set>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
 
@@ -146,7 +147,7 @@ private:
         createInstance();
         setupDebugMessenger();
         createSurface();
-        pickPhysicalDevice();
+        m_context.selectPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
         createImageViews();
@@ -268,38 +269,6 @@ private:
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create instance!");
-        }
-    }
-
-    void pickPhysicalDevice()
-    {
-        uint32_t physicalDeviceCount = 0;
-        vkEnumeratePhysicalDevices(m_context.instance, &physicalDeviceCount,
-                                   nullptr);
-        std::cout << "Physical Device Count : " << physicalDeviceCount
-                  << std::endl;
-        if (physicalDeviceCount == 0)
-        {
-            throw std::runtime_error(
-                "failed to find GPUs with Vulkan support!");
-        }
-
-        std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
-        vkEnumeratePhysicalDevices(m_context.instance, &physicalDeviceCount,
-                                   physicalDevices.data());
-
-        for (const VkPhysicalDevice& physicalDevice : physicalDevices)
-        {
-            if (isDeviceSuitable(physicalDevice))
-            {
-                m_context.physicalDevice = physicalDevice;
-                break;
-            }
-        }
-
-        if (m_context.physicalDevice == VK_NULL_HANDLE)
-        {
-            throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
 
@@ -1306,6 +1275,8 @@ private:
 
 int main(int argc, char** argv)
 {
+    spdlog::set_level(spdlog::level::level_enum::debug);
+
     Application app;
 
     applicationPath = argv[0];

@@ -1,6 +1,7 @@
 #include "driver.h"
 #include "allocation.h"
 
+#include <spdlog/spdlog.h>
 #include <vector>
 
 namespace vkt
@@ -38,8 +39,13 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
     // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_portability_enumeration.html
     #if defined(__APPLE__)
     if (portabilityEnumerationSupport)
+    {
         instanceCreateInfo.flags |=
             VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+
+        spdlog::debug("The version of vulkan header is [{}]",
+                      VK_HEADER_VERSION);
+    }
     #endif
 #endif
 
@@ -59,10 +65,12 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
 
     if (result != VK_SUCCESS)
     {
-        // TODO : logging
+        spdlog::error("Failed to create instance. error code is [{}]", result);
         return;
     }
+
     // Select Physical device.
+    m_context.selectPhysicalDevice();
 }
 
 Driver::~Driver() { terminate(); }

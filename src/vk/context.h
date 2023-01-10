@@ -9,6 +9,9 @@ namespace vkt
 class VKT_EXPORT Context
 {
 public:
+    void selectPhysicalDevice() noexcept;
+
+public:
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
     VkDevice device;
