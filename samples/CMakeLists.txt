@@ -1,13 +1,22 @@
 cmake_minimum_required(VERSION 3.12)
 
 find_package(glfw3 CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+
+if(APPLE)
+    # Scheme Environment should be set to Xcode project.
+    set(CMAKE_XCODE_SCHEME_ENVIRONMENT
+        VK_ICD_FILENAMES=$ENV{VULKAN_SDK}/share/vulkan/icd.d/MoltenVK_icd.json
+        VK_LAYER_PATH=$ENV{VULKAN_SDK}/share/vulkan/explicit_layer.d
+    )
+endif()
 
 if(WIN32)
-set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/vkt.lib")
-set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
+    set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/vkt.lib")
+    set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
 elseif(APPLE)
-set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/libvkt.a")
-set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
+    set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/src/${CMAKE_BUILD_TYPE}/libvkt.a")
+    set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/src/inc/")
 endif()
 
 set(BASIC_PHYSICAL_DEVICE ${CMAKE_CURRENT_SOURCE_DIR}/basic/physical_device)

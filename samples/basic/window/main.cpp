@@ -7,6 +7,7 @@
 #include "vk/context.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <spdlog/spdlog.h>
 #include <vector>
 namespace
 {
@@ -33,8 +34,7 @@ std::vector<const char*> instanceExtensionNames
 #elif defined(_WIN64)
         "VK_KHR_win32_surface",
 #else
-        "VK_MVK_macos_surface", "VK_EXT_metal_surface",
-        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+        "VK_MVK_macos_surface", "VK_EXT_metal_surface", VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 #endif
 };
 
@@ -48,11 +48,14 @@ VkResult createPhysicalDevice();
 VkResult createDevice();
 bool createWindow();
 VkResult createSurface();
-VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex,
-                             VkBool32& supported);
+VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32& supported);
 
-int main()
+int main(int argc, char** argv)
 {
+    spdlog::set_level(spdlog::level::trace);
+    spdlog::error("argc: {}", argc);
+    spdlog::error("argv: {}", argv[0]);
+
     VkResult result = VK_SUCCESS;
 
     // check instance extension.
@@ -90,8 +93,7 @@ int main()
         return -1;
     }
 
-    vkGetDeviceQueue(context.device, graphicsQueueFamilyIndex, 0,
-                     &graphicsQueue);
+    vkGetDeviceQueue(context.device, graphicsQueueFamilyIndex, 0, &graphicsQueue);
 
     if (false == createWindow())
     {
@@ -131,20 +133,17 @@ VkResult checkInstanceLayer()
     VkResult result = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get layer count [Error code : " << result << "]"
-                  << std::endl;
+        std::cerr << "Failed to get layer count [Error code : " << result << "]" << std::endl;
         return result;
     }
 
     std::vector<VkLayerProperties> layerProperties;
     layerProperties.resize(static_cast<std::size_t>(layerCount));
 
-    result =
-        vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+    result = vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get layer properties [Error code : " << result
-                  << "]" << std::endl;
+        std::cerr << "Failed to get layer properties [Error code : " << result << "]" << std::endl;
         return result;
     }
 
@@ -152,8 +151,7 @@ VkResult checkInstanceLayer()
     {
         std::cout << "Layer Name             : " << p.layerName << std::endl
                   << "Spec Version           : " << p.specVersion << std::endl
-                  << "Implementation Version : " << p.implementationVersion
-                  << std::endl
+                  << "Implementation Version : " << p.implementationVersion << std::endl
                   << "Description            : " << p.description << std::endl;
         std::cout << std::endl;
     }
@@ -167,27 +165,22 @@ VkResult checkInstanceExtension()
 
     uint32_t instanceExtensionCount{ 0 };
 
-    result = vkEnumerateInstanceExtensionProperties(
-        nullptr, &instanceExtensionCount, nullptr);
+    result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get instance extension count [Error code : "
-                  << result << "]" << std::endl;
+        std::cerr << "Failed to get instance extension count [Error code : " << result << "]" << std::endl;
         return result;
     }
 
     std::vector<VkExtensionProperties> extensionProperties;
     extensionProperties.resize(instanceExtensionCount);
 
-    result = vkEnumerateInstanceExtensionProperties(
-        nullptr, &instanceExtensionCount, extensionProperties.data());
+    result = vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, extensionProperties.data());
     for (uint32_t index = 0; index < extensionProperties.size(); ++index)
     {
         std::cout << "[Instance extension]" << std::endl
-                  << "Name : " << extensionProperties[index].extensionName
-                  << std::endl
-                  << "specVersion : " << extensionProperties[index].specVersion
-                  << std::endl;
+                  << "Name : " << extensionProperties[index].extensionName << std::endl
+                  << "specVersion : " << extensionProperties[index].specVersion << std::endl;
     }
 
     return result;
@@ -198,20 +191,17 @@ VkResult createInstance()
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if defined(__APPLE__)
-    instanceCreateInfo.flags |=
-        VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
 
     // extensions
     instanceCreateInfo.enabledExtensionCount = instanceExtensionNames.size();
     instanceCreateInfo.ppEnabledExtensionNames = instanceExtensionNames.data();
 
-    VkResult result =
-        vkCreateInstance(&instanceCreateInfo, nullptr, &context.instance);
+    VkResult result = vkCreateInstance(&instanceCreateInfo, nullptr, &context.instance);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create instance [Error code : " << result << "]"
-                  << std::endl;
+        std::cerr << "Failed to create instance [Error code : " << result << "]" << std::endl;
         return result;
     }
 
@@ -221,24 +211,20 @@ VkResult createInstance()
 VkResult createPhysicalDevice()
 {
     uint32_t physicalDeviceCount{ 0 };
-    VkResult result = vkEnumeratePhysicalDevices(context.instance,
-                                                 &physicalDeviceCount, nullptr);
+    VkResult result = vkEnumeratePhysicalDevices(context.instance, &physicalDeviceCount, nullptr);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get physical device count [Error code : "
-                  << result << "]" << std::endl;
+        std::cerr << "Failed to get physical device count [Error code : " << result << "]" << std::endl;
         return result;
     }
 
     std::vector<VkPhysicalDevice> physicalDevices;
     physicalDevices.resize(static_cast<std::size_t>(physicalDeviceCount));
 
-    result = vkEnumeratePhysicalDevices(context.instance, &physicalDeviceCount,
-                                        physicalDevices.data());
+    result = vkEnumeratePhysicalDevices(context.instance, &physicalDeviceCount, physicalDevices.data());
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to get physical devices [Error code : " << result
-                  << "]" << std::endl;
+        std::cerr << "Failed to get physical devices [Error code : " << result << "]" << std::endl;
         return result;
     }
 
@@ -246,8 +232,7 @@ VkResult createPhysicalDevice()
     {
         VkPhysicalDeviceProperties physicalDeviceProperties;
 
-        vkGetPhysicalDeviceProperties(physicalDevice,
-                                      &physicalDeviceProperties);
+        vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
 
         std::cout << physicalDeviceProperties.deviceName << std::endl;
     }
@@ -256,29 +241,20 @@ VkResult createPhysicalDevice()
     {
         uint32_t deviceExtensionCount{ 0 };
 
-        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
-                                             &deviceExtensionCount, nullptr);
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
 
-        std::cout << "deviceExtensionCount : " << deviceExtensionCount
-                  << std::endl;
+        std::cout << "deviceExtensionCount : " << deviceExtensionCount << std::endl;
 
         std::vector<VkExtensionProperties> deviceExtensionProperties;
         deviceExtensionProperties.resize(deviceExtensionCount);
 
-        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr,
-                                             &deviceExtensionCount,
-                                             deviceExtensionProperties.data());
+        vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, deviceExtensionProperties.data());
 
-        for (uint32_t index = 0; index < deviceExtensionProperties.size();
-             ++index)
+        for (uint32_t index = 0; index < deviceExtensionProperties.size(); ++index)
         {
             std::cout << "[Device Extension]" << std::endl
-                      << "Name    : "
-                      << deviceExtensionProperties[index].extensionName
-                      << std::endl
-                      << "Version : "
-                      << deviceExtensionProperties[index].specVersion
-                      << std::endl;
+                      << "Name    : " << deviceExtensionProperties[index].extensionName << std::endl
+                      << "Version : " << deviceExtensionProperties[index].specVersion << std::endl;
         }
     }
 
@@ -293,15 +269,12 @@ VkResult createDevice()
 
     uint32_t queueFamilyPropertyCount{ 0 };
 
-    vkGetPhysicalDeviceQueueFamilyProperties(
-        context.physicalDevice, &queueFamilyPropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(context.physicalDevice, &queueFamilyPropertyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilyProperties;
     queueFamilyProperties.resize(queueFamilyPropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(context.physicalDevice,
-                                             &queueFamilyPropertyCount,
-                                             queueFamilyProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(context.physicalDevice, &queueFamilyPropertyCount, queueFamilyProperties.data());
 
     bool graphicsQueueFlag = false;
     bool computeQueueFlag = false;
@@ -311,26 +284,17 @@ VkResult createDevice()
     {
         std::cout << std::endl;
 
-        graphicsQueueFlag =
-            (queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT);
-        computeQueueFlag =
-            (queueFamilyProperties[index].queueFlags & VK_QUEUE_COMPUTE_BIT);
-        transferQueueFlag =
-            (queueFamilyProperties[index].queueFlags & VK_QUEUE_TRANSFER_BIT);
-        sparseQueueFlag = (queueFamilyProperties[index].queueFlags &
-                           VK_QUEUE_SPARSE_BINDING_BIT);
+        graphicsQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_GRAPHICS_BIT);
+        computeQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_COMPUTE_BIT);
+        transferQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_TRANSFER_BIT);
+        sparseQueueFlag = (queueFamilyProperties[index].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT);
 
-        std::cout << std::boolalpha
-                  << "graphicsQueueFlag : " << graphicsQueueFlag << std::endl;
-        std::cout << std::boolalpha << "computeQueueFlag : " << computeQueueFlag
-                  << std::endl;
-        std::cout << std::boolalpha
-                  << "transferQueueFlag : " << transferQueueFlag << std::endl;
-        std::cout << std::boolalpha << "sparseQueueFlag : " << sparseQueueFlag
-                  << std::endl;
+        std::cout << std::boolalpha << "graphicsQueueFlag : " << graphicsQueueFlag << std::endl;
+        std::cout << std::boolalpha << "computeQueueFlag : " << computeQueueFlag << std::endl;
+        std::cout << std::boolalpha << "transferQueueFlag : " << transferQueueFlag << std::endl;
+        std::cout << std::boolalpha << "sparseQueueFlag : " << sparseQueueFlag << std::endl;
 
-        std::cout << "queueCount : " << queueFamilyProperties[index].queueCount
-                  << std::endl;
+        std::cout << "queueCount : " << queueFamilyProperties[index].queueCount << std::endl;
 
         if (queueFamilyProperties[index].queueCount < 1)
         {
@@ -363,12 +327,10 @@ VkResult createDevice()
     deviceCreateInfo.enabledExtensionCount = deviceExtensionNames.size();
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames.data();
 
-    result = vkCreateDevice(context.physicalDevice, &deviceCreateInfo, nullptr,
-                            &context.device);
+    result = vkCreateDevice(context.physicalDevice, &deviceCreateInfo, nullptr, &context.device);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create device [Error coce : " << result << "]"
-                  << std::endl;
+        std::cerr << "Failed to create device [Error coce : " << result << "]" << std::endl;
     }
 
     return result;
@@ -392,34 +354,28 @@ bool createWindow()
 
 VkResult createSurface()
 {
-    VkResult result =
-        glfwCreateWindowSurface(context.instance, pWindow, nullptr, &surface);
+    VkResult result = glfwCreateWindowSurface(context.instance, pWindow, nullptr, &surface);
     if (result != VK_SUCCESS)
     {
-        std::cerr << "Failed to create surface [Error code : " << result << "]"
-                  << std::endl;
+        std::cerr << "Failed to create surface [Error code : " << result << "]" << std::endl;
     }
 
     return result;
 }
 
-VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex,
-                             VkBool32& supported)
+VkResult checkSurfaceSupport(const uint32_t queueFamilyIndex, VkBool32& supported)
 {
     supported = false;
 
-    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(
-        context.physicalDevice, graphicsQueueFamilyIndex, surface, &supported);
+    VkResult result = vkGetPhysicalDeviceSurfaceSupportKHR(context.physicalDevice, graphicsQueueFamilyIndex, surface, &supported);
     if (VK_SUCCESS != result)
     {
-        std::cerr << "Failed to check surface supported [Error code : "
-                  << result << "]" << std::endl;
+        std::cerr << "Failed to check surface supported [Error code : " << result << "]" << std::endl;
     }
 
     if (false == supported)
     {
-        std::cerr << "Surface is not supported [QueueFamilyIndex : "
-                  << queueFamilyIndex << "]" << std::endl;
+        std::cerr << "Surface is not supported [QueueFamilyIndex : " << queueFamilyIndex << "]" << std::endl;
     }
 
     return result;

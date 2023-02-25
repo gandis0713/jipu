@@ -11,9 +11,6 @@ project(
 
 add_executable(${PRJ_NAME} main.cpp)
 add_dependencies(${PRJ_NAME} vkt)
-# set_target_properties(${PRJ_NAME}
-#     PROPERTIES IMPORTED_LOCATION ${VKT_LIBRARIES}
-# )
 
 target_link_libraries(${PRJ_NAME}
   PRIVATE
@@ -21,8 +18,10 @@ target_link_libraries(${PRJ_NAME}
   # ${Vulkan_LIBRARIES}
   Vulkan::Vulkan
   glfw
+
   # ${VKT_LIBRARIES}
   vkt
+  spdlog::spdlog_header_only
 )
 
 target_include_directories(${PRJ_NAME}

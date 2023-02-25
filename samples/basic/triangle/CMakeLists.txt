@@ -26,11 +26,14 @@ target_link_libraries(${PRJ_NAME}
   # ${Vulkan_LIBRARIES}
   Vulkan::Vulkan
   glfw
+
   # ${VKT_LIBRARIES}
   vkt
+  spdlog::spdlog_header_only
 )
 
 set(GLSLC_EXE $ENV{VULKAN_SDK}/bin/glslc)
+
 if(CMAKE_GENERATOR STREQUAL "Ninja")
   set(SHADER_OUTPUT ${CMAKE_BINARY_DIR}/samples/basic/${PRJ_NAME})
 else()
