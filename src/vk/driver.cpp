@@ -12,8 +12,9 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if defined(__APPLE__)
-    instanceCreateInfo.flags |=
-        VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    #if VK_HEADER_VERSION >= 216
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    #endif
 #endif
 
     instanceCreateInfo.enabledExtensionCount = 0;
@@ -27,8 +28,7 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
 
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
-    VkResult result =
-        vkCreateInstance(&instanceCreateInfo, VK_ALLOC_CB, &m_context.instance);
+    VkResult result = vkCreateInstance(&instanceCreateInfo, VK_ALLOC_CB, &m_context.instance);
 
     // Select Physical device.
 }

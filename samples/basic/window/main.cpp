@@ -191,7 +191,9 @@ VkResult createInstance()
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if defined(__APPLE__)
+    #if VK_HEADER_VERSION >= 216
     instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    #endif
 #endif
 
     // extensions
