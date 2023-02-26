@@ -10,8 +10,8 @@ namespace vkt {
 void *PlatformMacOS::createSurface(void *nativeWindow, void *instance) {
     NSView *nsview = (__bridge NSView *)nativeWindow;
 
-    VkSurfaceKHR surface = nullptr;
-    VkMacOSSurfaceCreateInfoMVK createInfo = {};
+    VkSurfaceKHR surface{};
+    VkMacOSSurfaceCreateInfoMVK createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
     createInfo.pView = (__bridge void *)nsview;
     VkResult result = vkCreateMacOSSurfaceMVK((VkInstance)instance, &createInfo,

@@ -15,36 +15,44 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fs = std::filesystem;
-
 namespace fmt
 {
 template <> struct formatter<std::filesystem::path>
 {
     constexpr auto parse(format_parse_context& context) { return context.begin(); }
 
-    template <typename Context> auto format(const std::filesystem::path& path, Context& context) const
-    {
-        return fmt::format_to(context.out(), "{:s}", path.c_str());
-    }
+    template <typename T> auto format(const std::filesystem::path& path, T& t) const { return fmt::format_to(t.out(), "{:s}", path.c_str()); }
 };
 } // namespace fmt
 
-struct AppInfo
+class AppInfo
 {
-    fs::path app_path{};
-    fs::path app_dir{};
-
-    AppInfo() = default;
-
-    AppInfo(const char* path) : app_path(path), app_dir(app_path.parent_path())
+public:
+    AppInfo(const char* p)
     {
-        spdlog::trace("app_path: {}", app_path);
-        spdlog::trace("app_dir: {}", app_dir);
+        path = std::filesystem::path(p);
+        dir = path.parent_path();
     }
+    
+    static std::filesystem::path getPath()
+    {
+        return path;
+    }
+    
+    static std::filesystem::path getDir()
+    {
+        return dir;
+    }
+    
+private:
+    static std::filesystem::path path;
+    static std::filesystem::path dir;
 };
 
-AppInfo app_info{};
+std::filesystem::path AppInfo::path;
+std::filesystem::path AppInfo::dir;
+
+namespace fs = std::filesystem;
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -80,8 +88,6 @@ static std::vector<char> readFile(const std::filesystem::path& file_path)
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    // std::cerr << "messageSeverity : " << messageSeverity << std::endl;
-    // std::cerr << "messageType : " << messageType << std::endl;
     if (messageType != 1)
     {
         std::cerr << "pCallbackData->pMessage : " << pCallbackData->pMessage << std::endl;
@@ -240,13 +246,13 @@ private:
             throw std::runtime_error("instance extensions requested, but not available!");
         }
 
-        VkApplicationInfo applicationInfo{};
-        applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        applicationInfo.pApplicationName = "Triangle App";
-        applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        applicationInfo.pEngineName = "Prototype";
-        applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        applicationInfo.apiVersion = VK_API_VERSION_1_0;
+//        VkApplicationInfo applicationInfo{};
+//        applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+//        applicationInfo.pApplicationName = "Triangle App";
+//        applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+//        applicationInfo.pEngineName = "Prototype";
+//        applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+//        applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
         VkInstanceCreateInfo instanceCreateInfo{};
         instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -255,7 +261,7 @@ private:
         instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     #endif
 #endif
-        instanceCreateInfo.pApplicationInfo = &applicationInfo;
+//        instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
         instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
         instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
@@ -781,8 +787,8 @@ private:
 
     void createGraphicsPipeline()
     {
-        const std::vector<char> vertShaderCode = readFile(app_info.app_dir / "vert.spv");
-        const std::vector<char> fragShaderCode = readFile(app_info.app_dir / "frag.spv");
+        const std::vector<char> vertShaderCode = readFile(AppInfo::getDir() / "vert.spv");
+        const std::vector<char> fragShaderCode = readFile(AppInfo::getDir() / "frag.spv");
 
         m_vertShaderModule = createShaderModule(vertShaderCode);
         m_fragShaderModule = createShaderModule(fragShaderCode);
@@ -1137,7 +1143,7 @@ int main(int argc, char** argv)
     spdlog::error("argc: {}", argc);
     spdlog::error("argv: {}", argv[0]);
 
-    app_info = AppInfo(argv[0]);
+    AppInfo app_info(argv[0]);
 
     Application app;
 

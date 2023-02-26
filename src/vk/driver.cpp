@@ -22,11 +22,14 @@ Driver::Driver(Platform* platform) : m_platform(*platform)
     instanceCreateInfo.enabledLayerCount = 0;
     instanceCreateInfo.pNext = nullptr;
 
-    VkApplicationInfo applicationInfo{};
-    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    // Application Information shoulb be used in instance??
+    {
+        VkApplicationInfo applicationInfo{};
+        applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        applicationInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
-    instanceCreateInfo.pApplicationInfo = &applicationInfo;
+        instanceCreateInfo.pApplicationInfo = &applicationInfo;
+    }
 
     VkResult result = vkCreateInstance(&instanceCreateInfo, VK_ALLOC_CB, &m_context.instance);
 
