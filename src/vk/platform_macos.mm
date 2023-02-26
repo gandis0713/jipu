@@ -8,6 +8,40 @@
 namespace vkt
 {
 
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
+{
+
+    @autoreleasepool
+    {
+        NSView* nsView = (__bridge NSView*)nativeWindow;
+        if (nsView == nil)
+        {
+            spdlog::error("[{}] Failed to get NSView.", __func__);
+            return nullptr;
+        }
+        NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
+        CAMetalLayer* layer = [[bundle classNamed:@"CAMetalLayer"] layer];
+
+        [nsView setLayer:layer];
+
+        VkMacOSSurfaceCreateInfoMVK createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+        createInfo.pView = (__bridge void*)nsView;
+
+        VkSurfaceKHR surface{};
+        VkResult result = vkCreateMacOSSurfaceMVK((VkInstance)instance, &createInfo, nullptr, &surface);
+
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to create VkSurfaceKHR. {}", result);
+        }
+
+        return surface;
+    }
+}
+
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
 void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
 {
     @autoreleasepool
@@ -47,5 +81,6 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         return surface;
     }
 }
+#endif
 
 } // namespace vkt

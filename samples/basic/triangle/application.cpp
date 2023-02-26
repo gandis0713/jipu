@@ -227,25 +227,24 @@ const std::vector<const char*>& Application::getRequiredInstanceExtensions()
             requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
 
-#if defined(__APPLE__)
+        requiredInstanceExtensions.push_back("VK_KHR_surface");
+        /*
+            https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+            https://sourceforge.net/p/predef/wiki/OperatingSystems/
+        */
+
+#if defined(__linux__)
+        requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
+#elif defined(_WIN64)
+        requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
+#elif defined(__APPLE__)
+    #if defined(VK_USE_PLATFORM_MACOS_MVK)
+        requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
+    #elif defined(VK_USE_PLATFORM_METAL_EXT)
+        requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
+    #endif
         requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 #endif
-
-        // std::vector<const char*> instanceExtensionNames
-        // {
-        //     "VK_KHR_surface",
-        // /*
-        //     https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-        //     https://sourceforge.net/p/predef/wiki/OperatingSystems/
-        // */
-        // #if defined(__linux__)
-        //         "VK_KHR_xcb_surface", // for glfw on linux(ubuntu)
-        // #elif defined(_WIN64)
-        //         "VK_KHR_win32_surface",
-        // #else
-        //         "VK_MVK_macos_surface", "VK_EXT_metal_surface", VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-        // #endif
-        // };
 
         std::cout << "Required extensions :" << std::endl;
         for (const auto& extension : requiredInstanceExtensions)

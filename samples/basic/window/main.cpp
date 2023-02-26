@@ -1,7 +1,4 @@
 
-#if defined(__APPLE__)
-    #define VK_USE_PLATFORM_MACOS_MVK 1
-#endif
 #include <vulkan/vulkan.h>
 // #define GLFW_INCLUDE_VULKAN
 #include "vk/context.h"

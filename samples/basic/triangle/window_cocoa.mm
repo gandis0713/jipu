@@ -48,6 +48,35 @@ void* Window::getNativeWindow() { return getNSView(static_cast<GLFWwindow*>(m_wi
 
 void Window::getFrameBufferSize(int* w, int* h) { glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h); }
 
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+void* Window::createSurface(void* instance)
+{
+    @autoreleasepool
+    {
+        NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
+        CAMetalLayer* layer = [[bundle classNamed:@"CAMetalLayer"] layer];
+
+        NSWindow* nsWindow = (__bridge NSWindow*)glfwGetCocoaWindow(static_cast<GLFWwindow*>(m_window));
+        NSView* nsView = [nsWindow contentView];
+        [nsView setLayer:layer];
+
+        VkMacOSSurfaceCreateInfoMVK createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+        createInfo.pView = (__bridge void*)nsView;
+
+        VkSurfaceKHR surface{};
+        VkResult result = vkCreateMacOSSurfaceMVK((VkInstance)instance, &createInfo, nullptr, &surface);
+
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to create VkSurfaceKHR. {}", result);
+        }
+
+        return surface;
+    }
+}
+
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
 void* Window::createSurface(void* instance)
 {
     @autoreleasepool
@@ -87,29 +116,6 @@ void* Window::createSurface(void* instance)
         return surface;
     }
 }
-
-// void *Window::createSurface(void *instance) {
-
-//     @autoreleasepool {
-//         NSWindow *nsWindow = (__bridge NSWindow *)glfwGetCocoaWindow(
-//             static_cast<GLFWwindow *>(m_window));
-//         NSView *nsView = [nsWindow contentView];
-//         [nsView setLayer:[CAMetalLayer layer]];
-
-//         VkMacOSSurfaceCreateInfoMVK createInfo{};
-//         createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-//         createInfo.pLayer = (__bridge void *)[CAMetalLayer layer];
-
-//         VkSurfaceKHR surface{};
-//         VkResult result = vkCreateMacOSSurfaceMVK(
-//             (VkInstance)instance, &createInfo, nullptr, &surface);
-
-//         if (result != VK_SUCCESS) {
-//             spdlog::error("Failed to create VkSurfaceKHR. {}", result);
-//         }
-
-//         return surface;
-//     }
-// }
+#endif
 
 } // namespace vkt
