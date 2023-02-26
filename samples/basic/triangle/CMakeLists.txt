@@ -9,15 +9,29 @@ project(
   LANGUAGES CXX
 )
 
-add_executable(${PRJ_NAME}
+list(APPEND SRC_FILES
   main.cpp
   application.cpp
   application.h
-  window.cpp
   window.h
   utils.cpp
   utils.h
 )
+
+if(WIN32)
+  list(APPEND SRC_FILES
+    window_win32.cpp
+  )
+elseif(APPLE)
+  list(APPEND SRC_FILES
+    window_cocoa.mm
+  )
+endif()
+
+add_executable(${PRJ_NAME}
+  ${SRC_FILES}
+)
+
 add_dependencies(${PRJ_NAME} vkt)
 
 target_include_directories(

@@ -16,6 +16,8 @@ public:
     void* createSurface(void* instance);
     void getFrameBufferSize(int* w, int* h);
 
+    void* getNativeWindow();
+
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
@@ -23,7 +25,7 @@ public:
     void close();
 
 private:
-    void* m_nativeWindow;
+    void* m_window;
 };
 
 } // namespace vkt

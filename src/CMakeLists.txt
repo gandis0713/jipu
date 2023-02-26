@@ -21,11 +21,11 @@ target_include_directories(${VKT_PROJECT_NAME}
 target_link_libraries(${VKT_PROJECT_NAME}
   PUBLIC
   Vulkan::Vulkan
+  spdlog::spdlog_header_only
 )
 
 if(APPLE)
   target_link_libraries(${VKT_PROJECT_NAME}
     PUBLIC
-    "-framework Metal"
   )
 endif()

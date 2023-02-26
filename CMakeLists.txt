@@ -29,6 +29,7 @@ add_compile_definitions(VKT_VERSION_PATCH=${VKT_VERSION_PATCH})
 
 # find package
 find_package(Vulkan REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${SRC_DIR})

@@ -1,5 +1,8 @@
 {
     "files.associations": {
+        "*.jasm": "json",
+        "*.jpkg": "json",
+        "*.eml": "lua",
         "ostream": "cpp",
         "array": "cpp",
         "atomic": "cpp",
@@ -49,7 +52,10 @@
         "typeinfo": "cpp",
         "ios": "cpp",
         "cerrno": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "__locale": "cpp",
+        "locale": "cpp",
+        "thread": "cpp"
     },
     "cmake.configureOnOpen": false,
     "cmake.configureOnEdit": false,
