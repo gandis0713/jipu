@@ -9,7 +9,13 @@ project(
   LANGUAGES CXX
 )
 
-add_executable(${PRJ_NAME} main.cpp)
+add_executable(${PRJ_NAME}
+  main.cpp
+  application.cpp
+  application.h
+  utils.cpp
+  utils.h
+)
 add_dependencies(${PRJ_NAME} vkt)
 
 target_include_directories(

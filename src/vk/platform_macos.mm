@@ -1,5 +1,5 @@
 #include "platform_macos.h"
-#include "vulkan.h"
+#include "vk/precompile.h"
 
 #include <Cocoa/Cocoa.h>
 // #import <Metal/Metal.h>
