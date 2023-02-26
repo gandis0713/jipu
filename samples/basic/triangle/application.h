@@ -9,7 +9,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <optional>
 #include <set>
@@ -30,24 +29,6 @@ template <> struct formatter<std::filesystem::path>
 namespace vkt
 {
 
-class AppInfo
-{
-public:
-    AppInfo(const char* p)
-    {
-        path = std::filesystem::path(p);
-        dir = path.parent_path();
-    }
-
-    static std::filesystem::path getPath() { return path; }
-
-    static std::filesystem::path getDir() { return dir; }
-
-private:
-    static std::filesystem::path path;
-    static std::filesystem::path dir;
-};
-
 struct QueueFamilyIndices
 {
     std::optional<uint32_t> graphicsFamily;
@@ -63,13 +44,29 @@ struct SwapChainSupportDetails
     std::vector<VkPresentModeKHR> presentModes;
 };
 
+class Window;
+
 class Application
 {
 public:
     void run();
 
+    Application() = default;
+    Application(int argc, char** argv)
+    {
+        path = std::filesystem::path(argv[0]);
+        dir = path.parent_path();
+    }
+
+    static std::filesystem::path getPath() { return path; }
+    static std::filesystem::path getDir() { return dir; }
+
 private:
-    GLFWwindow* m_pWindow;
+    static std::filesystem::path path;
+    static std::filesystem::path dir;
+
+private:
+    Window* m_window;
 
     // Debug
     VkDebugUtilsMessengerEXT m_debugMessenger;

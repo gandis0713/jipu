@@ -9,9 +9,7 @@ int main(int argc, char** argv)
     spdlog::error("argc: {}", argc);
     spdlog::error("argv: {}", argv[0]);
 
-    AppInfo app_info(argv[0]);
-
-    Application app;
+    Application app(argc, argv);
 
     try
     {

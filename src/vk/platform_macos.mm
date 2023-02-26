@@ -7,7 +7,7 @@
 
 namespace vkt {
 
-void *PlatformMacOS::createSurface(void *nativeWindow, void *instance) {
+void *PlatformMacOS::createVkSurfaceKHR(void *nativeWindow, void *instance) {
     NSView *nsview = (__bridge NSView *)nativeWindow;
 
     VkSurfaceKHR surface{};

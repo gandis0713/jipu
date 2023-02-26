@@ -13,6 +13,8 @@ add_executable(${PRJ_NAME}
   main.cpp
   application.cpp
   application.h
+  window.cpp
+  window.h
   utils.cpp
   utils.h
 )

@@ -7,7 +7,7 @@ namespace vkt
 
 class PlatformMacOS : public Platform
 {
-    void* createSurface(void* nativeWindow, void* instance) override;
+    void* createVkSurfaceKHR(void* nativeWindow, void* instance) override;
 };
 
 } // namespace vkt

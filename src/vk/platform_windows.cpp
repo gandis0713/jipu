@@ -3,9 +3,6 @@
 namespace vkt
 {
 
-void* PlatformWindows::createSurface(void* nativeWindow, void* instance)
-{
-    return nullptr;
-}
+void* PlatformWindows::createVkSurfaceKHR(void* nativeWindow, void* instance) { return nullptr; }
 
 } // namespace vkt

@@ -1,8 +1,9 @@
 #include "application.h"
 #include "utils.h"
+#include "window.h"
 
-std::filesystem::path vkt::AppInfo::path;
-std::filesystem::path vkt::AppInfo::dir;
+std::filesystem::path vkt::Application::path;
+std::filesystem::path vkt::Application::dir;
 
 #ifdef NDEBUG
 const bool enableValidationLayers = true;
@@ -38,12 +39,14 @@ void Application::run()
 
 void Application::initWindow()
 {
-    glfwInit();
+    // glfwInit();
 
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    m_pWindow = glfwCreateWindow(600, 800, "Vulkan", nullptr, nullptr);
+    // m_window = glfwCreateWindow(600, 800, "Vulkan", nullptr, nullptr);
+
+    m_window = new Window(800, 600, "Triangle Window");
 }
 
 void Application::initVulkan()
@@ -65,9 +68,8 @@ void Application::initVulkan()
 
 void Application::mainLoop()
 {
-    while (!glfwWindowShouldClose(m_pWindow))
+    while (!m_window->shouldClose())
     {
-        glfwPollEvents();
         drawFrame();
     }
 
@@ -105,7 +107,8 @@ void Application::cleanup()
 
     vkDestroyInstance(m_context.instance, nullptr);
 
-    glfwDestroyWindow(m_pWindow);
+    //    glfwDestroyWindow(m_window);
+    delete m_window;
 
     glfwTerminate();
 }
@@ -476,7 +479,8 @@ void Application::createLogicalDevice()
 
 void Application::createSurface()
 {
-    if (glfwCreateWindowSurface(m_context.instance, m_pWindow, nullptr, &m_surface) != VK_SUCCESS)
+    m_surface = static_cast<VkSurfaceKHR>(m_window->createSurface(m_context.instance));
+    if (m_surface == nullptr)
     {
         throw std::runtime_error("failed to create window surface!");
     }
@@ -562,7 +566,7 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surface
     else
     {
         int frameBufferWidth, frameBufferHeight;
-        glfwGetFramebufferSize(m_pWindow, &frameBufferWidth, &frameBufferHeight);
+        m_window->getFrameBufferSize(&frameBufferWidth, &frameBufferHeight);
 
         VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth), static_cast<uint32_t>(frameBufferHeight) };
 
@@ -665,8 +669,8 @@ void Application::createImageViews()
 
 void Application::createGraphicsPipeline()
 {
-    const std::vector<char> vertShaderCode = utils::readFile(AppInfo::getDir() / "vert.spv");
-    const std::vector<char> fragShaderCode = utils::readFile(AppInfo::getDir() / "frag.spv");
+    const std::vector<char> vertShaderCode = utils::readFile(Application::getDir() / "vert.spv");
+    const std::vector<char> fragShaderCode = utils::readFile(Application::getDir() / "frag.spv");
 
     m_vertShaderModule = createShaderModule(vertShaderCode);
     m_fragShaderModule = createShaderModule(fragShaderCode);
