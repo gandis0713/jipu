@@ -41,7 +41,7 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: "${{ matrix.cmake_preset }}"
           buildPreset: "${{ matrix.cmake_preset }}"
-          # buildPresetAdditionalArgs: ['--target all']
+          buildPresetAdditionalArgs: [`--target all`]
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
         uses: 8398a7/action-slack@v3.15.0
