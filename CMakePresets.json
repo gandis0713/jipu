@@ -23,6 +23,14 @@
 			}
 		},
 		{
+			"name": "base-x64-osx",
+			"inherits": "base-osx",
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-osx",
+				"CMAKE_OSX_ARCHITECTURES": "x86_64"
+			}
+		},
+		{
 			"name": "base-arm64-osx",
 			"inherits": "base-osx",
 			"cacheVariables": {
@@ -41,11 +49,31 @@
 			"generator": "Xcode"
 		},
 		{
+			"name": "base-x64-osx-ninja",
+			"inherits": "base-x64-osx",
+			"generator": "Ninja"
+		},
+		{
+			"name": "base-x64-osx-xcode",
+			"inherits": "base-x64-osx",
+			"generator": "Xcode"
+		},
+		{
 			"name": "arm64-osx-ninja-debug",
 			"inherits": "base-arm64-osx-ninja",
 			"displayName": "arm64-osx-ninja-debug",
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "x64-osx-ninja-debug",
+			"inherits": "base-x64-osx-ninja",
+			"displayName": "x64-osx-ninja-debug",
+			"binaryDir": "${sourceDir}/build/x64-osx-ninja/debug",
+			"installDir": "${sourceDir}/install/x64-osx-ninja/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}
@@ -61,6 +89,16 @@
 			}
 		},
 		{
+			"name": "x64-osx-ninja-release",
+			"inherits": "base-x64-osx-ninja",
+			"displayName": "x64-osx-ninja-release",
+			"binaryDir": "${sourceDir}/build/x64-osx-ninja/release",
+			"installDir": "${sourceDir}/install/x64-osx-ninja/release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
 			"name": "arm64-osx-xcode-debug",
 			"inherits": "base-arm64-osx-xcode",
 			"displayName": "arm64-osx-xcode-debug",
@@ -71,11 +109,31 @@
 			}
 		},
 		{
+			"name": "x64-osx-xcode-debug",
+			"inherits": "base-x64-osx-xcode",
+			"displayName": "x64-osx-xcode-debug",
+			"binaryDir": "${sourceDir}/build/x64-osx-xcode/debug",
+			"installDir": "${sourceDir}/install/x64-osx-xcode/debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
 			"name": "arm64-osx-xcode-release",
 			"inherits": "base-arm64-osx-xcode",
 			"displayName": "arm64-osx-xcode-release",
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/release",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/release",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "x64-osx-xcode-release",
+			"inherits": "base-x64-osx-xcode",
+			"displayName": "x64-osx-xcode-release",
+			"binaryDir": "${sourceDir}/build/x64-osx-xcode/release",
+			"installDir": "${sourceDir}/install/x64-osx-xcode/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
@@ -180,8 +238,18 @@
 			"configuration": "Debug"
 		},
 		{
+			"name": "x64-osx-ninja-debug",
+			"configurePreset": "x64-osx-ninja-debug",
+			"configuration": "Debug"
+		},
+		{
 			"name": "arm64-osx-xcode-debug",
 			"configurePreset": "arm64-osx-xcode-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "x64-osx-xcode-debug",
+			"configurePreset": "x64-osx-xcode-debug",
 			"configuration": "Debug"
 		},
 		{
@@ -190,8 +258,18 @@
 			"configuration": "Release"
 		},
 		{
+			"name": "x64-osx-ninja-release",
+			"configurePreset": "x64-osx-ninja-release",
+			"configuration": "Release"
+		},
+		{
 			"name": "arm64-osx-xcode-release",
 			"configurePreset": "arm64-osx-xcode-release",
+			"configuration": "Release"
+		},
+		{
+			"name": "x64-osx-xcode-release",
+			"configurePreset": "x64-osx-xcode-release",
 			"configuration": "Release"
 		},
 		{
@@ -244,9 +322,21 @@
 			"configuration": "Debug"
 		},
 		{
+			"name": "x64-osx-ninja-debug",
+			"inherits": "base",
+			"configurePreset": "x64-osx-ninja-debug",
+			"configuration": "Debug"
+		},
+		{
 			"name": "arm64-osx-xcode-debug",
 			"inherits": "base",
 			"configurePreset": "arm64-osx-xcode-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "x64-osx-xcode-debug",
+			"inherits": "base",
+			"configurePreset": "x64-osx-xcode-debug",
 			"configuration": "Debug"
 		},
 		{
@@ -256,9 +346,21 @@
 			"configuration": "Release"
 		},
 		{
+			"name": "x64-osx-ninja-release",
+			"inherits": "base",
+			"configurePreset": "x64-osx-ninja-release",
+			"configuration": "Release"
+		},
+		{
 			"name": "arm64-osx-xcode-release",
 			"inherits": "base",
 			"configurePreset": "arm64-osx-xcode-release",
+			"configuration": "Release"
+		},
+		{
+			"name": "x64-osx-xcode-release",
+			"inherits": "base",
+			"configurePreset": "x64-osx-xcode-release",
 			"configuration": "Release"
 		},
 		{
