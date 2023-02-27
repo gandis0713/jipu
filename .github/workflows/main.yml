@@ -27,8 +27,7 @@ jobs:
           vulkan-use-cache: true
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
-        # uses: lukka/get-cmake@latest
-          run: brew install cmake
+        uses: lukka/get-cmake@latest
       - name: Setup vcpkg and install them.
         uses: lukka/run-vcpkg@v10
         with:
@@ -37,13 +36,12 @@ jobs:
           vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
           runVcpkgInstall: false
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
-        run: "cmake --preset ${{ matrix.cmake_preset }}"
-        # uses: lukka/run-cmake@v10
-        # with:
-        #   cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
-        #   configurePreset: "${{ matrix.cmake_preset }}"
-        #   buildPreset: "${{ matrix.cmake_preset }}"
-        #   buildPresetAdditionalArgs: "--target all"
+        uses: lukka/run-cmake@v10
+        with:
+          cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
+          configurePreset: "${{ matrix.cmake_preset }}"
+          buildPreset: "${{ matrix.cmake_preset }}"
+          # buildPresetAdditionalArgs: ['--target all']
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
         uses: 8398a7/action-slack@v3.15.0
