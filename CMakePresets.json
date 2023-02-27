@@ -47,8 +47,7 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
@@ -58,8 +57,7 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/release",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
@@ -69,8 +67,7 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
@@ -80,8 +77,7 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/release",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
@@ -123,8 +119,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-vs2019/debug",
 			"installDir": "${sourceDir}/install/x64-windows-vs2019/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
@@ -134,8 +129,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-vs2022/debug",
 			"installDir": "${sourceDir}/install/x64-windows-vs2022/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
@@ -145,8 +139,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-ninja/debug",
 			"installDir": "${sourceDir}/install/x64-window-ninja/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		},
 		{
@@ -156,8 +149,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-vs2019/release",
 			"installDir": "${sourceDir}/install/x64-windows-vs2019/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
@@ -167,8 +159,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-vs2022/release",
 			"installDir": "${sourceDir}/install/x64-windows-vs2022/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		},
 		{
@@ -178,8 +169,7 @@
 			"binaryDir": "${sourceDir}/build/x64-windows-ninja/release",
 			"installDir": "${sourceDir}/install/x64-window-ninja/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release",
-				"VKT_SAMPLES": "ON"
+				"CMAKE_BUILD_TYPE": "Release"
 			}
 		}
 	],

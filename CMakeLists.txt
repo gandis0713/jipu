@@ -10,7 +10,6 @@ set(VKT_PROJECT_NAME vkt)
 
 # set options.
 option(VKT_TEST "VKT Test" ON)
-option(VKT_SAMPLES "VKT Samples" OFF)
 
 project(
   ${VKT_PROJECT_NAME}
@@ -34,14 +33,12 @@ find_package(spdlog CONFIG REQUIRED)
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${SRC_DIR})
 
+set(APP_DIR ${CMAKE_SOURCE_DIR}/app)
+add_subdirectory(${APP_DIR})
+
 if(VKT_TEST)
   set(TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 
   enable_testing()
   add_subdirectory(${TEST_DIR})
-endif()
-
-if(VKT_SAMPLES)
-  set(SAMPLE_DIR ${CMAKE_SOURCE_DIR}/samples)
-  add_subdirectory(${SAMPLE_DIR})
 endif()

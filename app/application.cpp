@@ -685,8 +685,8 @@ void Application::createImageViews()
 
 void Application::createGraphicsPipeline()
 {
-    const std::vector<char> vertShaderCode = utils::readFile(Application::getDir() / "vert.spv");
-    const std::vector<char> fragShaderCode = utils::readFile(Application::getDir() / "frag.spv");
+    const std::vector<char> vertShaderCode = utils::readFile(Application::getDir() / "triangle_vert.spv");
+    const std::vector<char> fragShaderCode = utils::readFile(Application::getDir() / "triangle_frag.spv");
 
     m_vertShaderModule = createShaderModule(vertShaderCode);
     m_fragShaderModule = createShaderModule(fragShaderCode);
