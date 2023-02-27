@@ -243,7 +243,12 @@ const std::vector<const char*>& Application::getRequiredInstanceExtensions()
     #elif defined(VK_USE_PLATFORM_METAL_EXT)
         requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
     #endif
+#endif
+
+#if defined(__APPLE__)
+    #if VK_HEADER_VERSION >= 216
         requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    #endif
 #endif
 
         std::cout << "Required extensions :" << std::endl;

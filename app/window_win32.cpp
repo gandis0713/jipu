@@ -15,19 +15,19 @@ Window::Window(int w, int h, std::string title) : m_window(nullptr)
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    m_window = static_cast<void*>(glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr));
 }
 
 Window::~Window() {}
 
 void Window::open()
 {
-    if (m_window != nullptr)
-    {
-        spdlog::warn("Window already was opened.");
-        return;
-    }
-
-    m_window = static_cast<void*>(glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr));
+    // TODO
+}
+void Window::close()
+{
+    // TODO
 }
 
 int Window::shouldClose()

@@ -33,6 +33,15 @@ Window::Window(int w, int h, std::string title) : m_window(nullptr)
 
 Window::~Window() {}
 
+void Window::open()
+{
+    // TODO
+}
+void Window::close()
+{
+    // TODO
+}
+
 int Window::shouldClose()
 {
     int ret = glfwWindowShouldClose(static_cast<GLFWwindow*>(m_window));
