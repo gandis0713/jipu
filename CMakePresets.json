@@ -6,13 +6,13 @@
 		"patch": 0
 	},
 	"configurePresets": [
-    {
-      "name": "base",
-      "cacheVariables": {
+		{
+			"name": "base",
+			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "VKT_TEST": "ON"
+				"VKT_TEST": "ON"
 			}
-    },
+		},
 		{
 			"name": "base-osx",
 			"inherits": "base",
@@ -27,13 +27,13 @@
 			"inherits": "base-osx",
 			"cacheVariables": {
 				"VCPKG_TARGET_TRIPLET": "arm64-osx",
-        "CMAKE_OSX_ARCHITECTURES": "arm64"
+				"CMAKE_OSX_ARCHITECTURES": "arm64"
 			}
 		},
 		{
 			"name": "base-arm64-osx-ninja",
 			"inherits": "base-arm64-osx",
-      "generator": "Ninja"
+			"generator": "Ninja"
 		},
 		{
 			"name": "base-arm64-osx-xcode",
@@ -48,7 +48,7 @@
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-        "VKT_SAMPLES": "ON"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -59,7 +59,7 @@
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-        "VKT_SAMPLES": "OFF"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -70,10 +70,10 @@
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-        "VKT_SAMPLES": "ON"
+				"VKT_SAMPLES": "ON"
 			}
 		},
-    {
+		{
 			"name": "arm64-osx-xcode-release",
 			"inherits": "base-arm64-osx-xcode",
 			"displayName": "arm64-osx-xcode-release",
@@ -81,24 +81,24 @@
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-        "VKT_SAMPLES": "OFF"
+				"VKT_SAMPLES": "ON"
 			}
 		},
-    {
-      "name": "base-windows",
-      "inherits": "base",
+		{
+			"name": "base-windows",
+			"inherits": "base",
 			"condition": {
 				"type": "equals",
 				"lhs": "${hostSystemName}",
 				"rhs": "Windows"
 			}
-    },
+		},
 		{
 			"name": "base-x64-windows",
 			"inherits": "base-windows",
 			"cacheVariables": {
 				"VCPKG_TARGET_TRIPLET": "x64-windows",
-        "CMAKE_OSX_ARCHITECTURES": "x64"
+				"CMAKE_OSX_ARCHITECTURES": "x64"
 			}
 		},
 		{
@@ -124,7 +124,7 @@
 			"installDir": "${sourceDir}/install/x64-windows-vs2019/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-        "VKT_SAMPLES": "ON"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -135,7 +135,7 @@
 			"installDir": "${sourceDir}/install/x64-windows-vs2022/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-        "VKT_SAMPLES": "ON"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -146,7 +146,7 @@
 			"installDir": "${sourceDir}/install/x64-window-ninja/debug",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug",
-        "VKT_SAMPLES": "ON"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -157,7 +157,7 @@
 			"installDir": "${sourceDir}/install/x64-windows-vs2019/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-        "VKT_SAMPLES": "OFF"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -168,7 +168,7 @@
 			"installDir": "${sourceDir}/install/x64-windows-vs2022/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-        "VKT_SAMPLES": "OFF"
+				"VKT_SAMPLES": "ON"
 			}
 		},
 		{
@@ -179,7 +179,7 @@
 			"installDir": "${sourceDir}/install/x64-window-ninja/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release",
-        "VKT_SAMPLES": "OFF"
+				"VKT_SAMPLES": "ON"
 			}
 		}
 	],
@@ -234,7 +234,6 @@
 			"configurePreset": "x64-windows-ninja-release",
 			"configuration": "Release"
 		}
-
 	],
 	"testPresets": [
 		{
@@ -250,62 +249,61 @@
 		},
 		{
 			"name": "arm64-osx-ninja-debug",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "arm64-osx-ninja-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "arm64-osx-xcode-debug",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "arm64-osx-xcode-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "arm64-osx-ninja-release",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "arm64-osx-ninja-release",
 			"configuration": "Release"
 		},
 		{
 			"name": "arm64-osx-xcode-release",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "arm64-osx-xcode-release",
 			"configuration": "Release"
 		},
 		{
 			"name": "x64-windows-vs2019-debug",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-vs2019-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "x64-windows-vs2022-debug",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-vs2022-debug",
 			"configuration": "Debug"
 		},
 		{
 			"name": "x64-windows-ninja-debug",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-ninja-debug",
 			"configuration": "Debug"
 		},
-    
 		{
 			"name": "x64-windows-vs2019-release",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-vs2019-release",
 			"configuration": "Release"
 		},
 		{
 			"name": "x64-windows-vs2022-release",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-vs2022-release",
 			"configuration": "Release"
 		},
 		{
 			"name": "x64-windows-ninja-release",
-      "inherits": "base",
+			"inherits": "base",
 			"configurePreset": "x64-windows-ninja-release",
 			"configuration": "Release"
 		}
