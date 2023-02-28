@@ -4,6 +4,7 @@
 #include "vk/context.h"
 #include <GLFW/glfw3.h>
 
+#include "pipeline.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
@@ -90,14 +91,16 @@ private:
     VkQueue m_graphicsQueue;
     VkQueue m_presentQueue;
 
-    // shader module
-    VkShaderModule m_vertShaderModule;
-    VkShaderModule m_fragShaderModule;
-
-    // pipeline
     VkRenderPass m_renderPass;
-    VkPipelineLayout m_pipelineLayout;
-    VkPipeline m_graphicsPipeline;
+
+    // // shader module
+    // VkShaderModule m_vertShaderModule;
+    // VkShaderModule m_fragShaderModule;
+
+    // // pipeline
+    // VkPipelineLayout m_pipelineLayout;
+    // VkPipeline m_graphicsPipeline;
+    Pipeline m_pipeline;
 
     // command
     VkCommandPool m_commandPool;
