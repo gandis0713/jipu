@@ -36,17 +36,7 @@ void Application::run()
     cleanup();
 }
 
-void Application::initWindow()
-{
-    // glfwInit();
-
-    // glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    // glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    // m_window = glfwCreateWindow(600, 800, "Vulkan", nullptr, nullptr);
-
-    m_window = new Window(800, 600, "Triangle Window");
-}
+void Application::initWindow() { m_window = new Window(800, 600, "Triangle Window"); }
 
 void Application::initVulkan()
 {
@@ -127,23 +117,23 @@ void Application::createInstance()
         throw std::runtime_error("instance extensions requested, but not available!");
     }
 
-    //        VkApplicationInfo applicationInfo{};
-    //        applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    //        applicationInfo.pApplicationName = "Triangle App";
-    //        applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    //        applicationInfo.pEngineName = "Prototype";
-    //        applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    //        applicationInfo.apiVersion = VK_API_VERSION_1_0;
+    VkApplicationInfo applicationInfo{};
+    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    // applicationInfo.pApplicationName = "App";
+    // applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    // applicationInfo.pEngineName = "Engine";
+    // applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    // applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.pApplicationInfo = &applicationInfo;
+
 #if defined(__APPLE__)
     #if VK_HEADER_VERSION >= 216
     instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     #endif
 #endif
-    //        instanceCreateInfo.pApplicationInfo = &applicationInfo;
-
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
     instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
 
