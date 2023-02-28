@@ -23,7 +23,11 @@ jobs:
         uses: humbletim/setup-vulkan-sdk@v1.2.0
         with:
           vulkan-query-version: 1.3.204.0
-          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang, SPIRV-Cross, SPIRV-Tools
+          # SPIRV-Cross - KhronosGroup/SPIRV-Cross
+          # SPIRV-Tools - KhronosGroup/SPIRV-Tools
+          # SPIRV-Reflect - KhronosGroup/SPIRV-Reflect
+          # SPIRV-Headers - KhronosGroup/SPIRV-Headers
           vulkan-use-cache: true
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
