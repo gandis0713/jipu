@@ -89,7 +89,7 @@ void Application::cleanup()
     }
 
     m_pipeline.destroy();
-    
+
     vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
 
     for (const VkImageView& imageView : m_vecSwapChainImageViews)
@@ -318,7 +318,7 @@ const std::vector<const char*>& Application::getRequiredValidationLayers()
     return requiredValidationLayers;
 }
 
-bool checkValidationLayerSupport(const std::vector<const char*> validationLayers)
+bool Application::checkValidationLayerSupport(const std::vector<const char*> validationLayers)
 {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
