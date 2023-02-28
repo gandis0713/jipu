@@ -1,14 +1,12 @@
 #include "pipeline.h"
 
-#include "utils.h"
+#include "utils/file.h"
 
 namespace vkt
 {
 Pipeline::Pipeline() {}
 
-Pipeline::~Pipeline()
-{
-}
+Pipeline::~Pipeline() {}
 
 void Pipeline::destroy()
 {

@@ -31,11 +31,7 @@ list(APPEND SRC_FILES
     main.cpp
     application.cpp
     application.h
-    pipeline.cpp
-    pipeline.h
     window.h
-    utils.cpp
-    utils.h
 )
 
 if(WIN32)

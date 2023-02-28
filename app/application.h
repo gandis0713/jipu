@@ -4,7 +4,7 @@
 #include "vk/context.h"
 #include <GLFW/glfw3.h>
 
-#include "pipeline.h"
+#include "vk/pipeline.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
