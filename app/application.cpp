@@ -94,63 +94,64 @@ void Application::cleanup()
 
     vkDestroySurfaceKHR(m_context.instance, m_surface, nullptr);
 
-    vkDestroyInstance(m_context.instance, nullptr);
+    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
 
-    //    glfwDestroyWindow(m_window);
-    delete m_window;
+    delete m_window; // glfwDestroyWindow(m_window);
 
     glfwTerminate();
 }
 
 void Application::createInstance()
 {
-    const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
-    if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers))
-    {
-        throw std::runtime_error("validation layers requested, but not "
-                                 "available for instance!");
-    }
+    //     const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
+    //     if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers))
+    //     {
+    //         throw std::runtime_error("validation layers requested, but not "
+    //                                  "available for instance!");
+    //     }
 
-    const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
-    if (!checkInstanceExtensionSupport(requiredInstanceExtensions))
-    {
-        throw std::runtime_error("instance extensions requested, but not available!");
-    }
+    //     const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
+    //     if (!checkInstanceExtensionSupport(requiredInstanceExtensions))
+    //     {
+    //         throw std::runtime_error("instance extensions requested, but not available!");
+    //     }
 
-    VkApplicationInfo applicationInfo{};
-    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    // applicationInfo.pApplicationName = "App";
-    // applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    // applicationInfo.pEngineName = "Engine";
-    // applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    // applicationInfo.apiVersion = VK_API_VERSION_1_0;
+    //     VkApplicationInfo applicationInfo{};
+    //     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    //     // applicationInfo.pApplicationName = "App";
+    //     // applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    //     // applicationInfo.pEngineName = "Engine";
+    //     // applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    //     // applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
-    VkInstanceCreateInfo instanceCreateInfo{};
-    instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    instanceCreateInfo.pApplicationInfo = &applicationInfo;
+    //     VkInstanceCreateInfo instanceCreateInfo{};
+    //     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    //     instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 216
-    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    #endif
-#endif
-    instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
-    instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
+    // #if defined(__APPLE__)
+    //     #if VK_HEADER_VERSION >= 216
+    //     instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    //     #endif
+    // #endif
+    //     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
+    //     instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
 
-    instanceCreateInfo.enabledLayerCount = 0;
-    instanceCreateInfo.pNext = nullptr;
-    if (enableDebugMessenger)
-    {
-        instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
-        instanceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-        populateDefaultDebugUtilsMessengerCreateInfo(m_debugMessengerUtilsCreateInfo);
-        instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
-    }
+    //     instanceCreateInfo.enabledLayerCount = 0;
+    //     instanceCreateInfo.pNext = nullptr;
+    //     if (enableDebugMessenger)
+    //     {
+    //         instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
+    //         instanceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+    //         populateDefaultDebugUtilsMessengerCreateInfo(m_debugMessengerUtilsCreateInfo);
+    //         instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
+    //     }
 
-    if (vkCreateInstance(&instanceCreateInfo, nullptr, &m_context.instance) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create instance!");
-    }
+    //     if (vkCreateInstance(&instanceCreateInfo, nullptr, &m_context.instance) != VK_SUCCESS)
+    //     {
+    //         throw std::runtime_error("failed to create instance!");
+    //     }
+
+    m_context.initialize();
 }
 
 void Application::pickPhysicalDevice()

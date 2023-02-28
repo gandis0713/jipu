@@ -7,9 +7,12 @@ namespace vkt
 
 struct Context
 {
-    VkInstance instance;
-    VkPhysicalDevice physicalDevice;
-    VkDevice device;
+    void initialize();
+    void finalize();
+
+    VkInstance instance{};
+    VkPhysicalDevice physicalDevice{};
+    VkDevice device{};
 };
 
 } // namespace vkt
