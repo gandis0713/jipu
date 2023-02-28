@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vk/precompile.h"
+#include "vk/vulkan_api.h"
 
 namespace vkt
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vk/precompile.h"
+#include "vk/vulkan_api.h"
 #include <string>
 #include <vector>
 
@@ -14,7 +14,7 @@ public:
 
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
-    
+
     void destroy();
 
     void setDevice(VkDevice device);
