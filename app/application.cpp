@@ -43,7 +43,6 @@ void Application::initVulkan()
     createInstance();
     setupDebugMessenger();
     createSurface();
-    pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
     createImageViews();
@@ -101,191 +100,8 @@ void Application::cleanup()
     glfwTerminate();
 }
 
-void Application::createInstance()
-{
-    //     const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
-    //     if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers))
-    //     {
-    //         throw std::runtime_error("validation layers requested, but not "
-    //                                  "available for instance!");
-    //     }
+void Application::createInstance() { m_context.initialize(); }
 
-    //     const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
-    //     if (!checkInstanceExtensionSupport(requiredInstanceExtensions))
-    //     {
-    //         throw std::runtime_error("instance extensions requested, but not available!");
-    //     }
-
-    //     VkApplicationInfo applicationInfo{};
-    //     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    //     // applicationInfo.pApplicationName = "App";
-    //     // applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    //     // applicationInfo.pEngineName = "Engine";
-    //     // applicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    //     // applicationInfo.apiVersion = VK_API_VERSION_1_0;
-
-    //     VkInstanceCreateInfo instanceCreateInfo{};
-    //     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    //     instanceCreateInfo.pApplicationInfo = &applicationInfo;
-
-    // #if defined(__APPLE__)
-    //     #if VK_HEADER_VERSION >= 216
-    //     instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    //     #endif
-    // #endif
-    //     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
-    //     instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
-
-    //     instanceCreateInfo.enabledLayerCount = 0;
-    //     instanceCreateInfo.pNext = nullptr;
-    //     if (enableDebugMessenger)
-    //     {
-    //         instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
-    //         instanceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-    //         populateDefaultDebugUtilsMessengerCreateInfo(m_debugMessengerUtilsCreateInfo);
-    //         instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
-    //     }
-
-    //     if (vkCreateInstance(&instanceCreateInfo, nullptr, &m_context.instance) != VK_SUCCESS)
-    //     {
-    //         throw std::runtime_error("failed to create instance!");
-    //     }
-
-    m_context.initialize();
-}
-
-void Application::pickPhysicalDevice()
-{
-    uint32_t physicalDeviceCount = 0;
-    vkEnumeratePhysicalDevices(m_context.instance, &physicalDeviceCount, nullptr);
-    std::cout << "Physical Device Count : " << physicalDeviceCount << std::endl;
-    if (physicalDeviceCount == 0)
-    {
-        throw std::runtime_error("failed to find GPUs with Vulkan support!");
-    }
-
-    std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
-    vkEnumeratePhysicalDevices(m_context.instance, &physicalDeviceCount, physicalDevices.data());
-
-    for (const VkPhysicalDevice& physicalDevice : physicalDevices)
-    {
-        if (isDeviceSuitable(physicalDevice))
-        {
-            m_context.physicalDevice = physicalDevice;
-            break;
-        }
-    }
-
-    if (m_context.physicalDevice == VK_NULL_HANDLE)
-    {
-        throw std::runtime_error("failed to find a suitable GPU!");
-    }
-}
-
-bool Application::isDeviceSuitable(const VkPhysicalDevice& physicalDevice)
-{
-    QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
-
-    bool deviceExtensionsSupported = checkDeviceExtensionSupport(physicalDevice);
-
-    bool swapChainAdequate = false;
-
-    if (deviceExtensionsSupported)
-    {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
-        swapChainAdequate = !swapChainSupport.surfaceFormats.empty() && !swapChainSupport.presentModes.empty();
-    }
-
-    return queueFamilyIndices.isComplete() && deviceExtensionsSupported && swapChainAdequate;
-}
-
-const std::vector<const char*>& Application::getRequiredInstanceExtensions()
-{
-    static std::vector<const char*> requiredInstanceExtensions;
-
-    if (requiredInstanceExtensions.size() == 0)
-    {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> glfwRequiredInstanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-        requiredInstanceExtensions = glfwRequiredInstanceExtensions;
-
-        if (enableDebugMessenger)
-        {
-            requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        requiredInstanceExtensions.push_back("VK_KHR_surface");
-        /*
-            https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-            https://sourceforge.net/p/predef/wiki/OperatingSystems/
-        */
-
-#if defined(__linux__)
-        requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
-#elif defined(_WIN64)
-        requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
-#elif defined(__APPLE__)
-    #if defined(VK_USE_PLATFORM_MACOS_MVK)
-        requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
-    #elif defined(VK_USE_PLATFORM_METAL_EXT)
-        requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
-    #endif
-#endif
-
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 216
-        requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    #endif
-#endif
-
-        std::cout << "Required extensions :" << std::endl;
-        for (const auto& extension : requiredInstanceExtensions)
-        {
-            std::cout << '\t' << extension << std::endl;
-        }
-    }
-
-    return requiredInstanceExtensions;
-}
-
-bool Application::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
-{
-    uint32_t instanceExtensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
-    std::vector<VkExtensionProperties> availableInstanceExtensions(instanceExtensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
-
-    // available instance extensions;
-    std::cout << "Available Instance Extensions Count : " << availableInstanceExtensions.size() << std::endl;
-    std::cout << "Available Instance Extensions : " << std::endl;
-    for (const auto& availableInstanceExtension : availableInstanceExtensions)
-    {
-        std::cout << '\t' << availableInstanceExtension.extensionName << std::endl;
-    }
-
-    for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
-    {
-        bool extensionFound = false;
-        for (const auto& availableInstanceExtension : availableInstanceExtensions)
-        {
-            if (strcmp(requiredInstanceExtension, availableInstanceExtension.extensionName) == 0)
-            {
-                extensionFound = true;
-                break;
-            }
-        }
-
-        if (!extensionFound)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 const std::vector<const char*>& Application::getRequiredValidationLayers()
 {
@@ -495,24 +311,6 @@ void Application::createSurface()
     {
         throw std::runtime_error("failed to create window surface!");
     }
-}
-
-bool Application::checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
-{
-    uint32_t deviceExtensionCount;
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, availableDeviceExtensions.data());
-
-    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
-
-    for (const VkExtensionProperties& availableDeviceExtension : availableDeviceExtensions)
-    {
-        requiredDeviceExtensionsTemp.erase(availableDeviceExtension.extensionName);
-    }
-
-    return requiredDeviceExtensionsTemp.empty();
 }
 
 SwapChainSupportDetails Application::querySwapChainSupport(const VkPhysicalDevice& physicalDevice)

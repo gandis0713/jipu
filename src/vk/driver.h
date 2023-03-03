@@ -12,6 +12,7 @@ public:
     explicit Driver(Platform* platform = nullptr);
     ~Driver();
 
+private:
     void terminate();
 
 private:

@@ -119,8 +119,6 @@ private:
 
     void createInstance();
 
-    void pickPhysicalDevice();
-    bool isDeviceSuitable(const VkPhysicalDevice& physicalDevice);
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
 
     void createLogicalDevice();
@@ -145,11 +143,7 @@ private:
     void drawFrame();
 
     // Validation layer
-    const std::vector<const char*>& getRequiredInstanceExtensions();
-    bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions);
     const std::vector<const char*>& getRequiredValidationLayers();
-    bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice);
-
     bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
     void setupDebugMessenger();
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,

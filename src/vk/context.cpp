@@ -1,8 +1,49 @@
 #include "context.h"
 #include "allocation.h"
 
+#include <set>
 #include <spdlog/spdlog.h>
 #include <vector>
+
+static const std::vector<const char*> getRequiredInstanceExtensions()
+{
+    std::vector<const char*> requiredInstanceExtensions{};
+
+    requiredInstanceExtensions.push_back("VK_KHR_surface");
+    /*
+        https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+        https://sourceforge.net/p/predef/wiki/OperatingSystems/
+    */
+
+#if defined(__linux__)
+    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
+#elif defined(_WIN64)
+    requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
+#elif defined(__APPLE__)
+    #if defined(VK_USE_PLATFORM_MACOS_MVK)
+    requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
+    #elif defined(VK_USE_PLATFORM_METAL_EXT)
+    requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
+    #endif
+#endif
+
+#if defined(__APPLE__)
+    #if VK_HEADER_VERSION >= 216
+    requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    #endif
+#endif
+
+    spdlog::info("Required Instance extensions :");
+    for (const auto& extension : requiredInstanceExtensions)
+    {
+        spdlog::info("{}{}", '\t', extension);
+    }
+
+    // TODO: Debug Utils
+    // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+    return requiredInstanceExtensions;
+}
 
 static bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
 {
@@ -40,44 +81,37 @@ static bool checkInstanceExtensionSupport(const std::vector<const char*> require
     return true;
 }
 
-static const std::vector<const char*>& getRequiredInstanceExtensions()
+const std::vector<const char*> getRequiredDeviceExtension()
 {
-    static std::vector<const char*> requiredInstanceExtensions;
+    std::vector<const char*> requiredDeviceExtension;
 
-    requiredInstanceExtensions.push_back("VK_KHR_surface");
-    /*
-        https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-        https://sourceforge.net/p/predef/wiki/OperatingSystems/
-    */
+    requiredDeviceExtension.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-#if defined(__linux__)
-    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
-#elif defined(_WIN64)
-    requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
-#elif defined(__APPLE__)
-    #if defined(VK_USE_PLATFORM_MACOS_MVK)
-    requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
-    #elif defined(VK_USE_PLATFORM_METAL_EXT)
-    requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
-    #endif
-#endif
-
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 216
-    requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    #endif
-#endif
-
-    spdlog::info("Required Instance extensions :");
-    for (const auto& extension : requiredInstanceExtensions)
+    spdlog::info("Required Device extensions :");
+    for (const auto& extension : requiredDeviceExtension)
     {
         spdlog::info("{}{}", '\t', extension);
     }
+    return requiredDeviceExtension;
+};
 
-    // // Debug Utils
-    // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
+{
+    uint32_t deviceExtensionCount;
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
 
-    return requiredInstanceExtensions;
+    std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, availableDeviceExtensions.data());
+
+    const std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
+    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
+
+    for (const VkExtensionProperties& availableDeviceExtension : availableDeviceExtensions)
+    {
+        requiredDeviceExtensionsTemp.erase(availableDeviceExtension.extensionName);
+    }
+
+    return requiredDeviceExtensionsTemp.empty();
 }
 
 static VkInstance createInstance()
@@ -112,7 +146,7 @@ static VkInstance createInstance()
         instanceCreateInfo.pApplicationInfo = &applicationInfo;
     }
 
-    // // Debug
+    // TODO: Debug
     // if (enableDebugMessenger)
     // {
     //     instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
@@ -121,16 +155,71 @@ static VkInstance createInstance()
     //     instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
     // }
 
-    VkInstance instance;
+    VkInstance instance{};
     VkResult result = vkCreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &instance);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to create VkInstance: {}", result);
+    }
 
     return instance;
+}
+
+static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
+{
+    uint32_t physicalDeviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+    spdlog::info("Physical Device Count: {}", physicalDeviceCount);
+    if (physicalDeviceCount == 0)
+    {
+        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
+
+    std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
+    vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
+
+    for (const VkPhysicalDevice& candidatePhysicalDevice : physicalDevices)
+    {
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+
+        spdlog::info("Queue Family Size: {}", queueFamilyProperties.size());
+        for (size_t i = 0; i < queueFamilyProperties.size(); i++)
+        {
+
+            // check graphic family
+            const auto& queueFamily = queueFamilyProperties[i];
+
+            spdlog::info("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
+
+            const int family = queueFamily.queueFlags & queueFlags;
+
+            if (family == queueFlags)
+            {
+                return candidatePhysicalDevice;
+            }
+
+            // TODO: check support swap chain
+
+            // TODO: check preset???
+        }
+    }
+
+    throw std::runtime_error("failed to find a suitable GPU!");
+    return VK_NULL_HANDLE;
 }
 
 namespace vkt
 {
 
-void Context::initialize() { instance = createInstance(); }
+void Context::initialize()
+{
+    instance = createInstance();
+    physicalDevice = selectPhysicalDevice(instance);
+}
 
 void Context::finalize()
 {
