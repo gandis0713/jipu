@@ -6,8 +6,8 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    spdlog::error("argc: {}", argc);
-    spdlog::error("argv: {}", argv[0]);
+    LOG_ERROR("argc: {}", argc);
+    LOG_ERROR("argv: {}", argv[0]);
 
     Application app(argc, argv);
 

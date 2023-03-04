@@ -32,9 +32,9 @@
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
-            // "cppStandard": "${env:cppVersion}",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-arm64"
+            "intelliSenseMode": "clang-arm64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         },
         {
             "name": "Window",

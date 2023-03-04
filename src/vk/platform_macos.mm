@@ -1,6 +1,6 @@
 #include "platform_macos.h"
+#include "utils/log.h"
 #include "vk/vulkan_api.h"
-#include <spdlog/spdlog.h>
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -17,7 +17,7 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         NSView* nsView = (__bridge NSView*)nativeWindow;
         if (nsView == nil)
         {
-            spdlog::error("[{}] Failed to get NSView.", __func__);
+            LOG_ERROR("[{}] Failed to get NSView.", __func__);
             return nullptr;
         }
         NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
@@ -34,7 +34,7 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
 
         if (result != VK_SUCCESS)
         {
-            spdlog::error("Failed to create VkSurfaceKHR. {}", result);
+            LOG_ERROR("Failed to create VkSurfaceKHR. {}", result);
         }
 
         return surface;
@@ -49,7 +49,7 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         NSView* nsView = (__bridge NSView*)nativeWindow;
         if (nsView == nil)
         {
-            spdlog::error("[{}] Failed to get NSView.", __func__);
+            LOG_ERROR("[{}] Failed to get NSView.", __func__);
             return nullptr;
         }
 
@@ -62,8 +62,8 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         vkCreateMetalSurfaceEXT = (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(static_cast<VkInstance>(instance), "vkCreateMetalSurfaceEXT");
         if (!vkCreateMetalSurfaceEXT)
         {
-            spdlog::error("Cocoa: Vulkan instance missing VK_EXT_metal_surface "
-                          "extension");
+            LOG_ERROR("Cocoa: Vulkan instance missing VK_EXT_metal_surface "
+                      "extension");
             return nullptr;
         }
 
@@ -75,7 +75,7 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
 
         if (result != VK_SUCCESS)
         {
-            spdlog::error("failed to create window surface. {}", result);
+            LOG_ERROR("failed to create window surface. {}", result);
         }
 
         return surface;

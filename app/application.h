@@ -1,6 +1,7 @@
 #pragma once
 
 // #define GLFW_INCLUDE_VULKAN
+#include "utils/log.h"
 #include "vk/context.h"
 #include <GLFW/glfw3.h>
 
@@ -13,7 +14,6 @@
 #include <iostream>
 #include <optional>
 #include <set>
-#include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
 
@@ -29,14 +29,6 @@ template <> struct formatter<std::filesystem::path>
 
 namespace vkt
 {
-
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-
-    bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
-};
 
 struct SwapChainSupportDetails
 {

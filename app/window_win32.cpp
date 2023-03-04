@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 // clang-format on
-#include <spdlog/spdlog.h>
+#include "utils/log.h"
 
 namespace vkt
 {
@@ -53,7 +53,7 @@ void* Window::createSurface(void* instance)
     VkSurfaceKHR surface{ nullptr };
     if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), static_cast<GLFWwindow*>(m_window), nullptr, &surface) != VK_SUCCESS)
     {
-        spdlog::error("failed to create window surface!");
+        LOG_ERROR("failed to create window surface!");
     }
 
     return surface;

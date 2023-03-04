@@ -1,9 +1,51 @@
 #include "context.h"
 #include "allocation.h"
+#include "utils/log.h"
 
 #include <set>
-#include <spdlog/spdlog.h>
 #include <vector>
+
+namespace vkt
+{
+
+QueueFamilyIndices QueueFamilyIndices::findQueueFamilies(const VkPhysicalDevice& physicalDevice)
+{
+    QueueFamilyIndices queueFamilyIndices;
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+
+    LOG_INFO("queue family property size: {}", queueFamilyProperties.size());
+    for (size_t i = 0; i < queueFamilyProperties.size(); i++)
+    {
+        const auto& queueFamily = queueFamilyProperties[i];
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            queueFamilyIndices.graphicsFamily = i;
+
+            // // TODO: check present family.
+            // VkBool32 presentSupport = false;
+            // vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, m_surface, &presentSupport);
+
+            // if (presentSupport)
+            // {
+            //     queueFamilyIndices.presentFamily = i;
+            // }
+
+            queueFamilyIndices.presentFamily = queueFamilyIndices.graphicsFamily;
+        }
+
+        if (queueFamilyIndices.isComplete())
+        {
+            break;
+        }
+    }
+
+    return queueFamilyIndices;
+}
 
 static const std::vector<const char*> getRequiredInstanceExtensions()
 {
@@ -33,10 +75,10 @@ static const std::vector<const char*> getRequiredInstanceExtensions()
     #endif
 #endif
 
-    spdlog::info("Required Instance extensions :");
+    LOG_INFO("Required Instance extensions :");
     for (const auto& extension : requiredInstanceExtensions)
     {
-        spdlog::info("{}{}", '\t', extension);
+        LOG_INFO("{}{}", '\t', extension);
     }
 
     // TODO: Debug Utils
@@ -53,11 +95,11 @@ static bool checkInstanceExtensionSupport(const std::vector<const char*> require
     vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
 
     // available instance extensions;
-    spdlog::info("Available Instance Extensions Count: {}", availableInstanceExtensions.size());
-    spdlog::info("Available Instance Extensions : ");
+    LOG_INFO("Available Instance Extensions Count: {}", availableInstanceExtensions.size());
+    LOG_INFO("Available Instance Extensions : ");
     for (const auto& availableInstanceExtension : availableInstanceExtensions)
     {
-        spdlog::info("{}{}", '\t', availableInstanceExtension.extensionName);
+        LOG_INFO("{}{}", '\t', availableInstanceExtension.extensionName);
     }
 
     for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
@@ -87,10 +129,10 @@ const std::vector<const char*> getRequiredDeviceExtension()
 
     requiredDeviceExtension.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-    spdlog::info("Required Device extensions :");
+    LOG_INFO("Required Device extensions :");
     for (const auto& extension : requiredDeviceExtension)
     {
-        spdlog::info("{}{}", '\t', extension);
+        LOG_INFO("{}{}", '\t', extension);
     }
     return requiredDeviceExtension;
 };
@@ -159,7 +201,7 @@ static VkInstance createInstance()
     VkResult result = vkCreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &instance);
     if (result != VK_SUCCESS)
     {
-        spdlog::error("Failed to create VkInstance: {}", result);
+        LOG_ERROR("Failed to create VkInstance: {}", result);
     }
 
     return instance;
@@ -169,7 +211,7 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
 {
     uint32_t physicalDeviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
-    spdlog::info("Physical Device Count: {}", physicalDeviceCount);
+    LOG_INFO("Physical Device Count: {}", physicalDeviceCount);
     if (physicalDeviceCount == 0)
     {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
@@ -186,14 +228,14 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
-        spdlog::info("Queue Family Size: {}", queueFamilyProperties.size());
+        LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
         for (size_t i = 0; i < queueFamilyProperties.size(); i++)
         {
 
             // check graphic family
             const auto& queueFamily = queueFamilyProperties[i];
 
-            spdlog::info("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
+            LOG_INFO("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
 
             const int family = queueFamily.queueFlags & queueFlags;
 
@@ -212,20 +254,86 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
     return VK_NULL_HANDLE;
 }
 
-namespace vkt
+static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamilyIndices queueFamilyIndices)
 {
+    std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value() };
+
+    std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
+
+    float queuePriority = 1.0f;
+    for (const uint32_t queueFamilyIndex : uniqueQueueFamilieIndices)
+    {
+        VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
+        deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        deviceQueueCreateInfo.queueFamilyIndex = queueFamilyIndex;
+        deviceQueueCreateInfo.queueCount = 1;
+        deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
+        deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
+    }
+
+    VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+
+    VkDeviceCreateInfo deviceCreateInfo{};
+    deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
+    deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
+    deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
+
+    std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
+    deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
+    deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+
+    // TODO: validation layer.
+    // // set validation layers to be compatible with older implementations:
+    // if (enableValidationLayers)
+    // {
+    //     const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
+    //     if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers))
+    //     {
+    //         throw std::runtime_error("validation layers requested, but not "
+    //                                  "available for device!");
+    //     }
+    //     deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
+    //     deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
+    // }
+    // else
+    // {
+    //     deviceCreateInfo.enabledLayerCount = 0;
+    // }
+
+    VkDevice device{};
+    if (vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create logical device!");
+    }
+
+    return device;
+}
 
 void Context::initialize()
 {
     instance = createInstance();
-    physicalDevice = selectPhysicalDevice(instance);
+
+    // select physical device
+    VkQueueFlagBits queueFlagBits = VK_QUEUE_GRAPHICS_BIT;
+    physicalDevice = selectPhysicalDevice(instance, queueFlagBits);
+
+    // create device
+    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
+    device = createDevice(physicalDevice, queueFamilyIndices);
+
+    // create graphics queue
+    vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &graphicsQueue);
+
+    // create present queue
+    vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &presentQueue);
 }
 
 void Context::finalize()
 {
     if (instance == nullptr)
     {
-        spdlog::warn("VkInstance is nullptr.");
+        LOG_WARN("VkInstance is nullptr.");
         return;
     }
 
