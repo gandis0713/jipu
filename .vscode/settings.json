@@ -89,7 +89,24 @@
         "stack": "cpp",
         "unordered_set": "cpp",
         "variant": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "stop_token": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
     },
     "cmake.configureOnOpen": false,
     "cmake.configureOnEdit": false,
@@ -108,8 +125,8 @@
                 "%comspec%",
                 "/k",
                 "${env:VS140COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"
+                // "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
             ],
-            // "args": ["%comspec%", "/k", "${env:VS140COMNTOOLS}\\VsDevCmd.bat"], //  -arch=amd64 -host_arch=amd64
             "icon": "terminal-cmd"
         },
         "Cmd vs2022": {
@@ -121,8 +138,8 @@
                 "%comspec%",
                 "/k",
                 "${env:VS150COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"
+                // "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
             ],
-            // "args": ["%comspec%", "/k", "${env:VS150COMNTOOLS}\\VsDevCmd.bat"], //  -arch=amd64 -host_arch=amd64
             "icon": "terminal-cmd"
         },
         "Git Bash": {
