@@ -13,7 +13,7 @@ std::vector<char> readFile(const std::filesystem::path& file_path)
 
     if (!file.is_open())
     {
-        throw std::runtime_error(fmt::format("Failed to open file: {}", file_path.c_str()));
+        throw std::runtime_error(fmt::format("Failed to open file: {}", file_path.generic_string()));
     }
 
     size_t fileSize = static_cast<size_t>(file.tellg());

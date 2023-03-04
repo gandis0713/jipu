@@ -1,5 +1,6 @@
 #include "application.h"
 #include "window.h"
+#include <string>
 
 std::filesystem::path vkt::Application::path;
 std::filesystem::path vkt::Application::dir;
@@ -388,7 +389,8 @@ void Application::createGraphicsPipeline()
     m_pipeline.setDevice(m_context.device);
     m_pipeline.setRenderPass(m_renderPass);
 
-    m_pipeline.createGraphicsPipeline(Application::getDir() / "triangle_vert.spv", Application::getDir() / "triangle_frag.spv");
+    m_pipeline.createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
+                                      (Application::getDir() / "triangle_frag.spv").generic_string());
 }
 
 VkShaderModule Application::createShaderModule(const std::vector<char>& codeBuffer)
