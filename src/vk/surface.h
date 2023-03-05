@@ -21,6 +21,8 @@ public:
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
 
+    void* getHandle() const;
+
     const VkSurfaceCapabilitiesKHR& getSurfaceCapabilities() const;
     const std::vector<VkSurfaceFormatKHR>& getSurfaceFormats() const;
     const std::vector<VkPresentModeKHR>& getPresentModes() const;
@@ -32,7 +34,7 @@ private:
     std::vector<VkPresentModeKHR> m_presentModes;
 
 private:
-    VkSurfaceKHR m_surface;
+    VkSurfaceKHR m_handle;
     VkPhysicalDevice m_physicalDevice;
 };
 

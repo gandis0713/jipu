@@ -71,12 +71,9 @@ private:
     std::shared_ptr<Surface> m_surface = nullptr;
 
     // swap chain
-    // std::shared_ptr<SwapChain> m_swapChain = nullptr;
-    std::vector<VkImage> m_vecSwapChainImages;
-    VkSwapchainKHR m_swapChain;
-    VkFormat m_swapChainImageFormat;
-    VkExtent2D m_swapChainExtent;
-    std::vector<VkImageView> m_vecSwapChainImageViews;
+    std::shared_ptr<SwapChain> m_swapChain = nullptr;
+
+    // frame buffers
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
 
     // vulkan context
@@ -114,7 +111,7 @@ private:
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 
     void createSwapChain();
-    void createImageViews();
+    //    void createImageViews();
     void createGraphicsPipeline();
     void createRenderPass();
     void createFramebuffers();
