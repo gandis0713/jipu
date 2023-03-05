@@ -49,7 +49,6 @@ void* Window::getNativeWindow()
 
 void* Window::createSurface(void* instance)
 {
-
     VkSurfaceKHR surface{ nullptr };
     if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), static_cast<GLFWwindow*>(m_window), nullptr, &surface) != VK_SUCCESS)
     {

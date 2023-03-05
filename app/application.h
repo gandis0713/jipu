@@ -3,6 +3,7 @@
 // #define GLFW_INCLUDE_VULKAN
 #include "utils/log.h"
 #include "vk/context.h"
+#include "vk/surface.h"
 #include <GLFW/glfw3.h>
 
 #include "vk/pipeline.h"
@@ -11,7 +12,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
-#include <iostream>
+#include <memory>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -66,7 +67,8 @@ private:
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
     // Surface
-    VkSurfaceKHR m_surface;
+    // VkSurfaceKHR m_surface;
+    std::unique_ptr<Surface> m_surface = nullptr;
 
     // swap chain
     std::vector<VkImage> m_vecSwapChainImages;
@@ -85,13 +87,7 @@ private:
 
     VkRenderPass m_renderPass;
 
-    // // shader module
-    // VkShaderModule m_vertShaderModule;
-    // VkShaderModule m_fragShaderModule;
-
-    // // pipeline
-    // VkPipelineLayout m_pipelineLayout;
-    // VkPipeline m_graphicsPipeline;
+    // pipeline
     Pipeline m_pipeline;
 
     // command
@@ -116,9 +112,6 @@ private:
     void createLogicalDevice();
     void createSurface();
 
-    VkShaderModule createShaderModule(const std::vector<char>& codeBuffer);
-
-    SwapChainSupportDetails querySwapChainSupport(const VkPhysicalDevice& physicalDevice);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);

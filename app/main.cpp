@@ -1,4 +1,5 @@
 #include "application.h"
+#include "utils/log.h"
 
 using namespace vkt;
 
@@ -17,7 +18,7 @@ int main(int argc, char** argv)
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        LOG_ERROR(e.what());
         return EXIT_FAILURE;
     }
 

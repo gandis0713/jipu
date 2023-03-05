@@ -20,7 +20,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 {
     if (messageType != 1)
     {
-        std::cerr << "pCallbackData->pMessage : " << pCallbackData->pMessage << std::endl;
+        LOG_ERROR("pCallbackData->pMessage : {}", pCallbackData->pMessage);
     }
 
     return VK_FALSE;
@@ -91,7 +91,7 @@ void Application::cleanup()
 
     DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
-    vkDestroySurfaceKHR(m_context.instance, m_surface, nullptr);
+    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
 
     m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
 
@@ -113,10 +113,10 @@ const std::vector<const char*>& Application::getRequiredValidationLayers()
             // requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
         }
 
-        std::cout << "Required Validataion Layers :" << std::endl;
+        LOG_DEBUG("Required Validataion Layers :");
         for (const auto& validationLayer : requiredValidationLayers)
         {
-            std::cout << '\t' << validationLayer << std::endl;
+            LOG_DEBUG("  : {}", validationLayer);
         }
     }
 
@@ -131,11 +131,11 @@ bool Application::checkValidationLayerSupport(const std::vector<const char*> val
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    std::cout << "Available Validation Layer Count : \n\t" << availableLayers.size() << std::endl;
-    std::cout << "Available Aalidation Layer : " << std::endl;
+    LOG_DEBUG("Available Validation Layer Count : {}", availableLayers.size());
+    LOG_DEBUG("Available Aalidation Layer : ");
     for (const VkLayerProperties& layerProperties : availableLayers)
     {
-        std::cout << "\t " << layerProperties.layerName << std::endl;
+        LOG_DEBUG("  : {}", layerProperties.layerName);
     }
 
     for (const char* layerName : validationLayers)
@@ -214,38 +214,13 @@ void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMesse
 
 void Application::createSurface()
 {
-    m_surface = static_cast<VkSurfaceKHR>(m_window->createSurface(m_context.instance));
-    if (m_surface == nullptr)
+    VkSurfaceKHR surface = static_cast<VkSurfaceKHR>(m_window->createSurface(m_context.instance));
+    if (surface == nullptr)
     {
         throw std::runtime_error("failed to create window surface!");
     }
-}
 
-SwapChainSupportDetails Application::querySwapChainSupport(const VkPhysicalDevice& physicalDevice)
-{
-    SwapChainSupportDetails swapChainSupportDetails;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &swapChainSupportDetails.surfaceCapabilities);
-
-    uint32_t surfaceFormatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
-
-    if (surfaceFormatCount != 0)
-    {
-        swapChainSupportDetails.surfaceFormats.resize(surfaceFormatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, swapChainSupportDetails.surfaceFormats.data());
-    }
-
-    uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
-
-    if (presentModeCount != 0)
-    {
-        swapChainSupportDetails.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, swapChainSupportDetails.presentModes.data());
-    }
-
-    return swapChainSupportDetails;
+    m_context.surface = surface;
 }
 
 VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats)
@@ -296,21 +271,29 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surface
 
 void Application::createSwapChain()
 {
-    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(m_context.physicalDevice);
-
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.surfaceFormats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D imageExtent = chooseSwapExtent(swapChainSupport.surfaceCapabilities);
-
-    uint32_t imageCount = swapChainSupport.surfaceCapabilities.minImageCount + 1;
-    if (swapChainSupport.surfaceCapabilities.maxImageCount > 0 && imageCount > swapChainSupport.surfaceCapabilities.maxImageCount)
+    if (m_context.surface == VK_NULL_HANDLE)
     {
-        imageCount = swapChainSupport.surfaceCapabilities.maxImageCount;
+        std::runtime_error("Failed to create swap chain due to surface is null.");
+    }
+
+    SurfaceCreateInfo info{ m_context.physicalDevice, m_context.surface };
+    m_surface = std::make_unique<Surface>(info);
+
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(m_surface->getSurfaceFormats());
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(m_surface->getPresentModes());
+
+    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = m_surface->getSurfaceCapabilities();
+    VkExtent2D imageExtent = chooseSwapExtent(surfaceCapabilities);
+
+    uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
+    if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
+    {
+        imageCount = surfaceCapabilities.maxImageCount;
     }
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = m_surface;
+    swapchainCreateInfo.surface = m_context.surface;
     swapchainCreateInfo.minImageCount = imageCount;
     swapchainCreateInfo.imageFormat = surfaceFormat.format;
     swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -334,7 +317,7 @@ void Application::createSwapChain()
         swapchainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
     }
 
-    swapchainCreateInfo.preTransform = swapChainSupport.surfaceCapabilities.currentTransform;
+    swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
     swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
@@ -391,22 +374,6 @@ void Application::createGraphicsPipeline()
 
     m_pipeline.createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
                                       (Application::getDir() / "triangle_frag.spv").generic_string());
-}
-
-VkShaderModule Application::createShaderModule(const std::vector<char>& codeBuffer)
-{
-    VkShaderModuleCreateInfo shaderModuleCreateInfo{};
-    shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleCreateInfo.codeSize = codeBuffer.size();
-    shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(codeBuffer.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(m_context.device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create shader module!");
-    }
-
-    return shaderModule;
 }
 
 void Application::createRenderPass()

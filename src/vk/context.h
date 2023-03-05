@@ -30,8 +30,11 @@ struct Context
     VkDevice device{};
 
     // queue
-    VkQueue graphicsQueue;
-    VkQueue presentQueue;
+    VkQueue graphicsQueue{};
+    VkQueue presentQueue{};
+
+    // Surface
+    VkSurfaceKHR surface{}; // TODO: move to Surface object.
 };
 
 } // namespace vkt
