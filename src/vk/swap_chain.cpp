@@ -1,5 +1,7 @@
 #include "swap_chain.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 
@@ -54,7 +56,7 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(info.device), m_surface(info.surface) 
+SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(info.device), m_surface(info.surface)
 {
     std::shared_ptr<Surface> surface = m_surface.lock();
     if (surface == nullptr)
@@ -123,7 +125,7 @@ SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(
 
     m_format = surfaceFormat.format;
     m_extent = imageExtent;
-    
+
     // create image vies.
     m_imageViews.resize(m_images.size());
 
@@ -155,22 +157,13 @@ SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(
 
 SwapChain::~SwapChain() noexcept {}
 
-void* SwapChain::getHandle() const
-{
-    return m_handle;
-}
+void* SwapChain::getHandle() const { return m_handle; }
 
 VkFormat SwapChain::getFormat() const { return m_format; }
 VkExtent2D SwapChain::getExtent2D() const { return m_extent; }
 
-const std::vector<VkImage>& SwapChain::getImages() const
-{
-    return m_images;
-}
+const std::vector<VkImage>& SwapChain::getImages() const { return m_images; }
 
-const std::vector<VkImageView>& SwapChain::getImageViews() const
-{
-    return m_imageViews;
-}
+const std::vector<VkImageView>& SwapChain::getImageViews() const { return m_imageViews; }
 
 } // namespace vkt

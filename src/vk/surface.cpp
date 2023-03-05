@@ -31,10 +31,7 @@ Surface::Surface(const SurfaceCreateInfo info) noexcept : m_physicalDevice(info.
 
 Surface::~Surface() noexcept {}
 
-void* Surface::getHandle() const
-{
-    return m_handle;
-}
+void* Surface::getHandle() const { return m_handle; }
 
 const VkSurfaceCapabilitiesKHR& Surface::getSurfaceCapabilities() const { return m_surfaceCapabilities; }
 const std::vector<VkSurfaceFormatKHR>& Surface::getSurfaceFormats() const { return m_surfaceFormats; }

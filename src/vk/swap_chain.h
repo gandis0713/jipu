@@ -3,6 +3,7 @@
 #include "surface.h"
 #include "vulkan_api.h"
 
+#include <memory>
 #include <vector>
 
 namespace vkt
@@ -22,12 +23,12 @@ public:
 
     SwapChain(const SwapChain&) = delete;
     SwapChain& operator=(const SwapChain&) = delete;
-    
+
     void* getHandle() const;
 
     VkFormat getFormat() const;
     VkExtent2D getExtent2D() const;
-    
+
     const std::vector<VkImage>& getImages() const;
     const std::vector<VkImageView>& getImageViews() const;
 
@@ -37,11 +38,11 @@ private:
 
 private:
     VkSwapchainKHR m_handle;
-    
+
     std::vector<VkImage> m_images;
     std::vector<VkImageView> m_imageViews;
 
-    VkFormat m_format; // TODO: need? or get from surface.
-    VkExtent2D m_extent;    // TODO: need? or get from surface.
+    VkFormat m_format;   // TODO: need? or get from surface.
+    VkExtent2D m_extent; // TODO: need? or get from surface.
 };
 } // namespace vkt
