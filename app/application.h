@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "vk/context.h"
 #include "vk/surface.h"
+#include "vk/swap_chain.h"
 #include <GLFW/glfw3.h>
 
 #include "vk/pipeline.h"
@@ -62,15 +63,15 @@ private:
 private:
     Window* m_window;
 
-    // Debug
+    // debug
     VkDebugUtilsMessengerEXT m_debugMessenger;
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
-    // Surface
-    // VkSurfaceKHR m_surface;
-    std::unique_ptr<Surface> m_surface = nullptr;
+    // surface
+    std::shared_ptr<Surface> m_surface = nullptr;
 
     // swap chain
+    // std::shared_ptr<SwapChain> m_swapChain = nullptr;
     std::vector<VkImage> m_vecSwapChainImages;
     VkSwapchainKHR m_swapChain;
     VkFormat m_swapChainImageFormat;
@@ -78,12 +79,8 @@ private:
     std::vector<VkImageView> m_vecSwapChainImageViews;
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
 
-    //
+    // vulkan context
     vkt::Context m_context;
-
-    // physical device
-    VkQueue m_graphicsQueue;
-    VkQueue m_presentQueue;
 
     VkRenderPass m_renderPass;
 

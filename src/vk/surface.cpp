@@ -1,12 +1,12 @@
 
-#include "Surface.h"
+#include "surface.h"
 
 #include "utils/log.h"
 
 namespace vkt
 {
 
-Surface::Surface(const SurfaceCreateInfo info) : m_physicalDevice(info.physicalDevice), m_surface(info.surface)
+Surface::Surface(const SurfaceCreateInfo info) noexcept : m_physicalDevice(info.physicalDevice), m_surface(info.surface)
 {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &m_surfaceCapabilities);
 
@@ -29,7 +29,7 @@ Surface::Surface(const SurfaceCreateInfo info) : m_physicalDevice(info.physicalD
     }
 }
 
-Surface::~Surface() {}
+Surface::~Surface() noexcept {}
 
 const VkSurfaceCapabilitiesKHR& Surface::getSurfaceCapabilities() const { return m_surfaceCapabilities; }
 const std::vector<VkSurfaceFormatKHR>& Surface::getSurfaceFormats() const { return m_surfaceFormats; }

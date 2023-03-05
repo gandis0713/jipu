@@ -277,7 +277,9 @@ void Application::createSwapChain()
     }
 
     SurfaceCreateInfo info{ m_context.physicalDevice, m_context.surface };
-    m_surface = std::make_unique<Surface>(info);
+    m_surface = std::make_shared<Surface>(info);
+
+    // TODO: use SwapChain object.
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(m_surface->getSurfaceFormats());
     VkPresentModeKHR presentMode = chooseSwapPresentMode(m_surface->getPresentModes());
