@@ -19,16 +19,16 @@ QueueFamilyIndices QueueFamilyIndices::findQueueFamilies(const VkPhysicalDevice&
     vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
     LOG_INFO("queue family property size: {}", queueFamilyProperties.size());
-    for (size_t i = 0; i < queueFamilyProperties.size(); i++)
+    for (auto i = 0; i < queueFamilyProperties.size(); ++i)
     {
         const auto& queueFamily = queueFamilyProperties[i];
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            queueFamilyIndices.graphicsFamily = i;
+            queueFamilyIndices.graphicsFamily = static_cast<uint32_t>(i);
 
             // // TODO: check present family.
             // VkBool32 presentSupport = false;
-            // vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, m_surface, &presentSupport);
+            // vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 
             // if (presentSupport)
             // {
@@ -229,7 +229,7 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
 
         LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
-        for (size_t i = 0; i < queueFamilyProperties.size(); i++)
+        for (auto i = 0; i < queueFamilyProperties.size(); ++i)
         {
 
             // check graphic family
@@ -313,14 +313,26 @@ static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamily
 void Context::initialize()
 {
     instance = createInstance();
+    if (instance == nullptr)
+    {
+        return;
+    }
 
     // select physical device
     VkQueueFlagBits queueFlagBits = VK_QUEUE_GRAPHICS_BIT;
     physicalDevice = selectPhysicalDevice(instance, queueFlagBits);
+    if (physicalDevice == nullptr)
+    {
+        return;
+    }
 
     // create device
     QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
     device = createDevice(physicalDevice, queueFamilyIndices);
+    if (device == nullptr)
+    {
+        return;
+    }
 
     // create graphics queue
     vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &graphicsQueue);

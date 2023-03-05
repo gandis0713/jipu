@@ -21,9 +21,15 @@ struct Context
     void initialize();
     void finalize();
 
-    VkInstance instance{};             // single instance.
+    VkInstance instance{}; // single instance.
+
+    // physical device
     VkPhysicalDevice physicalDevice{}; // single physical devcie.
+
+    // device
     VkDevice device{};
+
+    // queue
     VkQueue graphicsQueue;
     VkQueue presentQueue;
 };
