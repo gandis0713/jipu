@@ -1,23 +1,28 @@
 #pragma once
 
+#include "vk/adapter.h"
 #include "vulkan_api.h"
+#include <memory>
 
 namespace vkt
 {
 
 struct DeviceCreateInfo
 {
-    VkInstance instance;
+    std::unique_ptr<Adapter> adapter;
 };
 class Device
 {
-    explicit Device(const DeviceCreateInfo&);
+    explicit Device(DeviceCreateInfo info);
     ~Device();
 
 private:
-    VkInstance m_instance;
+    std::unique_ptr<Adapter> m_adapter;
 
 private:
-    VkDevice m_handle;
+    VkDevice m_device;
+
+    VkQueue m_graphicsQueue;
+    VkQueue m_presentQueue;
 };
 } // namespace vkt

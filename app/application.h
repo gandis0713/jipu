@@ -2,7 +2,9 @@
 
 // #define GLFW_INCLUDE_VULKAN
 #include "utils/log.h"
+#include "vk/adapter.h"
 #include "vk/context.h"
+#include "vk/driver.h"
 #include "vk/surface.h"
 #include "vk/swap_chain.h"
 #include <GLFW/glfw3.h>
@@ -19,16 +21,6 @@
 #include <stdexcept>
 #include <vector>
 
-namespace fmt
-{
-template <> struct formatter<std::filesystem::path>
-{
-    constexpr auto parse(format_parse_context& context) { return context.begin(); }
-
-    template <typename T> auto format(const std::filesystem::path& path, T& t) const { return fmt::format_to(t.out(), "{:s}", path.c_str()); }
-};
-} // namespace fmt
-
 namespace vkt
 {
 
@@ -44,15 +36,13 @@ class Window;
 class Application
 {
 public:
+    Application() = default;
+    Application(int argc, char** argv);
+
+public:
     void run();
 
-    Application() = default;
-    Application(int argc, char** argv)
-    {
-        path = std::filesystem::path(argv[0]);
-        dir = path.parent_path();
-    }
-
+public:
     static std::filesystem::path getPath() { return path; }
     static std::filesystem::path getDir() { return dir; }
 
@@ -77,7 +67,9 @@ private:
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
 
     // vulkan context
-    vkt::Context m_context;
+    Context m_context;
+
+    // Driver m_driver;
 
     VkRenderPass m_renderPass;
 
