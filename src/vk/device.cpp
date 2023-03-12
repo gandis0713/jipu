@@ -1,6 +1,7 @@
 #include "device.h"
 #include "utils/log.h"
 
+#include <optional>
 #include <set>
 
 struct QueueFamilyIndices
