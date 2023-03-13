@@ -12,11 +12,13 @@ class Driver;
 struct AdapterCreateInfo
 {
     std::shared_ptr<Driver> driver;
+    VkPhysicalDevice physicalDevice;
 };
 
 class Adapter
 {
 public:
+    Adapter() = delete;
     Adapter(AdapterCreateInfo info);
     ~Adapter();
 

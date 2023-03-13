@@ -51,40 +51,6 @@ private:
     static std::filesystem::path dir;
 
 private:
-    Window* m_window;
-
-    // debug
-    VkDebugUtilsMessengerEXT m_debugMessenger;
-    VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
-
-    // surface
-    std::shared_ptr<Surface> m_surface = nullptr;
-
-    // swap chain
-    std::shared_ptr<SwapChain> m_swapChain = nullptr;
-
-    // frame buffers
-    std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
-
-    // vulkan context
-    Context m_context;
-
-    // Driver m_driver;
-
-    VkRenderPass m_renderPass;
-
-    // pipeline
-    Pipeline m_pipeline;
-
-    // command
-    VkCommandPool m_commandPool;
-    std::vector<VkCommandBuffer> m_vecCommandBuffers;
-
-    // sync
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
-
-private:
     void initWindow();
     void initVulkan();
 
@@ -121,6 +87,40 @@ private:
                                           const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT);
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     void populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
+
+private:
+    Window* m_window;
+
+    // debug
+    VkDebugUtilsMessengerEXT m_debugMessenger;
+    VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
+
+    // surface
+    std::shared_ptr<Surface> m_surface = nullptr;
+
+    // swap chain
+    std::shared_ptr<SwapChain> m_swapChain = nullptr;
+
+    // frame buffers
+    std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
+
+    // vulkan context
+    Context m_context;
+
+    // Driver m_driver;
+
+    VkRenderPass m_renderPass;
+
+    // pipeline
+    Pipeline m_pipeline;
+
+    // command
+    VkCommandPool m_commandPool;
+    std::vector<VkCommandBuffer> m_vecCommandBuffers;
+
+    // sync
+    VkSemaphore m_imageAvailableSemaphore;
+    VkSemaphore m_renderFinishedSemaphore;
 };
 
 } // namespace vkt

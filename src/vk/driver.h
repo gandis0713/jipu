@@ -16,13 +16,13 @@ struct DriverCreateInfo
     std::unique_ptr<Platform> platform{ nullptr };
 };
 
-class Driver
+class Driver : public std::enable_shared_from_this<Driver>
 {
 public:
     explicit Driver(DriverCreateInfo info);
     ~Driver();
 
-    std::vector<std::unique_ptr<Adapter>> generateAdapters();
+    std::vector<std::unique_ptr<Adapter>> getAdapters();
 
 private:
     void terminate();

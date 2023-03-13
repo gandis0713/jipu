@@ -202,33 +202,21 @@ Driver::Driver(DriverCreateInfo info) : m_platform(std::move(info.platform))
     {
         return;
     }
-
-    // // select physical device
-    // VkQueueFlagBits queueFlagBits = VK_QUEUE_GRAPHICS_BIT;
-    // physicalDevice = selectPhysicalDevice(m_physicalDevices, queueFlagBits);
-    // if (physicalDevice == nullptr)
-    // {
-    //     return;
-    // }
-
-    // // create device
-    // QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
-    // device = createDevice(physicalDevice, queueFamilyIndices);
-    // if (device == nullptr)
-    // {
-    //     return;
-    // }
-
-    // // create graphics queue
-    // vkGetDeviceQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, &graphicsQueue);
-
-    // // create present queue
-    // vkGetDeviceQueue(device, queueFamilyIndices.presentFamily.value(), 0, &presentQueue);
 }
 
 Driver::~Driver() { terminate(); }
 
-std::vector<std::unique_ptr<Adapter>> generateAdapters() { return {}; }
+std::vector<std::unique_ptr<Adapter>> Driver::getAdapters()
+{
+    std::vector<std::unique_ptr<Adapter>> adapters{};
+    for (VkPhysicalDevice physicalDevice : m_physicalDevices)
+    {
+        AdapterCreateInfo info{ shared_from_this(), physicalDevice };
+        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(info);
+        adapters.push_back(std::move(adapter));
+    }
+    return adapters;
+}
 
 void Driver::terminate()
 {
