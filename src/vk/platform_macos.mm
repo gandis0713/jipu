@@ -8,6 +8,9 @@
 namespace vkt
 {
 
+PlatformMacOS::PlatformMacOS(PlatformCreateInfo info) : Platform(info) {}
+PlatformMacOS::~PlatformMacOS() {}
+
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
 void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
 {

@@ -106,8 +106,7 @@ private:
 
     // vulkan context
     Context m_context;
-
-    // Driver m_driver;
+    std::shared_ptr<Driver> m_driver;
 
     VkRenderPass m_renderPass;
 

@@ -22,6 +22,9 @@ public:
     explicit Driver(DriverCreateInfo info);
     ~Driver();
 
+    Driver(const Driver&) = delete;
+    Driver& operator=(const Driver&) = delete;
+
     std::vector<std::unique_ptr<Adapter>> getAdapters();
 
 private:

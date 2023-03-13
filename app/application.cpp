@@ -1,5 +1,7 @@
 #include "application.h"
 #include "window.h"
+
+#include "vk/platform_macos.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -29,11 +31,15 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 using namespace vkt;
 namespace fs = std::filesystem;
 
-Application::Application(int argc, char** argv)
-// : m_driver({ nullptr })
+Application::Application(int argc, char** argv) : m_driver(nullptr)
 {
     path = std::filesystem::path(argv[0]);
     dir = path.parent_path();
+
+    PlatformCreateInfo platformInfo{};
+    DriverCreateInfo info{ std::make_unique<PlatformMacOS>(platformInfo) };
+
+    m_driver = std::make_shared<Driver>(std::move(info));
 }
 
 void Application::run()

@@ -213,8 +213,10 @@ std::vector<std::unique_ptr<Adapter>> Driver::getAdapters()
     {
         AdapterCreateInfo info{ shared_from_this(), physicalDevice };
         std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(info);
+
         adapters.push_back(std::move(adapter));
     }
+
     return adapters;
 }
 
