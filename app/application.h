@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "vk/adapter.h"
 #include "vk/context.h"
+#include "vk/device.h"
 #include "vk/driver.h"
 #include "vk/surface.h"
 #include "vk/swap_chain.h"
@@ -106,7 +107,6 @@ private:
 
     // vulkan context
     Context m_context;
-    std::shared_ptr<Driver> m_driver;
 
     VkRenderPass m_renderPass;
 
@@ -120,6 +120,10 @@ private:
     // sync
     VkSemaphore m_imageAvailableSemaphore;
     VkSemaphore m_renderFinishedSemaphore;
+
+    // vk
+    std::shared_ptr<Driver> m_driver;
+    std::vector<std::shared_ptr<Device>> m_devices;
 };
 
 } // namespace vkt

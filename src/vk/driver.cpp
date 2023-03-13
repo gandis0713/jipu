@@ -189,7 +189,7 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-Driver::Driver(DriverCreateInfo info) : m_platform(std::move(info.platform))
+Driver::Driver(DriverCreateInfo info) : m_platform(info.platform)
 {
     m_instance = createInstance();
     if (m_instance == nullptr)
@@ -206,15 +206,14 @@ Driver::Driver(DriverCreateInfo info) : m_platform(std::move(info.platform))
 
 Driver::~Driver() { terminate(); }
 
-std::vector<std::unique_ptr<Adapter>> Driver::getAdapters()
+std::vector<Adapter> Driver::getAdapters()
 {
-    std::vector<std::unique_ptr<Adapter>> adapters{};
+    std::vector<Adapter> adapters{};
+
     for (VkPhysicalDevice physicalDevice : m_physicalDevices)
     {
         AdapterCreateInfo info{ shared_from_this(), physicalDevice };
-        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(info);
-
-        adapters.push_back(std::move(adapter));
+        adapters.emplace_back(info);
     }
 
     return adapters;

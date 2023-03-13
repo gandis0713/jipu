@@ -9,15 +9,23 @@ namespace vkt
 
 struct DeviceCreateInfo
 {
-    std::unique_ptr<Adapter> adapter;
+    Adapter adapter;
 };
 class Device
 {
-    explicit Device(DeviceCreateInfo info);
+public:
+    static std::shared_ptr<Device> create(DeviceCreateInfo info) { return std::make_shared<Device>(info); }
+
+public:
+    Device() = delete;
+    Device(DeviceCreateInfo info);
     ~Device();
 
+    Device(const Device&) = delete;
+    Device& operator=(const Device&) = delete;
+
 private:
-    std::unique_ptr<Adapter> m_adapter;
+    Adapter m_adapter;
 
 private:
     VkDevice m_device;

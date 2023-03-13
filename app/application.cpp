@@ -31,15 +31,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 using namespace vkt;
 namespace fs = std::filesystem;
 
-Application::Application(int argc, char** argv) : m_driver(nullptr)
+Application::Application(int argc, char** argv) : m_driver{ nullptr }, m_devices{}
 {
     path = std::filesystem::path(argv[0]);
     dir = path.parent_path();
-
-    PlatformCreateInfo platformInfo{};
-    DriverCreateInfo info{ std::make_unique<PlatformMacOS>(platformInfo) };
-
-    m_driver = std::make_shared<Driver>(std::move(info));
 }
 
 void Application::run()
@@ -55,6 +50,23 @@ void Application::initWindow() { m_window = new Window(800, 600, "Triangle Windo
 void Application::initVulkan()
 {
     createInstance();
+    // create Driver.
+    {
+        PlatformCreateInfo platformInfo{};
+        auto platform = std::make_shared<PlatformMacOS>(platformInfo);
+        DriverCreateInfo info{ platform };
+
+        m_driver = Driver::create(info);
+    }
+    // create Device.
+    {
+        std::vector<Adapter> adapters = m_driver->getAdapters();
+        for (auto& adapter : adapters)
+        {
+            DeviceCreateInfo info{ adapter };
+            m_devices.push_back(Device::create(info));
+        }
+    }
     setupDebugMessenger();
     createSurface();
     createSwapChain();

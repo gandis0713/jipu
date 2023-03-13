@@ -145,9 +145,9 @@ static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamily
 namespace vkt
 {
 
-Device::Device(DeviceCreateInfo info) : m_adapter(std::move(info.adapter)), m_device{}, m_graphicsQueue{}, m_presentQueue{}
+Device::Device(DeviceCreateInfo info) : m_adapter(info.adapter), m_device{}, m_graphicsQueue{}, m_presentQueue{}
 {
-    const VkPhysicalDevice& physicalDevice = m_adapter->getPhysicalDevice();
+    const VkPhysicalDevice& physicalDevice = m_adapter.getPhysicalDevice();
     QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
     m_device = createDevice(physicalDevice, queueFamilyIndices);
     if (m_device == nullptr)

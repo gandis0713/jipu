@@ -10,4 +10,6 @@ Adapter::~Adapter() {}
 
 std::shared_ptr<Driver> Adapter::getDriver() { return m_driver; }
 
+VkPhysicalDevice Adapter::getPhysicalDevice() { return m_physicalDevice; }
+
 } // namespace vkt
