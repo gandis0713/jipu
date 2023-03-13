@@ -29,6 +29,13 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 using namespace vkt;
 namespace fs = std::filesystem;
 
+Application::Application(int argc, char** argv)
+// : m_driver({ nullptr })
+{
+    path = std::filesystem::path(argv[0]);
+    dir = path.parent_path();
+}
+
 void Application::run()
 {
     initWindow();
