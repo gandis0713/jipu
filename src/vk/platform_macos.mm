@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
+#include <fmt/format.h>
 
 namespace vkt
 {
@@ -12,16 +13,14 @@ PlatformMacOS::PlatformMacOS(PlatformCreateInfo info) : Platform(info) {}
 PlatformMacOS::~PlatformMacOS() {}
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
+std::shared_ptr<Surface> PlatformMacOS::createSurface(void* nativeWindow)
 {
-
     @autoreleasepool
     {
         NSView* nsView = (__bridge NSView*)nativeWindow;
         if (nsView == nil)
         {
-            LOG_ERROR("[{}] Failed to get NSView.", __func__);
-            return nullptr;
+            throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
         }
         NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
         CAMetalLayer* layer = [[bundle classNamed:@"CAMetalLayer"] layer];
@@ -32,28 +31,32 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
         createInfo.pView = (__bridge void*)nsView;
 
+        std::shared_ptr<Driver> driver = m_adapter->getDriver();
+        VkInstance instance = driver->getInstance();
+
         VkSurfaceKHR surface{};
         VkResult result = vkCreateMacOSSurfaceMVK((VkInstance)instance, &createInfo, nullptr, &surface);
 
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Failed to create VkSurfaceKHR. {}", result);
+            throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
 
-        return surface;
+        SurfaceCreateInfo info{ nullptr, vulkanSurface };
+
+        return std::make_shared<Surface>(info);
     }
 }
 
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
-void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
+std::shared_ptr<Surface> PlatformMacOS::createSurface(void* nativeWindow)
 {
     @autoreleasepool
     {
         NSView* nsView = (__bridge NSView*)nativeWindow;
         if (nsView == nil)
         {
-            LOG_ERROR("[{}] Failed to get NSView.", __func__);
-            return nullptr;
+            throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
         }
 
         NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
@@ -62,26 +65,30 @@ void* PlatformMacOS::createVkSurfaceKHR(void* nativeWindow, void* instance)
         [nsView setWantsLayer:YES];
 
         PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT;
+
+        std::shared_ptr<Driver> driver = m_adapter.getDriver();
+        VkInstance instance = driver->getInstance();
+
         vkCreateMetalSurfaceEXT = (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(static_cast<VkInstance>(instance), "vkCreateMetalSurfaceEXT");
         if (!vkCreateMetalSurfaceEXT)
         {
-            LOG_ERROR("Cocoa: Vulkan instance missing VK_EXT_metal_surface "
-                      "extension");
-            return nullptr;
+            throw std::runtime_error("Cocoa: Vulkan instance missing VK_EXT_metal_surface extension");
         }
 
         VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
         surfaceCreateInfo.pLayer = layer;
-        VkSurfaceKHR surface{};
-        VkResult result = vkCreateMetalSurfaceEXT(static_cast<VkInstance>(instance), &surfaceCreateInfo, nullptr, &surface);
+        VkSurfaceKHR vulkanSurface{};
+        VkResult result = vkCreateMetalSurfaceEXT(static_cast<VkInstance>(instance), &surfaceCreateInfo, nullptr, &vulkanSurface);
 
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("failed to create window surface. {}", result);
+            throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
 
-        return surface;
+        SurfaceCreateInfo info{ m_adapter.getPhysicalDevice(), vulkanSurface };
+
+        return std::make_shared<Surface>(info);
     }
 }
 #endif

@@ -3,8 +3,8 @@
 namespace vkt
 {
 
-Platform::Platform(PlatformCreateInfo info) noexcept {}
+Platform::Platform(PlatformCreateInfo info) noexcept : m_adapter(info.adapter) {}
 
-Platform::~Platform() noexcept{}
+Platform::~Platform() noexcept {}
 
 } // namespace vkt

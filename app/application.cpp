@@ -49,26 +49,45 @@ void Application::initWindow() { m_window = new Window(800, 600, "Triangle Windo
 
 void Application::initVulkan()
 {
-    createInstance();
+    createContext(); // TODO: remove
+
     // create Driver.
     {
-        PlatformCreateInfo platformInfo{};
-        auto platform = std::make_shared<PlatformMacOS>(platformInfo);
-        DriverCreateInfo info{ platform };
-
+        DriverCreateInfo info{};
         m_driver = Driver::create(info);
     }
-    // create Device.
+
+    // create adapters.
     {
-        std::vector<Adapter> adapters = m_driver->getAdapters();
-        for (auto& adapter : adapters)
+        m_adapters = m_driver->getAdapters();
+        m_adapter = m_adapters[0]; // TODO: select suitable adapter;
+    }
+
+    // create Devices and select a device.
+    {
+        for (auto& adapter : m_adapters)
         {
             DeviceCreateInfo info{ adapter };
             m_devices.push_back(Device::create(info));
         }
+
+        // select Device.
+        m_device = m_devices[0]; // TODO: select suitable device;
     }
-    setupDebugMessenger();
-    createSurface();
+
+    // create platform
+    {
+        PlatformCreateInfo platformInfo{ m_adapter };
+        m_platform = std::make_shared<PlatformMacOS>(platformInfo);
+    }
+
+    // create surface
+    {
+        m_surface = m_platform->createSurface(m_window->getNativeWindow());
+    }
+
+    // setupDebugMessenger();
+
     createSwapChain();
     createRenderPass();
     createGraphicsPipeline();
@@ -113,7 +132,7 @@ void Application::cleanup()
 
     vkDestroyDevice(m_context.device, nullptr);
 
-    DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
+    // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
     vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
 
@@ -124,131 +143,118 @@ void Application::cleanup()
     glfwTerminate();
 }
 
-void Application::createInstance() { m_context.initialize(); }
+void Application::createContext() { m_context.initialize(); }
 
-const std::vector<const char*>& Application::getRequiredValidationLayers()
-{
-    static std::vector<const char*> requiredValidationLayers;
+// TODO: remove
+// const std::vector<const char*>& Application::getRequiredValidationLayers()
+// {
+//     static std::vector<const char*> requiredValidationLayers;
 
-    if (requiredValidationLayers.size() == 0)
-    {
-        if (enableValidationLayers)
-        {
-            // requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
-        }
+//     if (requiredValidationLayers.size() == 0)
+//     {
+//         if (enableValidationLayers)
+//         {
+//             // requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
+//         }
 
-        LOG_DEBUG("Required Validataion Layers :");
-        for (const auto& validationLayer : requiredValidationLayers)
-        {
-            LOG_DEBUG("  : {}", validationLayer);
-        }
-    }
+//         LOG_DEBUG("Required Validataion Layers :");
+//         for (const auto& validationLayer : requiredValidationLayers)
+//         {
+//             LOG_DEBUG("  : {}", validationLayer);
+//         }
+//     }
 
-    return requiredValidationLayers;
-}
+//     return requiredValidationLayers;
+// }
 
-bool Application::checkValidationLayerSupport(const std::vector<const char*> validationLayers)
-{
-    uint32_t layerCount;
-    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+// bool Application::checkValidationLayerSupport(const std::vector<const char*> validationLayers)
+// {
+//     uint32_t layerCount;
+//     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-    std::vector<VkLayerProperties> availableLayers(layerCount);
-    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+//     std::vector<VkLayerProperties> availableLayers(layerCount);
+//     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    LOG_DEBUG("Available Validation Layer Count : {}", availableLayers.size());
-    LOG_DEBUG("Available Aalidation Layer : ");
-    for (const VkLayerProperties& layerProperties : availableLayers)
-    {
-        LOG_DEBUG("  : {}", layerProperties.layerName);
-    }
+//     LOG_DEBUG("Available Validation Layer Count : {}", availableLayers.size());
+//     LOG_DEBUG("Available Aalidation Layer : ");
+//     for (const VkLayerProperties& layerProperties : availableLayers)
+//     {
+//         LOG_DEBUG("  : {}", layerProperties.layerName);
+//     }
 
-    for (const char* layerName : validationLayers)
-    {
-        bool layerFound = false;
-        for (const auto& layerProperties : availableLayers)
-        {
-            if (strcmp(layerName, layerProperties.layerName) == 0)
-            {
-                layerFound = true;
-                break;
-            }
-        }
+//     for (const char* layerName : validationLayers)
+//     {
+//         bool layerFound = false;
+//         for (const auto& layerProperties : availableLayers)
+//         {
+//             if (strcmp(layerName, layerProperties.layerName) == 0)
+//             {
+//                 layerFound = true;
+//                 break;
+//             }
+//         }
 
-        if (!layerFound)
-        {
-            return false;
-        }
-    }
+//         if (!layerFound)
+//         {
+//             return false;
+//         }
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
-void Application::setupDebugMessenger()
-{
-    if (!enableValidationLayers)
-        return;
+// void Application::setupDebugMessenger()
+// {
+//     if (!enableValidationLayers)
+//         return;
 
-    VkDebugUtilsMessengerCreateInfoEXT createInfo;
-    populateDefaultDebugUtilsMessengerCreateInfo(createInfo);
-    if (CreateDebugUtilsMessengerEXT(m_context.instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to set up debug messenger!");
-    }
-}
+//     VkDebugUtilsMessengerCreateInfoEXT createInfo;
+//     populateDefaultDebugUtilsMessengerCreateInfo(createInfo);
+//     if (CreateDebugUtilsMessengerEXT(m_context.instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
+//     {
+//         throw std::runtime_error("failed to set up debug messenger!");
+//     }
+// }
 
-VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
-                                                   const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT)
-{
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr)
-    {
-        return func(instance, pDebugUtilsMessengerCreateInfoEXT, pAllocator, pDebugUtilsMessengerEXT);
-    }
-    else
-    {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
-}
+// VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
+//                                                    const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT)
+// {
+//     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+//     if (func != nullptr)
+//     {
+//         return func(instance, pDebugUtilsMessengerCreateInfoEXT, pAllocator, pDebugUtilsMessengerEXT);
+//     }
+//     else
+//     {
+//         return VK_ERROR_EXTENSION_NOT_PRESENT;
+//     }
+// }
 
-void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
-{
-    if (!enableValidationLayers)
-        return;
+// void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+// {
+//     if (!enableValidationLayers)
+//         return;
 
-    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-    if (func != nullptr)
-    {
-        func(instance, debugMessenger, pAllocator);
-    }
-}
+//     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+//     if (func != nullptr)
+//     {
+//         func(instance, debugMessenger, pAllocator);
+//     }
+// }
 
-void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo)
-{
-    debugUtilsMessengerCreateInfo = {};
-    debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debugUtilsMessengerCreateInfo.messageSeverity =
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debugUtilsMessengerCreateInfo.messageType =
-        VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debugUtilsMessengerCreateInfo.pfnUserCallback = debugCallback;
-    debugUtilsMessengerCreateInfo.flags = 0;
-    debugUtilsMessengerCreateInfo.pNext = nullptr;
-    debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
-}
-
-void Application::createSurface()
-{
-    VkSurfaceKHR surface = static_cast<VkSurfaceKHR>(m_window->createSurface(m_context.instance));
-    if (surface == nullptr)
-    {
-        throw std::runtime_error("failed to create window surface!");
-    }
-
-    m_context.surface = surface;
-
-    SurfaceCreateInfo surfaceCreateInfo{ m_context.physicalDevice, m_context.surface };
-    m_surface = std::make_shared<Surface>(surfaceCreateInfo);
-}
+// void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo)
+// {
+//     debugUtilsMessengerCreateInfo = {};
+//     debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+//     debugUtilsMessengerCreateInfo.messageSeverity =
+//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+//     debugUtilsMessengerCreateInfo.messageType =
+//         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+//     debugUtilsMessengerCreateInfo.pfnUserCallback = debugCallback;
+//     debugUtilsMessengerCreateInfo.flags = 0;
+//     debugUtilsMessengerCreateInfo.pNext = nullptr;
+//     debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
+// }
 
 VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats)
 {

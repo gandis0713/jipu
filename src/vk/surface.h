@@ -18,9 +18,6 @@ public:
     explicit Surface(const SurfaceCreateInfo info) noexcept;
     ~Surface() noexcept;
 
-    Surface(const Surface&) = delete;
-    Surface& operator=(const Surface&) = delete;
-
     void* getHandle() const;
 
     const VkSurfaceCapabilitiesKHR& getSurfaceCapabilities() const;

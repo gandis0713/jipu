@@ -6,6 +6,7 @@
 #include "vk/context.h"
 #include "vk/device.h"
 #include "vk/driver.h"
+#include "vk/platform.h"
 #include "vk/surface.h"
 #include "vk/swap_chain.h"
 #include <GLFW/glfw3.h>
@@ -58,12 +59,9 @@ private:
     void mainLoop();
     void cleanup();
 
-    void createInstance();
+    void createContext();
 
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
-
-    void createLogicalDevice();
-    void createSurface();
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -80,14 +78,15 @@ private:
 
     void drawFrame();
 
+    // TODO: remove
     // Validation layer
-    const std::vector<const char*>& getRequiredValidationLayers();
-    bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
-    void setupDebugMessenger();
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
-                                          const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT);
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-    void populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
+    // const std::vector<const char*>& getRequiredValidationLayers();
+    // bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
+    // void setupDebugMessenger();
+    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
+    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT);
+    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+    // void populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
 
 private:
     Window* m_window;
@@ -123,7 +122,14 @@ private:
 
     // vk
     std::shared_ptr<Driver> m_driver;
+
+    std::vector<Adapter> m_adapters;
+    Adapter m_adapter;
+
+    std::shared_ptr<Platform> m_platform;
+
     std::vector<std::shared_ptr<Device>> m_devices;
+    std::shared_ptr<Device> m_device;
 };
 
 } // namespace vkt

@@ -6,7 +6,8 @@ namespace vkt
 {
 class PlatformWindows : public Platform
 {
-    void* createVkSurfaceKHR(void* nativeWindow, void* instance) override;
+public:
+    std::shared_ptr<Surface> createSurface(void* nativeWindow) override;
 };
 
 } // namespace vkt

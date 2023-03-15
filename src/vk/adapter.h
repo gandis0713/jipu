@@ -18,7 +18,7 @@ struct AdapterCreateInfo
 class Adapter
 {
 public:
-    Adapter() = delete;
+    Adapter() = default;
     Adapter(AdapterCreateInfo info);
     ~Adapter();
 
@@ -31,7 +31,7 @@ public: // Vulkan objects.
     VkPhysicalDevice getPhysicalDevice();
 
 private: // Vulkan objects.
-    VkPhysicalDevice m_physicalDevice;
+    VkPhysicalDevice m_physicalDevice{};
 };
 
 } // namespace vkt

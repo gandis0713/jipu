@@ -1,10 +1,16 @@
 #pragma once
 
+#include "vk/driver.h"
+#include "vk/surface.h"
+
+#include <memory>
+
 namespace vkt
 {
 
 struct PlatformCreateInfo
 {
+    Adapter adapter;
 };
 
 class Platform
@@ -12,7 +18,11 @@ class Platform
 public:
     Platform(PlatformCreateInfo info) noexcept;
     virtual ~Platform() noexcept;
-    virtual void* createVkSurfaceKHR(void* nativeWindow, void* instance) = 0;
+
+    virtual std::shared_ptr<Surface> createSurface(void* nativeWindow) = 0;
+
+protected:
+    Adapter m_adapter;
 };
 
 } // namespace vkt

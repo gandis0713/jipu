@@ -11,7 +11,7 @@ public:
     PlatformMacOS(PlatformCreateInfo info);
     ~PlatformMacOS() override;
 
-    void* createVkSurfaceKHR(void* nativeWindow, void* instance) override;
+    std::shared_ptr<Surface> createSurface(void* nativeWindow) override;
 };
 
 } // namespace vkt

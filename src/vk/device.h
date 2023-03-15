@@ -11,6 +11,7 @@ struct DeviceCreateInfo
 {
     Adapter adapter;
 };
+
 class Device
 {
 public:
@@ -23,6 +24,9 @@ public:
 
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
+
+    void* operator new(std::size_t) = delete;
+    void* operator new[](std::size_t) = delete;
 
 private:
     Adapter m_adapter;

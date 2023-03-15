@@ -2,7 +2,7 @@
 
 // #include "vk/context.h"
 #include "vk/adapter.h"
-#include "vk/platform.h"
+// #include "vk/platform.h"
 #include "vulkan_api.h"
 
 #include <memory>
@@ -14,7 +14,6 @@ namespace vkt
 
 struct DriverCreateInfo
 {
-    std::shared_ptr<Platform> platform{ nullptr };
 };
 
 class Driver : public std::enable_shared_from_this<Driver>
@@ -36,14 +35,14 @@ public:
 public:
     std::vector<Adapter> getAdapters();
 
+    VkInstance getInstance() const;
+
 private:
     void terminate();
 
 private:
     VkInstance m_instance;
     std::vector<VkPhysicalDevice> m_physicalDevices;
-
-    std::shared_ptr<Platform> m_platform;
 };
 
 } // namespace vkt

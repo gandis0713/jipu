@@ -189,7 +189,7 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-Driver::Driver(DriverCreateInfo info) : m_platform(info.platform)
+Driver::Driver(DriverCreateInfo info)
 {
     m_instance = createInstance();
     if (m_instance == nullptr)
@@ -219,11 +219,8 @@ std::vector<Adapter> Driver::getAdapters()
     return adapters;
 }
 
-void Driver::terminate()
-{
-    // TODO: platfrom
+VkInstance Driver::getInstance() const { return m_instance; }
 
-    // m_context.finalize();
-}
+void Driver::terminate() {}
 
 } // namespace vkt
