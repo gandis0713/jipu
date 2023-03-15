@@ -31,7 +31,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 using namespace vkt;
 namespace fs = std::filesystem;
 
-Application::Application(int argc, char** argv) : m_driver{ nullptr }, m_devices{}
+Application::Application(int argc, char** argv)
 {
     path = std::filesystem::path(argv[0]);
     dir = path.parent_path();
@@ -57,33 +57,22 @@ void Application::initVulkan()
         m_driver = Driver::create(info);
     }
 
-    // create adapters.
+    // create Device.
     {
-        m_adapters = m_driver->getAdapters();
-        m_adapter = m_adapters[0]; // TODO: select suitable adapter;
-    }
-
-    // create Devices and select a device.
-    {
-        for (auto& adapter : m_adapters)
-        {
-            DeviceCreateInfo info{ adapter };
-            m_devices.push_back(Device::create(info));
-        }
-
-        // select Device.
-        m_device = m_devices[0]; // TODO: select suitable device;
+        DeviceCreateInfo info{};
+        m_device = m_driver->createDevice(info);
     }
 
     // create platform
     {
-        PlatformCreateInfo platformInfo{ m_adapter };
-        m_platform = std::make_shared<PlatformMacOS>(platformInfo);
+        PlatformCreateInfo info{ m_window->getNativeWindow() };
+        m_platform = m_driver->createPlatform(info);
     }
 
     // create surface
     {
-        m_surface = m_platform->createSurface(m_window->getNativeWindow());
+        SurfaceCreateInfo info{};
+        m_surface = m_platform->createSurface(info);
     }
 
     // setupDebugMessenger();
@@ -104,33 +93,33 @@ void Application::mainLoop()
         drawFrame();
     }
 
-    vkDeviceWaitIdle(m_context.device);
+    vkDeviceWaitIdle(m_device->getDevice());
 }
 
 void Application::cleanup()
 {
-    vkDestroySemaphore(m_context.device, m_renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(m_context.device, m_imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(m_device->getDevice(), m_renderFinishedSemaphore, nullptr);
+    vkDestroySemaphore(m_device->getDevice(), m_imageAvailableSemaphore, nullptr);
 
-    vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
+    vkDestroyCommandPool(m_device->getDevice(), m_commandPool, nullptr);
 
     for (auto framebuffer : m_vecSwapChainFramebuffers)
     {
-        vkDestroyFramebuffer(m_context.device, framebuffer, nullptr);
+        vkDestroyFramebuffer(m_device->getDevice(), framebuffer, nullptr);
     }
 
     m_pipeline.destroy();
 
-    vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
+    vkDestroyRenderPass(m_device->getDevice(), m_renderPass, nullptr);
 
     for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
     {
-        vkDestroyImageView(m_context.device, imageView, nullptr);
+        vkDestroyImageView(m_device->getDevice(), imageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
+    vkDestroySwapchainKHR(m_device->getDevice(), static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
 
-    vkDestroyDevice(m_context.device, nullptr);
+    vkDestroyDevice(m_device->getDevice(), nullptr);
 
     // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
@@ -304,13 +293,13 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surface
 
 void Application::createSwapChain()
 {
-    SwapChainCreateInfo swapChainCreateInfo{ m_context.device, m_surface };
+    SwapChainCreateInfo swapChainCreateInfo{ m_device->getDevice(), m_surface };
     m_swapChain = std::make_shared<SwapChain>(swapChainCreateInfo);
 }
 
 void Application::createGraphicsPipeline()
 {
-    m_pipeline.setDevice(m_context.device);
+    m_pipeline.setDevice(m_device->getDevice());
     m_pipeline.setRenderPass(m_renderPass);
 
     m_pipeline.createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
@@ -355,7 +344,7 @@ void Application::createRenderPass()
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subpassDependency;
 
-    if (vkCreateRenderPass(m_context.device, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (vkCreateRenderPass(m_device->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -379,7 +368,7 @@ void Application::createFramebuffers()
         framebufferCreateInfo.height = m_swapChain->getExtent2D().height;
         framebufferCreateInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_context.device, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
+        if (vkCreateFramebuffer(m_device->getDevice(), &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create framebuffer!");
         }
@@ -395,7 +384,7 @@ void Application::createCommandPool()
     commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     commandPoolCreateInfo.flags = 0; // Optional
 
-    if (vkCreateCommandPool(m_context.device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(m_device->getDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -411,7 +400,7 @@ void Application::createCommandBuffers()
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-    if (vkAllocateCommandBuffers(m_context.device, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    if (vkAllocateCommandBuffers(m_device->getDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -460,7 +449,7 @@ void Application::drawFrame()
 {
     uint32_t imageIndex;
     VkSwapchainKHR swapChain = static_cast<VkSwapchainKHR>(m_swapChain->getHandle());
-    vkAcquireNextImageKHR(m_context.device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(m_device->getDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -505,8 +494,8 @@ void Application::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    if (vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create semaphores!");
     }

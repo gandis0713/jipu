@@ -1,6 +1,5 @@
 #pragma once
 
-#include "vk/driver.h"
 #include "vk/surface.h"
 
 #include <memory>
@@ -10,19 +9,28 @@ namespace vkt
 
 struct PlatformCreateInfo
 {
-    Adapter adapter;
+    void* windowHandle;
+};
+
+struct PlatformVulkanHandles
+{
+    VkInstance instance;
+    VkPhysicalDevice physicalDevice;
 };
 
 class Platform
 {
 public:
-    Platform(PlatformCreateInfo info) noexcept;
+    Platform(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept;
     virtual ~Platform() noexcept;
 
-    virtual std::shared_ptr<Surface> createSurface(void* nativeWindow) = 0;
+    virtual std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) = 0;
 
 protected:
-    Adapter m_adapter;
+    void* m_windowHandle{ nullptr };
+
+    VkInstance m_instance{ nullptr };
+    VkPhysicalDevice m_physicalDevice{ nullptr };
 };
 
 } // namespace vkt

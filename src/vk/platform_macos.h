@@ -8,10 +8,10 @@ namespace vkt
 class PlatformMacOS : public Platform
 {
 public:
-    PlatformMacOS(PlatformCreateInfo info);
+    PlatformMacOS(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept;
     ~PlatformMacOS() override;
 
-    std::shared_ptr<Surface> createSurface(void* nativeWindow) override;
+    std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override;
 };
 
 } // namespace vkt

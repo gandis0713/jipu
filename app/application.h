@@ -2,7 +2,6 @@
 
 // #define GLFW_INCLUDE_VULKAN
 #include "utils/log.h"
-#include "vk/adapter.h"
 #include "vk/context.h"
 #include "vk/device.h"
 #include "vk/driver.h"
@@ -121,15 +120,10 @@ private:
     VkSemaphore m_renderFinishedSemaphore;
 
     // vk
-    std::shared_ptr<Driver> m_driver;
+    std::unique_ptr<Driver> m_driver;
 
-    std::vector<Adapter> m_adapters;
-    Adapter m_adapter;
-
-    std::shared_ptr<Platform> m_platform;
-
-    std::vector<std::shared_ptr<Device>> m_devices;
-    std::shared_ptr<Device> m_device;
+    std::unique_ptr<Platform> m_platform{ nullptr };
+    std::unique_ptr<Device> m_device{ nullptr };
 };
 
 } // namespace vkt

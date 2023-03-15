@@ -3,6 +3,10 @@
 namespace vkt
 {
 
-std::shared_ptr<Surface> PlatformWindows::createSurface(void* nativeWindow) { return nullptr; }
+PlatformWindows::PlatformWindows(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
+
+PlatformWindows::~PlatformWindows() {}
+
+std::unique_ptr<Surface> PlatformWindows::createSurface(SurfaceCreateInfo info) { return nullptr; }
 
 } // namespace vkt

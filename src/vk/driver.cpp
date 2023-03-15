@@ -1,7 +1,14 @@
 #include "driver.h"
 #include "utils/log.h"
+#include <stdexcept>
 
 #include "vk/allocation.h"
+#if defined(__linux__)
+#elif defined(_WIN64)
+    #include "vk/platform_windows.h"
+#elif defined(__APPLE__)
+    #include "vk/platform_macos.h"
+#endif
 
 #include <set>
 
@@ -194,33 +201,42 @@ Driver::Driver(DriverCreateInfo info)
     m_instance = createInstance();
     if (m_instance == nullptr)
     {
-        return;
+        throw std::runtime_error("Failed to create instance.");
     }
 
     m_physicalDevices = createPhysicalDevices(m_instance);
     if (m_physicalDevices.empty())
     {
-        return;
+        throw std::runtime_error("There is no physical device.");
     }
 }
 
-Driver::~Driver() { terminate(); }
-
-std::vector<Adapter> Driver::getAdapters()
+Driver::~Driver()
 {
-    std::vector<Adapter> adapters{};
 
-    for (VkPhysicalDevice physicalDevice : m_physicalDevices)
-    {
-        AdapterCreateInfo info{ shared_from_this(), physicalDevice };
-        adapters.emplace_back(info);
-    }
+    // TODO: destroy instance.
+}
 
-    return adapters;
+std::unique_ptr<Device> Driver::createDevice(DeviceCreateInfo info)
+{
+    VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
+    DeviceVulkanHandles handles{ physicalDevice };
+    return std::make_unique<Device>(handles, info);
+}
+std::unique_ptr<Platform> Driver::createPlatform(PlatformCreateInfo info)
+{
+    VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
+
+    PlatformVulkanHandles handles{ m_instance, physicalDevice };
+#if defined(__linux__)
+    return nullptr;
+#elif defined(_WIN64)
+    return std::make_unique<PlatformWindows>(handles, info);
+#elif defined(__APPLE__)
+    return std::make_unique<PlatformMacOS>(handles, info);
+#endif
 }
 
 VkInstance Driver::getInstance() const { return m_instance; }
-
-void Driver::terminate() {}
 
 } // namespace vkt

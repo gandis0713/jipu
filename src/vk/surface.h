@@ -1,6 +1,6 @@
 #pragma once
 
-#include "context.h"
+#include "vulkan_api.h"
 #include <vector>
 
 namespace vkt
@@ -8,17 +8,21 @@ namespace vkt
 
 struct SurfaceCreateInfo
 {
+};
+
+struct SurfaceVulkanHandles
+{
+    VkSurfaceKHR surface;
     VkPhysicalDevice physicalDevice;
-    VkSurfaceKHR surface; // TODO: replace Platform.
 };
 
 class Surface
 {
 public:
-    explicit Surface(const SurfaceCreateInfo info) noexcept;
+    explicit Surface(const SurfaceVulkanHandles handles, const SurfaceCreateInfo info) noexcept;
     ~Surface() noexcept;
 
-    void* getHandle() const;
+    VkSurfaceKHR getSurface() const;
 
     const VkSurfaceCapabilitiesKHR& getSurfaceCapabilities() const;
     const std::vector<VkSurfaceFormatKHR>& getSurfaceFormats() const;
@@ -31,7 +35,7 @@ private:
     std::vector<VkPresentModeKHR> m_presentModes;
 
 private:
-    VkSurfaceKHR m_handle;
+    VkSurfaceKHR m_surface;
     VkPhysicalDevice m_physicalDevice;
 };
 

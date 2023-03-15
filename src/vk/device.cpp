@@ -1,5 +1,7 @@
-#include "device.h"
+#include "vk/device.h"
+
 #include "utils/log.h"
+#include "vk/driver.h"
 
 #include <optional>
 #include <set>
@@ -86,7 +88,7 @@ static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
     return requiredDeviceExtensionsTemp.empty();
 }
 
-static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamilyIndices queueFamilyIndices)
+static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices queueFamilyIndices)
 {
     std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value() };
 
@@ -145,11 +147,10 @@ static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamily
 namespace vkt
 {
 
-Device::Device(DeviceCreateInfo info) : m_adapter(info.adapter), m_device{}, m_graphicsQueue{}, m_presentQueue{}
+Device::Device(DeviceVulkanHandles handles, DeviceCreateInfo info) : m_physicalDevice(handles.physicalDevice)
 {
-    const VkPhysicalDevice& physicalDevice = m_adapter.getPhysicalDevice();
-    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
-    m_device = createDevice(physicalDevice, queueFamilyIndices);
+    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_physicalDevice);
+    m_device = createDevice(m_physicalDevice, queueFamilyIndices);
     if (m_device == nullptr)
     {
         return;
@@ -163,4 +164,6 @@ Device::Device(DeviceCreateInfo info) : m_adapter(info.adapter), m_device{}, m_g
 }
 
 Device::~Device() {}
+
+VkDevice Device::getDevice() const { return m_device; }
 } // namespace vkt

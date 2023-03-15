@@ -78,7 +78,7 @@ SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = static_cast<VkSurfaceKHR>(surface->getHandle());
+    swapchainCreateInfo.surface = static_cast<VkSurfaceKHR>(surface->getSurface());
     swapchainCreateInfo.minImageCount = imageCount;
     swapchainCreateInfo.imageFormat = surfaceFormat.format;
     swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;

@@ -1,12 +1,10 @@
 #pragma once
 
-// #include "vk/context.h"
-#include "vk/adapter.h"
-// #include "vk/platform.h"
+#include "vk/device.h"
+#include "vk/platform.h"
 #include "vulkan_api.h"
 
 #include <memory>
-#include <stdexcept>
 #include <vector>
 
 namespace vkt
@@ -16,10 +14,10 @@ struct DriverCreateInfo
 {
 };
 
-class Driver : public std::enable_shared_from_this<Driver>
+class Driver
 {
 public:
-    static std::shared_ptr<Driver> create(DriverCreateInfo info) { return std::make_shared<Driver>(info); }
+    static std::unique_ptr<Driver> create(DriverCreateInfo info) { return std::make_unique<Driver>(info); }
 
 public:
     Driver() = delete;
@@ -29,20 +27,16 @@ public:
     Driver(const Driver&) = delete;
     Driver& operator=(const Driver&) = delete;
 
-    void* operator new(std::size_t) = delete;
-    void* operator new[](std::size_t) = delete;
-
 public:
-    std::vector<Adapter> getAdapters();
+    std::unique_ptr<Device> createDevice(DeviceCreateInfo info);
+    std::unique_ptr<Platform> createPlatform(PlatformCreateInfo info);
 
+public: // vulkan object
     VkInstance getInstance() const;
 
 private:
-    void terminate();
-
-private:
-    VkInstance m_instance;
-    std::vector<VkPhysicalDevice> m_physicalDevices;
+    VkInstance m_instance{};
+    std::vector<VkPhysicalDevice> m_physicalDevices{};
 };
 
 } // namespace vkt

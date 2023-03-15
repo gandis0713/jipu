@@ -3,7 +3,10 @@
 namespace vkt
 {
 
-Platform::Platform(PlatformCreateInfo info) noexcept : m_adapter(info.adapter) {}
+Platform::Platform(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept
+    : m_windowHandle(info.windowHandle), m_instance(handles.instance), m_physicalDevice(handles.physicalDevice)
+{
+}
 
 Platform::~Platform() noexcept {}
 
