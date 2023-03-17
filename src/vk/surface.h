@@ -10,7 +10,7 @@ struct SurfaceCreateInfo
 {
 };
 
-struct SurfaceVulkanHandles
+struct SurfaceCreateHandles
 {
     VkSurfaceKHR surface;
     VkPhysicalDevice physicalDevice;
@@ -19,7 +19,7 @@ struct SurfaceVulkanHandles
 class Surface
 {
 public:
-    explicit Surface(const SurfaceVulkanHandles handles, const SurfaceCreateInfo info) noexcept;
+    explicit Surface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept;
     ~Surface() noexcept;
 
     VkSurfaceKHR getSurface() const;

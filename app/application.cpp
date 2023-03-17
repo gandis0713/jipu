@@ -69,12 +69,6 @@ void Application::initVulkan()
         m_platform = m_driver->createPlatform(info);
     }
 
-    // create surface
-    {
-        SurfaceCreateInfo info{};
-        m_surface = m_platform->createSurface(info);
-    }
-
     // setupDebugMessenger();
 
     createSwapChain();
@@ -293,8 +287,12 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surface
 
 void Application::createSwapChain()
 {
-    SwapChainCreateInfo swapChainCreateInfo{ m_device->getDevice(), m_surface };
-    m_swapChain = std::make_shared<SwapChain>(swapChainCreateInfo);
+    // create surface
+    SurfaceCreateInfo info{};
+    auto surface = m_platform->createSurface(info);
+    
+    SwapChainCreateInfo swapChainCreateInfo{ m_device->getDevice(), std::move(surface) };
+    m_swapChain = std::make_unique<SwapChain>(std::move(swapChainCreateInfo));
 }
 
 void Application::createGraphicsPipeline()

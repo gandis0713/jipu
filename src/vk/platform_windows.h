@@ -7,7 +7,7 @@ namespace vkt
 class PlatformWindows : public Platform
 {
 public:
-    PlatformWindows(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept;
+    PlatformWindows(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept;
     ~PlatformWindows() override;
 
     std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override;

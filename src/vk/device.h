@@ -10,7 +10,7 @@ struct DeviceCreateInfo
 {
 };
 
-struct DeviceVulkanHandles
+struct DeviceCreateHandles
 {
     VkPhysicalDevice physicalDevice{};
 };
@@ -21,7 +21,7 @@ class Device
 {
 public:
     Device() = delete;
-    Device(DeviceVulkanHandles handles, DeviceCreateInfo info);
+    Device(DeviceCreateHandles handles, DeviceCreateInfo info);
     ~Device();
 
     Device(const Device&) = delete;
@@ -35,7 +35,5 @@ private:
 
     VkQueue m_graphicsQueue{};
     VkQueue m_presentQueue{};
-
-    friend Driver;
 };
 } // namespace vkt

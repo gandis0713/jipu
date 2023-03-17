@@ -9,7 +9,7 @@
 namespace vkt
 {
 
-PlatformMacOS::PlatformMacOS(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
+PlatformMacOS::PlatformMacOS(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
 
 PlatformMacOS::~PlatformMacOS() {}
 
@@ -82,7 +82,7 @@ std::unique_ptr<Surface> PlatformMacOS::createSurface(SurfaceCreateInfo info)
         }
 
         SurfaceCreateInfo info{};
-        SurfaceVulkanHandles handles{ vulkanSurface, m_physicalDevice };
+        SurfaceCreateHandles handles{ vulkanSurface, m_physicalDevice };
 
         return std::make_unique<Surface>(handles, info);
     }

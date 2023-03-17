@@ -12,7 +12,7 @@ struct PlatformCreateInfo
     void* windowHandle;
 };
 
-struct PlatformVulkanHandles
+struct PlatformCreateHandles
 {
     VkInstance instance;
     VkPhysicalDevice physicalDevice;
@@ -21,7 +21,7 @@ struct PlatformVulkanHandles
 class Platform
 {
 public:
-    Platform(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept;
+    Platform(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept;
     virtual ~Platform() noexcept;
 
     virtual std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) = 0;

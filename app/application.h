@@ -94,11 +94,8 @@ private:
     VkDebugUtilsMessengerEXT m_debugMessenger;
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
-    // surface
-    std::shared_ptr<Surface> m_surface = nullptr;
-
     // swap chain
-    std::shared_ptr<SwapChain> m_swapChain = nullptr;
+    std::unique_ptr<SwapChain> m_swapChain = nullptr;
 
     // frame buffers
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;

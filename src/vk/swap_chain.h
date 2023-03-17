@@ -11,14 +11,14 @@ namespace vkt
 
 struct SwapChainCreateInfo
 {
-    VkDevice device;
-    std::weak_ptr<Surface> surface;
+    VkDevice device{nullptr};
+    std::unique_ptr<Surface> surface{nullptr};
 };
 
 class SwapChain
 {
 public:
-    explicit SwapChain(const SwapChainCreateInfo info) noexcept(false);
+    explicit SwapChain(SwapChainCreateInfo&& info) noexcept(false);
     ~SwapChain() noexcept;
 
     SwapChain(const SwapChain&) = delete;
@@ -34,7 +34,7 @@ public:
 
 private:
     VkDevice m_device;
-    std::weak_ptr<Surface> m_surface;
+    std::unique_ptr<Surface> m_surface{nullptr};
 
 private:
     VkSwapchainKHR m_handle;

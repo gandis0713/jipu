@@ -6,7 +6,7 @@
 namespace vkt
 {
 
-Surface::Surface(const SurfaceVulkanHandles handles, const SurfaceCreateInfo info) noexcept
+Surface::Surface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept
     : m_physicalDevice(handles.physicalDevice), m_surface(handles.surface)
 {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &m_surfaceCapabilities);

@@ -3,7 +3,7 @@
 namespace vkt
 {
 
-PlatformWindows::PlatformWindows(PlatformVulkanHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
+PlatformWindows::PlatformWindows(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
 
 PlatformWindows::~PlatformWindows() {}
 

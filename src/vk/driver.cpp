@@ -220,14 +220,15 @@ Driver::~Driver()
 std::unique_ptr<Device> Driver::createDevice(DeviceCreateInfo info)
 {
     VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
-    DeviceVulkanHandles handles{ physicalDevice };
+    DeviceCreateHandles handles{ physicalDevice };
+    
     return std::make_unique<Device>(handles, info);
 }
 std::unique_ptr<Platform> Driver::createPlatform(PlatformCreateInfo info)
 {
     VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
 
-    PlatformVulkanHandles handles{ m_instance, physicalDevice };
+    PlatformCreateHandles handles{ m_instance, physicalDevice };
 #if defined(__linux__)
     return nullptr;
 #elif defined(_WIN64)

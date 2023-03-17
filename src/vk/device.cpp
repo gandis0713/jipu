@@ -147,7 +147,7 @@ static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices
 namespace vkt
 {
 
-Device::Device(DeviceVulkanHandles handles, DeviceCreateInfo info) : m_physicalDevice(handles.physicalDevice)
+Device::Device(DeviceCreateHandles handles, DeviceCreateInfo info) : m_physicalDevice(handles.physicalDevice)
 {
     QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_physicalDevice);
     m_device = createDevice(m_physicalDevice, queueFamilyIndices);

@@ -47,17 +47,6 @@ void* Window::getNativeWindow()
     return nullptr;
 }
 
-void* Window::createSurface(void* instance)
-{
-    VkSurfaceKHR surface{ nullptr };
-    if (glfwCreateWindowSurface(static_cast<VkInstance>(instance), static_cast<GLFWwindow*>(m_window), nullptr, &surface) != VK_SUCCESS)
-    {
-        LOG_ERROR("failed to create window surface!");
-    }
-
-    return surface;
-}
-
 void Window::getFrameBufferSize(int* w, int* h) { glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h); }
 
 } // namespace vkt

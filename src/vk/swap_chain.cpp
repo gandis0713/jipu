@@ -56,18 +56,12 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(info.device), m_surface(info.surface)
+SwapChain::SwapChain(SwapChainCreateInfo&& info) noexcept(false) : m_device(info.device), m_surface(std::move(info.surface))
 {
-    std::shared_ptr<Surface> surface = m_surface.lock();
-    if (surface == nullptr)
-    {
-        return;
-    }
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(m_surface->getSurfaceFormats());
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(m_surface->getPresentModes());
 
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surface->getSurfaceFormats());
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(surface->getPresentModes());
-
-    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surface->getSurfaceCapabilities();
+    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = m_surface->getSurfaceCapabilities();
     VkExtent2D imageExtent = chooseSwapExtent(surfaceCapabilities);
 
     uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
@@ -78,7 +72,7 @@ SwapChain::SwapChain(const SwapChainCreateInfo info) noexcept(false) : m_device(
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = static_cast<VkSurfaceKHR>(surface->getSurface());
+    swapchainCreateInfo.surface = static_cast<VkSurfaceKHR>(m_surface->getSurface());
     swapchainCreateInfo.minImageCount = imageCount;
     swapchainCreateInfo.imageFormat = surfaceFormat.format;
     swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
