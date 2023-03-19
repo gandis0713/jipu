@@ -1,11 +1,10 @@
 #include "vulkan_platform.h"
 
+#include "vulkan_adapter.h"
+
 namespace vkt
 {
 
-VulkanPlatform::VulkanPlatform(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept
-    : Platform(info), m_instance(handles.instance), m_physicalDevice(handles.physicalDevice)
-{
-}
+VulkanPlatform::VulkanPlatform(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept : Platform(adapter, info) {}
 
 } // namespace vkt

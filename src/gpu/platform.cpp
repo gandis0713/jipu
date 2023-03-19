@@ -3,6 +3,6 @@
 namespace vkt
 {
 
-Platform::Platform(PlatformCreateInfo info) noexcept: m_windowHandle(info.windowHandle)  {}
+Platform::Platform(Adapter* adapter, PlatformCreateInfo info) noexcept: m_adapter(adapter), m_windowHandle(info.windowHandle)  {}
 
 } // namespace vkt

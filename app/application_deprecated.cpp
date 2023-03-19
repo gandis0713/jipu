@@ -56,23 +56,17 @@ void Application::initVulkan()
         DriverCreateInfo info{};
         m_driver = Driver::create(info);
     }
-    
-    // create Adapter.
-    {
-        AdapterCreateInfo info{};
-        m_adapter = m_driver->createAdapter(info);
-    }
 
     // create Device.
     {
         DeviceCreateInfo info{};
-        m_device = m_adapter->createDevice(info);
+        m_device = m_driver->createDevice(info);
     }
 
     // create platform
     {
         PlatformCreateInfo info{ m_window->getNativeWindow() };
-        m_platform = m_adapter->createPlatform(info);
+        m_platform = m_driver->createPlatform(info);
     }
 
     // setupDebugMessenger();
@@ -297,8 +291,9 @@ void Application::createSwapChain()
     SurfaceCreateInfo info{};
     auto surface = m_platform->createSurface(info);
     
-    SwapChainCreateInfo swapChainCreateInfo{std::move(surface)};
-    m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
+    SwapChainCreateHandles swapChainCreateHandles{ m_context.device, std::move(surface) };
+    SwapChainCreateInfo swapChainCreateInfo;
+    m_swapChain = std::make_unique<SwapChain>(swapChainCreateHandles, std::move(swapChainCreateInfo));
 }
 
 void Application::createGraphicsPipeline()

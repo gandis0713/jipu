@@ -21,8 +21,7 @@ public:
     VulkanDriver& operator=(const VulkanDriver&) = delete;
 
 public:
-    std::unique_ptr<Device> createDevice(DeviceCreateInfo info) override;
-    std::unique_ptr<Platform> createPlatform(PlatformCreateInfo info) override;
+    std::unique_ptr<Adapter> createAdapter(AdapterCreateInfo info) override;
 
 public: // vulkan object
     VkInstance getInstance() const;

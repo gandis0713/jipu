@@ -1,7 +1,7 @@
 #include "vulkan_device.h"
 
 #include "utils/log.h"
-#include "vulkan_driver.h"
+#include "vulkan_adapter.h"
 
 #include <optional>
 #include <set>
@@ -147,10 +147,12 @@ static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices
 namespace vkt
 {
 
-VulkanDevice::VulkanDevice(DeviceCreateHandles handles, DeviceCreateInfo info) : Device(info), m_physicalDevice(handles.physicalDevice)
+VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info) : Device(adapter, info)
 {
-    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_physicalDevice);
-    m_device = createDevice(m_physicalDevice, queueFamilyIndices);
+    VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
+
+    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
+    m_device = createDevice(physicalDevice, queueFamilyIndices);
     if (m_device == nullptr)
     {
         return;

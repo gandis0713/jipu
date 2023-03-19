@@ -7,16 +7,13 @@
 namespace vkt
 {
 
-struct DeviceCreateHandles
-{
-    VkPhysicalDevice physicalDevice{};
-};
+class VulkanAdapter;
 
 class VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
-    VulkanDevice(DeviceCreateHandles handles, DeviceCreateInfo info);
+    VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info);
     ~VulkanDevice() override = default;
 
     VulkanDevice(const VulkanDevice&) = delete;
@@ -26,7 +23,6 @@ public:
 
 private:
     VkDevice m_device{};
-    VkPhysicalDevice m_physicalDevice{};
 
     VkQueue m_graphicsQueue{};
     VkQueue m_presentQueue{};

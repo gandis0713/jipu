@@ -1,6 +1,6 @@
 #include "vulkan_driver.h"
 #include "utils/log.h"
-#include "vulkan_device.h"
+#include "vulkan_adapter.h"
 #include <stdexcept>
 
 #include "allocation.h"
@@ -197,8 +197,7 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-VulkanDriver::VulkanDriver(DriverCreateInfo info)
-: Driver()
+VulkanDriver::VulkanDriver(DriverCreateInfo info) : Driver()
 {
     m_instance = createInstance();
     if (m_instance == nullptr)
@@ -218,26 +217,7 @@ VulkanDriver::~VulkanDriver()
     // TODO: destroy instance.
 }
 
-std::unique_ptr<Device> VulkanDriver::createDevice(DeviceCreateInfo info)
-{
-    VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
-    DeviceCreateHandles handles{ physicalDevice };
-
-    return std::make_unique<VulkanDevice>(handles, info);
-}
-std::unique_ptr<Platform> VulkanDriver::createPlatform(PlatformCreateInfo info)
-{
-    VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
-
-    PlatformCreateHandles handles{ m_instance, physicalDevice };
-#if defined(__linux__)
-    return nullptr;
-#elif defined(_WIN64)
-    return std::make_unique<VulkanPlatformWindows>(handles, info);
-#elif defined(__APPLE__)
-    return std::make_unique<VulkanPlatformMacOS>(handles, info);
-#endif
-}
+std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info) { return std::make_unique<VulkanAdapter>(this, info); }
 
 VkInstance VulkanDriver::getInstance() const { return m_instance; }
 

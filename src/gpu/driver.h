@@ -1,7 +1,6 @@
 #pragma once
 
-#include "gpu/device.h"
-#include "gpu/platform.h"
+#include "gpu/adapter.h"
 
 #include <memory>
 
@@ -34,8 +33,7 @@ public:
     Driver& operator=(const Driver&) = delete;
 
 public:
-    virtual std::unique_ptr<Device> createDevice(DeviceCreateInfo info) = 0;
-    virtual std::unique_ptr<Platform> createPlatform(PlatformCreateInfo info) = 0;
+    virtual std::unique_ptr<Adapter> createAdapter(AdapterCreateInfo info) = 0;
 };
 
 } // namespace vkt

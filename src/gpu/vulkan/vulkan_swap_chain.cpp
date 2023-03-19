@@ -1,4 +1,6 @@
 #include "vulkan_swap_chain.h"
+#include "vulkan_device.h"
+#include "vulkan_surface.h"
 
 #include <stdexcept>
 
@@ -56,13 +58,15 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreateInfo info) noexcept
-    : SwapChain(info), m_device(handles.device), m_surface(std::move(handles.surface))
+VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo info)
+    : SwapChain(vulkanDevice, std::move(info))
 {
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(m_surface->getSurfaceFormats());
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(m_surface->getPresentModes());
+    VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface.get());
+    
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surface->getSurfaceFormats());
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(surface->getPresentModes());
 
-    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = m_surface->getSurfaceCapabilities();
+    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surface->getSurfaceCapabilities();
     VkExtent2D imageExtent = chooseSwapExtent(surfaceCapabilities);
 
     uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
@@ -73,7 +77,7 @@ VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreate
 
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = static_cast<VkSurfaceKHR>(m_surface->getSurface());
+    swapchainCreateInfo.surface = surface->getSurface();
     swapchainCreateInfo.minImageCount = imageCount;
     swapchainCreateInfo.imageFormat = surfaceFormat.format;
     swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -109,14 +113,15 @@ VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreate
 
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(m_device, &swapchainCreateInfo, nullptr, &m_handle) != VK_SUCCESS)
+    VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    vkGetSwapchainImagesKHR(m_device, m_handle, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
     m_images.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_device, m_handle, &imageCount, m_images.data());
+    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, m_images.data());
 
     m_format = surfaceFormat.format;
     m_extent = imageExtent;
@@ -143,7 +148,7 @@ VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreate
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
         imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(m_device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
+        if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create image views!");
         }
@@ -152,15 +157,17 @@ VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreate
 
 VulkanSwapChain::~VulkanSwapChain()
 {
+    VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    
     for (const VkImageView& imageView : m_imageViews)
     {
-        vkDestroyImageView(m_device, imageView, nullptr);
+        vkDestroyImageView(device, imageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(m_device, m_handle, nullptr);
+    vkDestroySwapchainKHR(device, m_swapchain, nullptr);
 }
 
-void* VulkanSwapChain::getHandle() const { return m_handle; }
+VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const { return m_swapchain; }
 
 VkFormat VulkanSwapChain::getFormat() const { return m_format; }
 VkExtent2D VulkanSwapChain::getExtent2D() const { return m_extent; }
