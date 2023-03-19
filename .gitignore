@@ -42,3 +42,6 @@ build/
 
 # script
 !scripts/build
+
+# visual studio
+.vs/

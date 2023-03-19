@@ -1,6 +1,8 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_device.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 
