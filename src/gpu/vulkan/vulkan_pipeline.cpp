@@ -1,19 +1,20 @@
 #include "vulkan_pipeline.h"
+#include "vulkan_device.h"
+#include "vulkan_render_pass.h"
 
 #include "utils/file.h"
 
 namespace vkt
 {
 
+VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineCreateInfo info) : Pipeline(vulkanDevice, info) {}
+
 void VulkanPipeline::destroy()
 {
-    vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
+    auto device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    vkDestroyPipeline(device, m_graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
 }
-
-void VulkanPipeline::setDevice(VkDevice device) { m_device = device; }
-
-void VulkanPipeline::setRenderPass(VkRenderPass renderPass) { m_renderPass = renderPass; }
 
 void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer) { vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline); }
 
@@ -129,7 +130,8 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineLayoutCreateInfo.pushConstantRangeCount = 0;    // Optional
     pipelineLayoutCreateInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(m_device, &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+    auto device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    if (vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -147,18 +149,20 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
     pipelineInfo.pDynamicState = nullptr; // Optional
     pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = m_renderPass;
+    
+    auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass);
+    pipelineInfo.renderPass = vulkanRenderPass->getRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
 
-    if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    vkDestroyShaderModule(m_device, m_fragShaderModule, nullptr);
-    vkDestroyShaderModule(m_device, m_vertShaderModule, nullptr);
+    vkDestroyShaderModule(device, m_fragShaderModule, nullptr);
+    vkDestroyShaderModule(device, m_vertShaderModule, nullptr);
 }
 
 VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeBuffer)
@@ -169,7 +173,8 @@ VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeB
     shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(codeBuffer.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(m_device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
+    auto device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create shader module!");
     }

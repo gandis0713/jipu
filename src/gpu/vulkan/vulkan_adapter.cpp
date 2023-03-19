@@ -12,7 +12,9 @@
 namespace vkt
 {
 
-VulkanAdapter::VulkanAdapter(Driver* driver, AdapterCreateInfo info) : Adapter(driver, info) {}
+VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterCreateInfo info) : Adapter(vulkanDriver, info) {
+    m_physicalDevice = vulkanDriver->getPhysicalDevices()[0];
+}
 
 std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceCreateInfo info)
 {

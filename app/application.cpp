@@ -2,6 +2,11 @@
 #include "window.h"
 
 #include "gpu/platform.h"
+#include "gpu/vulkan/vulkan_device.h"
+#include "gpu/vulkan/vulkan_adapter.h"
+#include "gpu/vulkan/vulkan_pipeline.h"
+#include "gpu/vulkan/vulkan_render_pass.h"
+#include "gpu/vulkan/vulkan_swap_chain.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -49,14 +54,12 @@ void Application::initWindow() { m_window = new Window(800, 600, "Triangle Windo
 
 void Application::initVulkan()
 {
-    createContext(); // TODO: remove
-
     // create Driver.
     {
-        DriverCreateInfo info{};
+        DriverCreateInfo info{ API_TYPE::VULKAN };
         m_driver = Driver::create(info);
     }
-    
+
     // create Adapter.
     {
         AdapterCreateInfo info{};
@@ -93,46 +96,44 @@ void Application::mainLoop()
         drawFrame();
     }
 
-    vkDeviceWaitIdle(m_context.device);
+    // vkDeviceWaitIdle(m_context.device);
 }
 
 void Application::cleanup()
 {
-    vkDestroySemaphore(m_context.device, m_renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(m_context.device, m_imageAvailableSemaphore, nullptr);
+    // vkDestroySemaphore(m_context.device, m_renderFinishedSemaphore, nullptr);
+    // vkDestroySemaphore(m_context.device, m_imageAvailableSemaphore, nullptr);
 
-    vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
+    // vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
 
-    for (auto framebuffer : m_vecSwapChainFramebuffers)
-    {
-        vkDestroyFramebuffer(m_context.device, framebuffer, nullptr);
-    }
+    // for (auto framebuffer : m_vecSwapChainFramebuffers)
+    // {
+    //     vkDestroyFramebuffer(m_context.device, framebuffer, nullptr);
+    // }
 
-//    m_pipeline.destroy();
+    //    m_pipeline.destroy();
 
-    vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
+    //    vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
 
-//    for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
-//    {
-//        vkDestroyImageView(m_context.device, imageView, nullptr);
-//    }
+    //    for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
+    //    {
+    //        vkDestroyImageView(m_context.device, imageView, nullptr);
+    //    }
 
-//    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
+    //    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
 
-    vkDestroyDevice(m_context.device, nullptr);
+//    vkDestroyDevice(m_context.device, nullptr);
 
     // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
-    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
+//    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
 
-    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
+//    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
 
     delete m_window; // glfwDestroyWindow(m_window);
 
     glfwTerminate();
 }
-
-void Application::createContext() { m_context.initialize(); }
 
 // TODO: remove
 // const std::vector<const char*>& Application::getRequiredValidationLayers()
@@ -296,84 +297,59 @@ void Application::createSwapChain()
     // create surface
     SurfaceCreateInfo info{};
     std::unique_ptr<Surface> surface = m_platform->createSurface(info);
-    
+
     // create swapchain
-    SwapChainCreateInfo swapChainCreateInfo{std::move(surface)};
-    m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
+    SwapChainCreateInfo swapChainCreateInfo{ std::move(surface) };
+    m_swapChain = m_device->createSwapChain(std::move(swapChainCreateInfo));
+    //    m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
 }
 
 void Application::createGraphicsPipeline()
 {
-    m_pipeline.setDevice(m_context.device);
-    m_pipeline.setRenderPass(m_renderPass);
+    // create pipeline
+    {
+        PipelineCreateInfo info{};
+        m_pipeline = m_device->createPipeline(info);
+    }
 
-    m_pipeline.createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
-                                      (Application::getDir() / "triangle_frag.spv").generic_string());
+    auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
+    vulkanPipeline->setRenderPass(m_renderPass.get());
+
+    vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
+                                           (Application::getDir() / "triangle_frag.spv").generic_string());
 }
 
 void Application::createRenderPass()
 {
-    VkAttachmentDescription colorAttachmentDescription{};
-    colorAttachmentDescription.format = m_swapChain->getFormat();
-    colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorAttachmentReference{};
-    colorAttachmentReference.attachment = 0;
-    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpassDescription{};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDescription.colorAttachmentCount = 1;
-    subpassDescription.pColorAttachments = &colorAttachmentReference;
-
-    VkSubpassDependency subpassDependency{};
-    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependency.dstSubpass = 0;
-    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependency.srcAccessMask = 0;
-    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    VkRenderPassCreateInfo renderPassCreateInfo{};
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.attachmentCount = 1;
-    renderPassCreateInfo.pAttachments = &colorAttachmentDescription;
-    renderPassCreateInfo.subpassCount = 1;
-    renderPassCreateInfo.pSubpasses = &subpassDescription;
-    renderPassCreateInfo.dependencyCount = 1;
-    renderPassCreateInfo.pDependencies = &subpassDependency;
-
-    if (vkCreateRenderPass(m_context.device, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    // create renderpass
     {
-        throw std::runtime_error("failed to create render pass!");
+        RenderPassCreateInfo info{};
+        m_renderPass = m_device->createRenderPass(info);
     }
 }
 
 void Application::createFramebuffers()
 {
-    auto swapChainImageViews = m_swapChain->getImageViews();
+    auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+    auto swapChainImageViews = vulkanSwapChain->getImageViews();
     m_vecSwapChainFramebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++)
     {
         VkImageView attachments[] = { swapChainImageViews[i] };
 
+        auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());
         VkFramebufferCreateInfo framebufferCreateInfo{};
         framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferCreateInfo.renderPass = m_renderPass;
+        framebufferCreateInfo.renderPass = vulkanRenderPass->getRenderPass();
         framebufferCreateInfo.attachmentCount = 1;
         framebufferCreateInfo.pAttachments = attachments;
-        framebufferCreateInfo.width = m_swapChain->getExtent2D().width;
-        framebufferCreateInfo.height = m_swapChain->getExtent2D().height;
+        framebufferCreateInfo.width = vulkanSwapChain->getExtent2D().width;
+        framebufferCreateInfo.height = vulkanSwapChain->getExtent2D().height;
         framebufferCreateInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_context.device, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
+        VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
+        if (vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create framebuffer!");
         }
@@ -382,14 +358,16 @@ void Application::createFramebuffers()
 
 void Application::createCommandPool()
 {
-    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_context.physicalDevice);
+    VkPhysicalDevice physicalDevice = static_cast<VulkanAdapter*>(m_adapter.get())->getPhysicalDevice();
+    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
 
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     commandPoolCreateInfo.flags = 0; // Optional
 
-    if (vkCreateCommandPool(m_context.device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
+    if (vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -405,7 +383,8 @@ void Application::createCommandBuffers()
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-    if (vkAllocateCommandBuffers(m_context.device, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
+    if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -424,11 +403,14 @@ void Application::createCommandBuffers()
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_renderPass;
+
+        auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());
+        renderPassInfo.renderPass = vulkanRenderPass->getRenderPass();
         renderPassInfo.framebuffer = m_vecSwapChainFramebuffers[i];
 
         renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = m_swapChain->getExtent2D();
+        auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+        renderPassInfo.renderArea.extent = vulkanSwapChain->getExtent2D();
 
         VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
         renderPassInfo.clearValueCount = 1;
@@ -437,7 +419,8 @@ void Application::createCommandBuffers()
         vkCmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         // vkCmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        m_pipeline.bindPipeline(m_vecCommandBuffers[i]);
+        auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
+        vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
 
         vkCmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
 
@@ -453,8 +436,12 @@ void Application::createCommandBuffers()
 void Application::drawFrame()
 {
     uint32_t imageIndex;
-    VkSwapchainKHR swapChain = static_cast<VkSwapchainKHR>(m_swapChain->getHandle());
-    vkAcquireNextImageKHR(m_context.device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+    VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
+    
+    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VkDevice device = vulkanDevice->getDevice();
+    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -472,7 +459,7 @@ void Application::drawFrame()
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(m_context.graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkQueueSubmit(vulkanDevice->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -489,9 +476,9 @@ void Application::drawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(m_context.presentQueue, &presentInfo);
+    vkQueuePresentKHR(vulkanDevice->getPresentQueue(), &presentInfo);
 
-    vkQueueWaitIdle(m_context.presentQueue);
+    vkQueueWaitIdle(vulkanDevice->getPresentQueue());
 }
 
 void Application::createSemaphores()
@@ -499,8 +486,9 @@ void Application::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create semaphores!");
     }

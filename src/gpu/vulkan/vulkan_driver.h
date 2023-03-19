@@ -25,6 +25,7 @@ public:
 
 public: // vulkan object
     VkInstance getInstance() const;
+    std::vector<VkPhysicalDevice> getPhysicalDevices() const;
 
 private:
     VkInstance m_instance{};

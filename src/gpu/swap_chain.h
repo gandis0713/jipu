@@ -10,9 +10,8 @@ class Surface;
 
 struct SwapChainCreateInfo
 {
-    std::unique_ptr<Surface> surface{nullptr};
+    std::unique_ptr<Surface> surface{ nullptr };
 };
-
 
 class SwapChain
 {

@@ -1,14 +1,15 @@
 #pragma once
 
 // #define GLFW_INCLUDE_VULKAN
-#include "utils/log.h"
+#include "gpu/adapter.h"
 #include "gpu/context.h"
 #include "gpu/device.h"
 #include "gpu/driver.h"
-#include "gpu/adapter.h"
 #include "gpu/platform.h"
+#include "gpu/render_pass.h"
 #include "gpu/surface.h"
 #include "gpu/swap_chain.h"
+#include "utils/log.h"
 #include <GLFW/glfw3.h>
 
 #include "gpu/pipeline.h"
@@ -59,8 +60,6 @@ private:
     void mainLoop();
     void cleanup();
 
-    void createContext();
-
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);
@@ -96,18 +95,9 @@ private:
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
     // swap chain
-    std::unique_ptr<SwapChain> m_swapChain = nullptr;
 
     // frame buffers
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
-
-    // vulkan context
-    Context m_context;
-
-    VkRenderPass m_renderPass;
-
-    // pipeline
-    Pipeline m_pipeline;
 
     // command
     VkCommandPool m_commandPool;
@@ -118,11 +108,15 @@ private:
     VkSemaphore m_renderFinishedSemaphore;
 
     // wrapper
-    std::unique_ptr<Driver> m_driver{nullptr};
-    std::unique_ptr<Adapter> m_adapter{nullptr};
+    std::unique_ptr<Driver> m_driver{ nullptr };
+    std::unique_ptr<Adapter> m_adapter{ nullptr };
 
     std::unique_ptr<Platform> m_platform{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };
+
+    std::unique_ptr<SwapChain> m_swapChain = nullptr;
+    std::unique_ptr<RenderPass> m_renderPass{ nullptr };
+    std::unique_ptr<Pipeline> m_pipeline{ nullptr };
 };
 
 } // namespace vkt

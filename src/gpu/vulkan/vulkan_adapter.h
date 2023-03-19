@@ -5,11 +5,12 @@
 
 namespace vkt
 {
+class VulkanDriver;
 class VulkanAdapter : public Adapter
 {
 public:
     VulkanAdapter() = delete;
-    VulkanAdapter(Driver* driver, AdapterCreateInfo info);
+    VulkanAdapter(VulkanDriver* driver, AdapterCreateInfo info);
     ~VulkanAdapter() = default;
 
     std::unique_ptr<Device> createDevice(DeviceCreateInfo info) override;

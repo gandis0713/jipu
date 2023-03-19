@@ -1,7 +1,7 @@
 
 #include "vulkan_surface.h"
-#include "vulkan_platform.h"
 #include "vulkan_adapter.h"
+#include "vulkan_platform.h"
 
 #include "utils/log.h"
 
@@ -36,6 +36,10 @@ VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreate
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_presentModes.data());
     }
 }
+VulkanSurface::~VulkanSurface() {
+    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_platform->getAdapter());
+    
+    vkDestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr); }
 
 VkSurfaceKHR VulkanSurface::getSurface() const { return m_surface; }
 

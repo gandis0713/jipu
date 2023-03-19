@@ -221,4 +221,6 @@ std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info) { r
 
 VkInstance VulkanDriver::getInstance() const { return m_instance; }
 
+std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const { return m_physicalDevices; }
+
 } // namespace vkt

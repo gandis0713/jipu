@@ -2,6 +2,9 @@
 
 #include "utils/log.h"
 #include "vulkan_adapter.h"
+#include "vulkan_pipeline.h"
+#include "vulkan_render_pass.h"
+#include "vulkan_swap_chain.h"
 
 #include <optional>
 #include <set>
@@ -165,5 +168,17 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info) : Devi
     vkGetDeviceQueue(m_device, queueFamilyIndices.presentFamily.value(), 0, &m_presentQueue);
 }
 
+VulkanDevice::~VulkanDevice() { vkDestroyDevice(m_device, nullptr); }
+
+std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& info) { return std::make_unique<VulkanSwapChain>(this, std::move(info)); }
+
+std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassCreateInfo info) { return std::make_unique<VulkanRenderPass>(this, info); }
+
+std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info) { return std::make_unique<VulkanPipeline>(this, info); }
+
 VkDevice VulkanDevice::getDevice() const { return m_device; }
+
+VkQueue VulkanDevice::getGraphicsQueue() const { return m_graphicsQueue; }
+VkQueue VulkanDevice::getPresentQueue() const { return m_presentQueue; }
+
 } // namespace vkt

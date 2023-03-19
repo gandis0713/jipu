@@ -12,8 +12,9 @@ class VulkanPlatform;
 class VulkanSurface : public Surface
 {
 public:
+    VulkanSurface() = delete;
     VulkanSurface(VulkanPlatform* platform, SurfaceCreateInfo info);
-    ~VulkanSurface() override = default;
+    ~VulkanSurface() override;
 
     VkSurfaceKHR getSurface() const;
 
