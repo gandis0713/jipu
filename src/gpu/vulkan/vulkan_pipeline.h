@@ -1,19 +1,21 @@
 #pragma once
 
-#include "vk/vulkan_api.h"
+#include "gpu/pipeline.h"
+#include "gpu/vulkan/vulkan_api.h"
+
 #include <string>
 #include <vector>
 
 namespace vkt
 {
-class Pipeline
+class VulkanPipeline : public Pipeline
 {
 public:
-    Pipeline();
-    ~Pipeline();
+    VulkanPipeline() = default;
+    ~VulkanPipeline() override = default;
 
-    Pipeline(const Pipeline&) = delete;
-    Pipeline& operator=(const Pipeline&) = delete;
+    VulkanPipeline(const VulkanPipeline&) = delete;
+    VulkanPipeline& operator=(const VulkanPipeline&) = delete;
 
     void destroy();
 

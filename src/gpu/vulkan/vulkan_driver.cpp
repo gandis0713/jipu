@@ -1,13 +1,14 @@
-#include "driver.h"
+#include "vulkan_driver.h"
 #include "utils/log.h"
+#include "vulkan_device.h"
 #include <stdexcept>
 
-#include "vk/allocation.h"
+#include "allocation.h"
 #if defined(__linux__)
 #elif defined(_WIN64)
-    #include "vk/platform_windows.h"
+    #include "vulkan_platform_windows.h"
 #elif defined(__APPLE__)
-    #include "vk/platform_macos.h"
+    #include "vulkan_platform_macos.h"
 #endif
 
 #include <set>
@@ -196,7 +197,8 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-Driver::Driver(DriverCreateInfo info)
+VulkanDriver::VulkanDriver(DriverCreateInfo info)
+: Driver()
 {
     m_instance = createInstance();
     if (m_instance == nullptr)
@@ -211,20 +213,19 @@ Driver::Driver(DriverCreateInfo info)
     }
 }
 
-Driver::~Driver()
+VulkanDriver::~VulkanDriver()
 {
-
     // TODO: destroy instance.
 }
 
-std::unique_ptr<Device> Driver::createDevice(DeviceCreateInfo info)
+std::unique_ptr<Device> VulkanDriver::createDevice(DeviceCreateInfo info)
 {
     VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
     DeviceCreateHandles handles{ physicalDevice };
-    
-    return std::make_unique<Device>(handles, info);
+
+    return std::make_unique<VulkanDevice>(handles, info);
 }
-std::unique_ptr<Platform> Driver::createPlatform(PlatformCreateInfo info)
+std::unique_ptr<Platform> VulkanDriver::createPlatform(PlatformCreateInfo info)
 {
     VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
 
@@ -232,12 +233,12 @@ std::unique_ptr<Platform> Driver::createPlatform(PlatformCreateInfo info)
 #if defined(__linux__)
     return nullptr;
 #elif defined(_WIN64)
-    return std::make_unique<PlatformWindows>(handles, info);
+    return std::make_unique<VulkanPlatformWindows>(handles, info);
 #elif defined(__APPLE__)
-    return std::make_unique<PlatformMacOS>(handles, info);
+    return std::make_unique<VulkanPlatformMacOS>(handles, info);
 #endif
 }
 
-VkInstance Driver::getInstance() const { return m_instance; }
+VkInstance VulkanDriver::getInstance() const { return m_instance; }
 
 } // namespace vkt

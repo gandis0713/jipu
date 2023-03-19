@@ -1,26 +1,23 @@
-#include "pipeline.h"
+#include "vulkan_pipeline.h"
 
 #include "utils/file.h"
 
 namespace vkt
 {
-Pipeline::Pipeline() {}
 
-Pipeline::~Pipeline() {}
-
-void Pipeline::destroy()
+void VulkanPipeline::destroy()
 {
     vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
 }
 
-void Pipeline::setDevice(VkDevice device) { m_device = device; }
+void VulkanPipeline::setDevice(VkDevice device) { m_device = device; }
 
-void Pipeline::setRenderPass(VkRenderPass renderPass) { m_renderPass = renderPass; }
+void VulkanPipeline::setRenderPass(VkRenderPass renderPass) { m_renderPass = renderPass; }
 
-void Pipeline::bindPipeline(VkCommandBuffer commandBuffer) { vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline); }
+void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer) { vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline); }
 
-void Pipeline::createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath)
+void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath)
 {
     const std::vector<char> vertShaderCode = utils::readFile(vertShaderPath);
     const std::vector<char> fragShaderCode = utils::readFile(fragShaderPath);
@@ -164,7 +161,7 @@ void Pipeline::createGraphicsPipeline(const std::string& vertShaderPath, const s
     vkDestroyShaderModule(m_device, m_vertShaderModule, nullptr);
 }
 
-VkShaderModule Pipeline::createShaderModule(const std::vector<char>& codeBuffer)
+VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeBuffer)
 {
     VkShaderModuleCreateInfo shaderModuleCreateInfo{};
     shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

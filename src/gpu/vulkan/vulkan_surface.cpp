@@ -1,13 +1,13 @@
 
-#include "surface.h"
+#include "vulkan_surface.h"
 
 #include "utils/log.h"
 
 namespace vkt
 {
 
-Surface::Surface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept
-    : m_physicalDevice(handles.physicalDevice), m_surface(handles.surface)
+VulkanSurface::VulkanSurface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept
+    : Surface(info), m_physicalDevice(handles.physicalDevice), m_surface(handles.surface)
 {
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &m_surfaceCapabilities);
 
@@ -30,12 +30,10 @@ Surface::Surface(const SurfaceCreateHandles handles, const SurfaceCreateInfo inf
     }
 }
 
-Surface::~Surface() noexcept {}
+VkSurfaceKHR VulkanSurface::getSurface() const { return m_surface; }
 
-VkSurfaceKHR Surface::getSurface() const { return m_surface; }
-
-const VkSurfaceCapabilitiesKHR& Surface::getSurfaceCapabilities() const { return m_surfaceCapabilities; }
-const std::vector<VkSurfaceFormatKHR>& Surface::getSurfaceFormats() const { return m_surfaceFormats; }
-const std::vector<VkPresentModeKHR>& Surface::getPresentModes() const { return m_presentModes; }
+const VkSurfaceCapabilitiesKHR& VulkanSurface::getSurfaceCapabilities() const { return m_surfaceCapabilities; }
+const std::vector<VkSurfaceFormatKHR>& VulkanSurface::getSurfaceFormats() const { return m_surfaceFormats; }
+const std::vector<VkPresentModeKHR>& VulkanSurface::getPresentModes() const { return m_presentModes; }
 
 } // namespace vkt

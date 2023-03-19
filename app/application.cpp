@@ -1,7 +1,7 @@
 #include "application.h"
 #include "window.h"
 
-#include "vk/platform_macos.h"
+#include "gpu/platform.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -87,33 +87,33 @@ void Application::mainLoop()
         drawFrame();
     }
 
-    vkDeviceWaitIdle(m_device->getDevice());
+    vkDeviceWaitIdle(m_context.device);
 }
 
 void Application::cleanup()
 {
-    vkDestroySemaphore(m_device->getDevice(), m_renderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(m_device->getDevice(), m_imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(m_context.device, m_renderFinishedSemaphore, nullptr);
+    vkDestroySemaphore(m_context.device, m_imageAvailableSemaphore, nullptr);
 
-    vkDestroyCommandPool(m_device->getDevice(), m_commandPool, nullptr);
+    vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
 
     for (auto framebuffer : m_vecSwapChainFramebuffers)
     {
-        vkDestroyFramebuffer(m_device->getDevice(), framebuffer, nullptr);
+        vkDestroyFramebuffer(m_context.device, framebuffer, nullptr);
     }
 
-    m_pipeline.destroy();
+//    m_pipeline.destroy();
 
-    vkDestroyRenderPass(m_device->getDevice(), m_renderPass, nullptr);
+    vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
 
-    for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
-    {
-        vkDestroyImageView(m_device->getDevice(), imageView, nullptr);
-    }
+//    for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
+//    {
+//        vkDestroyImageView(m_context.device, imageView, nullptr);
+//    }
 
-    vkDestroySwapchainKHR(m_device->getDevice(), static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
+//    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
 
-    vkDestroyDevice(m_device->getDevice(), nullptr);
+    vkDestroyDevice(m_context.device, nullptr);
 
     // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
@@ -291,13 +291,14 @@ void Application::createSwapChain()
     SurfaceCreateInfo info{};
     auto surface = m_platform->createSurface(info);
     
-    SwapChainCreateInfo swapChainCreateInfo{ m_device->getDevice(), std::move(surface) };
-    m_swapChain = std::make_unique<SwapChain>(std::move(swapChainCreateInfo));
+    SwapChainCreateHandles swapChainCreateHandles{ m_context.device, std::move(surface) };
+    SwapChainCreateInfo swapChainCreateInfo;
+    m_swapChain = std::make_unique<SwapChain>(swapChainCreateHandles, std::move(swapChainCreateInfo));
 }
 
 void Application::createGraphicsPipeline()
 {
-    m_pipeline.setDevice(m_device->getDevice());
+    m_pipeline.setDevice(m_context.device);
     m_pipeline.setRenderPass(m_renderPass);
 
     m_pipeline.createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
@@ -342,7 +343,7 @@ void Application::createRenderPass()
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subpassDependency;
 
-    if (vkCreateRenderPass(m_device->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (vkCreateRenderPass(m_context.device, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -366,7 +367,7 @@ void Application::createFramebuffers()
         framebufferCreateInfo.height = m_swapChain->getExtent2D().height;
         framebufferCreateInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_device->getDevice(), &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
+        if (vkCreateFramebuffer(m_context.device, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create framebuffer!");
         }
@@ -382,7 +383,7 @@ void Application::createCommandPool()
     commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
     commandPoolCreateInfo.flags = 0; // Optional
 
-    if (vkCreateCommandPool(m_device->getDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(m_context.device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -398,7 +399,7 @@ void Application::createCommandBuffers()
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-    if (vkAllocateCommandBuffers(m_device->getDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    if (vkAllocateCommandBuffers(m_context.device, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -447,7 +448,7 @@ void Application::drawFrame()
 {
     uint32_t imageIndex;
     VkSwapchainKHR swapChain = static_cast<VkSwapchainKHR>(m_swapChain->getHandle());
-    vkAcquireNextImageKHR(m_device->getDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(m_context.device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -492,8 +493,8 @@ void Application::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    if (vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkCreateSemaphore(m_context.device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create semaphores!");
     }

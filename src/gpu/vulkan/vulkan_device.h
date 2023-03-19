@@ -1,31 +1,26 @@
 #pragma once
 
+#include "gpu/device.h"
 #include "vulkan_api.h"
 #include <memory>
 
 namespace vkt
 {
 
-struct DeviceCreateInfo
-{
-};
-
 struct DeviceCreateHandles
 {
     VkPhysicalDevice physicalDevice{};
 };
 
-class Driver;
-
-class Device
+class VulkanDevice : public Device
 {
 public:
-    Device() = delete;
-    Device(DeviceCreateHandles handles, DeviceCreateInfo info);
-    ~Device();
+    VulkanDevice() = delete;
+    VulkanDevice(DeviceCreateHandles handles, DeviceCreateInfo info);
+    ~VulkanDevice() override = default;
 
-    Device(const Device&) = delete;
-    Device& operator=(const Device&) = delete;
+    VulkanDevice(const VulkanDevice&) = delete;
+    VulkanDevice& operator=(const VulkanDevice&) = delete;
 
     VkDevice getDevice() const;
 

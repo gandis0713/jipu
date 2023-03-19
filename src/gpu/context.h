@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vk/vulkan_api.h"
+#include "vulkan/vulkan_api.h"
 #include <optional>
 
 namespace vkt

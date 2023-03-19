@@ -2,15 +2,15 @@
 
 // #define GLFW_INCLUDE_VULKAN
 #include "utils/log.h"
-#include "vk/context.h"
-#include "vk/device.h"
-#include "vk/driver.h"
-#include "vk/platform.h"
-#include "vk/surface.h"
-#include "vk/swap_chain.h"
+#include "gpu/context.h"
+#include "gpu/device.h"
+#include "gpu/driver.h"
+#include "gpu/platform.h"
+#include "gpu/surface.h"
+#include "gpu/swap_chain.h"
 #include <GLFW/glfw3.h>
 
-#include "vk/pipeline.h"
+#include "gpu/pipeline.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>

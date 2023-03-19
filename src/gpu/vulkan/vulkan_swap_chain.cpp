@@ -1,4 +1,4 @@
-#include "swap_chain.h"
+#include "vulkan_swap_chain.h"
 
 #include <stdexcept>
 
@@ -56,7 +56,8 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-SwapChain::SwapChain(SwapChainCreateInfo&& info) noexcept(false) : m_device(info.device), m_surface(std::move(info.surface))
+VulkanSwapChain::VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreateInfo info) noexcept
+    : SwapChain(info), m_device(handles.device), m_surface(std::move(handles.surface))
 {
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(m_surface->getSurfaceFormats());
     VkPresentModeKHR presentMode = chooseSwapPresentMode(m_surface->getPresentModes());
@@ -149,15 +150,23 @@ SwapChain::SwapChain(SwapChainCreateInfo&& info) noexcept(false) : m_device(info
     }
 }
 
-SwapChain::~SwapChain() noexcept {}
+VulkanSwapChain::~VulkanSwapChain()
+{
+    for (const VkImageView& imageView : m_imageViews)
+    {
+        vkDestroyImageView(m_device, imageView, nullptr);
+    }
 
-void* SwapChain::getHandle() const { return m_handle; }
+    vkDestroySwapchainKHR(m_device, m_handle, nullptr);
+}
 
-VkFormat SwapChain::getFormat() const { return m_format; }
-VkExtent2D SwapChain::getExtent2D() const { return m_extent; }
+void* VulkanSwapChain::getHandle() const { return m_handle; }
 
-const std::vector<VkImage>& SwapChain::getImages() const { return m_images; }
+VkFormat VulkanSwapChain::getFormat() const { return m_format; }
+VkExtent2D VulkanSwapChain::getExtent2D() const { return m_extent; }
 
-const std::vector<VkImageView>& SwapChain::getImageViews() const { return m_imageViews; }
+const std::vector<VkImage>& VulkanSwapChain::getImages() const { return m_images; }
+
+const std::vector<VkImageView>& VulkanSwapChain::getImageViews() const { return m_imageViews; }
 
 } // namespace vkt

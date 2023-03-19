@@ -1,14 +1,11 @@
 #pragma once
 
+#include "gpu/surface.h"
 #include "vulkan_api.h"
 #include <vector>
 
 namespace vkt
 {
-
-struct SurfaceCreateInfo
-{
-};
 
 struct SurfaceCreateHandles
 {
@@ -16,11 +13,11 @@ struct SurfaceCreateHandles
     VkPhysicalDevice physicalDevice;
 };
 
-class Surface
+class VulkanSurface: public Surface
 {
 public:
-    explicit Surface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept;
-    ~Surface() noexcept;
+    VulkanSurface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept;
+    ~VulkanSurface() override = default;
 
     VkSurfaceKHR getSurface() const;
 

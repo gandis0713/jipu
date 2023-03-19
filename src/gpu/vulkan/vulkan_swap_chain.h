@@ -1,7 +1,8 @@
 #pragma once
 
-#include "surface.h"
+#include "gpu/swap_chain.h"
 #include "vulkan_api.h"
+#include "vulkan_surface.h"
 
 #include <memory>
 #include <vector>
@@ -9,20 +10,20 @@
 namespace vkt
 {
 
-struct SwapChainCreateInfo
+struct SwapChainCreateHandles
 {
-    VkDevice device{nullptr};
-    std::unique_ptr<Surface> surface{nullptr};
+    VkDevice device{ nullptr };
+    std::unique_ptr<VulkanSurface> surface{ nullptr };
 };
 
-class SwapChain
+class VulkanSwapChain : public SwapChain
 {
 public:
-    explicit SwapChain(SwapChainCreateInfo&& info) noexcept(false);
-    ~SwapChain() noexcept;
+    VulkanSwapChain(SwapChainCreateHandles handles, SwapChainCreateInfo info) noexcept;
+    ~VulkanSwapChain() override;
 
-    SwapChain(const SwapChain&) = delete;
-    SwapChain& operator=(const SwapChain&) = delete;
+    VulkanSwapChain(const SwapChain&) = delete;
+    VulkanSwapChain& operator=(const SwapChain&) = delete;
 
     void* getHandle() const;
 
@@ -34,7 +35,7 @@ public:
 
 private:
     VkDevice m_device;
-    std::unique_ptr<Surface> m_surface{nullptr};
+    std::unique_ptr<VulkanSurface> m_surface{ nullptr };
 
 private:
     VkSwapchainKHR m_handle;

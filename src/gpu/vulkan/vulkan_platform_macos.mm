@@ -1,6 +1,7 @@
-#include "platform_macos.h"
+#include "vulkan_platform_macos.h"
+#include "vulkan_surface.h"
 #include "utils/log.h"
-#include "vk/vulkan_api.h"
+#include "vulkan_api.h"
 
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -9,12 +10,10 @@
 namespace vkt
 {
 
-PlatformMacOS::PlatformMacOS(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept : Platform(handles, info) {}
-
-PlatformMacOS::~PlatformMacOS() {}
+VulkanPlatformMacOS::VulkanPlatformMacOS(PlatformCreateHandles handles, PlatformCreateInfo info) noexcept : VulkanPlatform(handles, info) {}
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-std::unique_ptr<Surface> PlatformMacOS::createSurface(SurfaceCreateInfo info)
+std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo info)
 {
     @autoreleasepool
     {
@@ -47,7 +46,7 @@ std::unique_ptr<Surface> PlatformMacOS::createSurface(SurfaceCreateInfo info)
 }
 
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
-std::unique_ptr<Surface> PlatformMacOS::createSurface(SurfaceCreateInfo info)
+std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo info)
 {
     @autoreleasepool
     {
