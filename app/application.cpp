@@ -295,8 +295,9 @@ void Application::createSwapChain()
 {
     // create surface
     SurfaceCreateInfo info{};
-    auto surface = m_platform->createSurface(info);
+    std::unique_ptr<Surface> surface = m_platform->createSurface(info);
     
+    // create swapchain
     SwapChainCreateInfo swapChainCreateInfo{std::move(surface)};
     m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
 }

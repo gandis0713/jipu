@@ -14,11 +14,11 @@ namespace vkt
 VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept : VulkanPlatform(adapter, info) {}
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo info)
+VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)
 {
     @autoreleasepool
     {
-        NSView* nsView = (__bridge NSView*)nativeWindow;
+        NSView* nsView = (__bridge NSView*)m_windowHandle;
         if (nsView == nil)
         {
             throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
@@ -33,21 +33,20 @@ std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo in
         createInfo.pView = (__bridge void*)nsView;
 
         VkSurfaceKHR surface{};
-        VkResult result = vkCreateMacOSSurfaceMVK(m_instance, &createInfo, nullptr, &surface);
+        VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_adapter);
+        VkResult result = vkCreateMacOSSurfaceMVK(adapter->getInstance(), &createInfo, nullptr, &surface);
 
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
 
-        SurfaceCreateInfo info{ m_physicalDevice, vulkanSurface };
-
-        return std::make_unique<Surface>(info);
+        return surface;
     }
 }
 
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
-std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo info)
+VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)
 {
     @autoreleasepool
     {
@@ -64,7 +63,8 @@ std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo in
 
         PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT;
 
-        vkCreateMetalSurfaceEXT = (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(m_instance, "vkCreateMetalSurfaceEXT");
+        VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_adapter);
+        vkCreateMetalSurfaceEXT = (PFN_vkCreateMetalSurfaceEXT)vkGetInstanceProcAddr(adapter->getInstance(), "vkCreateMetalSurfaceEXT");
         if (!vkCreateMetalSurfaceEXT)
         {
             throw std::runtime_error("Cocoa: Vulkan instance missing VK_EXT_metal_surface extension");
@@ -73,18 +73,15 @@ std::unique_ptr<Surface> VulkanPlatformMacOS::createSurface(SurfaceCreateInfo in
         VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
         surfaceCreateInfo.pLayer = layer;
-        VkSurfaceKHR vulkanSurface{};
-        VkResult result = vkCreateMetalSurfaceEXT(m_instance, &surfaceCreateInfo, nullptr, &vulkanSurface);
+        VkSurfaceKHR surface{};
+        VkResult result = vkCreateMetalSurfaceEXT(adapter->getInstance(), &surfaceCreateInfo, nullptr, &surface);
 
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
 
-        SurfaceCreateInfo info{};
-        SurfaceCreateHandles handles{ vulkanSurface, m_physicalDevice };
-
-        return std::make_unique<Surface>(handles, info);
+        return surface;
     }
 }
 #endif

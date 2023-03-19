@@ -7,16 +7,12 @@
 namespace vkt
 {
 
-struct SurfaceCreateHandles
-{
-    VkSurfaceKHR surface;
-    VkPhysicalDevice physicalDevice;
-};
+class VulkanPlatform;
 
-class VulkanSurface: public Surface
+class VulkanSurface : public Surface
 {
 public:
-    VulkanSurface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept;
+    VulkanSurface(VulkanPlatform* platform, SurfaceCreateInfo info);
     ~VulkanSurface() override = default;
 
     VkSurfaceKHR getSurface() const;

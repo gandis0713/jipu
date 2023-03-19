@@ -22,6 +22,8 @@ public:
 
     virtual std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) = 0;
 
+    Adapter* getAdapter() const;
+
 protected:
     Adapter* m_adapter;
 

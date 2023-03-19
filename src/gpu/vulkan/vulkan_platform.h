@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gpu/platform.h"
-#include "gpu/surface.h"
+
 #include "vulkan_api.h"
 
 #include <memory>
@@ -17,7 +17,10 @@ public:
     VulkanPlatform(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept;
     ~VulkanPlatform() override = default;
 
-    std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override { return nullptr; };
+    std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override;
+
+public:
+    virtual VkSurfaceKHR createSurfaceKHR(SurfaceCreateInfo info) = 0;
 };
 
 } // namespace vkt

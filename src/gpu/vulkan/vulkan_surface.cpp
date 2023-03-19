@@ -1,32 +1,39 @@
 
 #include "vulkan_surface.h"
+#include "vulkan_platform.h"
+#include "vulkan_adapter.h"
 
 #include "utils/log.h"
 
 namespace vkt
 {
 
-VulkanSurface::VulkanSurface(const SurfaceCreateHandles handles, const SurfaceCreateInfo info) noexcept
-    : Surface(info), m_physicalDevice(handles.physicalDevice), m_surface(handles.surface)
+VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreateInfo info) : Surface(vulkanPlatform, info)
 {
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, m_surface, &m_surfaceCapabilities);
+    SurfaceCreateInfo surfaceCreateinfo{};
+    m_surface = vulkanPlatform->createSurfaceKHR(surfaceCreateinfo);
+
+    VulkanAdapter* adapter = static_cast<VulkanAdapter*>(vulkanPlatform->getAdapter());
+    VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &m_surfaceCapabilities);
 
     uint32_t surfaceFormatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &surfaceFormatCount, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
 
     if (surfaceFormatCount != 0)
     {
         m_surfaceFormats.resize(surfaceFormatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, m_surface, &surfaceFormatCount, m_surfaceFormats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceFormats.data());
     }
 
     uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &presentModeCount, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
 
     if (presentModeCount != 0)
     {
         m_presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, m_surface, &presentModeCount, m_presentModes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_presentModes.data());
     }
 }
 

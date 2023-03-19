@@ -11,7 +11,7 @@ public:
     VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept;
     ~VulkanPlatformMacOS() override = default;
 
-    std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override;
+    virtual VkSurfaceKHR createSurfaceKHR(SurfaceCreateInfo info) override;
 };
 
 } // namespace vkt

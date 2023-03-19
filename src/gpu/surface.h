@@ -3,6 +3,8 @@
 namespace vkt
 {
 
+class Platform;
+
 struct SurfaceCreateInfo
 {
 };
@@ -10,11 +12,15 @@ struct SurfaceCreateInfo
 class Surface
 {
 public:
-    explicit Surface(SurfaceCreateInfo info) noexcept {};
-    virtual ~Surface() noexcept = default;
+    Surface() = delete;
+    Surface(Platform* platform, SurfaceCreateInfo info);
+    virtual ~Surface() = default;
 
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
+
+protected:
+    Platform* m_platform;
 };
 
 }; // namespace vkt
