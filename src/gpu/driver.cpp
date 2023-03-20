@@ -9,7 +9,7 @@ std::unique_ptr<Driver> Driver::create(DriverCreateInfo info)
 {
     switch (info.apiType)
     {
-    case API_TYPE::VULKAN:
+    case DRIVER_TYPE::VULKAN:
         return std::make_unique<VulkanDriver>(info);
     default:
         break;

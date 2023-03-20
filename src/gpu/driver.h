@@ -7,7 +7,7 @@
 namespace vkt
 {
 
-enum class API_TYPE
+enum class DRIVER_TYPE
 {
     NONE,
     VULKAN,
@@ -17,7 +17,7 @@ enum class API_TYPE
 
 struct DriverCreateInfo
 {
-    API_TYPE apiType = API_TYPE::NONE;
+    DRIVER_TYPE apiType = DRIVER_TYPE::NONE;
 };
 
 class Driver

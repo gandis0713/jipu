@@ -2,8 +2,8 @@
 #include "window.h"
 
 #include "gpu/platform.h"
-#include "gpu/vulkan/vulkan_device.h"
 #include "gpu/vulkan/vulkan_adapter.h"
+#include "gpu/vulkan/vulkan_device.h"
 #include "gpu/vulkan/vulkan_pipeline.h"
 #include "gpu/vulkan/vulkan_render_pass.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
@@ -56,7 +56,7 @@ void Application::initVulkan()
 {
     // create Driver.
     {
-        DriverCreateInfo info{ API_TYPE::VULKAN };
+        DriverCreateInfo info{ DRIVER_TYPE::VULKAN };
         m_driver = Driver::create(info);
     }
 
@@ -122,13 +122,13 @@ void Application::cleanup()
 
     //    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
 
-//    vkDestroyDevice(m_context.device, nullptr);
+    //    vkDestroyDevice(m_context.device, nullptr);
 
     // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
 
-//    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
+    //    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
 
-//    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
+    //    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
 
     delete m_window; // glfwDestroyWindow(m_window);
 
@@ -438,7 +438,7 @@ void Application::drawFrame()
     uint32_t imageIndex;
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
     VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
-    
+
     VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     VkDevice device = vulkanDevice->getDevice();
     vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
