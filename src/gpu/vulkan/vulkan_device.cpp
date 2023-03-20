@@ -2,6 +2,7 @@
 
 #include "utils/log.h"
 #include "vulkan_adapter.h"
+#include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_swap_chain.h"
@@ -175,6 +176,8 @@ std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& i
 std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassCreateInfo info) { return std::make_unique<VulkanRenderPass>(this, info); }
 
 std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info) { return std::make_unique<VulkanPipeline>(this, info); }
+
+std::unique_ptr<FrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info) { return std::make_unique<VulkanFrameBuffer>(this, info); }
 
 VkDevice VulkanDevice::getDevice() const { return m_device; }
 

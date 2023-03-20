@@ -333,9 +333,12 @@ void Application::createFramebuffers()
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
     auto swapChainImageViews = vulkanSwapChain->getImageViews();
     m_vecSwapChainFramebuffers.resize(swapChainImageViews.size());
+    m_framebuffers.resize(swapChainImageViews.size());
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++)
     {
+        FramebufferCreateInfo info{};
+        std::unique_ptr<FrameBuffer> framebuffer = m_device->createFrameBuffer(info);
         VkImageView attachments[] = { swapChainImageViews[i] };
 
         auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());

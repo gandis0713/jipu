@@ -23,6 +23,7 @@ public:
     std::unique_ptr<SwapChain> createSwapChain(SwapChainCreateInfo&& info) override;
     std::unique_ptr<RenderPass> createRenderPass(RenderPassCreateInfo info) override;
     std::unique_ptr<Pipeline> createPipeline(PipelineCreateInfo info) override;
+    std::unique_ptr<FrameBuffer> createFrameBuffer(FramebufferCreateInfo info) override;
 
 public: // vulkan object
     VkDevice getDevice() const;

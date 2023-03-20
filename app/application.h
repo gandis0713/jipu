@@ -5,6 +5,7 @@
 #include "gpu/context.h"
 #include "gpu/device.h"
 #include "gpu/driver.h"
+#include "gpu/framebuffer.h"
 #include "gpu/platform.h"
 #include "gpu/render_pass.h"
 #include "gpu/surface.h"
@@ -98,6 +99,7 @@ private:
 
     // frame buffers
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
+    std::vector<std::unique_ptr<FrameBuffer>> m_framebuffers{};
 
     // command
     VkCommandPool m_commandPool;
