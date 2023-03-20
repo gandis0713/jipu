@@ -3,7 +3,7 @@
 #include "gpu/framebuffer.h"
 #include "gpu/pipeline.h"
 #include "gpu/render_pass.h"
-#include "gpu/swap_chain.h"
+#include "gpu/swapchain.h"
 
 #include <memory>
 

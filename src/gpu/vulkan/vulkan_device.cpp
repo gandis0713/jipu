@@ -5,7 +5,7 @@
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_render_pass.h"
-#include "vulkan_swap_chain.h"
+#include "vulkan_swapchain.h"
 
 #include <optional>
 #include <set>

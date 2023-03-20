@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpu/swap_chain.h"
+#include "gpu/swapchain.h"
 #include "vulkan_api.h"
 
 #include <memory>

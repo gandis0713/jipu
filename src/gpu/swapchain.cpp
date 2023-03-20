@@ -1,4 +1,4 @@
-#include "gpu/swap_chain.h"
+#include "gpu/swapchain.h"
 
 #include "gpu/device.h"
 #include "gpu/surface.h"

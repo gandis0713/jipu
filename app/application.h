@@ -9,7 +9,7 @@
 #include "gpu/platform.h"
 #include "gpu/render_pass.h"
 #include "gpu/surface.h"
-#include "gpu/swap_chain.h"
+#include "gpu/swapchain.h"
 #include "utils/log.h"
 #include <GLFW/glfw3.h>
 

@@ -6,7 +6,7 @@
 #include "gpu/vulkan/vulkan_device.h"
 #include "gpu/vulkan/vulkan_pipeline.h"
 #include "gpu/vulkan/vulkan_render_pass.h"
-#include "gpu/vulkan/vulkan_swap_chain.h"
+#include "gpu/vulkan/vulkan_swapchain.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
