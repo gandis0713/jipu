@@ -4,7 +4,10 @@
 namespace vkt
 {
 
-Pipeline::Pipeline(Device* device, PipelineCreateInfo info) : m_device(device) {}
+Pipeline::Pipeline(Device* device, PipelineCreateInfo info)
+    : m_device(device)
+{
+}
 
 void Pipeline::setRenderPass(RenderPass* renderPass) { m_renderPass = renderPass; }
 

@@ -2,13 +2,16 @@
 
 #include "vulkan_adapter.h"
 
-#include <stdexcept>
 #include <fmt/format.h>
+#include <stdexcept>
 
 namespace vkt
 {
 
-VulkanPlatformWindows::VulkanPlatformWindows(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept : VulkanPlatform(adapter, info) {}
+VulkanPlatformWindows::VulkanPlatformWindows(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept
+    : VulkanPlatform(adapter, info)
+{
+}
 
 VkSurfaceKHR VulkanPlatformWindows::createSurfaceKHR(SurfaceCreateInfo info)
 {

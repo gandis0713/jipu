@@ -8,7 +8,8 @@
 namespace vkt
 {
 
-VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreateInfo info) : Surface(vulkanPlatform, info)
+VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreateInfo info)
+    : Surface(vulkanPlatform, info)
 {
     SurfaceCreateInfo surfaceCreateinfo{};
     m_surface = vulkanPlatform->createSurfaceKHR(surfaceCreateinfo);
@@ -36,10 +37,12 @@ VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreate
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_presentModes.data());
     }
 }
-VulkanSurface::~VulkanSurface() {
+VulkanSurface::~VulkanSurface()
+{
     auto vulkanAdapter = static_cast<VulkanAdapter*>(m_platform->getAdapter());
-    
-    vkDestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr); }
+
+    vkDestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
+}
 
 VkSurfaceKHR VulkanSurface::getSurface() const { return m_surface; }
 

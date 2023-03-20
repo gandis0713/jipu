@@ -3,6 +3,9 @@
 namespace vkt
 {
 
-Surface::Surface(Platform* platform, SurfaceCreateInfo info) : m_platform(platform) {}
+Surface::Surface(Platform* platform, SurfaceCreateInfo info)
+    : m_platform(platform)
+{
+}
 
 } // namespace vkt

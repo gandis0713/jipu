@@ -11,7 +11,10 @@
 namespace vkt
 {
 
-VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept : VulkanPlatform(adapter, info) {}
+VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept
+    : VulkanPlatform(adapter, info)
+{
+}
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
 VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)

@@ -6,7 +6,8 @@
 namespace vkt
 {
 
-VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, FramebufferCreateInfo info) : FrameBuffer(device, info)
+VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, FramebufferCreateInfo info)
+    : FrameBuffer(device, info)
 {
     // TODO
 }

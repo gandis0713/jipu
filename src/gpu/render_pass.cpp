@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-RenderPass::RenderPass(Device* device, RenderPassCreateInfo info) : m_device(device) {}
+RenderPass::RenderPass(Device* device, RenderPassCreateInfo info)
+    : m_device(device)
+{
+}
 
 } // namespace vkt

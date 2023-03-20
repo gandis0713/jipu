@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-FrameBuffer::FrameBuffer(Device* device, FramebufferCreateInfo info) : m_device(device) {}
+FrameBuffer::FrameBuffer(Device* device, FramebufferCreateInfo info)
+    : m_device(device)
+{
+}
 
 } // namespace vkt

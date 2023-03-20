@@ -11,7 +11,8 @@ static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFor
 {
     for (const VkSurfaceFormatKHR& availableSurfaceFormat : availableSurfaceFormats)
     {
-        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             return availableSurfaceFormat;
         }
@@ -46,11 +47,12 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
         // int frameBufferWidth, frameBufferHeight;
         // m_window->getFrameBufferSize(&frameBufferWidth, &frameBufferHeight);
 
-        // VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth), static_cast<uint32_t>(frameBufferHeight) };
+        // VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth),
+        // static_cast<uint32_t>(frameBufferHeight) };
 
-        // actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        // actualImageExtent.height = std::clamp(actualImageExtent.height, surfaceCapabilities.minImageExtent.height,
-        // surfaceCapabilities.maxImageExtent.height);
+        // actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width,
+        // surfaceCapabilities.maxImageExtent.width); actualImageExtent.height = std::clamp(actualImageExtent.height,
+        // surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
 
         // extent = actualImageExtent;
     }
@@ -62,7 +64,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo
     : SwapChain(vulkanDevice, std::move(info))
 {
     VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface.get());
-    
+
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surface->getSurfaceFormats());
     VkPresentModeKHR presentMode = chooseSwapPresentMode(surface->getPresentModes());
 
@@ -87,7 +89,8 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo
 
     // TODO: check queue family.
     // QueueFamilyIndices foundQueueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_context.physicalDevice);
-    // uint32_t queueFamilyIndices[] = { foundQueueFamilyIndices.graphicsFamily.value(), foundQueueFamilyIndices.presentFamily.value() };
+    // uint32_t queueFamilyIndices[] = { foundQueueFamilyIndices.graphicsFamily.value(),
+    // foundQueueFamilyIndices.presentFamily.value() };
 
     // if (foundQueueFamilyIndices.graphicsFamily != foundQueueFamilyIndices.presentFamily)
     // {
@@ -158,7 +161,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo
 VulkanSwapChain::~VulkanSwapChain()
 {
     VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
-    
+
     for (const VkImageView& imageView : m_imageViews)
     {
         vkDestroyImageView(device, imageView, nullptr);

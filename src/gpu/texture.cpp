@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-Texture::Texture(Device* device, TextureCreateInfo info) : m_device(device) {}
+Texture::Texture(Device* device, TextureCreateInfo info)
+    : m_device(device)
+{
+}
 
 } // namespace vkt

@@ -7,7 +7,10 @@
 namespace vkt
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineCreateInfo info) : Pipeline(vulkanDevice, info) {}
+VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineCreateInfo info)
+    : Pipeline(vulkanDevice, info)
+{
+}
 
 void VulkanPipeline::destroy()
 {
@@ -16,7 +19,10 @@ void VulkanPipeline::destroy()
     vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
 }
 
-void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer) { vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline); }
+void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer)
+{
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+}
 
 void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath)
 {
@@ -96,7 +102,8 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.colorWriteMask =
+        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
     colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
@@ -149,7 +156,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
     pipelineInfo.pDynamicState = nullptr; // Optional
     pipelineInfo.layout = m_pipelineLayout;
-    
+
     auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass);
     pipelineInfo.renderPass = vulkanRenderPass->getRenderPass();
     pipelineInfo.subpass = 0;

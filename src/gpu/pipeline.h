@@ -23,8 +23,8 @@ public:
     void setRenderPass(RenderPass* renderPass);
 
 protected:
-    Device* m_device;
-    RenderPass* m_renderPass;
+    Device* m_device{ nullptr };
+    RenderPass* m_renderPass{ nullptr };
 };
 
 } // namespace vkt

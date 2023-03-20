@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-TextureView::TextureView(Texture* texture, TextureViewCreateInfo info) : m_texture(texture) {}
+TextureView::TextureView(Texture* texture, TextureViewCreateInfo info)
+    : m_texture(texture)
+{
+}
 
 } // namespace vkt

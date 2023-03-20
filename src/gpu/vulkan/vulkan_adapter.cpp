@@ -12,23 +12,19 @@
 namespace vkt
 {
 
-VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterCreateInfo info) : Adapter(vulkanDriver, info) {
+VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterCreateInfo info)
+    : Adapter(vulkanDriver, info)
+{
     m_physicalDevice = vulkanDriver->getPhysicalDevices()[0];
 }
 
 std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceCreateInfo info)
 {
-    // VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
-    // DeviceCreateHandles handles{ physicalDevice };
-
     return std::make_unique<VulkanDevice>(this, info);
 }
 
 std::unique_ptr<Platform> VulkanAdapter::createPlatform(PlatformCreateInfo info)
 {
-    // VkPhysicalDevice physicalDevice = m_physicalDevices[0]; // TODO: select suitable device
-
-    // PlatformCreateHandles handles{ m_instance, physicalDevice };
 #if defined(__linux__)
     return nullptr;
 #elif defined(_WIN64)

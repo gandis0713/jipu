@@ -157,7 +157,8 @@ static std::vector<VkPhysicalDevice> createPhysicalDevices(VkInstance instance)
     return physicalDevices;
 }
 
-static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices, VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
+static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices,
+                                             VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
 {
     for (const VkPhysicalDevice& candidatePhysicalDevice : physicalDevices)
     {
@@ -165,7 +166,8 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount,
+                                                 queueFamilyProperties.data());
 
         LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
         for (auto i = 0; i < queueFamilyProperties.size(); ++i)
@@ -197,7 +199,8 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-VulkanDriver::VulkanDriver(DriverCreateInfo info) : Driver()
+VulkanDriver::VulkanDriver(DriverCreateInfo info)
+    : Driver()
 {
     m_instance = createInstance();
     if (m_instance == nullptr)
@@ -217,7 +220,10 @@ VulkanDriver::~VulkanDriver()
     // TODO: destroy instance.
 }
 
-std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info) { return std::make_unique<VulkanAdapter>(this, info); }
+std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info)
+{
+    return std::make_unique<VulkanAdapter>(this, info);
+}
 
 VkInstance VulkanDriver::getInstance() const { return m_instance; }
 

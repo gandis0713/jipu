@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewCreateInfo info) : TextureView(texture, info) {}
+VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewCreateInfo info)
+    : TextureView(texture, info)
+{
+}
 
 } // namespace vkt

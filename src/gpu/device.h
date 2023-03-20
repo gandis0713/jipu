@@ -32,7 +32,7 @@ public:
     virtual std::unique_ptr<FrameBuffer> createFrameBuffer(FramebufferCreateInfo info) = 0;
 
 protected:
-    Adapter* m_adapter;
+    Adapter* m_adapter{ nullptr };
 };
 
 } // namespace vkt

@@ -143,10 +143,12 @@ static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
 
     std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, availableDeviceExtensions.data());
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount,
+                                         availableDeviceExtensions.data());
 
     const std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
-    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
+    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(),
+                                                       requiredDeviceExtensions.end());
 
     for (const VkExtensionProperties& availableDeviceExtension : availableDeviceExtensions)
     {
@@ -226,7 +228,8 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount,
+                                                 queueFamilyProperties.data());
 
         LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
         for (auto i = 0; i < queueFamilyProperties.size(); ++i)
@@ -256,7 +259,8 @@ static VkPhysicalDevice selectPhysicalDevice(VkInstance instance, VkQueueFlags q
 
 static VkDevice createDevice(const VkPhysicalDevice& physicalDevice, QueueFamilyIndices queueFamilyIndices)
 {
-    std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value() };
+    std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(),
+                                                     queueFamilyIndices.presentFamily.value() };
 
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
 

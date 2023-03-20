@@ -25,7 +25,7 @@ public:
     Adapter* getAdapter() const;
 
 protected:
-    Adapter* m_adapter;
+    Adapter* m_adapter{ nullptr };
 
 protected:
     void* m_windowHandle{ nullptr };

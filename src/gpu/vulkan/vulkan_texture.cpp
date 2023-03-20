@@ -4,6 +4,9 @@
 namespace vkt
 {
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, TextureCreateInfo info) : Texture(device, info) {}
+VulkanTexture::VulkanTexture(VulkanDevice* device, TextureCreateInfo info)
+    : Texture(device, info)
+{
+}
 
 } // namespace vkt

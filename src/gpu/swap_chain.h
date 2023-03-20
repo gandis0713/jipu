@@ -24,8 +24,8 @@ public:
     SwapChain& operator=(const SwapChain&) = delete;
 
 protected:
-    Device* m_device;
-    std::unique_ptr<Surface> m_surface;
+    Device* m_device{ nullptr };
+    std::unique_ptr<Surface> m_surface{ nullptr };
 };
 
 } // namespace vkt

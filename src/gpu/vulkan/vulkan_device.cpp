@@ -13,7 +13,8 @@
 struct QueueFamilyIndices
 {
     std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily; // It should be same with graphics family? ref: https://github.com/google/filament/issues/1532
+    std::optional<uint32_t>
+        presentFamily; // It should be same with graphics family? ref: https://github.com/google/filament/issues/1532
 
     bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
 
@@ -79,10 +80,12 @@ static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
     vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
 
     std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, availableDeviceExtensions.data());
+    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount,
+                                         availableDeviceExtensions.data());
 
     const std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
-    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
+    std::set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(),
+                                                       requiredDeviceExtensions.end());
 
     for (const VkExtensionProperties& availableDeviceExtension : availableDeviceExtensions)
     {
@@ -94,7 +97,8 @@ static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
 
 static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices queueFamilyIndices)
 {
-    std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(), queueFamilyIndices.presentFamily.value() };
+    std::set<uint32_t> uniqueQueueFamilieIndices = { queueFamilyIndices.graphicsFamily.value(),
+                                                     queueFamilyIndices.presentFamily.value() };
 
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
 
@@ -151,7 +155,8 @@ static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices
 namespace vkt
 {
 
-VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info) : Device(adapter, info)
+VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info)
+    : Device(adapter, info)
 {
     VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
 
@@ -171,13 +176,25 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info) : Devi
 
 VulkanDevice::~VulkanDevice() { vkDestroyDevice(m_device, nullptr); }
 
-std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& info) { return std::make_unique<VulkanSwapChain>(this, std::move(info)); }
+std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& info)
+{
+    return std::make_unique<VulkanSwapChain>(this, std::move(info));
+}
 
-std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassCreateInfo info) { return std::make_unique<VulkanRenderPass>(this, info); }
+std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassCreateInfo info)
+{
+    return std::make_unique<VulkanRenderPass>(this, info);
+}
 
-std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info) { return std::make_unique<VulkanPipeline>(this, info); }
+std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info)
+{
+    return std::make_unique<VulkanPipeline>(this, info);
+}
 
-std::unique_ptr<FrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info) { return std::make_unique<VulkanFrameBuffer>(this, info); }
+std::unique_ptr<FrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info)
+{
+    return std::make_unique<VulkanFrameBuffer>(this, info);
+}
 
 VkDevice VulkanDevice::getDevice() const { return m_device; }
 

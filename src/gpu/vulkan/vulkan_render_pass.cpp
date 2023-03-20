@@ -6,11 +6,11 @@
 namespace vkt
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, RenderPassCreateInfo info) : RenderPass(vulkanDevice, info)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, RenderPassCreateInfo info)
+    : RenderPass(vulkanDevice, info)
 {
     VkAttachmentDescription colorAttachmentDescription{};
-    colorAttachmentDescription.format =
-        VK_FORMAT_B8G8R8A8_SRGB; // TODO: set format
+    colorAttachmentDescription.format = VK_FORMAT_B8G8R8A8_SRGB; // TODO: set format
     colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
     colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;

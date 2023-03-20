@@ -6,6 +6,10 @@
 namespace vkt
 {
 
-SwapChain::SwapChain(Device* device, SwapChainCreateInfo info) noexcept : m_device(device), m_surface(std::move(info.surface)) {}
+SwapChain::SwapChain(Device* device, SwapChainCreateInfo info) noexcept
+    : m_device(device)
+    , m_surface(std::move(info.surface))
+{
+}
 
 } // namespace vkt
