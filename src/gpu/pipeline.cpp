@@ -9,6 +9,9 @@ Pipeline::Pipeline(Device* device, PipelineCreateInfo info)
 {
 }
 
-void Pipeline::setRenderPass(RenderPass* renderPass) { m_renderPass = renderPass; }
+void Pipeline::setRenderPass(RenderPass* renderPass)
+{
+    m_renderPass = renderPass;
+}
 
 } // namespace vkt

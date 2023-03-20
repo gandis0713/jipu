@@ -44,10 +44,24 @@ VulkanSurface::~VulkanSurface()
     vkDestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
 }
 
-VkSurfaceKHR VulkanSurface::getSurface() const { return m_surface; }
+VkSurfaceKHR VulkanSurface::getSurface() const
+{
+    return m_surface;
+}
 
-const VkSurfaceCapabilitiesKHR& VulkanSurface::getSurfaceCapabilities() const { return m_surfaceCapabilities; }
-const std::vector<VkSurfaceFormatKHR>& VulkanSurface::getSurfaceFormats() const { return m_surfaceFormats; }
-const std::vector<VkPresentModeKHR>& VulkanSurface::getPresentModes() const { return m_presentModes; }
+const VkSurfaceCapabilitiesKHR& VulkanSurface::getSurfaceCapabilities() const
+{
+    return m_surfaceCapabilities;
+}
+
+const std::vector<VkSurfaceFormatKHR>& VulkanSurface::getSurfaceFormats() const
+{
+    return m_surfaceFormats;
+}
+
+const std::vector<VkPresentModeKHR>& VulkanSurface::getPresentModes() const
+{
+    return m_presentModes;
+}
 
 } // namespace vkt

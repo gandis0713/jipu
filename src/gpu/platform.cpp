@@ -9,6 +9,9 @@ Platform::Platform(Adapter* adapter, PlatformCreateInfo info) noexcept
 {
 }
 
-Adapter* Platform::getAdapter() const { return m_adapter; }
+Adapter* Platform::getAdapter() const
+{
+    return m_adapter;
+}
 
 } // namespace vkt

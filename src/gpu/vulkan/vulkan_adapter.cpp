@@ -34,7 +34,14 @@ std::unique_ptr<Platform> VulkanAdapter::createPlatform(PlatformCreateInfo info)
 #endif
 }
 
-VkInstance VulkanAdapter::getInstance() const { return static_cast<VulkanDriver*>(m_driver)->getInstance(); }
-VkPhysicalDevice VulkanAdapter::getPhysicalDevice() const { return m_physicalDevice; }
+VkInstance VulkanAdapter::getInstance() const
+{
+    return static_cast<VulkanDriver*>(m_driver)->getInstance();
+}
+
+VkPhysicalDevice VulkanAdapter::getPhysicalDevice() const
+{
+    return m_physicalDevice;
+}
 
 } // namespace vkt

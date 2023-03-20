@@ -16,7 +16,10 @@ struct QueueFamilyIndices
     std::optional<uint32_t>
         presentFamily; // It should be same with graphics family? ref: https://github.com/google/filament/issues/1532
 
-    bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
+    bool isComplete()
+    {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
 
     static QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
 };
@@ -174,7 +177,10 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info)
     vkGetDeviceQueue(m_device, queueFamilyIndices.presentFamily.value(), 0, &m_presentQueue);
 }
 
-VulkanDevice::~VulkanDevice() { vkDestroyDevice(m_device, nullptr); }
+VulkanDevice::~VulkanDevice()
+{
+    vkDestroyDevice(m_device, nullptr);
+}
 
 std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& info)
 {
@@ -196,9 +202,19 @@ std::unique_ptr<FrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateIn
     return std::make_unique<VulkanFrameBuffer>(this, info);
 }
 
-VkDevice VulkanDevice::getDevice() const { return m_device; }
+VkDevice VulkanDevice::getDevice() const
+{
+    return m_device;
+}
 
-VkQueue VulkanDevice::getGraphicsQueue() const { return m_graphicsQueue; }
-VkQueue VulkanDevice::getPresentQueue() const { return m_presentQueue; }
+VkQueue VulkanDevice::getGraphicsQueue() const
+{
+    return m_graphicsQueue;
+}
+
+VkQueue VulkanDevice::getPresentQueue() const
+{
+    return m_presentQueue;
+}
 
 } // namespace vkt

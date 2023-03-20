@@ -58,6 +58,9 @@ VulkanRenderPass::~VulkanRenderPass()
     vkDestroyRenderPass(device, m_renderPass, nullptr);
 }
 
-VkRenderPass VulkanRenderPass::getRenderPass() const { return m_renderPass; }
+VkRenderPass VulkanRenderPass::getRenderPass() const
+{
+    return m_renderPass;
+}
 
 } // namespace vkt

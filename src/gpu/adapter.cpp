@@ -8,6 +8,9 @@ Adapter::Adapter(Driver* driver, AdapterCreateInfo info)
 {
 }
 
-Driver* Adapter::getDriver() const { return m_driver; }
+Driver* Adapter::getDriver() const
+{
+    return m_driver;
+}
 
 } // namespace vkt

@@ -22,8 +22,10 @@ const bool enableDebugMessenger = false;
 
 const std::vector<const char*> requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                    void* pUserData)
 {
     if (messageType != 1)
     {
@@ -50,7 +52,10 @@ void Application::run()
     cleanup();
 }
 
-void Application::initWindow() { m_window = new Window(800, 600, "Triangle Window"); }
+void Application::initWindow()
+{
+    m_window = new Window(800, 600, "Triangle Window");
+}
 
 void Application::initVulkan()
 {
@@ -120,7 +125,8 @@ void Application::cleanup()
     //        vkDestroyImageView(m_context.device, imageView, nullptr);
     //    }
 
-    //    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); // TODO: move into SwapChain object.
+    //    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); //
+    //    TODO: move into SwapChain object.
 
     //    vkDestroyDevice(m_context.device, nullptr);
 
@@ -206,11 +212,13 @@ void Application::cleanup()
 //     }
 // }
 
-// VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
-//                                                    const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT)
+// VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
+// pDebugUtilsMessengerCreateInfoEXT,
+//                                                    const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
+//                                                    pDebugUtilsMessengerEXT)
 // {
-//     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-//     if (func != nullptr)
+//     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
+//     "vkCreateDebugUtilsMessengerEXT"); if (func != nullptr)
 //     {
 //         return func(instance, pDebugUtilsMessengerCreateInfoEXT, pAllocator, pDebugUtilsMessengerEXT);
 //     }
@@ -220,26 +228,30 @@ void Application::cleanup()
 //     }
 // }
 
-// void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator)
+// void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
+// VkAllocationCallbacks* pAllocator)
 // {
 //     if (!enableValidationLayers)
 //         return;
 
-//     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-//     if (func != nullptr)
+//     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
+//     "vkDestroyDebugUtilsMessengerEXT"); if (func != nullptr)
 //     {
 //         func(instance, debugMessenger, pAllocator);
 //     }
 // }
 
-// void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo)
+// void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&
+// debugUtilsMessengerCreateInfo)
 // {
 //     debugUtilsMessengerCreateInfo = {};
 //     debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 //     debugUtilsMessengerCreateInfo.messageSeverity =
-//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 //     debugUtilsMessengerCreateInfo.messageType =
-//         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+//         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+//         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 //     debugUtilsMessengerCreateInfo.pfnUserCallback = debugCallback;
 //     debugUtilsMessengerCreateInfo.flags = 0;
 //     debugUtilsMessengerCreateInfo.pNext = nullptr;
@@ -250,7 +262,8 @@ VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurf
 {
     for (const VkSurfaceFormatKHR& availableSurfaceFormat : availableSurfaceFormats)
     {
-        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             return availableSurfaceFormat;
         }
@@ -283,10 +296,13 @@ VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surface
         int frameBufferWidth, frameBufferHeight;
         m_window->getFrameBufferSize(&frameBufferWidth, &frameBufferHeight);
 
-        VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth), static_cast<uint32_t>(frameBufferHeight) };
+        VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth),
+                                         static_cast<uint32_t>(frameBufferHeight) };
 
-        actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        actualImageExtent.height = std::clamp(actualImageExtent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
+        actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width,
+                                             surfaceCapabilities.maxImageExtent.width);
+        actualImageExtent.height = std::clamp(actualImageExtent.height, surfaceCapabilities.minImageExtent.height,
+                                              surfaceCapabilities.maxImageExtent.height);
 
         return actualImageExtent;
     }

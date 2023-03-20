@@ -45,6 +45,8 @@ AlignAfterOpenBracket: Align
 #
 IndentPPDirectives: BeforeHash
 
+AllowShortFunctionsOnASingleLine: Empty
+
 ---
 Language: ObjC
 ColumnLimit: 160
@@ -87,3 +89,5 @@ AlignAfterOpenBracket: Align
 
 #
 IndentPPDirectives: BeforeHash
+
+AllowShortFunctionsOnASingleLine: Empty

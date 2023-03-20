@@ -47,8 +47,14 @@ public:
     void run();
 
 public:
-    static std::filesystem::path getPath() { return path; }
-    static std::filesystem::path getDir() { return dir; }
+    static std::filesystem::path getPath()
+    {
+        return path;
+    }
+    static std::filesystem::path getDir()
+    {
+        return dir;
+    }
 
 private:
     static std::filesystem::path path;
@@ -83,10 +89,13 @@ private:
     // const std::vector<const char*>& getRequiredValidationLayers();
     // bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
     // void setupDebugMessenger();
-    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
-    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT);
-    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-    // void populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
+    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
+    // pDebugUtilsMessengerCreateInfoEXT,
+    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
+    //                                       pDebugUtilsMessengerEXT);
+    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
+    // VkAllocationCallbacks* pAllocator); void
+    // populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
 
 private:
     Window* m_window;

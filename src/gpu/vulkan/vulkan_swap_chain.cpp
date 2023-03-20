@@ -170,13 +170,29 @@ VulkanSwapChain::~VulkanSwapChain()
     vkDestroySwapchainKHR(device, m_swapchain, nullptr);
 }
 
-VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const { return m_swapchain; }
+VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
+{
+    return m_swapchain;
+}
 
-VkFormat VulkanSwapChain::getFormat() const { return m_format; }
-VkExtent2D VulkanSwapChain::getExtent2D() const { return m_extent; }
+VkFormat VulkanSwapChain::getFormat() const
+{
+    return m_format;
+}
 
-const std::vector<VkImage>& VulkanSwapChain::getImages() const { return m_images; }
+VkExtent2D VulkanSwapChain::getExtent2D() const
+{
+    return m_extent;
+}
 
-const std::vector<VkImageView>& VulkanSwapChain::getImageViews() const { return m_imageViews; }
+const std::vector<VkImage>& VulkanSwapChain::getImages() const
+{
+    return m_images;
+}
+
+const std::vector<VkImageView>& VulkanSwapChain::getImageViews() const
+{
+    return m_imageViews;
+}
 
 } // namespace vkt

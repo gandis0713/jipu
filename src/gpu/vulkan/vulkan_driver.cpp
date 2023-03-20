@@ -225,8 +225,14 @@ std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info)
     return std::make_unique<VulkanAdapter>(this, info);
 }
 
-VkInstance VulkanDriver::getInstance() const { return m_instance; }
+VkInstance VulkanDriver::getInstance() const
+{
+    return m_instance;
+}
 
-std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const { return m_physicalDevices; }
+std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const
+{
+    return m_physicalDevices;
+}
 
 } // namespace vkt
