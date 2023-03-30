@@ -1,6 +1,8 @@
 #include "vulkan_swapchain.h"
 #include "vulkan_device.h"
 #include "vulkan_surface.h"
+#include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include <stdexcept>
 
@@ -122,50 +124,65 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
-    m_images.resize(imageCount);
-    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, m_images.data());
-
+    // set format and extent.
     m_format = surfaceFormat.format;
     m_extent = imageExtent;
 
-    // create image vies.
-    m_imageViews.resize(m_images.size());
+    // get or create swapchain image.
+    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
 
-    for (size_t i = 0; i < m_images.size(); i++)
+    std::vector<VkImage> images{};
+    images.resize(imageCount);
+    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, images.data());
+
+    // create Textures by VkImage.
+    for (VkImage image : images)
     {
-        VkImageViewCreateInfo imageViewCreateInfo{};
-        imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewCreateInfo.image = m_images[i];
-        imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        imageViewCreateInfo.format = m_format;
-
-        imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-        imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-        imageViewCreateInfo.subresourceRange.levelCount = 1;
-        imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-        imageViewCreateInfo.subresourceRange.layerCount = 1;
-
-        if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create image views!");
-        }
+        TextureCreateInfo info{};
+        std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, info);
+        m_textures.push_back(std::move(texture));
     }
+
+    // create TextureViews
+    for (std::unique_ptr<Texture>& texture : m_textures)
+    {
+        TextureViewCreateInfo info{};
+        auto textureView = std::make_unique<VulkanTextureView>(static_cast<VulkanTexture*>(texture.get()), info);
+        m_textureViews.push_back(std::move(textureView));
+    }
+
+    // create image views.
+    // m_imageViews.resize(m_images.size());
+
+    // for (size_t i = 0; i < m_images.size(); i++)
+    // {
+    //     VkImageViewCreateInfo imageViewCreateInfo{};
+    //     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    //     imageViewCreateInfo.image = m_images[i];
+    //     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    //     imageViewCreateInfo.format = m_format;
+
+    //     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //     imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //     imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    //     imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    //     imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    //     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
+    //     imageViewCreateInfo.subresourceRange.levelCount = 1;
+    //     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
+    //     imageViewCreateInfo.subresourceRange.layerCount = 1;
+
+    //     if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
+    //     {
+    //         throw std::runtime_error("failed to create image views!");
+    //     }
+    // }
 }
 
 VulkanSwapChain::~VulkanSwapChain()
 {
     VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
-
-    for (const VkImageView& imageView : m_imageViews)
-    {
-        vkDestroyImageView(device, imageView, nullptr);
-    }
 
     vkDestroySwapchainKHR(device, m_swapchain, nullptr);
 }
@@ -183,16 +200,6 @@ VkFormat VulkanSwapChain::getFormat() const
 VkExtent2D VulkanSwapChain::getExtent2D() const
 {
     return m_extent;
-}
-
-const std::vector<VkImage>& VulkanSwapChain::getImages() const
-{
-    return m_images;
-}
-
-const std::vector<VkImageView>& VulkanSwapChain::getImageViews() const
-{
-    return m_imageViews;
 }
 
 } // namespace vkt

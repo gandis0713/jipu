@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/texture_view.h"
+#include "vulkan_api.h"
 
 namespace vkt
 {
@@ -11,7 +12,12 @@ class VulkanTextureView : public TextureView
 public:
     VulkanTextureView() = delete;
     VulkanTextureView(VulkanTexture* texture, TextureViewCreateInfo info);
-    virtual ~VulkanTextureView() = default;
+    ~VulkanTextureView() override;
+
+    VkImageView getImageView() const;
+
+private:
+    VkImageView m_imageView{ nullptr };
 };
 
 } // namespace vkt

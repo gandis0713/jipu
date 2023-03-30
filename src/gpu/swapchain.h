@@ -1,6 +1,10 @@
 #pragma once
 
+#include "gpu/texture.h"
+#include "gpu/texture_view.h"
+
 #include <memory>
+#include <vector>
 
 namespace vkt
 {
@@ -23,9 +27,15 @@ public:
     SwapChain(const SwapChain&) = delete;
     SwapChain& operator=(const SwapChain&) = delete;
 
+    std::vector<Texture*> getTextures() const;
+    std::vector<TextureView*> getTextureViews() const;
+
 protected:
     Device* m_device{ nullptr };
     std::unique_ptr<Surface> m_surface{ nullptr };
+
+    std::vector<std::unique_ptr<Texture>> m_textures{};
+    std::vector<std::unique_ptr<TextureView>> m_textureViews{};
 };
 
 } // namespace vkt

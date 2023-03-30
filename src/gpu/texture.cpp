@@ -9,4 +9,9 @@ Texture::Texture(Device* device, TextureCreateInfo info)
 {
 }
 
+Device* Texture::getDevice() const
+{
+    return m_device;
+}
+
 } // namespace vkt

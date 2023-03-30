@@ -7,6 +7,7 @@
 #include "gpu/vulkan/vulkan_pipeline.h"
 #include "gpu/vulkan/vulkan_render_pass.h"
 #include "gpu/vulkan/vulkan_swapchain.h"
+#include "gpu/vulkan/vulkan_texture_view.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -258,56 +259,6 @@ void Application::cleanup()
 //     debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
 // }
 
-VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats)
-{
-    for (const VkSurfaceFormatKHR& availableSurfaceFormat : availableSurfaceFormats)
-    {
-        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
-            availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-        {
-            return availableSurfaceFormat;
-        }
-    }
-
-    return availableSurfaceFormats[0];
-}
-
-VkPresentModeKHR Application::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-{
-    for (const auto& availablePresentMode : availablePresentModes)
-    {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            return availablePresentMode;
-        }
-    }
-
-    return VK_PRESENT_MODE_FIFO_KHR;
-}
-
-VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
-{
-    if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
-    {
-        return surfaceCapabilities.currentExtent;
-    }
-    else
-    {
-        int frameBufferWidth, frameBufferHeight;
-        m_window->getFrameBufferSize(&frameBufferWidth, &frameBufferHeight);
-
-        VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth),
-                                         static_cast<uint32_t>(frameBufferHeight) };
-
-        actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width,
-                                             surfaceCapabilities.maxImageExtent.width);
-        actualImageExtent.height = std::clamp(actualImageExtent.height, surfaceCapabilities.minImageExtent.height,
-                                              surfaceCapabilities.maxImageExtent.height);
-
-        return actualImageExtent;
-    }
-}
-
 void Application::createSwapChain()
 {
     // create surface
@@ -347,15 +298,13 @@ void Application::createRenderPass()
 void Application::createFramebuffers()
 {
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
-    auto swapChainImageViews = vulkanSwapChain->getImageViews();
-    m_vecSwapChainFramebuffers.resize(swapChainImageViews.size());
-    m_framebuffers.resize(swapChainImageViews.size());
+    auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
+    m_vecSwapChainFramebuffers.resize(swapChainTextureViews.size());
 
-    for (size_t i = 0; i < swapChainImageViews.size(); i++)
+    for (size_t i = 0; i < swapChainTextureViews.size(); ++i)
     {
-        FramebufferCreateInfo info{};
-        std::unique_ptr<FrameBuffer> framebuffer = m_device->createFrameBuffer(info);
-        VkImageView attachments[] = { swapChainImageViews[i] };
+        VulkanTextureView* textureView = static_cast<VulkanTextureView*>(swapChainTextureViews[i]);
+        VkImageView attachments[] = { textureView->getImageView() };
 
         auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());
         VkFramebufferCreateInfo framebufferCreateInfo{};

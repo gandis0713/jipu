@@ -12,4 +12,27 @@ SwapChain::SwapChain(Device* device, SwapChainCreateInfo info) noexcept
 {
 }
 
+std::vector<Texture*> SwapChain::getTextures() const
+{
+    std::vector<Texture*> textures{};
+
+    for (auto& texture : m_textures)
+    {
+        textures.push_back(texture.get());
+    }
+
+    return textures;
+}
+std::vector<TextureView*> SwapChain::getTextureViews() const
+{
+    std::vector<TextureView*> textureViews{};
+
+    for (auto& textureView : m_textureViews)
+    {
+        textureViews.push_back(textureView.get());
+    }
+
+    return textureViews;
+}
+
 } // namespace vkt

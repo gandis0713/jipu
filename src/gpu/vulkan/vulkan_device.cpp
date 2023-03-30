@@ -197,7 +197,7 @@ std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info)
     return std::make_unique<VulkanPipeline>(this, info);
 }
 
-std::unique_ptr<FrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info)
+std::unique_ptr<VulkanFrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info)
 {
     return std::make_unique<VulkanFrameBuffer>(this, info);
 }

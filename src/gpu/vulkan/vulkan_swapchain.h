@@ -25,14 +25,8 @@ public:
     VkFormat getFormat() const;
     VkExtent2D getExtent2D() const;
 
-    const std::vector<VkImage>& getImages() const;
-    const std::vector<VkImageView>& getImageViews() const;
-
 private:
     VkSwapchainKHR m_swapchain;
-
-    std::vector<VkImage> m_images;
-    std::vector<VkImageView> m_imageViews;
 
     VkFormat m_format;   // TODO: need? or get from surface.
     VkExtent2D m_extent; // TODO: need? or get from surface.

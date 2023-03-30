@@ -1,18 +1,20 @@
 #pragma once
 
-#include "gpu/framebuffer.h"
-
 namespace vkt
 {
 
+struct FramebufferCreateInfo
+{
+};
+
 class VulkanDevice;
 
-class VulkanFrameBuffer : public FrameBuffer
+class VulkanFrameBuffer
 {
 public:
     VulkanFrameBuffer() = delete;
     VulkanFrameBuffer(VulkanDevice* device, FramebufferCreateInfo info);
-    ~VulkanFrameBuffer() override = default;
+    ~VulkanFrameBuffer() = default;
 };
 
 } // namespace vkt
