@@ -1,16 +1,18 @@
 #pragma once
 
 // #define GLFW_INCLUDE_VULKAN
+#include "gpu/adapter.h"
+#include "gpu/context.h"
+#include "gpu/device.h"
+#include "gpu/driver.h"
+#include "gpu/platform.h"
+#include "gpu/render_pass.h"
+#include "gpu/surface.h"
+#include "gpu/swapchain.h"
 #include "utils/log.h"
-#include "vk/context.h"
-#include "vk/device.h"
-#include "vk/driver.h"
-#include "vk/platform.h"
-#include "vk/surface.h"
-#include "vk/swap_chain.h"
 #include <GLFW/glfw3.h>
 
-#include "vk/pipeline.h"
+#include "gpu/pipeline.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
@@ -44,8 +46,14 @@ public:
     void run();
 
 public:
-    static std::filesystem::path getPath() { return path; }
-    static std::filesystem::path getDir() { return dir; }
+    static std::filesystem::path getPath()
+    {
+        return path;
+    }
+    static std::filesystem::path getDir()
+    {
+        return dir;
+    }
 
 private:
     static std::filesystem::path path;
@@ -57,8 +65,6 @@ private:
 
     void mainLoop();
     void cleanup();
-
-    void createContext();
 
     QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
 
@@ -82,10 +88,13 @@ private:
     // const std::vector<const char*>& getRequiredValidationLayers();
     // bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
     // void setupDebugMessenger();
-    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pDebugUtilsMessengerCreateInfoEXT,
-    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugUtilsMessengerEXT);
-    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-    // void populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
+    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
+    // pDebugUtilsMessengerCreateInfoEXT,
+    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
+    //                                       pDebugUtilsMessengerEXT);
+    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
+    // VkAllocationCallbacks* pAllocator); void
+    // populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
 
 private:
     Window* m_window;
@@ -95,18 +104,9 @@ private:
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
     // swap chain
-    std::unique_ptr<SwapChain> m_swapChain = nullptr;
 
     // frame buffers
     std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
-
-    // vulkan context
-    Context m_context;
-
-    VkRenderPass m_renderPass;
-
-    // pipeline
-    Pipeline m_pipeline;
 
     // command
     VkCommandPool m_commandPool;
@@ -116,11 +116,16 @@ private:
     VkSemaphore m_imageAvailableSemaphore;
     VkSemaphore m_renderFinishedSemaphore;
 
-    // vk
-    std::unique_ptr<Driver> m_driver;
+    // wrapper
+    std::unique_ptr<Driver> m_driver{ nullptr };
+    std::unique_ptr<Adapter> m_adapter{ nullptr };
 
     std::unique_ptr<Platform> m_platform{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };
+
+    std::unique_ptr<SwapChain> m_swapChain = nullptr;
+    std::unique_ptr<RenderPass> m_renderPass{ nullptr };
+    std::unique_ptr<Pipeline> m_pipeline{ nullptr };
 };
 
 } // namespace vkt

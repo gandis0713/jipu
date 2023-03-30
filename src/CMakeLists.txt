@@ -5,6 +5,9 @@ file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false *.h *.cpp)
 if(APPLE)
   file(GLOB_RECURSE MM_FILES LIST_DIRECTORIES false *.mm)
   list(APPEND SRC_FILES ${MM_FILES})
+
+  file(GLOB_RECURSE REMOVE_FILES LIST_DIRECTORIES false *_windows.h *_windows.cpp)
+  list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
 # include_directories(

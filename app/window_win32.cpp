@@ -2,6 +2,7 @@
 // clang-format off
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 // clang-format on
 #include "utils/log.h"
@@ -41,11 +42,7 @@ int Window::shouldClose()
     return ret;
 }
 
-void* Window::getNativeWindow()
-{
-    // return glfwGetCocoaWindow(m_window);
-    return nullptr;
-}
+void* Window::getNativeWindow() { return glfwGetWin32Window(static_cast<GLFWwindow*>(m_window)); }
 
 void Window::getFrameBufferSize(int* w, int* h) { glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h); }
 

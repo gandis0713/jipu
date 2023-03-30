@@ -4,7 +4,7 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 ---
 Language: Cpp
-ColumnLimit: 160
+ColumnLimit: 120
 PointerAlignment: Left
 
 BraceWrapping:
@@ -27,6 +27,7 @@ PointerAlignment: Left
 
 # class
 AccessModifierOffset: -4
+BreakConstructorInitializers: BeforeComma
 # IndentAccessModifiers: false
 EmptyLineAfterAccessModifier: Never
 
@@ -43,6 +44,8 @@ AlignAfterOpenBracket: Align
 
 #
 IndentPPDirectives: BeforeHash
+
+AllowShortFunctionsOnASingleLine: Empty
 
 ---
 Language: ObjC
@@ -69,6 +72,7 @@ PointerAlignment: Left
 
 # class
 AccessModifierOffset: -4
+BreakConstructorInitializers: BeforeComma
 # IndentAccessModifiers: false
 EmptyLineAfterAccessModifier: Never
 
@@ -85,3 +89,5 @@ AlignAfterOpenBracket: Align
 
 #
 IndentPPDirectives: BeforeHash
+
+AllowShortFunctionsOnASingleLine: Empty
