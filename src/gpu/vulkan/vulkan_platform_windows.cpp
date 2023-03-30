@@ -8,12 +8,12 @@
 namespace vkt
 {
 
-VulkanPlatformWindows::VulkanPlatformWindows(VulkanAdapter* adapter, PlatformCreateInfo descriptor) noexcept
+VulkanPlatformWindows::VulkanPlatformWindows(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept
     : VulkanPlatform(adapter, descriptor)
 {
 }
 
-VkSurfaceKHR VulkanPlatformWindows::createSurfaceKHR(SurfaceCreateInfo descriptor)
+VkSurfaceKHR VulkanPlatformWindows::createSurfaceKHR(SurfaceDescriptor descriptor)
 {
     VkWin32SurfaceCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;

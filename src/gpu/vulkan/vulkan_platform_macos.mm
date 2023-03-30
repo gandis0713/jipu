@@ -17,7 +17,7 @@ VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformDescrip
 }
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo descriptor)
+VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceDescriptor descriptor)
 {
     @autoreleasepool
     {
