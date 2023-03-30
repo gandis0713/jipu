@@ -3,9 +3,9 @@
 namespace vkt
 {
 
-Platform::Platform(Adapter* adapter, PlatformCreateInfo info) noexcept
+Platform::Platform(Adapter* adapter, PlatformDescriptor descriptor) noexcept
     : m_adapter(adapter)
-    , m_windowHandle(info.windowHandle)
+    , m_windowHandle(descriptor.windowHandle)
 {
 }
 

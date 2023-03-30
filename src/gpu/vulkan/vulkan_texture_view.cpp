@@ -7,8 +7,8 @@
 namespace vkt
 {
 
-VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewCreateInfo info)
-    : TextureView(texture, info)
+VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescriptor descriptor)
+    : TextureView(texture, descriptor)
 {
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

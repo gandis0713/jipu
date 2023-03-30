@@ -17,13 +17,13 @@ class VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice* device, TextureCreateInfo info);
+    VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor);
 
     /**
      * @brief Construct a new Vulkan Texture object.
      *        Have not VkImage ownership.
      */
-    VulkanTexture(VulkanDevice* device, VkImage image, TextureCreateInfo info);
+    VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor);
 
     ~VulkanTexture() override;
 

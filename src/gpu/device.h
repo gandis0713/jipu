@@ -11,7 +11,7 @@ namespace vkt
 
 class Adapter;
 
-struct DeviceCreateInfo
+struct DeviceDescriptor
 {
 };
 
@@ -19,15 +19,15 @@ class Device
 {
 public:
     Device() = delete;
-    Device(Adapter* adapter, DeviceCreateInfo info);
+    Device(Adapter* adapter, DeviceDescriptor descriptor);
     virtual ~Device() = default;
 
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
 
-    virtual std::unique_ptr<SwapChain> createSwapChain(SwapChainCreateInfo&& info) = 0;
-    virtual std::unique_ptr<RenderPass> createRenderPass(RenderPassCreateInfo info) = 0;
-    virtual std::unique_ptr<Pipeline> createPipeline(PipelineCreateInfo info) = 0;
+    virtual std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) = 0;
+    virtual std::unique_ptr<RenderPass> createRenderPass(RenderPassDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) = 0;
 
 protected:
     Adapter* m_adapter{ nullptr };

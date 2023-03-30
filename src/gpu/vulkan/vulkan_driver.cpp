@@ -199,7 +199,7 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-VulkanDriver::VulkanDriver(DriverCreateInfo info)
+VulkanDriver::VulkanDriver(DriverDescriptor descriptor)
     : Driver()
 {
     m_instance = createInstance();
@@ -220,9 +220,9 @@ VulkanDriver::~VulkanDriver()
     // TODO: destroy instance.
 }
 
-std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterCreateInfo info)
+std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterDescriptor descriptor)
 {
-    return std::make_unique<VulkanAdapter>(this, info);
+    return std::make_unique<VulkanAdapter>(this, descriptor);
 }
 
 VkInstance VulkanDriver::getInstance() const

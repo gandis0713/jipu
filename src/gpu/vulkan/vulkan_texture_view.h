@@ -11,7 +11,7 @@ class VulkanTextureView : public TextureView
 {
 public:
     VulkanTextureView() = delete;
-    VulkanTextureView(VulkanTexture* texture, TextureViewCreateInfo info);
+    VulkanTextureView(VulkanTexture* texture, TextureViewDescriptor descriptor);
     ~VulkanTextureView() override;
 
     VkImageView getImageView() const;

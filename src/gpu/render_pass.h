@@ -5,7 +5,7 @@ namespace vkt
 
 class Device;
 
-struct RenderPassCreateInfo
+struct RenderPassDescriptor
 {
 };
 
@@ -13,7 +13,7 @@ class RenderPass
 {
 public:
     RenderPass() = delete;
-    RenderPass(Device* device, RenderPassCreateInfo info);
+    RenderPass(Device* device, RenderPassDescriptor descriptor);
     virtual ~RenderPass() = default;
 
 protected:

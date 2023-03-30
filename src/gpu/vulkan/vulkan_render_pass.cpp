@@ -6,8 +6,8 @@
 namespace vkt
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, RenderPassCreateInfo info)
-    : RenderPass(vulkanDevice, info)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, RenderPassDescriptor descriptor)
+    : RenderPass(vulkanDevice, descriptor)
 {
     VkAttachmentDescription colorAttachmentDescription{};
     colorAttachmentDescription.format = VK_FORMAT_B8G8R8A8_SRGB; // TODO: set format

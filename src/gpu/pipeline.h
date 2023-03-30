@@ -6,7 +6,7 @@ namespace vkt
 class Device;
 class RenderPass;
 
-struct PipelineCreateInfo
+struct PipelineDescriptor
 {
 };
 
@@ -14,7 +14,7 @@ class Pipeline
 {
 public:
     Pipeline() = delete;
-    Pipeline(Device* device, PipelineCreateInfo info);
+    Pipeline(Device* device, PipelineDescriptor descriptor);
     virtual ~Pipeline() = default;
 
     Pipeline(const Pipeline&) = delete;

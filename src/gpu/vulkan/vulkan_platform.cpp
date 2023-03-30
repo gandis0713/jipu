@@ -6,14 +6,14 @@
 namespace vkt
 {
 
-VulkanPlatform::VulkanPlatform(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept
-    : Platform(adapter, info)
+VulkanPlatform::VulkanPlatform(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept
+    : Platform(adapter, descriptor)
 {
 }
 
-std::unique_ptr<Surface> VulkanPlatform::createSurface(SurfaceCreateInfo info)
+std::unique_ptr<Surface> VulkanPlatform::createSurface(SurfaceDescriptor descriptor)
 {
-    return std::make_unique<VulkanSurface>(this, info);
+    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 } // namespace vkt

@@ -3,7 +3,7 @@
 namespace vkt
 {
 
-Adapter::Adapter(Driver* driver, AdapterCreateInfo info)
+Adapter::Adapter(Driver* driver, AdapterDescriptor descriptor)
     : m_driver(driver)
 {
 }

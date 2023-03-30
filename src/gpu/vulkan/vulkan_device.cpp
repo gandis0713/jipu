@@ -158,8 +158,8 @@ static VkDevice createDevice(VkPhysicalDevice physicalDevice, QueueFamilyIndices
 namespace vkt
 {
 
-VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceCreateInfo info)
-    : Device(adapter, info)
+VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
+    : Device(adapter, descriptor)
 {
     VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
 
@@ -182,24 +182,24 @@ VulkanDevice::~VulkanDevice()
     vkDestroyDevice(m_device, nullptr);
 }
 
-std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainCreateInfo&& info)
+std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainDescriptor&& descriptor)
 {
-    return std::make_unique<VulkanSwapChain>(this, std::move(info));
+    return std::make_unique<VulkanSwapChain>(this, std::move(descriptor));
 }
 
-std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassCreateInfo info)
+std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassDescriptor descriptor)
 {
-    return std::make_unique<VulkanRenderPass>(this, info);
+    return std::make_unique<VulkanRenderPass>(this, descriptor);
 }
 
-std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineCreateInfo info)
+std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineDescriptor descriptor)
 {
-    return std::make_unique<VulkanPipeline>(this, info);
+    return std::make_unique<VulkanPipeline>(this, descriptor);
 }
 
-std::unique_ptr<VulkanFrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo info)
+std::unique_ptr<VulkanFrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo descriptor)
 {
-    return std::make_unique<VulkanFrameBuffer>(this, info);
+    return std::make_unique<VulkanFrameBuffer>(this, descriptor);
 }
 
 VkDevice VulkanDevice::getDevice() const

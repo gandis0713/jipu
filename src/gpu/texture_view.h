@@ -5,7 +5,7 @@ namespace vkt
 
 class Texture;
 
-struct TextureViewCreateInfo
+struct TextureViewDescriptor
 {
 };
 
@@ -13,7 +13,7 @@ class TextureView
 {
 public:
     TextureView() = delete;
-    TextureView(Texture* texture, TextureViewCreateInfo info);
+    TextureView(Texture* texture, TextureViewDescriptor descriptor);
     virtual ~TextureView() = default;
 
 protected:

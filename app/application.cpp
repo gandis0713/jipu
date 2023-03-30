@@ -62,26 +62,26 @@ void Application::initVulkan()
 {
     // create Driver.
     {
-        DriverCreateInfo info{ DRIVER_TYPE::VULKAN };
-        m_driver = Driver::create(info);
+        DriverDescriptor descriptor{ DRIVER_TYPE::VULKAN };
+        m_driver = Driver::create(descriptor);
     }
 
     // create Adapter.
     {
-        AdapterCreateInfo info{};
-        m_adapter = m_driver->createAdapter(info);
+        AdapterDescriptor descriptor{};
+        m_adapter = m_driver->createAdapter(descriptor);
     }
 
     // create Device.
     {
-        DeviceCreateInfo info{};
-        m_device = m_adapter->createDevice(info);
+        DeviceDescriptor descriptor{};
+        m_device = m_adapter->createDevice(descriptor);
     }
 
     // create platform
     {
-        PlatformCreateInfo info{ m_window->getNativeWindow() };
-        m_platform = m_adapter->createPlatform(info);
+        PlatformDescriptor descriptor{ m_window->getNativeWindow() };
+        m_platform = m_adapter->createPlatform(descriptor);
     }
 
     // setupDebugMessenger();
@@ -262,11 +262,11 @@ void Application::cleanup()
 void Application::createSwapChain()
 {
     // create surface
-    SurfaceCreateInfo info{};
-    std::unique_ptr<Surface> surface = m_platform->createSurface(info);
+    SurfaceDescriptor descriptor{};
+    std::unique_ptr<Surface> surface = m_platform->createSurface(descriptor);
 
     // create swapchain
-    SwapChainCreateInfo swapChainCreateInfo{ std::move(surface) };
+    SwapChainDescriptor swapChainCreateInfo{ std::move(surface) };
     m_swapChain = m_device->createSwapChain(std::move(swapChainCreateInfo));
     //    m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
 }
@@ -275,8 +275,8 @@ void Application::createGraphicsPipeline()
 {
     // create pipeline
     {
-        PipelineCreateInfo info{};
-        m_pipeline = m_device->createPipeline(info);
+        PipelineDescriptor descriptor{};
+        m_pipeline = m_device->createPipeline(descriptor);
     }
 
     auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
@@ -290,8 +290,8 @@ void Application::createRenderPass()
 {
     // create renderpass
     {
-        RenderPassCreateInfo info{};
-        m_renderPass = m_device->createRenderPass(info);
+        RenderPassDescriptor descriptor{};
+        m_renderPass = m_device->createRenderPass(descriptor);
     }
 }
 

@@ -8,11 +8,11 @@
 namespace vkt
 {
 
-VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceCreateInfo info)
-    : Surface(vulkanPlatform, info)
+VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceDescriptor descriptor)
+    : Surface(vulkanPlatform, descriptor)
 {
-    SurfaceCreateInfo surfaceCreateinfo{};
-    m_surface = vulkanPlatform->createSurfaceKHR(surfaceCreateinfo);
+    SurfaceDescriptor surfaceDescriptor{};
+    m_surface = vulkanPlatform->createSurfaceKHR(surfaceDescriptor);
 
     VulkanAdapter* adapter = static_cast<VulkanAdapter*>(vulkanPlatform->getAdapter());
     VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();

@@ -8,7 +8,7 @@ enum class TextureFormat
 
 };
 
-struct TextureCreateInfo
+struct TextureDescriptor
 {
 };
 
@@ -17,7 +17,7 @@ class Texture
 {
 public:
     Texture() = delete;
-    Texture(Device* device, TextureCreateInfo info);
+    Texture(Device* device, TextureDescriptor descriptor);
     virtual ~Texture() = default;
 
     Texture(const Texture&) = delete;

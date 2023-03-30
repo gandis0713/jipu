@@ -8,10 +8,10 @@ namespace vkt
 class VulkanPlatformWindows : public VulkanPlatform
 {
 public:
-    VulkanPlatformWindows(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept;
+    VulkanPlatformWindows(VulkanAdapter* adapter, PlatformCreateInfo descriptor) noexcept;
     ~VulkanPlatformWindows() override = default;
 
-    VkSurfaceKHR createSurfaceKHR(SurfaceCreateInfo info) override;
+    VkSurfaceKHR createSurfaceKHR(SurfaceCreateInfo descriptor) override;
 };
 
 } // namespace vkt

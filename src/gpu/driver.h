@@ -15,7 +15,7 @@ enum class DRIVER_TYPE
     D3D12
 };
 
-struct DriverCreateInfo
+struct DriverDescriptor
 {
     DRIVER_TYPE apiType = DRIVER_TYPE::NONE;
 };
@@ -23,7 +23,7 @@ struct DriverCreateInfo
 class Driver
 {
 public:
-    static std::unique_ptr<Driver> create(DriverCreateInfo info);
+    static std::unique_ptr<Driver> create(DriverDescriptor descriptor);
 
 public:
     Driver() = default;
@@ -33,7 +33,7 @@ public:
     Driver& operator=(const Driver&) = delete;
 
 public:
-    virtual std::unique_ptr<Adapter> createAdapter(AdapterCreateInfo info) = 0;
+    virtual std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) = 0;
 };
 
 } // namespace vkt

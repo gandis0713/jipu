@@ -15,7 +15,7 @@ class VulkanPipeline : public Pipeline
 {
 public:
     VulkanPipeline() = delete;
-    VulkanPipeline(VulkanDevice* device, PipelineCreateInfo info);
+    VulkanPipeline(VulkanDevice* device, PipelineDescriptor descriptor);
     ~VulkanPipeline() override = default;
 
     VulkanPipeline(const VulkanPipeline&) = delete;

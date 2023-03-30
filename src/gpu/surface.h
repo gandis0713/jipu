@@ -5,7 +5,7 @@ namespace vkt
 
 class Platform;
 
-struct SurfaceCreateInfo
+struct SurfaceDescriptor
 {
 };
 
@@ -13,7 +13,7 @@ class Surface
 {
 public:
     Surface() = delete;
-    Surface(Platform* platform, SurfaceCreateInfo info);
+    Surface(Platform* platform, SurfaceDescriptor descriptor);
     virtual ~Surface() = default;
 
     Surface(const Surface&) = delete;

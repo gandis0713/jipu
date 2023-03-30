@@ -12,7 +12,7 @@ namespace vkt
 class Device;
 class Surface;
 
-struct SwapChainCreateInfo
+struct SwapChainDescriptor
 {
     std::unique_ptr<Surface> surface{ nullptr };
 };
@@ -21,7 +21,7 @@ class SwapChain
 {
 public:
     SwapChain() = delete;
-    SwapChain(Device* device, SwapChainCreateInfo info) noexcept;
+    SwapChain(Device* device, SwapChainDescriptor descriptor) noexcept;
     virtual ~SwapChain() noexcept = default;
 
     SwapChain(const SwapChain&) = delete;

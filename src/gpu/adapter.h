@@ -8,7 +8,7 @@
 namespace vkt
 {
 
-struct AdapterCreateInfo
+struct AdapterDescriptor
 {
 };
 
@@ -18,11 +18,11 @@ class Adapter
 {
 public:
     Adapter() = delete;
-    Adapter(Driver* driver, AdapterCreateInfo info);
+    Adapter(Driver* driver, AdapterDescriptor descriptor);
     virtual ~Adapter() = default;
 
-    virtual std::unique_ptr<Device> createDevice(DeviceCreateInfo info) = 0;
-    virtual std::unique_ptr<Platform> createPlatform(PlatformCreateInfo info) = 0;
+    virtual std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Platform> createPlatform(PlatformDescriptor descriptor) = 0;
 
     Driver* getDriver() const;
 

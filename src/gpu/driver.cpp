@@ -5,12 +5,12 @@
 namespace vkt
 {
 
-std::unique_ptr<Driver> Driver::create(DriverCreateInfo info)
+std::unique_ptr<Driver> Driver::create(DriverDescriptor descriptor)
 {
-    switch (info.apiType)
+    switch (descriptor.apiType)
     {
     case DRIVER_TYPE::VULKAN:
-        return std::make_unique<VulkanDriver>(info);
+        return std::make_unique<VulkanDriver>(descriptor);
     default:
         break;
     }

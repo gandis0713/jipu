@@ -13,7 +13,7 @@ class VulkanFrameBuffer
 {
 public:
     VulkanFrameBuffer() = delete;
-    VulkanFrameBuffer(VulkanDevice* device, FramebufferCreateInfo info);
+    VulkanFrameBuffer(VulkanDevice* device, FramebufferCreateInfo descriptor);
     ~VulkanFrameBuffer() = default;
 };
 

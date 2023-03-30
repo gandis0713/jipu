@@ -62,8 +62,8 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo info)
-    : SwapChain(vulkanDevice, std::move(info))
+VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainDescriptor descriptor)
+    : SwapChain(vulkanDevice, std::move(descriptor))
 {
     VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface.get());
 
@@ -138,16 +138,16 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainCreateInfo
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureCreateInfo info{};
-        std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, info);
+        TextureDescriptor descriptor{};
+        std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }
 
     // create TextureViews
     for (std::unique_ptr<Texture>& texture : m_textures)
     {
-        TextureViewCreateInfo info{};
-        auto textureView = std::make_unique<VulkanTextureView>(static_cast<VulkanTexture*>(texture.get()), info);
+        TextureViewDescriptor descriptor{};
+        auto textureView = std::make_unique<VulkanTextureView>(static_cast<VulkanTexture*>(texture.get()), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
 

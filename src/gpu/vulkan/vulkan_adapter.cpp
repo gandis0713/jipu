@@ -12,25 +12,25 @@
 namespace vkt
 {
 
-VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterCreateInfo info)
-    : Adapter(vulkanDriver, info)
+VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descriptor)
+    : Adapter(vulkanDriver, descriptor)
 {
     m_physicalDevice = vulkanDriver->getPhysicalDevices()[0];
 }
 
-std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceCreateInfo info)
+std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceDescriptor descriptor)
 {
-    return std::make_unique<VulkanDevice>(this, info);
+    return std::make_unique<VulkanDevice>(this, descriptor);
 }
 
-std::unique_ptr<Platform> VulkanAdapter::createPlatform(PlatformCreateInfo info)
+std::unique_ptr<Platform> VulkanAdapter::createPlatform(PlatformDescriptor descriptor)
 {
 #if defined(__linux__)
     return nullptr;
 #elif defined(_WIN64)
-    return std::make_unique<VulkanPlatformWindows>(this, info);
+    return std::make_unique<VulkanPlatformWindows>(this, descriptor);
 #elif defined(__APPLE__)
-    return std::make_unique<VulkanPlatformMacOS>(this, info);
+    return std::make_unique<VulkanPlatformMacOS>(this, descriptor);
 #endif
 }
 

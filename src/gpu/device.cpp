@@ -4,7 +4,7 @@
 namespace vkt
 {
 
-Device::Device(Adapter* adapter, DeviceCreateInfo info)
+Device::Device(Adapter* adapter, DeviceDescriptor descriptor)
     : m_adapter(adapter)
 {
 }

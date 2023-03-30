@@ -4,15 +4,15 @@
 namespace vkt
 {
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, TextureCreateInfo info)
-    : Texture(device, info)
+VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
+    : Texture(device, descriptor)
     , m_owner(TextureOwner::Internal)
 {
     // TODO: create VkImage
 }
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureCreateInfo info)
-    : Texture(device, info)
+VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
+    : Texture(device, descriptor)
     , m_image(image)
     , m_owner(TextureOwner::External)
 {

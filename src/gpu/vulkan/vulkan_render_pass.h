@@ -10,7 +10,7 @@ class VulkanDevice;
 class VulkanRenderPass : public RenderPass
 {
 public:
-    VulkanRenderPass(VulkanDevice* device, RenderPassCreateInfo info);
+    VulkanRenderPass(VulkanDevice* device, RenderPassDescriptor descriptor);
     ~VulkanRenderPass() override;
 
     VkRenderPass getRenderPass() const;

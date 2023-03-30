@@ -3,7 +3,7 @@
 namespace vkt
 {
 
-Surface::Surface(Platform* platform, SurfaceCreateInfo info)
+Surface::Surface(Platform* platform, SurfaceDescriptor descriptor)
     : m_platform(platform)
 {
 }

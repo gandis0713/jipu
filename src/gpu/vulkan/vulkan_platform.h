@@ -14,13 +14,13 @@ class VulkanAdapter;
 class VulkanPlatform : public Platform
 {
 public:
-    VulkanPlatform(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept;
+    VulkanPlatform(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept;
     ~VulkanPlatform() override = default;
 
-    std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) override;
+    std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) override;
 
 public:
-    virtual VkSurfaceKHR createSurfaceKHR(SurfaceCreateInfo info) = 0;
+    virtual VkSurfaceKHR createSurfaceKHR(SurfaceDescriptor descriptor) = 0;
 };
 
 } // namespace vkt

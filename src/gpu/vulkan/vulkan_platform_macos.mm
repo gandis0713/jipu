@@ -11,13 +11,13 @@
 namespace vkt
 {
 
-VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformCreateInfo info) noexcept
-    : VulkanPlatform(adapter, info)
+VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept
+    : VulkanPlatform(adapter, descriptor)
 {
 }
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)
+VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo descriptor)
 {
     @autoreleasepool
     {
@@ -49,7 +49,7 @@ VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)
 }
 
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
-VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceCreateInfo info)
+VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceDescriptor descriptor)
 {
     @autoreleasepool
     {

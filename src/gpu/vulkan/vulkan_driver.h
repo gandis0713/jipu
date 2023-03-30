@@ -14,14 +14,14 @@ class VulkanDriver : public Driver
 
 public:
     VulkanDriver() = delete;
-    VulkanDriver(DriverCreateInfo info);
+    VulkanDriver(DriverDescriptor descriptor);
     ~VulkanDriver() override;
 
     VulkanDriver(const VulkanDriver&) = delete;
     VulkanDriver& operator=(const VulkanDriver&) = delete;
 
 public:
-    std::unique_ptr<Adapter> createAdapter(AdapterCreateInfo info) override;
+    std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) override;
 
 public: // vulkan object
     VkInstance getInstance() const;

@@ -7,7 +7,7 @@
 namespace vkt
 {
 
-struct PlatformCreateInfo
+struct PlatformDescriptor
 {
     void* windowHandle;
 };
@@ -17,10 +17,10 @@ class Adapter;
 class Platform
 {
 public:
-    Platform(Adapter* adapter, PlatformCreateInfo info) noexcept;
+    Platform(Adapter* adapter, PlatformDescriptor descriptor) noexcept;
     virtual ~Platform() noexcept = default;
 
-    virtual std::unique_ptr<Surface> createSurface(SurfaceCreateInfo info) = 0;
+    virtual std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) = 0;
 
     Adapter* getAdapter() const;
 
