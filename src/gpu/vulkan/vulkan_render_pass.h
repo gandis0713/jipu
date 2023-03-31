@@ -2,6 +2,7 @@
 
 #include "vulkan_api.h"
 
+#include <memory>
 #include <unordered_map>
 
 namespace vkt
