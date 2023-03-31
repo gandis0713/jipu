@@ -160,6 +160,8 @@ namespace vkt
 
 VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
     : Device(adapter, descriptor)
+    , m_frameBufferCache(this)
+    , m_renderPassCache(this)
 {
     VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
 
@@ -187,19 +189,19 @@ std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainDescriptor&& d
     return std::make_unique<VulkanSwapChain>(this, std::move(descriptor));
 }
 
-std::unique_ptr<RenderPass> VulkanDevice::createRenderPass(RenderPassDescriptor descriptor)
-{
-    return std::make_unique<VulkanRenderPass>(this, descriptor);
-}
-
 std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineDescriptor descriptor)
 {
     return std::make_unique<VulkanPipeline>(this, descriptor);
 }
 
-std::unique_ptr<VulkanFrameBuffer> VulkanDevice::createFrameBuffer(FramebufferCreateInfo descriptor)
+VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
-    return std::make_unique<VulkanFrameBuffer>(this, descriptor);
+    return m_renderPassCache.getRenderPass(descriptor);
+}
+
+VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+{
+    return m_frameBufferCache.getFrameBuffer(descriptor);
 }
 
 VkDevice VulkanDevice::getDevice() const

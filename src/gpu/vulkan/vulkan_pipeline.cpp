@@ -7,9 +7,14 @@
 namespace vkt
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineDescriptor descriptor)
-    : Pipeline(vulkanDevice, descriptor)
+VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineDescriptor info)
+    : Pipeline(vulkanDevice, info)
 {
+}
+
+void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
+{
+    m_renderPass = renderPass;
 }
 
 void VulkanPipeline::destroy()

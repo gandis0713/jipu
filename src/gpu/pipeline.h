@@ -4,7 +4,6 @@ namespace vkt
 {
 
 class Device;
-class RenderPass;
 
 struct PipelineDescriptor
 {
@@ -20,11 +19,8 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    void setRenderPass(RenderPass* renderPass);
-
 protected:
     Device* m_device{ nullptr };
-    RenderPass* m_renderPass{ nullptr };
 };
 
 } // namespace vkt

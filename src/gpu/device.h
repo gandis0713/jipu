@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gpu/pipeline.h"
-#include "gpu/render_pass.h"
 #include "gpu/swapchain.h"
 
 #include <memory>
@@ -26,7 +25,6 @@ public:
     Device& operator=(const Device&) = delete;
 
     virtual std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) = 0;
-    virtual std::unique_ptr<RenderPass> createRenderPass(RenderPassDescriptor descriptor) = 0;
     virtual std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) = 0;
 
 protected:

@@ -3,6 +3,7 @@
 #include "gpu/device.h"
 #include "vulkan_api.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_render_pass.h"
 #include <memory>
 
 namespace vkt
@@ -22,10 +23,10 @@ public:
 
 public:
     std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) override;
-    std::unique_ptr<RenderPass> createRenderPass(RenderPassDescriptor descriptor) override;
     std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) override;
 
-    std::unique_ptr<VulkanFrameBuffer> createFrameBuffer(FramebufferCreateInfo descriptor);
+    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
+    VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
 public: // vulkan object
     VkDevice getDevice() const;
@@ -38,5 +39,8 @@ private:
 
     VkQueue m_graphicsQueue{};
     VkQueue m_presentQueue{};
+
+    VulkanFrameBufferCache m_frameBufferCache;
+    VulkanRenderPassCache m_renderPassCache;
 };
 } // namespace vkt

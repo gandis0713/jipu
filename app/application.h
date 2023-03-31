@@ -6,9 +6,9 @@
 #include "gpu/device.h"
 #include "gpu/driver.h"
 #include "gpu/platform.h"
-#include "gpu/render_pass.h"
 #include "gpu/surface.h"
 #include "gpu/swapchain.h"
+#include "gpu/vulkan/vulkan_render_pass.h"
 #include "utils/log.h"
 #include <GLFW/glfw3.h>
 
@@ -124,8 +124,9 @@ private:
     std::unique_ptr<Device> m_device{ nullptr };
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
-    std::unique_ptr<RenderPass> m_renderPass{ nullptr };
     std::unique_ptr<Pipeline> m_pipeline{ nullptr };
+
+    VulkanRenderPassDescriptor m_renderPassDescriptor{};
 };
 
 } // namespace vkt

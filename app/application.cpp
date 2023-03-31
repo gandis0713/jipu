@@ -280,7 +280,9 @@ void Application::createGraphicsPipeline()
     }
 
     auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
-    vulkanPipeline->setRenderPass(m_renderPass.get());
+    auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
+    vulkanPipeline->setRenderPass(vulkanRenderPass);
 
     vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
                                            (Application::getDir() / "triangle_frag.spv").generic_string());
@@ -288,15 +290,16 @@ void Application::createGraphicsPipeline()
 
 void Application::createRenderPass()
 {
-    // create renderpass
+    // TODO: define m_renderPassDescriiptor
     {
-        RenderPassDescriptor descriptor{};
-        m_renderPass = m_device->createRenderPass(descriptor);
     }
 }
 
 void Application::createFramebuffers()
 {
+
+    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    auto renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
     auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
     m_vecSwapChainFramebuffers.resize(swapChainTextureViews.size());
@@ -306,10 +309,9 @@ void Application::createFramebuffers()
         VulkanTextureView* textureView = static_cast<VulkanTextureView*>(swapChainTextureViews[i]);
         VkImageView attachments[] = { textureView->getImageView() };
 
-        auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());
         VkFramebufferCreateInfo framebufferCreateInfo{};
         framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferCreateInfo.renderPass = vulkanRenderPass->getRenderPass();
+        framebufferCreateInfo.renderPass = renderPass->getRenderPass();
         framebufferCreateInfo.attachmentCount = 1;
         framebufferCreateInfo.pAttachments = attachments;
         framebufferCreateInfo.width = vulkanSwapChain->getExtent2D().width;
@@ -372,7 +374,8 @@ void Application::createCommandBuffers()
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 
-        auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass.get());
+        auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+        auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
         renderPassInfo.renderPass = vulkanRenderPass->getRenderPass();
         renderPassInfo.framebuffer = m_vecSwapChainFramebuffers[i];
 

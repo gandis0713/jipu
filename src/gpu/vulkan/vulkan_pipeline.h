@@ -10,6 +10,7 @@ namespace vkt
 {
 
 class VulkanDevice;
+class VulkanRenderPass;
 
 class VulkanPipeline : public Pipeline
 {
@@ -20,6 +21,8 @@ public:
 
     VulkanPipeline(const VulkanPipeline&) = delete;
     VulkanPipeline& operator=(const VulkanPipeline&) = delete;
+
+    void setRenderPass(VulkanRenderPass* renderPass);
 
     void destroy();
 
@@ -36,5 +39,7 @@ private:
     // pipeline
     VkPipelineLayout m_pipelineLayout;
     VkPipeline m_graphicsPipeline;
+
+    VulkanRenderPass* m_renderPass{ nullptr };
 };
 } // namespace vkt

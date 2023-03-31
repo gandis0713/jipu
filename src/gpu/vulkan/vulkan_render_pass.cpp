@@ -6,8 +6,8 @@
 namespace vkt
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, RenderPassDescriptor descriptor)
-    : RenderPass(vulkanDevice, descriptor)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassDescriptor descriptor)
+    : m_device(vulkanDevice)
 {
     VkAttachmentDescription colorAttachmentDescription{};
     colorAttachmentDescription.format = VK_FORMAT_B8G8R8A8_SRGB; // TODO: set format
@@ -61,6 +61,39 @@ VulkanRenderPass::~VulkanRenderPass()
 VkRenderPass VulkanRenderPass::getRenderPass() const
 {
     return m_renderPass;
+}
+
+size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
+{
+    size_t hash;
+
+    return hash;
+}
+
+bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
+                                                const VulkanRenderPassDescriptor& rhs) const
+{
+    return true;
+}
+
+VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
+    : m_device(device)
+{
+}
+
+VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+{
+    auto it = m_cache.find(descriptor);
+    if (it != m_cache.end())
+    {
+        return (it->second).get();
+    }
+
+    auto renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
+    VulkanRenderPass* renderPassPtr = renderPass.get();
+    m_cache.emplace(descriptor, std::move(renderPass));
+
+    return renderPassPtr;
 }
 
 } // namespace vkt

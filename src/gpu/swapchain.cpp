@@ -23,6 +23,7 @@ std::vector<Texture*> SwapChain::getTextures() const
 
     return textures;
 }
+
 std::vector<TextureView*> SwapChain::getTextureViews() const
 {
     std::vector<TextureView*> textureViews{};
