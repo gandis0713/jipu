@@ -138,7 +138,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainDescriptor
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureDescriptor descriptor{};
+        TextureDescriptor descriptor{ vk2Type(VK_IMAGE_TYPE_2D), vk2Format(m_format) };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }

@@ -120,7 +120,7 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
 void VulkanRenderPassCache::clear()
 {
     LOG_TRACE(__func__);
-    
+
     m_cache.clear();
 }
 

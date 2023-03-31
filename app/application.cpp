@@ -268,7 +268,6 @@ void Application::createSwapChain()
     // create swapchain
     SwapChainDescriptor swapChainCreateInfo{ std::move(surface) };
     m_swapChain = m_device->createSwapChain(std::move(swapChainCreateInfo));
-    //    m_swapChain = std::make_unique<SwapChain>(m_device.get(), std::move(swapChainCreateInfo));
 }
 
 void Application::createGraphicsPipeline()
@@ -317,7 +316,7 @@ void Application::createFramebuffers()
                                                 vulkanSwapChain->getExtent2D().width,
                                                 vulkanSwapChain->getExtent2D().height };
 
-        m_framebufferDescriptors.emplace_back() = descriptor;
+        m_framebufferDescriptors.push_back(descriptor);
 
         [[maybe_unused]] auto framebuffer = vulkanDevice->getFrameBuffer(descriptor); // pre-generated.
     }

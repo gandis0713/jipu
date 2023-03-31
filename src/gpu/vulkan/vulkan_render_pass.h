@@ -10,6 +10,7 @@ namespace vkt
 
 struct VulkanRenderPassDescriptor
 {
+    /// @brief Color attachment format. It should be same with the image in swapchain.
     VkFormat format{ VK_FORMAT_UNDEFINED };
     VkSampleCountFlagBits samples{ VK_SAMPLE_COUNT_1_BIT };
 
