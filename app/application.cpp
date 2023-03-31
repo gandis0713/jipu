@@ -301,6 +301,7 @@ void Application::createFramebuffers()
     VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     auto renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+
     auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
     m_vecSwapChainFramebuffers.resize(swapChainTextureViews.size());
 
@@ -308,6 +309,12 @@ void Application::createFramebuffers()
     {
         VulkanTextureView* textureView = static_cast<VulkanTextureView*>(swapChainTextureViews[i]);
         VkImageView attachments[] = { textureView->getImageView() };
+
+        VulkanFramebufferDescriptor descriptor{ renderPass->getRenderPass(),
+                                                { textureView->getImageView() },
+                                                vulkanSwapChain->getExtent2D().width,
+                                                vulkanSwapChain->getExtent2D().height };
+        [[maybe_unused]] auto framebuffer = vulkanDevice->getFrameBuffer(descriptor); // pre-generated.
 
         VkFramebufferCreateInfo framebufferCreateInfo{};
         framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

@@ -1,4 +1,6 @@
 #include "vulkan_render_pass.h"
+#include "utils/hash.h"
+#include "utils/log.h"
 #include "vulkan_device.h"
 
 #include <stdexcept>
@@ -10,10 +12,10 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     : m_device(vulkanDevice)
 {
     VkAttachmentDescription colorAttachmentDescription{};
-    colorAttachmentDescription.format = VK_FORMAT_B8G8R8A8_SRGB; // TODO: set format
-    colorAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachmentDescription.format = descriptor.format;
+    colorAttachmentDescription.samples = descriptor.samples;
+    colorAttachmentDescription.loadOp = descriptor.loadOp;
+    colorAttachmentDescription.storeOp = descriptor.storeOp;
     colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -45,8 +47,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subpassDependency;
 
-    VkDevice device = vulkanDevice->getDevice();
-    if (vkCreateRenderPass(device, &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (vkCreateRenderPass(vulkanDevice->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -65,7 +66,11 @@ VkRenderPass VulkanRenderPass::getRenderPass() const
 
 size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
 {
-    size_t hash;
+    size_t hash = vkt::hash(descriptor.format);
+
+    combineHash(hash, descriptor.samples);
+    combineHash(hash, descriptor.loadOp);
+    combineHash(hash, descriptor.storeOp);
 
     return hash;
 }
@@ -73,7 +78,15 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
 bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
                                                 const VulkanRenderPassDescriptor& rhs) const
 {
-    return true;
+    if (lhs.format == rhs.format &&
+        lhs.samples == rhs.samples &&
+        lhs.loadOp == rhs.loadOp &&
+        lhs.storeOp == rhs.storeOp)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
@@ -90,6 +103,8 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
     }
 
     auto renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
+
+    // get raw pointer before moving.
     VulkanRenderPass* renderPassPtr = renderPass.get();
     m_cache.emplace(descriptor, std::move(renderPass));
 

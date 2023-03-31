@@ -10,6 +10,11 @@ namespace vkt
 
 struct VulkanRenderPassDescriptor
 {
+    VkFormat format{ VK_FORMAT_UNDEFINED };
+    VkSampleCountFlagBits samples{ VK_SAMPLE_COUNT_1_BIT };
+
+    VkAttachmentLoadOp loadOp{ VK_ATTACHMENT_LOAD_OP_CLEAR };
+    VkAttachmentStoreOp storeOp{ VK_ATTACHMENT_STORE_OP_STORE };
 };
 
 class VulkanDevice;

@@ -7,15 +7,31 @@
 namespace vkt
 {
 
-VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, VulkanFramebufferDescriptor descriptor)
+VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
 {
-    // TODO
+    VkFramebufferCreateInfo framebufferCreateInfo{};
+    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    framebufferCreateInfo.renderPass = descriptor.renderPass;
+    framebufferCreateInfo.attachmentCount = descriptor.imageViews.size();
+    framebufferCreateInfo.pAttachments = descriptor.imageViews.data();
+    framebufferCreateInfo.width = descriptor.width;
+    framebufferCreateInfo.height = descriptor.height;
+    framebufferCreateInfo.layers = 1;
+
+    if (vkCreateFramebuffer(m_device->getDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create framebuffer!");
+    }
 }
 
 size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
 {
     size_t hash = vkt::hash(descriptor.renderPass);
+
+    combineHash(hash, descriptor.imageViews.size());
+    combineHash(hash, descriptor.width);
+    combineHash(hash, descriptor.height);
 
     return hash;
 }
@@ -23,7 +39,23 @@ size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescri
 bool VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& lhs,
                                                  const VulkanFramebufferDescriptor& rhs) const
 {
-    return true;
+    if (lhs.height == rhs.height &&
+        lhs.width == rhs.width &&
+        lhs.renderPass == rhs.renderPass &&
+        lhs.imageViews.size() == rhs.imageViews.size())
+    {
+        for (uint32_t index = 0; index < lhs.imageViews.size(); ++index)
+        {
+            if (lhs.imageViews[index] != rhs.imageViews[index])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 VulkanFrameBufferCache::VulkanFrameBufferCache(VulkanDevice* device)
@@ -32,7 +64,7 @@ VulkanFrameBufferCache::VulkanFrameBufferCache(VulkanDevice* device)
     // TODO
 }
 
-VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(VulkanFramebufferDescriptor descriptor)
+VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
@@ -41,6 +73,8 @@ VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(VulkanFramebufferDescr
     }
 
     auto framebuffer = std::make_unique<VulkanFrameBuffer>(m_device, descriptor);
+
+    // get raw pointer before moving.
     VulkanFrameBuffer* framebufferPtr = framebuffer.get();
     m_cache.emplace(descriptor, std::move(framebuffer));
 

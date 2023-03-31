@@ -50,6 +50,10 @@ AllowShortFunctionsOnASingleLine: Empty
 # template
 AlwaysBreakTemplateDeclarations: Yes
 
+# operator
+BreakBeforeBinaryOperators: None
+ColumnLimit: 0
+
 ---
 Language: ObjC
 ColumnLimit: 160
