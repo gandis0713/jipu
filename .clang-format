@@ -47,6 +47,9 @@ IndentPPDirectives: BeforeHash
 
 AllowShortFunctionsOnASingleLine: Empty
 
+# template
+AlwaysBreakTemplateDeclarations: Yes
+
 ---
 Language: ObjC
 ColumnLimit: 160
