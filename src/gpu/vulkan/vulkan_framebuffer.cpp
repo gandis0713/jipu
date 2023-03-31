@@ -3,6 +3,9 @@
 #include "vulkan_swapchain.h"
 
 #include "utils/hash.h"
+#include "utils/log.h"
+
+#include <stdexcept>
 
 namespace vkt
 {
@@ -10,6 +13,8 @@ namespace vkt
 VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
 {
+    LOG_TRACE(__func__);
+
     VkFramebufferCreateInfo framebufferCreateInfo{};
     framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferCreateInfo.renderPass = descriptor.renderPass;
@@ -23,6 +28,16 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     {
         throw std::runtime_error("failed to create framebuffer!");
     }
+}
+
+VulkanFrameBuffer::~VulkanFrameBuffer()
+{
+    LOG_TRACE(__func__);
+}
+
+VkFramebuffer VulkanFrameBuffer::getVkFrameBuffer() const
+{
+    return m_framebuffer;
 }
 
 size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
@@ -79,6 +94,13 @@ VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(const VulkanFramebuffe
     m_cache.emplace(descriptor, std::move(framebuffer));
 
     return framebufferPtr;
+}
+
+void VulkanFrameBufferCache::clear()
+{
+    LOG_TRACE(__func__);
+
+    m_cache.clear();
 }
 
 } // namespace vkt

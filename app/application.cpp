@@ -290,46 +290,36 @@ void Application::createGraphicsPipeline()
 
 void Application::createRenderPass()
 {
-    // TODO: define m_renderPassDescriiptor
+    // create render pass descriptor.
     {
+        m_renderPassDescriptor.format = VK_FORMAT_B8G8R8A8_SRGB;
+        m_renderPassDescriptor.samples = VK_SAMPLE_COUNT_1_BIT;
+
+        m_renderPassDescriptor.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        m_renderPassDescriptor.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     }
 }
 
 void Application::createFramebuffers()
 {
-
     VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     auto renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
 
     auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
-    m_vecSwapChainFramebuffers.resize(swapChainTextureViews.size());
 
     for (size_t i = 0; i < swapChainTextureViews.size(); ++i)
     {
         VulkanTextureView* textureView = static_cast<VulkanTextureView*>(swapChainTextureViews[i]);
-        VkImageView attachments[] = { textureView->getImageView() };
 
         VulkanFramebufferDescriptor descriptor{ renderPass->getRenderPass(),
                                                 { textureView->getImageView() },
                                                 vulkanSwapChain->getExtent2D().width,
                                                 vulkanSwapChain->getExtent2D().height };
+
+        m_framebufferDescriptors.emplace_back() = descriptor;
+
         [[maybe_unused]] auto framebuffer = vulkanDevice->getFrameBuffer(descriptor); // pre-generated.
-
-        VkFramebufferCreateInfo framebufferCreateInfo{};
-        framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferCreateInfo.renderPass = renderPass->getRenderPass();
-        framebufferCreateInfo.attachmentCount = 1;
-        framebufferCreateInfo.pAttachments = attachments;
-        framebufferCreateInfo.width = vulkanSwapChain->getExtent2D().width;
-        framebufferCreateInfo.height = vulkanSwapChain->getExtent2D().height;
-        framebufferCreateInfo.layers = 1;
-
-        VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
-        if (vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_vecSwapChainFramebuffers[i]) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create framebuffer!");
-        }
     }
 }
 
@@ -352,7 +342,7 @@ void Application::createCommandPool()
 
 void Application::createCommandBuffers()
 {
-    m_vecCommandBuffers.resize(m_vecSwapChainFramebuffers.size());
+    m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
 
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -384,7 +374,9 @@ void Application::createCommandBuffers()
         auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
         auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
         renderPassInfo.renderPass = vulkanRenderPass->getRenderPass();
-        renderPassInfo.framebuffer = m_vecSwapChainFramebuffers[i];
+
+        VulkanFrameBuffer* vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
+        renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
 
         renderPassInfo.renderArea.offset = { 0, 0 };
         auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());

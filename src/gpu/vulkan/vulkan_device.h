@@ -39,8 +39,8 @@ private:
 
     VkQueue m_graphicsQueue{};
     VkQueue m_presentQueue{};
-
-    VulkanFrameBufferCache m_frameBufferCache;
+    
     VulkanRenderPassCache m_renderPassCache;
+    VulkanFrameBufferCache m_frameBufferCache;
 };
 } // namespace vkt

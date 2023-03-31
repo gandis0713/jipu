@@ -8,6 +8,7 @@
 #include "gpu/platform.h"
 #include "gpu/surface.h"
 #include "gpu/swapchain.h"
+#include "gpu/vulkan/vulkan_framebuffer.h"
 #include "gpu/vulkan/vulkan_render_pass.h"
 #include "utils/log.h"
 #include <GLFW/glfw3.h>
@@ -103,19 +104,6 @@ private:
     VkDebugUtilsMessengerEXT m_debugMessenger;
     VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
 
-    // swap chain
-
-    // frame buffers
-    std::vector<VkFramebuffer> m_vecSwapChainFramebuffers;
-
-    // command
-    VkCommandPool m_commandPool;
-    std::vector<VkCommandBuffer> m_vecCommandBuffers;
-
-    // sync
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
-
     // wrapper
     std::unique_ptr<Driver> m_driver{ nullptr };
     std::unique_ptr<Adapter> m_adapter{ nullptr };
@@ -126,7 +114,16 @@ private:
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline{ nullptr };
 
+    // command
+    VkCommandPool m_commandPool;
+    std::vector<VkCommandBuffer> m_vecCommandBuffers;
+
+    // sync
+    VkSemaphore m_imageAvailableSemaphore;
+    VkSemaphore m_renderFinishedSemaphore;
+
     VulkanRenderPassDescriptor m_renderPassDescriptor{};
+    std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 };
 
 } // namespace vkt

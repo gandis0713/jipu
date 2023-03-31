@@ -25,7 +25,7 @@ class VulkanFrameBuffer
 public:
     VulkanFrameBuffer() = delete;
     VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
-    ~VulkanFrameBuffer() = default;
+    ~VulkanFrameBuffer();
 
     VkFramebuffer getVkFrameBuffer() const;
 
@@ -45,13 +45,17 @@ public:
 
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
+    void clear();
+
 private:
     VulkanDevice* m_device{ nullptr };
 
 private:
     struct Functor
     {
+        // hash key
         size_t operator()(const VulkanFramebufferDescriptor& descriptor) const;
+        // equal
         bool operator()(const VulkanFramebufferDescriptor& lhs, const VulkanFramebufferDescriptor& rhs) const;
     };
     using Cache = std::unordered_map<VulkanFramebufferDescriptor, std::unique_ptr<VulkanFrameBuffer>, Functor, Functor>;

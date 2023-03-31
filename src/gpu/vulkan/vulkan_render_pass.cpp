@@ -92,6 +92,12 @@ bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor
 VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
     : m_device(device)
 {
+    LOG_TRACE(__func__);
+}
+
+VulkanRenderPassCache::~VulkanRenderPassCache()
+{
+    LOG_TRACE(__func__);
 }
 
 VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
@@ -109,6 +115,13 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
     m_cache.emplace(descriptor, std::move(renderPass));
 
     return renderPassPtr;
+}
+
+void VulkanRenderPassCache::clear()
+{
+    LOG_TRACE(__func__);
+    
+    m_cache.clear();
 }
 
 } // namespace vkt

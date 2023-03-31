@@ -181,6 +181,11 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
 
 VulkanDevice::~VulkanDevice()
 {
+    LOG_TRACE(__func__);
+
+    m_frameBufferCache.clear();
+    m_renderPassCache.clear();
+
     vkDestroyDevice(m_device, nullptr);
 }
 
