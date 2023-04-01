@@ -4,6 +4,7 @@
 #include "vulkan_adapter.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
+#include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
 
@@ -197,6 +198,11 @@ std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainDescriptor&& d
 std::unique_ptr<Pipeline> VulkanDevice::createPipeline(PipelineDescriptor descriptor)
 {
     return std::make_unique<VulkanPipeline>(this, descriptor);
+}
+
+std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
+{
+    return std::make_unique<VulkanQueue>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)

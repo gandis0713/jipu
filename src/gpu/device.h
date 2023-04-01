@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/pipeline.h"
+#include "gpu/queue.h"
 #include "gpu/swapchain.h"
 
 #include <memory>
@@ -26,6 +27,7 @@ public:
 
     virtual std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) = 0;
     virtual std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
 
 protected:
     Adapter* m_adapter{ nullptr };

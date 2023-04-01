@@ -11,7 +11,7 @@ class VulkanAdapter : public Adapter
 public:
     VulkanAdapter() = delete;
     VulkanAdapter(VulkanDriver* driver, AdapterDescriptor descriptor);
-    ~VulkanAdapter() = default;
+    ~VulkanAdapter() override;
 
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
     std::unique_ptr<Platform> createPlatform(PlatformDescriptor descriptor) override;

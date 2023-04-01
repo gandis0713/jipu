@@ -2,6 +2,8 @@
 #include "vulkan_device.h"
 #include "vulkan_driver.h"
 
+#include "utils/log.h"
+
 #if defined(__linux__)
 #elif defined(_WIN64)
     #include "vulkan_platform_windows.h"
@@ -16,6 +18,12 @@ VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descr
     : Adapter(vulkanDriver, descriptor)
 {
     m_physicalDevice = vulkanDriver->getPhysicalDevices()[0];
+}
+
+VulkanAdapter::~VulkanAdapter()
+{
+    // doesn't need to desotyr VkPhysicalDevice.
+    LOG_TRACE(__func__);
 }
 
 std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceDescriptor descriptor)

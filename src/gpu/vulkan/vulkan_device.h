@@ -24,6 +24,7 @@ public:
 public:
     std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) override;
     std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) override;
+    std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
 
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
@@ -39,7 +40,7 @@ private:
 
     VkQueue m_graphicsQueue{};
     VkQueue m_presentQueue{};
-    
+
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
 };
