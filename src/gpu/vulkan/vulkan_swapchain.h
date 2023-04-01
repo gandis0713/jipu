@@ -14,7 +14,7 @@ class VulkanDevice;
 class VulkanSwapChain : public SwapChain
 {
 public:
-    VulkanSwapChain(VulkanDevice* device, SwapChainDescriptor descriptor);
+    VulkanSwapChain(VulkanDevice* device, const SwapChainDescriptor& descriptor);
     ~VulkanSwapChain() override;
 
     VulkanSwapChain(const SwapChain&) = delete;

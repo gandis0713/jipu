@@ -190,7 +190,7 @@ VulkanDevice::~VulkanDevice()
     vkDestroyDevice(m_device, nullptr);
 }
 
-std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(SwapChainDescriptor&& descriptor)
+std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(const SwapChainDescriptor& descriptor)
 {
     return std::make_unique<VulkanSwapChain>(this, std::move(descriptor));
 }
@@ -218,6 +218,13 @@ VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
 VkDevice VulkanDevice::getDevice() const
 {
     return m_device;
+}
+
+VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
+{
+    VulkanAdapter* vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
+
+    return vulkanAdapter->getPhysicalDevice();
 }
 
 VkQueue VulkanDevice::getGraphicsQueue() const

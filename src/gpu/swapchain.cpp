@@ -6,9 +6,9 @@
 namespace vkt
 {
 
-SwapChain::SwapChain(Device* device, SwapChainDescriptor descriptor) noexcept
+SwapChain::SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept
     : m_device(device)
-    , m_surface(std::move(descriptor.surface))
+    , m_surface(descriptor.surface)
 {
 }
 

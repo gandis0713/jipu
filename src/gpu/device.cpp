@@ -9,4 +9,9 @@ Device::Device(Adapter* adapter, DeviceDescriptor descriptor)
 {
 }
 
+Adapter* Device::getAdapter() const
+{
+    return m_adapter;
+}
+
 } // namespace vkt

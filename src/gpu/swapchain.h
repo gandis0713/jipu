@@ -14,14 +14,14 @@ class Surface;
 
 struct SwapChainDescriptor
 {
-    std::unique_ptr<Surface> surface{ nullptr };
+    Surface* surface{ nullptr };
 };
 
 class SwapChain
 {
 public:
     SwapChain() = delete;
-    SwapChain(Device* device, SwapChainDescriptor descriptor) noexcept;
+    SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept;
     virtual ~SwapChain() noexcept = default;
 
     SwapChain(const SwapChain&) = delete;
@@ -32,7 +32,7 @@ public:
 
 protected:
     Device* m_device{ nullptr };
-    std::unique_ptr<Surface> m_surface{ nullptr };
+    Surface* m_surface{ nullptr };
 
     std::vector<std::unique_ptr<Texture>> m_textures{};
     std::vector<std::unique_ptr<TextureView>> m_textureViews{};

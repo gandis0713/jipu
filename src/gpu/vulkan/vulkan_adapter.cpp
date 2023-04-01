@@ -52,4 +52,15 @@ VkPhysicalDevice VulkanAdapter::getPhysicalDevice() const
     return m_physicalDevice;
 }
 
+std::vector<VkQueueFamilyProperties> VulkanAdapter::getQueueFamilyProperties() const
+{
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+
+    return queueFamilyProperties;
+}
+
 } // namespace vkt

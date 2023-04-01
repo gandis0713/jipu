@@ -86,6 +86,7 @@ void Application::initVulkan()
 
     // setupDebugMessenger();
 
+    createSurface();
     createSwapChain();
     createRenderPass();
     createGraphicsPipeline();
@@ -259,15 +260,18 @@ void Application::cleanup()
 //     debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
 // }
 
-void Application::createSwapChain()
+void Application::createSurface()
 {
     // create surface
     SurfaceDescriptor descriptor{};
-    std::unique_ptr<Surface> surface = m_platform->createSurface(descriptor);
+    m_surface = m_platform->createSurface(descriptor);
+}
 
+void Application::createSwapChain()
+{
     // create swapchain
-    SwapChainDescriptor swapChainCreateInfo{ std::move(surface) };
-    m_swapChain = m_device->createSwapChain(std::move(swapChainCreateInfo));
+    SwapChainDescriptor swapChainCreateInfo{ m_surface.get() };
+    m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
 }
 
 void Application::createGraphicsPipeline()

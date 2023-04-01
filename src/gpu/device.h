@@ -25,7 +25,9 @@ public:
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
 
-    virtual std::unique_ptr<SwapChain> createSwapChain(SwapChainDescriptor&& descriptor) = 0;
+    Adapter* getAdapter() const;
+
+    virtual std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
 

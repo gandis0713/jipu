@@ -6,6 +6,7 @@
 #include "gpu/device.h"
 #include "gpu/driver.h"
 #include "gpu/platform.h"
+#include "gpu/queue.h"
 #include "gpu/surface.h"
 #include "gpu/swapchain.h"
 #include "gpu/vulkan/vulkan_framebuffer.h"
@@ -73,6 +74,7 @@ private:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 
+    void createSurface();
     void createSwapChain();
     //    void createImageViews();
     void createGraphicsPipeline();
@@ -109,10 +111,14 @@ private:
     std::unique_ptr<Adapter> m_adapter{ nullptr };
 
     std::unique_ptr<Platform> m_platform{ nullptr };
+    std::unique_ptr<Surface> m_surface{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline{ nullptr };
+
+    std::unique_ptr<Queue> m_graphicsQueue{ nullptr };
+    std::unique_ptr<Queue> m_presentQueue{ nullptr };
 
     // command
     VkCommandPool m_commandPool;

@@ -62,10 +62,10 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, SwapChainDescriptor descriptor)
-    : SwapChain(vulkanDevice, std::move(descriptor))
+VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDescriptor& descriptor)
+    : SwapChain(vulkanDevice, descriptor)
 {
-    VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface.get());
+    VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surface->getSurfaceFormats());
     VkPresentModeKHR presentMode = chooseSwapPresentMode(surface->getPresentModes());

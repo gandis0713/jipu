@@ -5,6 +5,7 @@
 
 namespace vkt
 {
+
 class VulkanDriver;
 class VulkanAdapter : public Adapter
 {
@@ -19,6 +20,8 @@ public:
 public:
     VkInstance getInstance() const;
     VkPhysicalDevice getPhysicalDevice() const;
+
+    std::vector<VkQueueFamilyProperties> getQueueFamilyProperties() const;
 
 private: // vulkan object
     VkPhysicalDevice m_physicalDevice{ nullptr };
