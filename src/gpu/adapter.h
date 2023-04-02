@@ -10,6 +10,7 @@ namespace vkt
 
 struct AdapterDescriptor
 {
+    uint32_t index{ 0 }; // Index of physical device. If there is a device, index is 0.
 };
 
 class Driver;

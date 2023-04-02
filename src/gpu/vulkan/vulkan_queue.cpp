@@ -12,11 +12,11 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 {
     VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_device->getAdapter());
 
-    std::vector<VkQueueFamilyProperties> queueFamilyProperties = adapter->getQueueFamilyProperties();
+    const VulkanDeviceInfo& deviceInfo = adapter->getDeviceInfo();
 
-    for (auto index = 0; index < queueFamilyProperties.size(); ++index)
+    for (auto index = 0; index < deviceInfo.queueFamilyProperties.size(); ++index)
     {
-        const auto& properties = queueFamilyProperties[index];
+        const auto& properties = deviceInfo.queueFamilyProperties[index];
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             m_index = index;

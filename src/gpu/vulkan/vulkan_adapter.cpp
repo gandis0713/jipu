@@ -2,6 +2,7 @@
 #include "vulkan_device.h"
 #include "vulkan_driver.h"
 
+#include "utils/assert.h"
 #include "utils/log.h"
 
 #if defined(__linux__)
@@ -17,7 +18,12 @@ namespace vkt
 VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descriptor)
     : Adapter(vulkanDriver, descriptor)
 {
-    m_physicalDevice = vulkanDriver->getPhysicalDevices()[0];
+    const std::vector<VkPhysicalDevice>& physicalDevices = vulkanDriver->getPhysicalDevices();
+    assert(descriptor.index < physicalDevices.size());
+    m_physicalDevice = physicalDevices[descriptor.index];
+
+    // gather device information.
+    gatherDeviceInfo();
 }
 
 VulkanAdapter::~VulkanAdapter()
@@ -52,15 +58,19 @@ VkPhysicalDevice VulkanAdapter::getPhysicalDevice() const
     return m_physicalDevice;
 }
 
-std::vector<VkQueueFamilyProperties> VulkanAdapter::getQueueFamilyProperties() const
+const VulkanDeviceInfo& VulkanAdapter::getDeviceInfo() const
 {
+    return m_deviceInfo;
+}
+
+void VulkanAdapter::gatherDeviceInfo()
+{
+    // Gather queue Family Properties.
     uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
-
-    return queueFamilyProperties;
+    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, m_deviceInfo.queueFamilyProperties.data());
 }
 
 } // namespace vkt

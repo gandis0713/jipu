@@ -449,9 +449,9 @@ void Application::drawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(vulkanDevice->getPresentQueue(), &presentInfo);
+    vkQueuePresentKHR(vulkanDevice->getGraphicsQueue(), &presentInfo);
 
-    vkQueueWaitIdle(vulkanDevice->getPresentQueue());
+    vkQueueWaitIdle(vulkanDevice->getGraphicsQueue());
 }
 
 void Application::createSemaphores()
