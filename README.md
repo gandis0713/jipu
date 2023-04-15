@@ -6,8 +6,11 @@ Valkan test was started to study vulkan.
 
 ## Requirement
 
-- TODO
+- vcpkg
+- ninja (if you want to build as a ninja)
 
 ## How to build
-
-- TODO
+```shell
+$> cmake --preset $(preset)
+$> cmake --build preset $(preset)
+```
