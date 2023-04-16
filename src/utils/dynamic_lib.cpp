@@ -45,9 +45,9 @@ bool DynamicLib::open(const std::string& filename)
 #elif defined(WIN32)
     m_handle = LoadLibraryA(filename.c_str());
 
-    if (m_handle == nullptr && error != nullptr)
+    if (m_handle == nullptr)
     {
-        LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError());
+        LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
     }
 #else
     LOG_ERROR("Unsupported platform for DynamicLib");
@@ -88,7 +88,7 @@ void* DynamicLib::getProc(const std::string& procName) const
 #elif defined(WIN32)
     proc = reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_handle), procName.c_str()));
 
-    if (proc == nullptr && error != nullptr)
+    if (proc == nullptr)
     {
         LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
     }
