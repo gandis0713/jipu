@@ -6,7 +6,7 @@
 namespace vkt
 {
 
-struct VulkanDeviceInfo
+struct VulkanDeviceInfo : VulkanDeviceKnobs
 {
     VkPhysicalDeviceFeatures physicalDeviceFeatures{};
     VkPhysicalDeviceProperties physicalDeviceProperties{};

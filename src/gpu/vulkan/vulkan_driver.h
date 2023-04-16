@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/driver.h"
+#include "utils/dynamic_lib.h"
 #include "vulkan_api.h"
 
 #include <memory>
@@ -9,12 +10,16 @@
 namespace vkt
 {
 
+struct VulkanDriverInfo : VulkanDriverKnobs
+{
+};
+
 class VulkanDriver : public Driver
 {
 
 public:
     VulkanDriver() = delete;
-    VulkanDriver(DriverDescriptor descriptor);
+    VulkanDriver(DriverDescriptor descriptor) noexcept(false);
     ~VulkanDriver() override;
 
     VulkanDriver(const VulkanDriver&) = delete;
@@ -28,8 +33,14 @@ public: // vulkan object
     std::vector<VkPhysicalDevice> getPhysicalDevices() const;
 
 private:
+    void initialize() noexcept(false);
+
+private:
     VkInstance m_instance{};
     std::vector<VkPhysicalDevice> m_physicalDevices{};
+
+    DynamicLib m_vulkanLib{};
+    VulkanAPI m_api{};
 };
 
 } // namespace vkt

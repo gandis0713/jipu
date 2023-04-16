@@ -1,6 +1,7 @@
 #include "vulkan_driver.h"
 #include "utils/log.h"
 #include "vulkan_adapter.h"
+#include <fmt/format.h>
 #include <stdexcept>
 
 #include "allocation.h"
@@ -199,9 +200,11 @@ static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>
 namespace vkt
 {
 
-VulkanDriver::VulkanDriver(DriverDescriptor descriptor)
+VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
     : Driver()
 {
+    initialize();
+
     m_instance = createInstance();
     if (m_instance == nullptr)
     {
@@ -218,6 +221,34 @@ VulkanDriver::VulkanDriver(DriverDescriptor descriptor)
 VulkanDriver::~VulkanDriver()
 {
     // TODO: destroy instance.
+}
+
+void VulkanDriver::initialize() noexcept(false)
+{
+#if defined(__linux__)
+    const char vulkanLibraryName[] = "libvulkan.so.1";
+#elif defined(__APPLE__)
+    const char vulkanLibraryName[] = "libMoltenVK.dylib";
+#elif defined
+    const char vulkanLibraryName[] = "vulkan-1.dll";
+#endif
+
+    if (!m_vulkanLib.open(vulkanLibraryName))
+    {
+        throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
+    }
+
+    if (!m_api.loadGlobalProcs(m_vulkanLib))
+    {
+        throw std::runtime_error(fmt::format("Failed to load global prosc in vulkan library: {}", vulkanLibraryName));
+    }
+
+    VulkanDriverKnobs driverKnobs{};
+    driverKnobs.apiVersion = VK_MAKE_VERSION(1, 0, 0);
+    if (m_api.EnumerateInstanceVersion != nullptr)
+    {
+        m_api.EnumerateInstanceVersion(&driverKnobs.apiVersion);
+    }
 }
 
 std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterDescriptor descriptor)
