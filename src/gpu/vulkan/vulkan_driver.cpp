@@ -6,6 +6,7 @@
 
 #include "allocation.h"
 #if defined(__linux__)
+// TODO: include header.
 #elif defined(_WIN64)
     #include "vulkan_platform_windows.h"
 #elif defined(__APPLE__)
@@ -229,7 +230,7 @@ void VulkanDriver::initialize() noexcept(false)
     const char vulkanLibraryName[] = "libvulkan.so.1";
 #elif defined(__APPLE__)
     const char vulkanLibraryName[] = "libMoltenVK.dylib";
-#elif defined
+#elif defined(WIN32)
     const char vulkanLibraryName[] = "vulkan-1.dll";
 #endif
 
