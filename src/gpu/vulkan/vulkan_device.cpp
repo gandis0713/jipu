@@ -42,6 +42,7 @@ QueueFamilyIndices QueueFamilyIndices::findQueueFamilies(const VkPhysicalDevice&
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             queueFamilyIndices.graphicsFamily = static_cast<uint32_t>(i);
+            LOG_INFO("graphics queue family index: {}", i);
 
             // // TODO: check present family.
             // VkBool32 presentSupport = false;

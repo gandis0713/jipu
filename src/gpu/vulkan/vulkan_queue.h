@@ -11,7 +11,7 @@ class VulkanQueue : public Queue
 {
 public:
     VulkanQueue() = delete;
-    VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor);
+    VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
     VkQueue getQueue() const;

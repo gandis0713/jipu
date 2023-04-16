@@ -4,17 +4,25 @@
 
 #include "utils/log.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 
-VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor)
+VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
     : Queue(device, descriptor)
 {
     VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_device->getAdapter());
 
     const VulkanDeviceInfo& deviceInfo = adapter->getDeviceInfo();
 
-    for (auto index = 0; index < deviceInfo.queueFamilyProperties.size(); ++index)
+    const uint32_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
+    if (queueFamilyPropertiesSize <= 0)
+    {
+        throw std::runtime_error("There is no queue family properties.");
+    }
+
+    for (auto index = 0; index < queueFamilyPropertiesSize; ++index)
     {
         const auto& properties = deviceInfo.queueFamilyProperties[index];
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
