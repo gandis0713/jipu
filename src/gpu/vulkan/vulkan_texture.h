@@ -43,9 +43,9 @@ private:
 };
 
 // Convert Helper
-inline VkImageType textureType2VkImageType(TextureType type);
-inline TextureType vkImageType2TextureType(VkImageType type);
-inline VkFormat textureFormat2VkFormat(TextureFormat format);
-inline TextureFormat vkFormat2TextureFormat(VkFormat format);
+VkImageType textureType2VkImageType(TextureType type);
+TextureType vkImageType2TextureType(VkImageType type);
+VkFormat textureFormat2VkFormat(TextureFormat format);
+TextureFormat vkFormat2TextureFormat(VkFormat format);
 
 } // namespace vkt
