@@ -20,6 +20,9 @@ namespace vkt
 struct VulkanDriverKnobs
 {
     uint32_t apiVersion;
+
+    // use bitset instead of bool type.
+    bool debugReport;
 };
 
 struct VulkanDeviceKnobs
@@ -34,8 +37,10 @@ struct VulkanAPI
     // bool LoadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& usedKnobs);
 
     // ---------- Global procs
+
     // Initial proc from which we can get all the others
     PFN_vkGetInstanceProcAddr GetInstanceProcAddr = nullptr;
+
     PFN_vkCreateInstance CreateInstance = nullptr;
     PFN_vkEnumerateInstanceExtensionProperties EnumerateInstanceExtensionProperties = nullptr;
     PFN_vkEnumerateInstanceLayerProperties EnumerateInstanceLayerProperties = nullptr;
@@ -47,6 +52,7 @@ struct VulkanAPI
     PFN_vkEnumerateInstanceVersion EnumerateInstanceVersion = nullptr;
 
     // ---------- Instance procs
+
     // Core Vulkan 1.0
     PFN_vkCreateDevice CreateDevice = nullptr;
     PFN_vkEnumerateDeviceExtensionProperties EnumerateDeviceExtensionProperties = nullptr;
@@ -66,18 +72,12 @@ struct VulkanAPI
     // Not technically an instance proc but we want to be able to use it as soon as the
     // device is created.
     PFN_vkDestroyDevice DestroyDevice = nullptr;
-    // VK_EXT_debug_utils
-    PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
-    PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
-    PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
-    PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
-    PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
-    PFN_vkQueueBeginDebugUtilsLabelEXT QueueBeginDebugUtilsLabelEXT = nullptr;
-    PFN_vkQueueEndDebugUtilsLabelEXT QueueEndDebugUtilsLabelEXT = nullptr;
-    PFN_vkQueueInsertDebugUtilsLabelEXT QueueInsertDebugUtilsLabelEXT = nullptr;
-    PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
-    PFN_vkSetDebugUtilsObjectTagEXT SetDebugUtilsObjectTagEXT = nullptr;
-    PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT = nullptr;
+
+    // VK_EXT_debug_report
+    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
+    PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
+    PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
+
     // VK_KHR_surface
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR = nullptr;
@@ -86,71 +86,36 @@ struct VulkanAPI
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR GetPhysicalDeviceSurfaceFormatsKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR =
         nullptr;
-    // Core Vulkan 1.1 promoted extensions, set if either the core version or the extension is
-    // present.
+
+    // Core Vulkan 1.1 promoted extensions
+
     // VK_KHR_external_memory_capabilities
-    PFN_vkGetPhysicalDeviceExternalBufferProperties
-        GetPhysicalDeviceExternalBufferProperties = nullptr;
+    PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR
+        GetPhysicalDeviceExternalBufferPropertiesKHR = nullptr;
+
     // VK_KHR_external_semaphore_capabilities
-    PFN_vkGetPhysicalDeviceExternalSemaphoreProperties
-        GetPhysicalDeviceExternalSemaphoreProperties = nullptr;
+    PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR
+        GetPhysicalDeviceExternalSemaphorePropertiesKHR = nullptr;
+
     // VK_KHR_get_physical_device_properties2
-    PFN_vkGetPhysicalDeviceFeatures2 GetPhysicalDeviceFeatures2 = nullptr;
-    PFN_vkGetPhysicalDeviceProperties2 GetPhysicalDeviceProperties2 = nullptr;
-    PFN_vkGetPhysicalDeviceFormatProperties2 GetPhysicalDeviceFormatProperties2 = nullptr;
-    PFN_vkGetPhysicalDeviceImageFormatProperties2 GetPhysicalDeviceImageFormatProperties2 =
-        nullptr;
-    PFN_vkGetPhysicalDeviceQueueFamilyProperties2 GetPhysicalDeviceQueueFamilyProperties2 =
-        nullptr;
-    PFN_vkGetPhysicalDeviceMemoryProperties2 GetPhysicalDeviceMemoryProperties2 = nullptr;
-    PFN_vkGetPhysicalDeviceSparseImageFormatProperties2
-        GetPhysicalDeviceSparseImageFormatProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceFeatures2KHR GetPhysicalDeviceFeatures2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceProperties2KHR GetPhysicalDeviceProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceFormatProperties2KHR GetPhysicalDeviceFormatProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceImageFormatProperties2KHR
+        GetPhysicalDeviceImageFormatProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR
+        GetPhysicalDeviceQueueFamilyProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceMemoryProperties2KHR GetPhysicalDeviceMemoryProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR
+        GetPhysicalDeviceSparseImageFormatProperties2KHR = nullptr;
 
-    // #if defined(VK_USE_PLATFORM_FUCHSIA)
-    //     // FUCHSIA_image_pipe_surface
-    //     PFN_vkCreateImagePipeSurfaceFUCHSIA CreateImagePipeSurfaceFUCHSIA = nullptr;
-    // #endif // defined(VK_USE_PLATFORM_FUCHSIA)
-
-#if defined(VK_USE_PLATFORM_METAL_EXT)
-    // EXT_metal_surface
-    PFN_vkCreateMetalSurfaceEXT CreateMetalSurfaceEXT = nullptr;
-#endif // defined(DAWN_ENABLE_BACKEND_METAL)
-
-    // #if defined(USE_WAYLAND)
-    //     // KHR_wayland_surface
-    //     PFN_vkCreateWaylandSurfaceKHR CreateWaylandSurfaceKHR = nullptr;
-    //     PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR
-    //         GetPhysicalDeviceWaylandPresentationSupportKHR = nullptr;
-    // #endif // defined(DAWN_USE_WAYLAND)
-
-#if defined(WIN32)
-    // KHR_win32_surface
-    PFN_vkCreateWin32SurfaceKHR CreateWin32SurfaceKHR = nullptr;
-    PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR
-        GetPhysicalDeviceWin32PresentationSupportKHR = nullptr;
-#endif // defined(WIN32)
-#if defined(__ANDROID__)
-    // KHR_android_surface
-    PFN_vkCreateAndroidSurfaceKHR CreateAndroidSurfaceKHR = nullptr;
-    // VK_ANDROID_external_memory_android_hardware_buffer
-    PFN_vkGetAndroidHardwareBufferPropertiesANDROID
-        GetAndroidHardwareBufferPropertiesANDROID = nullptr;
-    PFN_vkGetMemoryAndroidHardwareBufferANDROID GetMemoryAndroidHardwareBufferANDROID =
-        nullptr;
-#endif // defined(__ANDROID__)
-
-    // #if defined(USE_X11)
-    //     // KHR_xlib_surface
-    //     PFN_vkCreateXlibSurfaceKHR CreateXlibSurfaceKHR = nullptr;
-    //     PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
-    //         GetPhysicalDeviceXlibPresentationSupportKHR = nullptr;
-    //     // KHR_xcb_surface
-    //     PFN_vkCreateXcbSurfaceKHR CreateXcbSurfaceKHR = nullptr;
-    //     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR
-    //         GetPhysicalDeviceXcbPresentationSupportKHR = nullptr;
-    // #endif // defined(USE_X11)
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    // FUCHSIA_image_pipe_surface
+    PFN_vkCreateImagePipeSurfaceFUCHSIA CreateImagePipeSurfaceFUCHSIA = nullptr;
+#endif
 
     // ---------- Device procs
+
     // Core Vulkan 1.0
     PFN_vkAllocateCommandBuffers AllocateCommandBuffers = nullptr;
     PFN_vkAllocateDescriptorSets AllocateDescriptorSets = nullptr;
@@ -271,16 +236,12 @@ struct VulkanAPI
     PFN_vkUnmapMemory UnmapMemory = nullptr;
     PFN_vkUpdateDescriptorSets UpdateDescriptorSets = nullptr;
     PFN_vkWaitForFences WaitForFences = nullptr;
-    // VK_KHR_external_memory_fd
-    PFN_vkGetMemoryFdKHR GetMemoryFdKHR = nullptr;
-    PFN_vkGetMemoryFdPropertiesKHR GetMemoryFdPropertiesKHR = nullptr;
-    // VK_KHR_external_semaphore_fd
-    PFN_vkImportSemaphoreFdKHR ImportSemaphoreFdKHR = nullptr;
-    PFN_vkGetSemaphoreFdKHR GetSemaphoreFdKHR = nullptr;
-    // VK_KHR_get_memory_requirements2
-    PFN_vkGetBufferMemoryRequirements2KHR GetBufferMemoryRequirements2 = nullptr;
-    PFN_vkGetImageMemoryRequirements2KHR GetImageMemoryRequirements2 = nullptr;
-    PFN_vkGetImageSparseMemoryRequirements2KHR GetImageSparseMemoryRequirements2 = nullptr;
+
+    // VK_EXT_debug_marker
+    PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;
+    PFN_vkCmdDebugMarkerEndEXT CmdDebugMarkerEndEXT = nullptr;
+    PFN_vkCmdDebugMarkerInsertEXT CmdDebugMarkerInsertEXT = nullptr;
+
     // VK_KHR_swapchain
     PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
     PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
@@ -288,15 +249,24 @@ struct VulkanAPI
     PFN_vkAcquireNextImageKHR AcquireNextImageKHR = nullptr;
     PFN_vkQueuePresentKHR QueuePresentKHR = nullptr;
 
-    // #if VK_USE_PLATFORM_FUCHSIA
-    //     // VK_FUCHSIA_external_memory
-    //     PFN_vkGetMemoryZirconHandleFUCHSIA GetMemoryZirconHandleFUCHSIA = nullptr;
-    //     PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA GetMemoryZirconHandlePropertiesFUCHSIA =
-    //         nullptr;
-    //     // VK_FUCHSIA_external_semaphore
-    //     PFN_vkImportSemaphoreZirconHandleFUCHSIA ImportSemaphoreZirconHandleFUCHSIA = nullptr;
-    //     PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA = nullptr;
-    // #endif
+    // VK_KHR_external_memory_fd
+    PFN_vkGetMemoryFdKHR GetMemoryFdKHR = nullptr;
+    PFN_vkGetMemoryFdPropertiesKHR GetMemoryFdPropertiesKHR = nullptr;
+
+    // VK_KHR_external_semaphore_fd
+    PFN_vkImportSemaphoreFdKHR ImportSemaphoreFdKHR = nullptr;
+    PFN_vkGetSemaphoreFdKHR GetSemaphoreFdKHR = nullptr;
+
+#if VK_USE_PLATFORM_FUCHSIA
+    // VK_FUCHSIA_external_memory
+    PFN_vkGetMemoryZirconHandleFUCHSIA GetMemoryZirconHandleFUCHSIA = nullptr;
+    PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA GetMemoryZirconHandlePropertiesFUCHSIA =
+        nullptr;
+
+    // VK_FUCHSIA_external_semaphore
+    PFN_vkImportSemaphoreZirconHandleFUCHSIA ImportSemaphoreZirconHandleFUCHSIA = nullptr;
+    PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA = nullptr;
+#endif
 };
 
 } // namespace vkt

@@ -59,6 +59,8 @@ VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
     : Driver()
 {
     initialize();
+
+    gatherDriverInfo();
 }
 
 VulkanDriver::~VulkanDriver()
@@ -174,6 +176,35 @@ void VulkanDriver::createPhysicalDevices() noexcept(false)
 
 void VulkanDriver::gatherDriverInfo()
 {
+    // Gather instance layer properties.
+    {
+        uint32_t instanceLayerCount = 0;
+        VkResult result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+        if (result != VK_SUCCESS && result != VK_INCOMPLETE)
+        {
+            LOG_ERROR("Failed to enumerate instance layer properties.");
+            return;
+        }
+
+        m_driverInfo.layerProperties.resize(instanceLayerCount);
+        result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
+
+        for (const auto& layerProperty : m_driverInfo.layerProperties)
+        {
+            LOG_INFO(layerProperty.layerName);
+        }
+    }
+
+    // Gather instance extension properties.
+    {
+        uint32_t instanceExtensionCount = 0;
+        VkResult result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+        if (result != VK_SUCCESS && result != VK_INCOMPLETE)
+        {
+            LOG_ERROR("Failed to enumerate instance layer properties.");
+            return;
+        }
+    }
 }
 
 bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)

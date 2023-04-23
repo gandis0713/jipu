@@ -15,8 +15,6 @@ struct VulkanDeviceInfo : VulkanDeviceKnobs
 
     std::vector<VkLayerProperties> layerProperties;
     std::vector<VkExtensionProperties> extensionProperties;
-
-    bool isSurfaceSupported;
 };
 
 struct VulkanSurfaceInfo
@@ -46,9 +44,11 @@ public:
 
 private:
     void gatherDeviceInfo();
+    void gatherSurfaceInfo();
 
 private: // vulkan object
     VkPhysicalDevice m_physicalDevice{ nullptr };
     VulkanDeviceInfo m_deviceInfo{};
+    VulkanSurfaceInfo m_surfaceInfo{};
 };
 } // namespace vkt
