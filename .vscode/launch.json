@@ -1,0 +1,36 @@
+{
+    /* Ref
+        https://go.microsoft.com/fwlink/?linkid=830387
+        https://code.visualstudio.com/docs/editor/variables-reference
+    */
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Ninja debug for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/app/app.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "vs 2019 debug for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-vs2019/debug/app/Debug/app.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "vs 2022 debug for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-vs2022/debug/app/Debug/app.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        }
+    ]
+}

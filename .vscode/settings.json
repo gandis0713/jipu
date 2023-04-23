@@ -168,5 +168,5 @@
             "source": "Git Bash"
         }
     },
-    "terminal.integrated.defaultProfile.windows": "Cmd vs2019 Pro",
+    "terminal.integrated.defaultProfile.windows": "Cmd vs2022 Pro",
 }
