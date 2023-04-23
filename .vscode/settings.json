@@ -116,7 +116,7 @@
             "source": "PowerShell",
             "icon": "terminal-powershell"
         },
-        "Cmd vs2019": {
+        "Cmd vs2019 Com": {
             "path": [
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
@@ -125,11 +125,10 @@
                 "%comspec%",
                 "/k",
                 "${env:VS140COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"
-                // "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
             ],
             "icon": "terminal-cmd"
         },
-        "Cmd vs2022": {
+        "Cmd vs2022 Com": {
             "path": [
                 "${env:windir}\\Sysnative\\cmd.exe",
                 "${env:windir}\\System32\\cmd.exe"
@@ -138,7 +137,30 @@
                 "%comspec%",
                 "/k",
                 "${env:VS150COMNTOOLS}\\..\\..\\VC\\Auxiliary\\Build\\vcvars64.bat"
-                // "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
+            ],
+            "icon": "terminal-cmd"
+        },
+        "Cmd vs2019 Pro": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [
+                "%comspec%",
+                "/k",
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
+            ],
+            "icon": "terminal-cmd"
+        },
+        "Cmd vs2022 Pro": {
+            "path": [
+                "${env:windir}\\Sysnative\\cmd.exe",
+                "${env:windir}\\System32\\cmd.exe"
+            ],
+            "args": [
+                "%comspec%",
+                "/k",
+                "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\VC\\Auxiliary\\Build\\vcvars64.bat"
             ],
             "icon": "terminal-cmd"
         },
@@ -146,5 +168,5 @@
             "source": "Git Bash"
         }
     },
-    "terminal.integrated.defaultProfile.windows": "Cmd vs2019",
+    "terminal.integrated.defaultProfile.windows": "Cmd vs2019 Pro",
 }
