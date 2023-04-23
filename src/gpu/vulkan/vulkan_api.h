@@ -3,8 +3,8 @@
 #if defined(__linux__)
     #define VK_USE_PLATFORM_XCB_KHR
 #elif defined(__APPLE__)
-    #define VK_USE_PLATFORM_METAL_EXT // use Metal Extension
-// #define VK_USE_PLATFORM_MACOS_MVK
+    #define VK_USE_PLATFORM_METAL_EXT
+    #define VK_USE_PLATFORM_MACOS_MVK
 #elif defined(WIN32)
     #define VK_USE_PLATFORM_WIN32_KHR
 #endif
@@ -12,17 +12,21 @@
 // #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
 
-#include "utils/dynamic_lib.h"
-
 namespace vkt
 {
 
+class DynamicLib;
+
 struct VulkanDriverKnobs
 {
-    uint32_t apiVersion;
+    uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 
-    // use bitset instead of bool type.
-    bool debugReport;
+    // TODO: use bitset instead of bool type.
+    bool debugReport = false;
+    bool surface = false;
+    bool macosSurface = false;
+    bool metalSurface = false;
+    bool win32Surface = false;
 };
 
 struct VulkanDeviceKnobs
@@ -32,11 +36,11 @@ struct VulkanDeviceKnobs
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h
 struct VulkanAPI
 {
-    bool loadGlobalProcs(DynamicLib& vulkanLib);
-    bool LoadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& globalInfo);
-    // bool LoadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& usedKnobs);
+    bool loadDriverProcs(DynamicLib* vulkanLib);
+    bool loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& globalInfo);
+    // bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& usedKnobs);
 
-    // ---------- Global procs
+    // ---------- Driver procs
 
     // Initial proc from which we can get all the others
     PFN_vkGetInstanceProcAddr GetInstanceProcAddr = nullptr;
@@ -257,7 +261,7 @@ struct VulkanAPI
     PFN_vkImportSemaphoreFdKHR ImportSemaphoreFdKHR = nullptr;
     PFN_vkGetSemaphoreFdKHR GetSemaphoreFdKHR = nullptr;
 
-#if VK_USE_PLATFORM_FUCHSIA
+#ifdef VK_USE_PLATFORM_FUCHSIA
     // VK_FUCHSIA_external_memory
     PFN_vkGetMemoryZirconHandleFUCHSIA GetMemoryZirconHandleFUCHSIA = nullptr;
     PFN_vkGetMemoryZirconHandlePropertiesFUCHSIA GetMemoryZirconHandlePropertiesFUCHSIA =
@@ -266,6 +270,16 @@ struct VulkanAPI
     // VK_FUCHSIA_external_semaphore
     PFN_vkImportSemaphoreZirconHandleFUCHSIA ImportSemaphoreZirconHandleFUCHSIA = nullptr;
     PFN_vkGetSemaphoreZirconHandleFUCHSIA GetSemaphoreZirconHandleFUCHSIA = nullptr;
+#endif
+
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    // VK_MVK_macos_surface
+    PFN_vkCreateMacOSSurfaceMVK CreateMacOSSurfaceMVK = nullptr;
+#endif
+
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    // VK_EXT_metal_surface
+    PFN_vkCreateMetalSurfaceEXT CreateMetalSurfaceEXT = nullptr;
 #endif
 };
 

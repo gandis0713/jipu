@@ -13,6 +13,16 @@
     #include "vulkan_platform_macos.h"
 #endif
 
+const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
+const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
+const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
+const char kExtensionNameKhrWin32Surface[] = "VK_KHR_win32_surface";
+const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
+const char kExtensionNameKhrXlibSurface[] = "VK_KHR_xlib_surface";
+const char kExtensionNameExtMetalSurface[] = "VK_EXT_metal_surface";
+
+const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
+
 // static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices,
 //                                              VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
 // {
@@ -84,23 +94,27 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
     }
 
-    if (!m_vkAPI.loadGlobalProcs(m_vulkanLib))
+    if (!m_vkAPI.loadDriverProcs(&m_vulkanLib))
     {
-        throw std::runtime_error(fmt::format("Failed to load global prosc in vulkan library: {}", vulkanLibraryName));
+        throw std::runtime_error(fmt::format("Failed to load driver prosc in vulkan library: {}", vulkanLibraryName));
     }
 
-    m_driverInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
     if (m_vkAPI.EnumerateInstanceVersion != nullptr)
     {
         m_vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
     }
-    LOG_DEBUG("Vulkan API Version: {}.{}.{}", VK_API_VERSION_MAJOR(m_driverInfo.apiVersion), VK_API_VERSION_MINOR(m_driverInfo.apiVersion), VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
+
+    LOG_INFO("Vulkan API Version: {}.{}.{}",
+             VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
+             VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
+             VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
 
     createInstance();
 
     VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
-    if (!m_vkAPI.LoadInstanceProcs(m_instance, driverKnobs))
+    if (!m_vkAPI.loadInstanceProcs(m_instance, driverKnobs))
     {
+        throw std::runtime_error(fmt::format("Failed to load instance prosc."));
     }
 
     createPhysicalDevices();
@@ -112,7 +126,10 @@ void VulkanDriver::createInstance() noexcept(false)
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if VK_HEADER_VERSION >= 216
-    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
+    {
+        instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    }
 #endif
 
     const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
@@ -179,16 +196,22 @@ void VulkanDriver::gatherDriverInfo()
         VkResult result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            LOG_ERROR("Failed to enumerate instance layer properties.");
+            LOG_ERROR("Failed to get instance layer properties count. {}", result);
             return;
         }
 
         m_driverInfo.layerProperties.resize(instanceLayerCount);
         result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
+        if (result != VK_SUCCESS)
+        {
+            LOG_ERROR("Failed to enumerate instance layer properties. {}", result);
+            return;
+        }
 
         for (const auto& layerProperty : m_driverInfo.layerProperties)
         {
-            LOG_INFO(layerProperty.layerName);
+            // TODO: set driver knobs for layer
+            LOG_INFO("Instance Layer Name: {}", layerProperty.layerName);
         }
     }
 
@@ -198,8 +221,39 @@ void VulkanDriver::gatherDriverInfo()
         VkResult result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            LOG_ERROR("Failed to enumerate instance layer properties.");
+            LOG_ERROR("Failed to get instance extension properties count.");
             return;
+        }
+
+        m_driverInfo.extensionProperties.resize(instanceExtensionCount);
+        result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
+        if (result != VK_SUCCESS)
+        {
+            LOG_ERROR("Failed to enumerate instance extension properties.");
+            return;
+        }
+
+        for (const auto& extensionProperty : m_driverInfo.extensionProperties)
+        {
+            // TODO: set driver knobs for extension
+            LOG_INFO("Instance Extension Name: {}, SpecVersion: {}", extensionProperty.extensionName, extensionProperty.specVersion);
+
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.surface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameExtMetalSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.metalSurface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameMvkMacosSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.macosSurface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrWin32Surface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.win32Surface = true;
+            }
         }
     }
 }
@@ -219,8 +273,11 @@ bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> 
         LOG_INFO("{}{}", '\t', availableInstanceExtension.extensionName);
     }
 
+    LOG_INFO("Required Instance Extensions Count: {}", requiredInstanceExtensions.size());
+    LOG_INFO("Required Instance Extensions : ");
     for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
     {
+        LOG_INFO("{}{}", '\t', requiredInstanceExtension);
         bool extensionFound = false;
         for (const auto& availableInstanceExtension : availableInstanceExtensions)
         {
@@ -252,7 +309,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 
 #if defined(__linux__)
     requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
-#elif defined(_WIN64)
+#elif defined(_WIN32)
     requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
 #elif defined(__APPLE__)
     #if defined(VK_USE_PLATFORM_MACOS_MVK)
@@ -263,7 +320,10 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #endif
 
 #if VK_HEADER_VERSION >= 216
-    requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
+    {
+        requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    }
 #endif
 
     LOG_INFO("Required Instance extensions :");

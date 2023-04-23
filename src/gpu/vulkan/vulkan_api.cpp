@@ -1,10 +1,11 @@
 #include "vulkan_api.h"
 
+#include "utils/dynamic_lib.h"
 #include "utils/log.h"
 
 namespace vkt
 {
-bool VulkanAPI::loadGlobalProcs(DynamicLib& vulkanLib)
+bool VulkanAPI::loadDriverProcs(DynamicLib* vulkanLib)
 {
 #define GET_GLOBAL_PROC(name)                                                          \
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
@@ -14,7 +15,7 @@ bool VulkanAPI::loadGlobalProcs(DynamicLib& vulkanLib)
         return false;                                                                  \
     }
 
-    if (!vulkanLib.getProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr"))
+    if (!vulkanLib->getProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr"))
     {
         LOG_ERROR("Couldn't get vkGetInstanceProcAddr");
         return false;
@@ -31,7 +32,7 @@ bool VulkanAPI::loadGlobalProcs(DynamicLib& vulkanLib)
     return true;
 }
 
-bool VulkanAPI::LoadInstanceProcs(VkInstance instance,
+bool VulkanAPI::loadInstanceProcs(VkInstance instance,
                                   const VulkanDriverKnobs& driverKnobs)
 {
 #define GET_INSTANCE_PROC(name)                                                         \
@@ -98,14 +99,28 @@ bool VulkanAPI::LoadInstanceProcs(VkInstance instance,
     //         GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2KHR);
     //     }
 
-    //     if (globalInfo.surface)
-    //     {
-    //         GET_INSTANCE_PROC(DestroySurfaceKHR);
-    //         GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceSupportKHR);
-    //         GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceCapabilitiesKHR);
-    //         GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceFormatsKHR);
-    //         GET_INSTANCE_PROC(GetPhysicalDeviceSurfacePresentModesKHR);
-    //     }
+    if (driverKnobs.surface)
+    {
+        GET_INSTANCE_PROC(DestroySurfaceKHR);
+        GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceSupportKHR);
+        GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceCapabilitiesKHR);
+        GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceFormatsKHR);
+        GET_INSTANCE_PROC(GetPhysicalDeviceSurfacePresentModesKHR);
+    }
+
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+    if (driverKnobs.macosSurface)
+    {
+        GET_INSTANCE_PROC(CreateMacOSSurfaceMVK);
+    }
+#endif
+
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    if (driverKnobs.metalSurface)
+    {
+        GET_INSTANCE_PROC(CreateMetalSurfaceEXT);
+    }
+#endif
 
     // #ifdef VK_USE_PLATFORM_FUCHSIA
     //     if (globalInfo.fuchsiaImagePipeSurface)
