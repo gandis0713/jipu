@@ -42,6 +42,12 @@ bool VulkanAPI::LoadInstanceProcs(VkInstance instance,
         return false;                                                                   \
     }
 
+    if (GetInstanceProcAddr == nullptr)
+    {
+        LOG_ERROR("vkGetInstanceProcAddr is nullptr.");
+        return false;
+    }
+
     // Load this proc first so that we can destroy the instance even if some other
     // GET_INSTANCE_PROC fails
     GET_INSTANCE_PROC(DestroyInstance);

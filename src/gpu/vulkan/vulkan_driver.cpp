@@ -89,13 +89,12 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to load global prosc in vulkan library: {}", vulkanLibraryName));
     }
 
-    m_driverInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
+    m_driverInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
     if (m_vkAPI.EnumerateInstanceVersion != nullptr)
     {
         m_vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
     }
-
-    LOG_DEBUG("Vulkan API Version: {}", m_driverInfo.apiVersion);
+    LOG_DEBUG("Vulkan API Version: {}.{}.{}", VK_API_VERSION_MAJOR(m_driverInfo.apiVersion), VK_API_VERSION_MINOR(m_driverInfo.apiVersion), VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
 
     createInstance();
 
@@ -112,11 +111,9 @@ void VulkanDriver::createInstance() noexcept(false)
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-
-    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
-    {
-        instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    }
+#if VK_HEADER_VERSION >= 216
+    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
 
     const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
     if (!checkInstanceExtensionSupport(requiredInstanceExtensions))
@@ -265,10 +262,9 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     #endif
 #endif
 
-    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
-    {
-        requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    }
+#if VK_HEADER_VERSION >= 216
+    requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#endif
 
     LOG_INFO("Required Instance extensions :");
     for (const auto& extension : requiredInstanceExtensions)
