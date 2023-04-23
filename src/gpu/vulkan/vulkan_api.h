@@ -9,6 +9,7 @@
     #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
+// #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
 
 #include "utils/dynamic_lib.h"

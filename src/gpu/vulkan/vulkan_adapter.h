@@ -10,8 +10,21 @@ struct VulkanDeviceInfo : VulkanDeviceKnobs
 {
     VkPhysicalDeviceFeatures physicalDeviceFeatures{};
     VkPhysicalDeviceProperties physicalDeviceProperties{};
+
     std::vector<VkQueueFamilyProperties> queueFamilyProperties{};
+
+    std::vector<VkLayerProperties> layerProperties;
+    std::vector<VkExtensionProperties> extensionProperties;
+
     bool isSurfaceSupported;
+};
+
+struct VulkanSurfaceInfo
+{
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+    std::vector<bool> supportedQueueFamilies;
 };
 
 class VulkanDriver;
