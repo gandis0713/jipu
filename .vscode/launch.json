@@ -15,7 +15,7 @@
             "environment": [],
         },
         {
-            "name": "vs 2019 debug for x64 windows",
+            "name": "VS 2019 debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-vs2019/debug/app/Debug/app.exe",
@@ -24,13 +24,35 @@
             "environment": [],
         },
         {
-            "name": "vs 2022 debug for x64 windows",
+            "name": "VS 2022 debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-vs2022/debug/app/Debug/app.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
-        }
+        },
+        {
+            "name": "Ninja debug for arm64 osx",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/app/app",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb"
+        },
+        {
+            "name": "Xcode debug for arm64 osx",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-xcode/debug/app/Debug/app",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb"
+        },
     ]
 }

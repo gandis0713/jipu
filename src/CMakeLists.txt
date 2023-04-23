@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false *.h *.cpp)
+file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ENDF6_SRC ${CMAKE_SOURCE_DIR} *.h *.cpp)
 
 if(APPLE)
   file(GLOB_RECURSE MM_FILES LIST_DIRECTORIES false *.mm)
