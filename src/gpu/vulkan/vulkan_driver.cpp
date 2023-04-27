@@ -5,13 +5,6 @@
 #include <stdexcept>
 
 #include "vulkan_allocation.h"
-#if defined(__linux__)
-// TODO: include header.
-#elif defined(_WIN64)
-    #include "vulkan_platform_windows.h"
-#elif defined(__APPLE__)
-    #include "vulkan_platform_macos.h"
-#endif
 
 const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
 const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";

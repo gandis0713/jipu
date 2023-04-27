@@ -1,6 +1,5 @@
-#include "vulkan_platform_windows.h"
-
 #include "vulkan_adapter.h"
+#include "vulkan_surface.h"
 
 #include <fmt/format.h>
 #include <stdexcept>
@@ -8,12 +7,7 @@
 namespace vkt
 {
 
-VulkanPlatformWindows::VulkanPlatformWindows(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept
-    : VulkanPlatform(adapter, descriptor)
-{
-}
-
-VkSurfaceKHR VulkanPlatformWindows::createSurfaceKHR(SurfaceDescriptor descriptor)
+VkSurfaceKHR VulkanSurface::createSurfaceKHR()
 {
     VkWin32SurfaceCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;

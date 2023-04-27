@@ -1,26 +1,31 @@
 #pragma once
 
+#include <memory>
+
 namespace vkt
 {
 
-class Platform;
-
 struct SurfaceDescriptor
 {
+    void* windowHandle;
 };
 
+class Adapter;
 class Surface
 {
 public:
     Surface() = delete;
-    Surface(Platform* platform, SurfaceDescriptor descriptor);
+    Surface(Adapter* adapter, SurfaceDescriptor descriptor);
     virtual ~Surface() = default;
 
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
 
 protected:
-    Platform* m_platform;
+    Adapter* m_adapter;
+
+protected:
+    void* m_windowHandle{ nullptr };
 };
 
 }; // namespace vkt

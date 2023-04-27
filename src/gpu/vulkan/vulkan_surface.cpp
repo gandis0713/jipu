@@ -1,20 +1,15 @@
-
 #include "vulkan_surface.h"
 #include "vulkan_adapter.h"
-#include "vulkan_platform.h"
-
-#include "utils/log.h"
 
 namespace vkt
 {
 
-VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceDescriptor descriptor)
-    : Surface(vulkanPlatform, descriptor)
+VulkanSurface::VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descriptor)
+    : Surface(adapter, descriptor)
 {
     SurfaceDescriptor surfaceDescriptor{};
-    m_surface = vulkanPlatform->createSurfaceKHR(surfaceDescriptor);
+    m_surface = createSurfaceKHR();
 
-    VulkanAdapter* adapter = static_cast<VulkanAdapter*>(vulkanPlatform->getAdapter());
     VkPhysicalDevice physicalDevice = adapter->getPhysicalDevice();
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &m_surfaceCapabilities);
@@ -37,9 +32,10 @@ VulkanSurface::VulkanSurface(VulkanPlatform* vulkanPlatform, const SurfaceDescri
         vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_presentModes.data());
     }
 }
+
 VulkanSurface::~VulkanSurface()
 {
-    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_platform->getAdapter());
+    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
 
     vkDestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
 }
@@ -64,4 +60,4 @@ const std::vector<VkPresentModeKHR>& VulkanSurface::getPresentModes() const
     return m_presentModes;
 }
 
-} // namespace vkt
+}; // namespace vkt

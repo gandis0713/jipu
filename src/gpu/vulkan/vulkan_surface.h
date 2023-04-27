@@ -7,13 +7,12 @@
 namespace vkt
 {
 
-class VulkanPlatform;
-
+class VulkanAdapter;
 class VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanPlatform* platform, SurfaceDescriptor descriptor);
+    VulkanSurface(VulkanAdapter* platform, SurfaceDescriptor descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getSurface() const;
@@ -21,6 +20,9 @@ public:
     const VkSurfaceCapabilitiesKHR& getSurfaceCapabilities() const;
     const std::vector<VkSurfaceFormatKHR>& getSurfaceFormats() const;
     const std::vector<VkPresentModeKHR>& getPresentModes() const;
+
+private:
+    VkSurfaceKHR createSurfaceKHR();
 
 private:
     // surface info.

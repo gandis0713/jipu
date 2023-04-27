@@ -1,4 +1,3 @@
-#include "vulkan_platform_macos.h"
 #include "utils/log.h"
 #include "vulkan_adapter.h"
 #include "vulkan_api.h"
@@ -12,13 +11,8 @@
 namespace vkt
 {
 
-VulkanPlatformMacOS::VulkanPlatformMacOS(VulkanAdapter* adapter, PlatformDescriptor descriptor) noexcept
-    : VulkanPlatform(adapter, descriptor)
-{
-}
-
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceDescriptor descriptor)
+VkSurfaceKHR VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {
@@ -57,7 +51,7 @@ VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceDescriptor descriptor)
     }
 }
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
-VkSurfaceKHR VulkanPlatformMacOS::createSurfaceKHR(SurfaceDescriptor descriptor)
+VkSurfaceKHR VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {

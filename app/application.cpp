@@ -78,12 +78,6 @@ void Application::initVulkan()
         m_device = m_adapter->createDevice(descriptor);
     }
 
-    // create platform
-    {
-        PlatformDescriptor descriptor{ m_window->getNativeWindow() };
-        m_platform = m_adapter->createPlatform(descriptor);
-    }
-
     // setupDebugMessenger();
 
     createSurface();
@@ -263,8 +257,8 @@ void Application::cleanup()
 void Application::createSurface()
 {
     // create surface
-    SurfaceDescriptor descriptor{};
-    m_surface = m_platform->createSurface(descriptor);
+    SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
+    m_surface = m_adapter->createSurface(descriptor);
 }
 
 void Application::createSwapChain()

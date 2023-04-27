@@ -110,7 +110,6 @@ private:
     std::unique_ptr<Driver> m_driver{ nullptr };
     std::unique_ptr<Adapter> m_adapter{ nullptr };
 
-    std::unique_ptr<Platform> m_platform{ nullptr };
     std::unique_ptr<Surface> m_surface{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };
 

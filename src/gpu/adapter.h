@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gpu/device.h"
-#include "gpu/platform.h"
+#include "gpu/surface.h"
 
 #include <memory>
 
@@ -23,7 +23,7 @@ public:
     virtual ~Adapter() = default;
 
     virtual std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) = 0;
-    virtual std::unique_ptr<Platform> createPlatform(PlatformDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) = 0;
 
     Driver* getDriver() const;
 
