@@ -51,7 +51,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
     : Device(adapter, descriptor)
     , m_frameBufferCache(this)
     , m_renderPassCache(this)
-    , m_vkAPI(static_cast<VulkanDriver*>(adapter->getDriver())->getAPI())
+    , vkAPI(static_cast<VulkanDriver*>(adapter->getDriver())->vkAPI)
 {
     const VulkanDeviceInfo& info = adapter->getDeviceInfo();
     constexpr uint32_t queueFlags =
@@ -69,11 +69,14 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
 
     createDevice(queueFamilyIndices);
 
+    VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
+    vkAPI.loadDeviceProcs(m_device, deviceKnobs);
+
     m_queues.resize(queueFamilyIndices.size());
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
-        m_vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
+        vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
         m_queues.push_back(queue);
     }
 }
@@ -85,7 +88,7 @@ VulkanDevice::~VulkanDevice()
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
-    vkDestroyDevice(m_device, nullptr);
+    vkAPI.DestroyDevice(m_device, nullptr);
 }
 
 std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(const SwapChainDescriptor& descriptor)
@@ -193,7 +196,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     // }
 
     VkPhysicalDevice physicalDevice = static_cast<VulkanAdapter*>(m_adapter)->getPhysicalDevice();
-    if (m_vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+    if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");
     }

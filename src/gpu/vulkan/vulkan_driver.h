@@ -34,8 +34,10 @@ public: // vulkan
     VkInstance getInstance() const;
     std::vector<VkPhysicalDevice> getPhysicalDevices() const;
 
-    const VulkanAPI& getAPI() const;
     const VulkanDriverInfo& getDriverInfo() const;
+
+public:
+    VulkanAPI vkAPI{};
 
 private:
     void initialize() noexcept(false);
@@ -52,7 +54,6 @@ private:
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DynamicLib m_vulkanLib{};
-    VulkanAPI m_vkAPI{};
     VulkanDriverInfo m_driverInfo{};
 };
 

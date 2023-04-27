@@ -27,10 +27,8 @@ VkSurfaceKHR VulkanSurface::createSurfaceKHR()
         [nsView setLayer:layer];
         [nsView setWantsLayer:YES];
 
-        PFN_vkCreateMetalSurfaceEXT vkCreateMetalSurfaceEXT;
-
         VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_adapter);
-        const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_adapter->getDriver())->getAPI();
+        const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_adapter->getDriver())->vkAPI;
         if (vkAPI.CreateMetalSurfaceEXT == nullptr)
         {
             throw std::runtime_error("vkCreateMetalSurfaceEXT is nullptr.");
@@ -70,7 +68,7 @@ VkSurfaceKHR VulkanSurface::createSurfaceKHR()
         createInfo.pView = (__bridge void*)nsView;
 
         VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_adapter);
-        const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_adapter->getDriver())->getAPI();
+        const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_adapter->getDriver())->vkAPI;
         if (vkAPI.CreateMacOSSurfaceMVK == nullptr)
         {
             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");

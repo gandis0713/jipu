@@ -56,7 +56,7 @@ const VulkanDeviceInfo& VulkanAdapter::getDeviceInfo() const
 
 void VulkanAdapter::gatherDeviceInfo()
 {
-    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_driver)->getAPI();
+    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_driver)->vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_deviceInfo.physicalDeviceProperties);

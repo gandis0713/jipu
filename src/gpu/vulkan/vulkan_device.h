@@ -39,6 +39,9 @@ public: // vulkan object
     VkQueue getGraphicsQueue() const;
     VkQueue getPresentQueue() const;
 
+public:
+    VulkanAPI vkAPI{};
+
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
 
@@ -49,7 +52,5 @@ private:
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
-
-    const VulkanAPI& m_vkAPI;
 };
 } // namespace vkt
