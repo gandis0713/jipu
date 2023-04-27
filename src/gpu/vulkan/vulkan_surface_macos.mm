@@ -12,7 +12,7 @@ namespace vkt
 {
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-VkSurfaceKHR VulkanSurface::createSurfaceKHR()
+void VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {
@@ -37,19 +37,17 @@ VkSurfaceKHR VulkanSurface::createSurfaceKHR()
         VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
         surfaceCreateInfo.pLayer = layer;
-        VkSurfaceKHR surface{};
-        VkResult result = vkAPI.CreateMetalSurfaceEXT(adapter->getInstance(), &surfaceCreateInfo, nullptr, &surface);
+
+        VkResult result = vkAPI.CreateMetalSurfaceEXT(adapter->getInstance(), &surfaceCreateInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
-
-        return surface;
     }
 }
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
-VkSurfaceKHR VulkanSurface::createSurfaceKHR()
+void VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {
@@ -74,15 +72,12 @@ VkSurfaceKHR VulkanSurface::createSurfaceKHR()
             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");
         }
 
-        VkSurfaceKHR surface{};
-        VkResult result = vkAPI.CreateMacOSSurfaceMVK(adapter->getInstance(), &createInfo, nullptr, &surface);
+        VkResult result = vkAPI.CreateMacOSSurfaceMVK(adapter->getInstance(), &createInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
         }
-
-        return surface;
     }
 }
 
