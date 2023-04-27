@@ -3,7 +3,7 @@
 #if defined(__linux__)
     #define VK_USE_PLATFORM_XCB_KHR
 #elif defined(__APPLE__)
-    #define VK_USE_PLATFORM_METAL_EXT
+    // #define VK_USE_PLATFORM_METAL_EXT
     #define VK_USE_PLATFORM_MACOS_MVK
 #elif defined(WIN32)
     #define VK_USE_PLATFORM_WIN32_KHR
@@ -31,6 +31,7 @@ struct VulkanDriverKnobs
 
 struct VulkanDeviceKnobs
 {
+    bool swapchain = false;
 };
 
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h
@@ -38,7 +39,7 @@ struct VulkanAPI
 {
     bool loadDriverProcs(DynamicLib* vulkanLib);
     bool loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& globalInfo);
-    // bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& usedKnobs);
+    bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs);
 
     // ---------- Driver procs
 
