@@ -36,8 +36,14 @@ public: // vulkan object
     VkDevice getDevice() const;
     VkPhysicalDevice getPhysicalDevice() const;
 
-    VkQueue getGraphicsQueue() const;
-    VkQueue getPresentQueue() const;
+    VkQueue getQueue() const;
+    uint32_t getQueueIndex() const;
+
+public:
+    VulkanAPI vkAPI{};
+
+private:
+    void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
 
 public:
     VulkanAPI vkAPI{};

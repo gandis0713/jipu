@@ -9,6 +9,8 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
 
+
+#include <stdexcept>
 const std::vector<const char*> getRequiredDeviceExtension()
 {
     std::vector<const char*> requiredDeviceExtension;
@@ -71,8 +73,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
 
     VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
     vkAPI.loadDeviceProcs(m_device, deviceKnobs);
-
-    m_queues.resize(queueFamilyIndices.size());
+    
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
@@ -128,9 +129,9 @@ VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
     return vulkanAdapter->getPhysicalDevice();
 }
 
-VkQueue VulkanDevice::getGraphicsQueue() const
+VkQueue VulkanDevice::getQueue() const
 {
-    // TODO: return graphics queue
+    // TODO: return suit queue
     if (!m_queues.empty())
     {
         return m_queues[0];
@@ -139,15 +140,17 @@ VkQueue VulkanDevice::getGraphicsQueue() const
     return VK_NULL_HANDLE;
 }
 
-VkQueue VulkanDevice::getPresentQueue() const
+uint32_t VulkanDevice::getQueueIndex() const
 {
-    // TODO: remove this.
+    // TODO: return suit queue index
     if (!m_queues.empty())
     {
-        return m_queues[0];
+        return 3;
     }
 
-    return VK_NULL_HANDLE;
+    throw std::runtime_error("There is no queue in device.");
+
+    return 0;
 }
 
 void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices)

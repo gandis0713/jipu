@@ -321,16 +321,14 @@ void Application::createFramebuffers()
 
 void Application::createCommandPool()
 {
-    VkPhysicalDevice physicalDevice = static_cast<VulkanAdapter*>(m_adapter.get())->getPhysicalDevice();
-    QueueFamilyIndices queueFamilyIndices = QueueFamilyIndices::findQueueFamilies(physicalDevice);
+    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
 
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
     commandPoolCreateInfo.flags = 0; // Optional
 
-    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
-    if (vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -346,8 +344,9 @@ void Application::createCommandBuffers()
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
-    if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    if (vkAPI.AllocateCommandBuffers(vulkanDevice->getDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -359,7 +358,7 @@ void Application::createCommandBuffers()
         commandBufferBeginInfo.flags = 0;                  // Optional
         commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
-        if (vkBeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
+        if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to begin recording command buffer!");
         }
@@ -382,17 +381,17 @@ void Application::createCommandBuffers()
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearValue;
 
-        vkCmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         // vkCmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
         auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
         vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
 
-        vkCmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
+        vkAPI.CmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
 
-        vkCmdEndRenderPass(m_vecCommandBuffers[i]);
+        vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
 
-        if (vkEndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
+        if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to record command buffer!");
         }
@@ -406,8 +405,8 @@ void Application::drawFrame()
     VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
 
     VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
-    VkDevice device = vulkanDevice->getDevice();
-    vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -425,7 +424,8 @@ void Application::drawFrame()
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(vulkanDevice->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    VkQueue queue = vulkanDevice->getQueue();
+    if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
@@ -442,9 +442,9 @@ void Application::drawFrame()
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR(vulkanDevice->getGraphicsQueue(), &presentInfo);
+    vkAPI.QueuePresentKHR(queue, &presentInfo);
 
-    vkQueueWaitIdle(vulkanDevice->getGraphicsQueue());
+    vkAPI.QueueWaitIdle(vulkanDevice->getQueue());
 }
 
 void Application::createSemaphores()
@@ -452,9 +452,10 @@ void Application::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VkDevice device = static_cast<VulkanDevice*>(m_device.get())->getDevice();
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    if (vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create semaphores!");
     }
