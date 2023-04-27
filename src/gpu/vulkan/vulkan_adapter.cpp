@@ -1,16 +1,10 @@
 #include "vulkan_adapter.h"
 #include "vulkan_device.h"
 #include "vulkan_driver.h"
+#include "vulkan_surface.h"
 
 #include "utils/assert.h"
 #include "utils/log.h"
-
-#if defined(__linux__)
-#elif defined(_WIN64)
-    #include "vulkan_platform_windows.h"
-#elif defined(__APPLE__)
-    #include "vulkan_platform_macos.h"
-#endif
 
 namespace vkt
 {
@@ -40,15 +34,9 @@ std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceDescriptor descriptor)
     return std::make_unique<VulkanDevice>(this, descriptor);
 }
 
-std::unique_ptr<Platform> VulkanAdapter::createPlatform(PlatformDescriptor descriptor)
+std::unique_ptr<Surface> VulkanAdapter::createSurface(SurfaceDescriptor descriptor)
 {
-#if defined(__linux__)
-    return nullptr;
-#elif defined(_WIN64)
-    return std::make_unique<VulkanPlatformWindows>(this, descriptor);
-#elif defined(__APPLE__)
-    return std::make_unique<VulkanPlatformMacOS>(this, descriptor);
-#endif
+    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 VkInstance VulkanAdapter::getInstance() const

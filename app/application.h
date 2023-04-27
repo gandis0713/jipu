@@ -5,7 +5,6 @@
 #include "gpu/context.h"
 #include "gpu/device.h"
 #include "gpu/driver.h"
-#include "gpu/platform.h"
 #include "gpu/queue.h"
 #include "gpu/surface.h"
 #include "gpu/swapchain.h"
@@ -110,7 +109,6 @@ private:
     std::unique_ptr<Driver> m_driver{ nullptr };
     std::unique_ptr<Adapter> m_adapter{ nullptr };
 
-    std::unique_ptr<Platform> m_platform{ nullptr };
     std::unique_ptr<Surface> m_surface{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };
 
