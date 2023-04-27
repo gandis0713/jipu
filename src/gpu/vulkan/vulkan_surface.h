@@ -7,6 +7,14 @@
 namespace vkt
 {
 
+struct VulkanSurfaceInfo
+{
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+    std::vector<bool> supportedQueueFamilies;
+};
+
 class VulkanAdapter;
 class VulkanSurface : public Surface
 {
@@ -22,7 +30,9 @@ public:
     const std::vector<VkPresentModeKHR>& getPresentModes() const;
 
 private:
-    VkSurfaceKHR createSurfaceKHR();
+    void createSurfaceKHR();
+
+    void gatherSurfaceInfo();
 
 private:
     // surface info.
@@ -33,6 +43,8 @@ private:
 private:
     VkSurfaceKHR m_surface;
     VkPhysicalDevice m_physicalDevice;
+
+    VulkanSurfaceInfo m_surfaceInfo{};
 };
 
 }; // namespace vkt

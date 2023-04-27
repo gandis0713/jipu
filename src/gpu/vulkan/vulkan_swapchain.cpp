@@ -119,7 +119,8 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
-    if (vkCreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+    const VulkanAPI& vkAPI = static_cast<VulkanDevice*>(m_device)->vkAPI;
+    if (vkAPI.CreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create swap chain!");
     }
@@ -129,11 +130,11 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     m_extent = imageExtent;
 
     // get or create swapchain image.
-    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
+    vkAPI.GetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
 
     std::vector<VkImage> images{};
     images.resize(imageCount);
-    vkGetSwapchainImagesKHR(device, m_swapchain, &imageCount, images.data());
+    vkAPI.GetSwapchainImagesKHR(device, m_swapchain, &imageCount, images.data());
 
     // create Textures by VkImage.
     for (VkImage image : images)
@@ -183,8 +184,9 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 VulkanSwapChain::~VulkanSwapChain()
 {
     VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
+    const VulkanAPI& vkAPI = static_cast<VulkanDevice*>(m_device)->vkAPI;
 
-    vkDestroySwapchainKHR(device, m_swapchain, nullptr);
+    vkAPI.DestroySwapchainKHR(device, m_swapchain, nullptr);
 }
 
 VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const

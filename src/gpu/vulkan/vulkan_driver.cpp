@@ -62,8 +62,6 @@ VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
     : Driver()
 {
     initialize();
-
-    gatherDriverInfo();
 }
 
 VulkanDriver::~VulkanDriver()
@@ -87,14 +85,14 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
     }
 
-    if (!m_vkAPI.loadDriverProcs(&m_vulkanLib))
+    if (!vkAPI.loadDriverProcs(&m_vulkanLib))
     {
         throw std::runtime_error(fmt::format("Failed to load driver prosc in vulkan library: {}", vulkanLibraryName));
     }
 
-    if (m_vkAPI.EnumerateInstanceVersion != nullptr)
+    if (vkAPI.EnumerateInstanceVersion != nullptr)
     {
-        m_vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
+        vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
     }
 
     LOG_INFO("Vulkan API Version: {}.{}.{}",
@@ -102,10 +100,12 @@ void VulkanDriver::initialize() noexcept(false)
              VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
              VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
 
+    gatherDriverInfo();
+
     createInstance();
 
     VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
-    if (!m_vkAPI.loadInstanceProcs(m_instance, driverKnobs))
+    if (!vkAPI.loadInstanceProcs(m_instance, driverKnobs))
     {
         throw std::runtime_error(fmt::format("Failed to load instance prosc."));
     }
@@ -155,7 +155,7 @@ void VulkanDriver::createInstance() noexcept(false)
     //     instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
     // }
 
-    VkResult result = m_vkAPI.CreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &m_instance);
+    VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &m_instance);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", result));
@@ -165,7 +165,7 @@ void VulkanDriver::createInstance() noexcept(false)
 void VulkanDriver::createPhysicalDevices() noexcept(false)
 {
     uint32_t physicalDeviceCount = 0;
-    m_vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
+    vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
 
     LOG_INFO("Physical Device Count: {}", physicalDeviceCount);
     if (physicalDeviceCount == 0)
@@ -174,7 +174,7 @@ void VulkanDriver::createPhysicalDevices() noexcept(false)
     }
 
     m_physicalDevices.resize(physicalDeviceCount);
-    m_vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, m_physicalDevices.data());
+    vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, m_physicalDevices.data());
     if (m_physicalDevices.empty())
     {
         throw std::runtime_error("There is no physical device.");
@@ -186,7 +186,7 @@ void VulkanDriver::gatherDriverInfo()
     // Gather instance layer properties.
     {
         uint32_t instanceLayerCount = 0;
-        VkResult result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+        VkResult result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
             LOG_ERROR("Failed to get instance layer properties count. {}", result);
@@ -194,7 +194,7 @@ void VulkanDriver::gatherDriverInfo()
         }
 
         m_driverInfo.layerProperties.resize(instanceLayerCount);
-        result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
+        result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Failed to enumerate instance layer properties. {}", result);
@@ -211,7 +211,7 @@ void VulkanDriver::gatherDriverInfo()
     // Gather instance extension properties.
     {
         uint32_t instanceExtensionCount = 0;
-        VkResult result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+        VkResult result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
             LOG_ERROR("Failed to get instance extension properties count.");
@@ -219,7 +219,7 @@ void VulkanDriver::gatherDriverInfo()
         }
 
         m_driverInfo.extensionProperties.resize(instanceExtensionCount);
-        result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
+        result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
         if (result != VK_SUCCESS)
         {
             LOG_ERROR("Failed to enumerate instance extension properties.");
@@ -254,9 +254,9 @@ void VulkanDriver::gatherDriverInfo()
 bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
 {
     uint32_t instanceExtensionCount = 0;
-    m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+    vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
     std::vector<VkExtensionProperties> availableInstanceExtensions(instanceExtensionCount);
-    m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
+    vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
 
     // available instance extensions;
     LOG_INFO("Available Instance Extensions Count: {}", availableInstanceExtensions.size());
@@ -344,11 +344,6 @@ VkInstance VulkanDriver::getInstance() const
 std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const
 {
     return m_physicalDevices;
-}
-
-const VulkanAPI& VulkanDriver::getAPI() const
-{
-    return m_vkAPI;
 }
 
 const VulkanDriverInfo& VulkanDriver::getDriverInfo() const

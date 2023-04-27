@@ -18,14 +18,11 @@ VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descr
 
     // Gather device information.
     gatherDeviceInfo();
-
-    // Gather sruface information.
-    gatherSurfaceInfo();
 }
 
 VulkanAdapter::~VulkanAdapter()
 {
-    // doesn't need to desotyr VkPhysicalDevice.
+    // doesn't need to destroy VkPhysicalDevice.
     LOG_TRACE(__func__);
 }
 
@@ -56,7 +53,7 @@ const VulkanDeviceInfo& VulkanAdapter::getDeviceInfo() const
 
 void VulkanAdapter::gatherDeviceInfo()
 {
-    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_driver)->getAPI();
+    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_driver)->vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_deviceInfo.physicalDeviceProperties);
@@ -88,10 +85,6 @@ void VulkanAdapter::gatherDeviceInfo()
         m_deviceInfo.extensionProperties.resize(deviceExtensionCount);
         vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, m_deviceInfo.extensionProperties.data());
     }
-}
-
-void VulkanAdapter::gatherSurfaceInfo()
-{
 }
 
 } // namespace vkt

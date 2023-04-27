@@ -17,14 +17,6 @@ struct VulkanDeviceInfo : VulkanDeviceKnobs
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-struct VulkanSurfaceInfo
-{
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
-    std::vector<bool> supportedQueueFamilies;
-};
-
 class VulkanDriver;
 class VulkanAdapter : public Adapter
 {
@@ -44,11 +36,9 @@ public:
 
 private:
     void gatherDeviceInfo();
-    void gatherSurfaceInfo();
 
 private: // vulkan object
     VkPhysicalDevice m_physicalDevice{ nullptr };
     VulkanDeviceInfo m_deviceInfo{};
-    VulkanSurfaceInfo m_surfaceInfo{};
 };
 } // namespace vkt
