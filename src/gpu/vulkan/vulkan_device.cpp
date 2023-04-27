@@ -9,8 +9,8 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
 
-#include <stdexcept>
 
+#include <stdexcept>
 const std::vector<const char*> getRequiredDeviceExtension()
 {
     std::vector<const char*> requiredDeviceExtension;
@@ -73,7 +73,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
 
     VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
     vkAPI.loadDeviceProcs(m_device, deviceKnobs);
-
+    
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
