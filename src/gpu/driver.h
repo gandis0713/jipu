@@ -26,7 +26,6 @@ public:
     static std::unique_ptr<Driver> create(DriverDescriptor descriptor);
 
 public:
-    Driver() = default;
     virtual ~Driver() = default;
 
     Driver(const Driver&) = delete;
@@ -34,6 +33,9 @@ public:
 
 public:
     virtual std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) = 0;
+
+protected:
+    Driver() = default;
 };
 
 } // namespace vkt

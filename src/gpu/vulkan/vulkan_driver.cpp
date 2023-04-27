@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-#include "allocation.h"
+#include "vulkan_allocation.h"
 #if defined(__linux__)
 // TODO: include header.
 #elif defined(_WIN64)
@@ -13,93 +13,123 @@
     #include "vulkan_platform_macos.h"
 #endif
 
-#include <set>
+const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
+const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
+const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
+const char kExtensionNameKhrWin32Surface[] = "VK_KHR_win32_surface";
+const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
+const char kExtensionNameKhrXlibSurface[] = "VK_KHR_xlib_surface";
+const char kExtensionNameExtMetalSurface[] = "VK_EXT_metal_surface";
 
-static const std::vector<const char*> getRequiredInstanceExtensions()
+const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
+
+// static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices,
+//                                              VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
+// {
+//     for (const VkPhysicalDevice& candidatePhysicalDevice : physicalDevices)
+//     {
+//         uint32_t queueFamilyCount = 0;
+//         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
+
+//         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
+//         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount,
+//                                                  queueFamilyProperties.data());
+
+//         LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
+//         for (auto i = 0; i < queueFamilyProperties.size(); ++i)
+//         {
+
+//             // check graphic family
+//             const auto& queueFamily = queueFamilyProperties[i];
+
+//             LOG_INFO("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
+
+//             const int family = queueFamily.queueFlags & queueFlags;
+
+//             if (family == queueFlags)
+//             {
+//                 return candidatePhysicalDevice;
+//             }
+
+//             // TODO: check support swap chain
+
+//             // TODO: check preset???
+//         }
+//     }
+
+//     throw std::runtime_error("Failed to find a suitable GPU!");
+
+//     return VK_NULL_HANDLE;
+// }
+
+namespace vkt
 {
-    std::vector<const char*> requiredInstanceExtensions{};
 
-    requiredInstanceExtensions.push_back("VK_KHR_surface");
-    /*
-        https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
-        https://sourceforge.net/p/predef/wiki/OperatingSystems/
-    */
+VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
+    : Driver()
+{
+    initialize();
 
+    gatherDriverInfo();
+}
+
+VulkanDriver::~VulkanDriver()
+{
+    // TODO: destroy instance.
+    LOG_TRACE(__func__);
+}
+
+void VulkanDriver::initialize() noexcept(false)
+{
 #if defined(__linux__)
-    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
-#elif defined(_WIN64)
-    requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
+    const char vulkanLibraryName[] = "libvulkan.so.1";
 #elif defined(__APPLE__)
-    #if defined(VK_USE_PLATFORM_MACOS_MVK)
-    requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
-    #elif defined(VK_USE_PLATFORM_METAL_EXT)
-    requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
-    #endif
+    const char vulkanLibraryName[] = "libMoltenVK.dylib";
+#elif defined(WIN32)
+    const char vulkanLibraryName[] = "vulkan-1.dll";
 #endif
 
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 216
-    requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-    #endif
-#endif
-
-    LOG_INFO("Required Instance extensions :");
-    for (const auto& extension : requiredInstanceExtensions)
+    if (!m_vulkanLib.open(vulkanLibraryName))
     {
-        LOG_INFO("{}{}", '\t', extension);
+        throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
     }
 
-    // TODO: Debug Utils
-    // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    if (!m_vkAPI.loadDriverProcs(&m_vulkanLib))
+    {
+        throw std::runtime_error(fmt::format("Failed to load driver prosc in vulkan library: {}", vulkanLibraryName));
+    }
 
-    return requiredInstanceExtensions;
+    if (m_vkAPI.EnumerateInstanceVersion != nullptr)
+    {
+        m_vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
+    }
+
+    LOG_INFO("Vulkan API Version: {}.{}.{}",
+             VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
+             VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
+             VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
+
+    createInstance();
+
+    VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
+    if (!m_vkAPI.loadInstanceProcs(m_instance, driverKnobs))
+    {
+        throw std::runtime_error(fmt::format("Failed to load instance prosc."));
+    }
+
+    createPhysicalDevices();
 }
 
-static bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
-{
-    uint32_t instanceExtensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
-    std::vector<VkExtensionProperties> availableInstanceExtensions(instanceExtensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
-
-    // available instance extensions;
-    LOG_INFO("Available Instance Extensions Count: {}", availableInstanceExtensions.size());
-    LOG_INFO("Available Instance Extensions : ");
-    for (const auto& availableInstanceExtension : availableInstanceExtensions)
-    {
-        LOG_INFO("{}{}", '\t', availableInstanceExtension.extensionName);
-    }
-
-    for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
-    {
-        bool extensionFound = false;
-        for (const auto& availableInstanceExtension : availableInstanceExtensions)
-        {
-            if (strcmp(requiredInstanceExtension, availableInstanceExtension.extensionName) == 0)
-            {
-                extensionFound = true;
-                break;
-            }
-        }
-
-        if (!extensionFound)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static VkInstance createInstance()
+void VulkanDriver::createInstance() noexcept(false)
 {
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-#if defined(__APPLE__)
-    #if VK_HEADER_VERSION >= 216
-    instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    #endif
+#if VK_HEADER_VERSION >= 216
+    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
+    {
+        instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    }
 #endif
 
     const std::vector<const char*>& requiredInstanceExtensions = getRequiredInstanceExtensions();
@@ -132,20 +162,17 @@ static VkInstance createInstance()
     //     instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
     // }
 
-    VkInstance instance{};
-    VkResult result = vkCreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &instance);
+    VkResult result = m_vkAPI.CreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &m_instance);
     if (result != VK_SUCCESS)
     {
-        LOG_ERROR("Failed to create VkInstance: {}", result);
+        throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", result));
     }
-
-    return instance;
 }
 
-static std::vector<VkPhysicalDevice> createPhysicalDevices(VkInstance instance)
+void VulkanDriver::createPhysicalDevices() noexcept(false)
 {
     uint32_t physicalDeviceCount = 0;
-    vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, nullptr);
+    m_vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
 
     LOG_INFO("Physical Device Count: {}", physicalDeviceCount);
     if (physicalDeviceCount == 0)
@@ -153,103 +180,162 @@ static std::vector<VkPhysicalDevice> createPhysicalDevices(VkInstance instance)
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
 
-    std::vector<VkPhysicalDevice> physicalDevices(physicalDeviceCount);
-    vkEnumeratePhysicalDevices(instance, &physicalDeviceCount, physicalDevices.data());
-
-    return physicalDevices;
-}
-
-static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices,
-                                             VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
-{
-    for (const VkPhysicalDevice& candidatePhysicalDevice : physicalDevices)
-    {
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
-
-        std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount,
-                                                 queueFamilyProperties.data());
-
-        LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
-        for (auto i = 0; i < queueFamilyProperties.size(); ++i)
-        {
-
-            // check graphic family
-            const auto& queueFamily = queueFamilyProperties[i];
-
-            LOG_INFO("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
-
-            const int family = queueFamily.queueFlags & queueFlags;
-
-            if (family == queueFlags)
-            {
-                return candidatePhysicalDevice;
-            }
-
-            // TODO: check support swap chain
-
-            // TODO: check preset???
-        }
-    }
-
-    throw std::runtime_error("Failed to find a suitable GPU!");
-
-    return VK_NULL_HANDLE;
-}
-
-namespace vkt
-{
-
-VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
-    : Driver()
-{
-    initialize();
-
-    m_instance = createInstance();
-    if (m_instance == nullptr)
-    {
-        throw std::runtime_error("Failed to create instance.");
-    }
-
-    m_physicalDevices = createPhysicalDevices(m_instance);
+    m_physicalDevices.resize(physicalDeviceCount);
+    m_vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, m_physicalDevices.data());
     if (m_physicalDevices.empty())
     {
         throw std::runtime_error("There is no physical device.");
     }
 }
 
-VulkanDriver::~VulkanDriver()
+void VulkanDriver::gatherDriverInfo()
 {
-    // TODO: destroy instance.
+    // Gather instance layer properties.
+    {
+        uint32_t instanceLayerCount = 0;
+        VkResult result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
+        if (result != VK_SUCCESS && result != VK_INCOMPLETE)
+        {
+            LOG_ERROR("Failed to get instance layer properties count. {}", result);
+            return;
+        }
+
+        m_driverInfo.layerProperties.resize(instanceLayerCount);
+        result = m_vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
+        if (result != VK_SUCCESS)
+        {
+            LOG_ERROR("Failed to enumerate instance layer properties. {}", result);
+            return;
+        }
+
+        for (const auto& layerProperty : m_driverInfo.layerProperties)
+        {
+            // TODO: set driver knobs for layer
+            LOG_INFO("Instance Layer Name: {}", layerProperty.layerName);
+        }
+    }
+
+    // Gather instance extension properties.
+    {
+        uint32_t instanceExtensionCount = 0;
+        VkResult result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+        if (result != VK_SUCCESS && result != VK_INCOMPLETE)
+        {
+            LOG_ERROR("Failed to get instance extension properties count.");
+            return;
+        }
+
+        m_driverInfo.extensionProperties.resize(instanceExtensionCount);
+        result = m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
+        if (result != VK_SUCCESS)
+        {
+            LOG_ERROR("Failed to enumerate instance extension properties.");
+            return;
+        }
+
+        for (const auto& extensionProperty : m_driverInfo.extensionProperties)
+        {
+            // TODO: set driver knobs for extension
+            LOG_INFO("Instance Extension Name: {}, SpecVersion: {}", extensionProperty.extensionName, extensionProperty.specVersion);
+
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.surface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameExtMetalSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.metalSurface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameMvkMacosSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.macosSurface = true;
+            }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrWin32Surface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.win32Surface = true;
+            }
+        }
+    }
 }
 
-void VulkanDriver::initialize() noexcept(false)
+bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
 {
+    uint32_t instanceExtensionCount = 0;
+    m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
+    std::vector<VkExtensionProperties> availableInstanceExtensions(instanceExtensionCount);
+    m_vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, availableInstanceExtensions.data());
+
+    // available instance extensions;
+    LOG_INFO("Available Instance Extensions Count: {}", availableInstanceExtensions.size());
+    LOG_INFO("Available Instance Extensions : ");
+    for (const auto& availableInstanceExtension : availableInstanceExtensions)
+    {
+        LOG_INFO("{}{}", '\t', availableInstanceExtension.extensionName);
+    }
+
+    LOG_INFO("Required Instance Extensions Count: {}", requiredInstanceExtensions.size());
+    LOG_INFO("Required Instance Extensions : ");
+    for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
+    {
+        LOG_INFO("{}{}", '\t', requiredInstanceExtension);
+        bool extensionFound = false;
+        for (const auto& availableInstanceExtension : availableInstanceExtensions)
+        {
+            if (strcmp(requiredInstanceExtension, availableInstanceExtension.extensionName) == 0)
+            {
+                extensionFound = true;
+                break;
+            }
+        }
+
+        if (!extensionFound)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
+{
+    std::vector<const char*> requiredInstanceExtensions{};
+
+    requiredInstanceExtensions.push_back("VK_KHR_surface");
+    /*
+        https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
+        https://sourceforge.net/p/predef/wiki/OperatingSystems/
+    */
+
 #if defined(__linux__)
-    const char vulkanLibraryName[] = "libvulkan.so.1";
+    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
+#elif defined(_WIN32)
+    requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
 #elif defined(__APPLE__)
-    const char vulkanLibraryName[] = "libMoltenVK.dylib";
-#elif defined(WIN32)
-    const char vulkanLibraryName[] = "vulkan-1.dll";
+    #if defined(VK_USE_PLATFORM_MACOS_MVK)
+    requiredInstanceExtensions.push_back("VK_MVK_macos_surface");
+    #elif defined(VK_USE_PLATFORM_METAL_EXT)
+    requiredInstanceExtensions.push_back("VK_EXT_metal_surface");
+    #endif
 #endif
 
-    if (!m_vulkanLib.open(vulkanLibraryName))
+#if VK_HEADER_VERSION >= 216
+    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
     {
-        throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
+        requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    }
+#endif
+
+    LOG_INFO("Required Instance extensions :");
+    for (const auto& extension : requiredInstanceExtensions)
+    {
+        LOG_INFO("{}{}", '\t', extension);
     }
 
-    if (!m_api.loadGlobalProcs(m_vulkanLib))
-    {
-        throw std::runtime_error(fmt::format("Failed to load global prosc in vulkan library: {}", vulkanLibraryName));
-    }
+    // TODO: Debug Utils
+    // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    VulkanDriverKnobs driverKnobs{};
-    driverKnobs.apiVersion = VK_MAKE_VERSION(1, 0, 0);
-    if (m_api.EnumerateInstanceVersion != nullptr)
-    {
-        m_api.EnumerateInstanceVersion(&driverKnobs.apiVersion);
-    }
+    return requiredInstanceExtensions;
 }
 
 std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterDescriptor descriptor)
@@ -265,6 +351,16 @@ VkInstance VulkanDriver::getInstance() const
 std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const
 {
     return m_physicalDevices;
+}
+
+const VulkanAPI& VulkanDriver::getAPI() const
+{
+    return m_vkAPI;
+}
+
+const VulkanDriverInfo& VulkanDriver::getDriverInfo() const
+{
+    return m_driverInfo;
 }
 
 } // namespace vkt

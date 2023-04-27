@@ -12,6 +12,8 @@ namespace vkt
 
 struct VulkanDriverInfo : VulkanDriverKnobs
 {
+    std::vector<VkLayerProperties> layerProperties;
+    std::vector<VkExtensionProperties> extensionProperties;
 };
 
 class VulkanDriver : public Driver
@@ -28,19 +30,30 @@ public:
 public:
     std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) override;
 
-public: // vulkan object
+public: // vulkan
     VkInstance getInstance() const;
     std::vector<VkPhysicalDevice> getPhysicalDevices() const;
 
+    const VulkanAPI& getAPI() const;
+    const VulkanDriverInfo& getDriverInfo() const;
+
 private:
     void initialize() noexcept(false);
+    void createInstance() noexcept(false);
+    void createPhysicalDevices() noexcept(false);
+
+    void gatherDriverInfo();
+
+    bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions);
+    const std::vector<const char*> getRequiredInstanceExtensions();
 
 private:
     VkInstance m_instance{};
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DynamicLib m_vulkanLib{};
-    VulkanAPI m_api{};
+    VulkanAPI m_vkAPI{};
+    VulkanDriverInfo m_driverInfo{};
 };
 
 } // namespace vkt
