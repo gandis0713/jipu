@@ -4,7 +4,10 @@
 #include "vulkan_api.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"
+
 #include <memory>
+#include <unordered_set>
+#include <vector>
 
 namespace vkt
 {
@@ -37,12 +40,16 @@ public: // vulkan object
     VkQueue getPresentQueue() const;
 
 private:
+    void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
+
+private:
     VkDevice m_device{};
 
-    VkQueue m_graphicsQueue{};
-    VkQueue m_presentQueue{};
+    std::vector<VkQueue> m_queues{};
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
+
+    const VulkanAPI& m_vkAPI;
 };
 } // namespace vkt
