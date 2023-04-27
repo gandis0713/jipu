@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-#include "allocation.h"
+#include "vulkan_allocation.h"
 #if defined(__linux__)
 // TODO: include header.
 #elif defined(_WIN64)
