@@ -1,7 +1,6 @@
 #include "application.h"
 #include "window.h"
 
-#include "gpu/platform.h"
 #include "gpu/vulkan/vulkan_adapter.h"
 #include "gpu/vulkan/vulkan_device.h"
 #include "gpu/vulkan/vulkan_pipeline.h"

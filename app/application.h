@@ -5,7 +5,6 @@
 #include "gpu/context.h"
 #include "gpu/device.h"
 #include "gpu/driver.h"
-#include "gpu/platform.h"
 #include "gpu/queue.h"
 #include "gpu/surface.h"
 #include "gpu/swapchain.h"

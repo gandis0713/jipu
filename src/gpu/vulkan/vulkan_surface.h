@@ -12,7 +12,7 @@ class VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanAdapter* platform, SurfaceDescriptor descriptor);
+    VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getSurface() const;
