@@ -45,12 +45,6 @@ public:
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
 
-public:
-    VulkanAPI vkAPI{};
-
-private:
-    void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
-
 private:
     VkDevice m_device{};
 
