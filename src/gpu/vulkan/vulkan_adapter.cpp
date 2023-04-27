@@ -25,7 +25,7 @@ VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descr
 
 VulkanAdapter::~VulkanAdapter()
 {
-    // doesn't need to desotyr VkPhysicalDevice.
+    // doesn't need to destroy VkPhysicalDevice.
     LOG_TRACE(__func__);
 }
 
