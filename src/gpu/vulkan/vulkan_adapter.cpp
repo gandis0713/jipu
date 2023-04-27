@@ -18,9 +18,6 @@ VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descr
 
     // Gather device information.
     gatherDeviceInfo();
-
-    // Gather sruface information.
-    gatherSurfaceInfo();
 }
 
 VulkanAdapter::~VulkanAdapter()
@@ -88,10 +85,6 @@ void VulkanAdapter::gatherDeviceInfo()
         m_deviceInfo.extensionProperties.resize(deviceExtensionCount);
         vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, m_deviceInfo.extensionProperties.data());
     }
-}
-
-void VulkanAdapter::gatherSurfaceInfo()
-{
 }
 
 } // namespace vkt
