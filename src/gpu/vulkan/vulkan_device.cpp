@@ -94,7 +94,7 @@ VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }
 
-VkDevice VulkanDevice::getDevice() const
+VkDevice VulkanDevice::getVkDevice() const
 {
     return m_device;
 }

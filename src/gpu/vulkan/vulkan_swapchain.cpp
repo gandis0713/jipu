@@ -113,7 +113,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    VkDevice device = downcast(m_device)->getDevice();
+    VkDevice device = downcast(m_device)->getVkDevice();
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
     if (vkAPI.CreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
@@ -146,7 +146,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-    VkDevice device = downcast(m_device)->getDevice();
+    VkDevice device = downcast(m_device)->getVkDevice();
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
 
     vkAPI.DestroySwapchainKHR(device, m_swapchain, nullptr);

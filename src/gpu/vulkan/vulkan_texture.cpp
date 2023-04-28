@@ -27,7 +27,7 @@ VulkanTexture::~VulkanTexture()
     if (m_owner == TextureOwner::Internal)
     {
         VulkanDevice* vulkanDevice = downcast(m_device);
-        vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getDevice(), m_image, nullptr);
+        vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getVkDevice(), m_image, nullptr);
     }
 }
 

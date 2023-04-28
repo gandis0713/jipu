@@ -34,7 +34,7 @@ public:
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
 public: // vulkan object
-    VkDevice getDevice() const;
+    VkDevice getVkDevice() const;
     VkPhysicalDevice getPhysicalDevice() const;
 
     VkQueue getQueue() const;

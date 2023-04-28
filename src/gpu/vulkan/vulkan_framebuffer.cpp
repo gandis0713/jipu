@@ -24,7 +24,7 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     framebufferCreateInfo.height = descriptor.height;
     framebufferCreateInfo.layers = 1;
 
-    if (m_device->vkAPI.CreateFramebuffer(m_device->getDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
+    if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create framebuffer!");
     }

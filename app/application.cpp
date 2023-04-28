@@ -88,8 +88,8 @@ void Application::initVulkan()
         SwapChainDescriptor swapChainCreateInfo{ TextureFormat::kBGRA_8888_UInt_Norm,
                                                  PresentMode::kFifo,
                                                  ColorSpace::kSRGBNonLinear,
-                                                 400,
-                                                 300,
+                                                 800,
+                                                 600,
                                                  m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
@@ -327,7 +327,7 @@ void Application::createCommandPool()
     commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
     commandPoolCreateInfo.flags = 0; // Optional
 
-    if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create command pool!");
     }
@@ -345,7 +345,7 @@ void Application::createCommandBuffers()
 
     VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    if (vkAPI.AllocateCommandBuffers(vulkanDevice->getDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -405,7 +405,7 @@ void Application::drawFrame()
 
     VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -453,8 +453,8 @@ void Application::createSemaphores()
 
     VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    if (vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create semaphores!");
     }

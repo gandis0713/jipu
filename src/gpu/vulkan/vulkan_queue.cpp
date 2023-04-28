@@ -33,7 +33,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
         }
     }
 
-    device->vkAPI.GetDeviceQueue(device->getDevice(), m_index, 0, &m_queue);
+    device->vkAPI.GetDeviceQueue(device->getVkDevice(), m_index, 0, &m_queue);
 }
 
 VulkanQueue::~VulkanQueue()

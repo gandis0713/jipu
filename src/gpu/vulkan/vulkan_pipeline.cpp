@@ -20,8 +20,8 @@ void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
 void VulkanPipeline::destroy()
 {
     auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getDevice(), m_graphicsPipeline, nullptr);
-    vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getDevice(), m_pipelineLayout, nullptr);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
+    vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
 }
 
 void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer)
@@ -144,7 +144,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineLayoutCreateInfo.pPushConstantRanges = nullptr; // Optional
 
     auto vulkanDevice = downcast(m_device);
-    if (vulkanDevice->vkAPI.CreatePipelineLayout(vulkanDevice->getDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreatePipelineLayout(vulkanDevice->getVkDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
@@ -168,13 +168,13 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
 
-    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getDevice(), m_fragShaderModule, nullptr);
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getDevice(), m_vertShaderModule, nullptr);
+    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_fragShaderModule, nullptr);
+    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_vertShaderModule, nullptr);
 }
 
 VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeBuffer)
@@ -187,7 +187,7 @@ VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeB
     VkShaderModule shaderModule;
 
     auto vulkanDevice = downcast(m_device);
-    if (vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getVkDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create shader module!");
     }
