@@ -77,10 +77,18 @@ void Application::initVulkan()
         m_device = m_adapter->createDevice(descriptor);
     }
 
-    // setupDebugMessenger();
+    // create surface
+    {
+        SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
+        m_surface = m_adapter->createSurface(descriptor);
+    }
 
-    createSurface();
-    createSwapChain();
+    // create swapchain
+    {
+        SwapChainDescriptor swapChainCreateInfo{ m_surface.get() };
+        m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
+    }
+
     createRenderPass();
     createGraphicsPipeline();
     createFramebuffers();
@@ -252,20 +260,6 @@ void Application::cleanup()
 //     debugUtilsMessengerCreateInfo.pNext = nullptr;
 //     debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
 // }
-
-void Application::createSurface()
-{
-    // create surface
-    SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
-    m_surface = m_adapter->createSurface(descriptor);
-}
-
-void Application::createSwapChain()
-{
-    // create swapchain
-    SwapChainDescriptor swapChainCreateInfo{ m_surface.get() };
-    m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
-}
 
 void Application::createGraphicsPipeline()
 {

@@ -66,9 +66,6 @@ private:
     void mainLoop();
     void cleanup();
 
-    void createSurface();
-    void createSwapChain();
-    //    void createImageViews();
     void createGraphicsPipeline();
     void createRenderPass();
     void createFramebuffers();
