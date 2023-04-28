@@ -23,8 +23,7 @@ public:
     VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descriptor);
     ~VulkanSurface() override;
 
-    VkSurfaceKHR getSurface() const;
-
+    VkSurfaceKHR getSurfaceKHR() const;
     const VulkanSurfaceInfo& getSurfaceInfo() const;
 
 private:

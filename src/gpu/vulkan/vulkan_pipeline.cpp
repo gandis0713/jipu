@@ -7,7 +7,7 @@
 namespace vkt
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, PipelineDescriptor info)
+VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, const PipelineDescriptor& info)
     : Pipeline(vulkanDevice, info)
 {
 }

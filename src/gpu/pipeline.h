@@ -13,7 +13,7 @@ class Pipeline
 {
 public:
     Pipeline() = delete;
-    Pipeline(Device* device, PipelineDescriptor descriptor);
+    Pipeline(Device* device, const PipelineDescriptor& descriptor);
     virtual ~Pipeline() = default;
 
     Pipeline(const Pipeline&) = delete;

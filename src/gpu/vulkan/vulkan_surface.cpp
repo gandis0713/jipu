@@ -22,7 +22,7 @@ VulkanSurface::~VulkanSurface()
     vkAPI.DestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
 }
 
-VkSurfaceKHR VulkanSurface::getSurface() const
+VkSurfaceKHR VulkanSurface::getSurfaceKHR() const
 {
     return m_surface;
 }
@@ -40,20 +40,26 @@ void VulkanSurface::gatherSurfaceInfo()
     VkPhysicalDevice physicalDevice = vulkanAdapter->getPhysicalDevice();
     vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &m_surfaceInfo.capabilities);
 
-    uint32_t surfaceFormatCount;
-    vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
-    if (surfaceFormatCount != 0)
+    // Surface formats.
     {
-        m_surfaceInfo.formats.resize(surfaceFormatCount);
-        vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceInfo.formats.data());
+        uint32_t surfaceFormatCount;
+        vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
+        if (surfaceFormatCount != 0)
+        {
+            m_surfaceInfo.formats.resize(surfaceFormatCount);
+            vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceInfo.formats.data());
+        }
     }
 
-    uint32_t presentModeCount;
-    vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
-    if (presentModeCount != 0)
+    // Surface present modes.
     {
-        m_surfaceInfo.presentModes.resize(presentModeCount);
-        vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_surfaceInfo.presentModes.data());
+        uint32_t presentModeCount;
+        vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
+        if (presentModeCount != 0)
+        {
+            m_surfaceInfo.presentModes.resize(presentModeCount);
+            vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_surfaceInfo.presentModes.data());
+        }
     }
 }
 

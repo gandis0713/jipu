@@ -4,7 +4,7 @@
 namespace vkt
 {
 
-Pipeline::Pipeline(Device* device, PipelineDescriptor descriptor)
+Pipeline::Pipeline(Device* device, const PipelineDescriptor& descriptor)
     : m_device(device)
 {
 }

@@ -28,7 +28,7 @@ public:
     Adapter* getAdapter() const;
 
     virtual std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<Pipeline> createPipeline(PipelineDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Pipeline> createPipeline(const PipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
 
 protected:
