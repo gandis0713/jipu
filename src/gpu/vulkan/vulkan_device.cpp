@@ -9,7 +9,6 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
 
-
 #include <stdexcept>
 const std::vector<const char*> getRequiredDeviceExtension()
 {
@@ -25,27 +24,6 @@ const std::vector<const char*> getRequiredDeviceExtension()
     return requiredDeviceExtension;
 };
 
-static bool checkDeviceExtensionSupport(const VkPhysicalDevice& physicalDevice)
-{
-    uint32_t deviceExtensionCount;
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> availableDeviceExtensions(deviceExtensionCount);
-    vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &deviceExtensionCount,
-                                         availableDeviceExtensions.data());
-
-    const std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
-    std::unordered_set<std::string> requiredDeviceExtensionsTemp(requiredDeviceExtensions.begin(),
-                                                                 requiredDeviceExtensions.end());
-
-    for (const VkExtensionProperties& availableDeviceExtension : availableDeviceExtensions)
-    {
-        requiredDeviceExtensionsTemp.erase(availableDeviceExtension.extensionName);
-    }
-
-    return requiredDeviceExtensionsTemp.empty();
-}
-
 namespace vkt
 {
 
@@ -56,8 +34,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
     , vkAPI(static_cast<VulkanDriver*>(adapter->getDriver())->vkAPI)
 {
     const VulkanDeviceInfo& info = adapter->getDeviceInfo();
-    constexpr uint32_t queueFlags =
-        VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+    constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 
     std::unordered_set<uint32_t> queueFamilyIndices{};
     for (uint32_t i = 0; i < info.queueFamilyProperties.size(); ++i)
@@ -73,7 +50,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
 
     VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
     vkAPI.loadDeviceProcs(m_device, deviceKnobs);
-    
+
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
@@ -168,13 +145,13 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
     }
 
-    VkPhysicalDeviceFeatures physicalDeviceFeatures{};
+    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
 
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &physicalDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &vulkanAdapter->getDeviceInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
@@ -203,6 +180,16 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     {
         throw std::runtime_error("failed to create logical device!");
     }
+}
+
+void VulkanDevice::gatherQueues()
+{
+    // for (const uint32_t& index : queueFamilyIndices)
+    // {
+    //     VkQueue queue{};
+    //     vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
+    //     m_queues.push_back(queue);
+    // }
 }
 
 } // namespace vkt

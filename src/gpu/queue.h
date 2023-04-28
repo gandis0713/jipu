@@ -7,6 +7,7 @@ enum class QueueType
 {
     kGraphics = 0,
     kCompute,
+    kTransfer,
 };
 
 struct QueueDescriptor

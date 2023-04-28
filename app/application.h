@@ -2,7 +2,6 @@
 
 // #define GLFW_INCLUDE_VULKAN
 #include "gpu/adapter.h"
-#include "gpu/context.h"
 #include "gpu/device.h"
 #include "gpu/driver.h"
 #include "gpu/queue.h"
@@ -66,8 +65,6 @@ private:
 
     void mainLoop();
     void cleanup();
-
-    QueueFamilyIndices findQueueFamilies(const VkPhysicalDevice& physicalDevice);
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

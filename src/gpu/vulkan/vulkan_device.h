@@ -45,6 +45,9 @@ public:
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
 
+    void gatherQueues();
+    bool checkDeviceExtensionSupport(const std::vector<const char*>& requiredDeviceExtensions);
+
 private:
     VkDevice m_device{};
 
