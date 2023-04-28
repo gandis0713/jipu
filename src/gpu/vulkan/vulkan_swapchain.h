@@ -22,14 +22,8 @@ public:
 
     VkSwapchainKHR getVkSwapchainKHR() const;
 
-    VkFormat getFormat() const;
-    VkExtent2D getExtent2D() const;
-
 private:
     VkSwapchainKHR m_swapchain;
-
-    VkFormat m_format;   // TODO: need? or get from surface.
-    VkExtent2D m_extent; // TODO: need? or get from surface.
 };
 
 // Convert Helper

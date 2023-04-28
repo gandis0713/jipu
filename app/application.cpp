@@ -308,8 +308,8 @@ void Application::createFramebuffers()
 
         VulkanFramebufferDescriptor descriptor{ renderPass->getRenderPass(),
                                                 { textureView->getImageView() },
-                                                vulkanSwapChain->getExtent2D().width,
-                                                vulkanSwapChain->getExtent2D().height };
+                                                vulkanSwapChain->getWidth(),
+                                                vulkanSwapChain->getHeight() };
 
         m_framebufferDescriptors.push_back(descriptor);
 
@@ -373,7 +373,7 @@ void Application::createCommandBuffers()
 
         renderPassInfo.renderArea.offset = { 0, 0 };
         auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
-        renderPassInfo.renderArea.extent = vulkanSwapChain->getExtent2D();
+        renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
 
         VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
         renderPassInfo.clearValueCount = 1;

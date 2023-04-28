@@ -130,8 +130,10 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     }
 
     // set format and extent.
-    m_format = surfaceFormat.format;
-    m_extent = imageExtent;
+    m_textureFormat = VkFormat2TextureFormat(surfaceFormat.format);
+
+    m_width = imageExtent.width;
+    m_height = imageExtent.height;
 
     // get or create swapchain image.
     vkAPI.GetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
@@ -143,7 +145,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureDescriptor descriptor{ vkImageType2TextureType(VK_IMAGE_TYPE_2D), vkFormat2TextureFormat(m_format) };
+        TextureDescriptor descriptor{ VkImageType2TextureType(VK_IMAGE_TYPE_2D), m_textureFormat };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }
@@ -196,16 +198,6 @@ VulkanSwapChain::~VulkanSwapChain()
 VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
 {
     return m_swapchain;
-}
-
-VkFormat VulkanSwapChain::getFormat() const
-{
-    return m_format;
-}
-
-VkExtent2D VulkanSwapChain::getExtent2D() const
-{
-    return m_extent;
 }
 
 PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode)
