@@ -118,7 +118,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
 #if defined(VK_USE_PLATFORM_METAL_EXT)
     if (driverKnobs.metalSurface)
     {
-        GET_INSTANCE_PROC(CreateMetalSurfaceEXT); // TODO: check METAL.
+        GET_INSTANCE_PROC(CreateMetalSurfaceEXT); // TODO: fix me. failed get proc.
     }
 #endif
 

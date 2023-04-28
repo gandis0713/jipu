@@ -41,7 +41,8 @@
             "stopAtEntry": false,
             "environment": [],
             "cwd": "${workspaceFolder}",
-            "MIMode": "lldb"
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
         },
         {
             "name": "Xcode debug for arm64 osx",
@@ -52,7 +53,8 @@
             "stopAtEntry": false,
             "environment": [],
             "cwd": "${workspaceFolder}",
-            "MIMode": "lldb"
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
         },
     ]
 }

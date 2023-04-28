@@ -67,10 +67,12 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 {
     VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface);
 
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surface->getSurfaceFormats());
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(surface->getPresentModes());
+    const VulkanSurfaceInfo& surfaceInfo = surface->getSurfaceInfo();
 
-    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surface->getSurfaceCapabilities();
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surfaceInfo.formats);
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(surfaceInfo.presentModes);
+
+    const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surfaceInfo.capabilities;
     VkExtent2D imageExtent = chooseSwapExtent(surfaceCapabilities);
 
     uint32_t imageCount = surfaceCapabilities.minImageCount + 1;

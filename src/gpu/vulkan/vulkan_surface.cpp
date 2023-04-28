@@ -27,19 +27,9 @@ VkSurfaceKHR VulkanSurface::getSurface() const
     return m_surface;
 }
 
-const VkSurfaceCapabilitiesKHR& VulkanSurface::getSurfaceCapabilities() const
+const VulkanSurfaceInfo& VulkanSurface::getSurfaceInfo() const
 {
-    return m_surfaceInfo.capabilities;
-}
-
-const std::vector<VkSurfaceFormatKHR>& VulkanSurface::getSurfaceFormats() const
-{
-    return m_surfaceInfo.formats;
-}
-
-const std::vector<VkPresentModeKHR>& VulkanSurface::getPresentModes() const
-{
-    return m_surfaceInfo.presentModes;
+    return m_surfaceInfo;
 }
 
 void VulkanSurface::gatherSurfaceInfo()
