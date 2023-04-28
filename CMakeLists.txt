@@ -18,8 +18,21 @@ project(
   LANGUAGES CXX
 )
 
+if(APPLE)
+  enable_language(OBJCXX)
+endif()
+
 # set compile options.
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS
+  "${CMAKE_CXX_FLAGS}\
+  -Wall\
+  -Wextra\
+  -Wno-unused-parameter\
+  -Wno-unused-function\
+  -Wno-unused-but-set-variable\
+  -Wno-unused-variable"
+)
 
 # set compile definitions.
 add_compile_definitions(VKT_VERSION_MAJOR=${VKT_VERSION_MAJOR})
@@ -27,7 +40,6 @@ add_compile_definitions(VKT_VERSION_MINOR=${VKT_VERSION_MINOR})
 add_compile_definitions(VKT_VERSION_PATCH=${VKT_VERSION_PATCH})
 
 # find package
-find_package(Vulkan REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)

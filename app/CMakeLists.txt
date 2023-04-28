@@ -48,25 +48,17 @@ add_executable(${PRJ_NAME}
     ${SRC_FILES}
 )
 
-add_dependencies(${PRJ_NAME} vkt)
+add_dependencies(${PRJ_NAME} ${VKT_PROJECT_NAME})
 
-target_include_directories(
-    ${PRJ_NAME}
+target_include_directories(${PRJ_NAME}
     PUBLIC
-
-    # ${Vulkan_INCLUDE_DIRS}
     ${VKT_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PRJ_NAME}
     PRIVATE
-
-    # ${Vulkan_LIBRARIES}
-    Vulkan::Vulkan
     glfw
-
-    # ${VKT_LIBRARIES}
-    vkt
+    ${VKT_PROJECT_NAME}
     spdlog::spdlog_header_only
 )
 
