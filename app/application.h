@@ -66,10 +66,6 @@ private:
     void mainLoop();
     void cleanup();
 
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats);
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
-
     void createSurface();
     void createSwapChain();
     //    void createImageViews();
@@ -112,8 +108,8 @@ private:
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline{ nullptr };
 
-    std::unique_ptr<Queue> m_graphicsQueue{ nullptr };
-    std::unique_ptr<Queue> m_presentQueue{ nullptr };
+    VulkanRenderPassDescriptor m_renderPassDescriptor{};
+    std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 
     // command
     VkCommandPool m_commandPool;
@@ -122,9 +118,6 @@ private:
     // sync
     VkSemaphore m_imageAvailableSemaphore;
     VkSemaphore m_renderFinishedSemaphore;
-
-    VulkanRenderPassDescriptor m_renderPassDescriptor{};
-    std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 };
 
 } // namespace vkt
