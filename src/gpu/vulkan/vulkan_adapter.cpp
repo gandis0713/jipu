@@ -3,7 +3,6 @@
 #include "vulkan_driver.h"
 #include "vulkan_surface.h"
 
-#include "utils/assert.h"
 #include "utils/log.h"
 
 namespace vkt
@@ -12,9 +11,7 @@ namespace vkt
 VulkanAdapter::VulkanAdapter(VulkanDriver* vulkanDriver, AdapterDescriptor descriptor)
     : Adapter(vulkanDriver, descriptor)
 {
-    const std::vector<VkPhysicalDevice>& physicalDevices = vulkanDriver->getPhysicalDevices();
-    assert(descriptor.index < physicalDevices.size());
-    m_physicalDevice = physicalDevices[descriptor.index];
+    m_physicalDevice = vulkanDriver->getPhysicalDevice(descriptor.index);
 
     // Gather device information.
     gatherDeviceInfo();

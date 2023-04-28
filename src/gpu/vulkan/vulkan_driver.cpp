@@ -1,10 +1,12 @@
 #include "vulkan_driver.h"
+
+#include "utils/assert.h"
 #include "utils/log.h"
 #include "vulkan_adapter.h"
+#include "vulkan_allocation.h"
+
 #include <fmt/format.h>
 #include <stdexcept>
-
-#include "vulkan_allocation.h"
 
 const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
 const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
@@ -341,9 +343,16 @@ VkInstance VulkanDriver::getInstance() const
     return m_instance;
 }
 
-std::vector<VkPhysicalDevice> VulkanDriver::getPhysicalDevices() const
+const std::vector<VkPhysicalDevice>& VulkanDriver::getPhysicalDevices() const
 {
     return m_physicalDevices;
+}
+
+VkPhysicalDevice VulkanDriver::getPhysicalDevice(uint32_t index) const
+{
+    assert(index < m_physicalDevices.size());
+
+    return m_physicalDevices[index];
 }
 
 const VulkanDriverInfo& VulkanDriver::getDriverInfo() const

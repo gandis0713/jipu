@@ -32,7 +32,8 @@ public:
 
 public: // vulkan
     VkInstance getInstance() const;
-    std::vector<VkPhysicalDevice> getPhysicalDevices() const;
+    const std::vector<VkPhysicalDevice>& getPhysicalDevices() const;
+    VkPhysicalDevice getPhysicalDevice(uint32_t index) const;
 
     const VulkanDriverInfo& getDriverInfo() const;
 
