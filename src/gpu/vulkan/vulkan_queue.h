@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/queue.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 namespace vkt
@@ -25,5 +26,7 @@ private:
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
     VkQueueFamilyProperties m_properties{};
 };
+
+VULKAN_DOWNCAST(Queue);
 
 } // namespace vkt

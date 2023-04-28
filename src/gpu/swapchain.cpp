@@ -8,6 +8,10 @@ namespace vkt
 
 SwapChain::SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept
     : m_device(device)
+    , m_textureFormat(descriptor.textureFormat)
+    , m_presentMode(descriptor.presentMode)
+    , m_width(descriptor.width)
+    , m_height(descriptor.height)
     , m_surface(descriptor.surface)
 {
 }
@@ -34,6 +38,26 @@ std::vector<TextureView*> SwapChain::getTextureViews() const
     }
 
     return textureViews;
+}
+
+TextureFormat SwapChain::getTextureFormat() const
+{
+    return m_textureFormat;
+}
+
+PresentMode SwapChain::getPresentMode() const
+{
+    return m_presentMode;
+}
+
+uint32_t SwapChain::getWidth() const
+{
+    return m_width;
+}
+
+uint32_t SwapChain::getHeight() const
+{
+    return m_height;
 }
 
 } // namespace vkt

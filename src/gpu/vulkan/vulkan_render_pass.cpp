@@ -47,7 +47,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     renderPassCreateInfo.dependencyCount = 1;
     renderPassCreateInfo.pDependencies = &subpassDependency;
 
-    if (vulkanDevice->vkAPI.CreateRenderPass(vulkanDevice->getDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateRenderPass(vulkanDevice->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -55,12 +55,12 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
 
-    vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getDevice(), m_renderPass, nullptr);
+    vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
 }
 
-VkRenderPass VulkanRenderPass::getRenderPass() const
+VkRenderPass VulkanRenderPass::getVkRenderPass() const
 {
     return m_renderPass;
 }

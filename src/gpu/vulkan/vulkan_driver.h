@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/driver.h"
+#include "utils/cast.h"
 #include "utils/dynamic_lib.h"
 #include "vulkan_api.h"
 
@@ -51,11 +52,13 @@ private:
     const std::vector<const char*> getRequiredInstanceExtensions();
 
 private:
-    VkInstance m_instance{};
+    VkInstance m_instance{ VK_NULL_HANDLE };
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DynamicLib m_vulkanLib{};
     VulkanDriverInfo m_driverInfo{};
 };
+
+VULKAN_DOWNCAST(Driver);
 
 } // namespace vkt

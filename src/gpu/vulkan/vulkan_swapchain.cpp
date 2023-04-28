@@ -4,37 +4,13 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
+#include "utils/log.h"
+
+#include <fmt/format.h>
 #include <stdexcept>
 
 namespace vkt
 {
-
-static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableSurfaceFormats)
-{
-    for (const VkSurfaceFormatKHR& availableSurfaceFormat : availableSurfaceFormats)
-    {
-        if (availableSurfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
-            availableSurfaceFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-        {
-            return availableSurfaceFormat;
-        }
-    }
-
-    return availableSurfaceFormats[0];
-}
-
-static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-{
-    for (const auto& availablePresentMode : availablePresentModes)
-    {
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-        {
-            return availablePresentMode;
-        }
-    }
-
-    return VK_PRESENT_MODE_FIFO_KHR;
-}
 
 static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
 {
@@ -62,19 +38,39 @@ static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabi
     return extent;
 }
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDescriptor& descriptor)
+VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDescriptor& descriptor) noexcept(false)
     : SwapChain(vulkanDevice, descriptor)
 {
-    VulkanSurface* surface = static_cast<VulkanSurface*>(m_surface);
+    VulkanSurface* surface = downcast(m_surface);
 
     const VulkanSurfaceInfo& surfaceInfo = surface->getSurfaceInfo();
 
-    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surfaceInfo.formats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(surfaceInfo.presentModes);
+    // Check surface formats supports.
+    auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),
+                                          surfaceInfo.formats.end(),
+                                          [textureFormat = m_textureFormat, colorSpace = m_colorSpace](const VkSurfaceFormatKHR& surfaceFormat)
+                                          { return surfaceFormat.format == TextureFormat2VkFormat(textureFormat) &&
+                                                   surfaceFormat.colorSpace == ColorSpace2VkColorSpaceKHR(colorSpace); });
+    if (surfaceFormatIter == surfaceInfo.formats.end())
+    {
+        throw std::runtime_error(fmt::format("{} texture format or/and {} color space are not supported.",
+                                             static_cast<uint32_t>(m_textureFormat),
+                                             static_cast<uint32_t>(m_colorSpace)));
+    }
+    const VkSurfaceFormatKHR surfaceFormat = *surfaceFormatIter;
 
+    // Check surface present mode.
+    auto presentModeIter = std::find(surfaceInfo.presentModes.begin(),
+                                     surfaceInfo.presentModes.end(),
+                                     PresentMode2VkPresentModeKHR(m_presentMode));
+    if (presentModeIter == surfaceInfo.presentModes.end())
+    {
+        throw std::runtime_error(fmt::format("{} present mode is not supported.", static_cast<uint32_t>(m_presentMode)));
+    }
+    const VkPresentModeKHR presentMode = *presentModeIter;
+
+    // Check surface capabilities.
     const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surfaceInfo.capabilities;
-    VkExtent2D imageExtent = chooseSwapExtent(surfaceCapabilities);
-
     uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
     if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
     {
@@ -87,16 +83,12 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     swapchainCreateInfo.minImageCount = imageCount;
     swapchainCreateInfo.imageFormat = surfaceFormat.format;
     swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-    swapchainCreateInfo.imageExtent = imageExtent;
+    swapchainCreateInfo.imageExtent = { m_width, m_height };
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    // TODO: check queue family.
-    // QueueFamilyIndices foundQueueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_context.physicalDevice);
-    // uint32_t queueFamilyIndices[] = { foundQueueFamilyIndices.graphicsFamily.value(),
-    // foundQueueFamilyIndices.presentFamily.value() };
-
-    // if (foundQueueFamilyIndices.graphicsFamily != foundQueueFamilyIndices.presentFamily)
+    // TODO: check sharing mode
+    // if graphics and present queue family are difference.
     // {
     //     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     //     swapchainCreateInfo.queueFamilyIndexCount = 2;
@@ -120,18 +112,14 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
     swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
-    const VulkanAPI& vkAPI = static_cast<VulkanDevice*>(m_device)->vkAPI;
+    VkDevice device = downcast(m_device)->getVkDevice();
+    const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
     if (vkAPI.CreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    // set format and extent.
-    m_format = surfaceFormat.format;
-    m_extent = imageExtent;
-
-    // get or create swapchain image.
+    // get swapchain image.
     vkAPI.GetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
 
     std::vector<VkImage> images{};
@@ -141,7 +129,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureDescriptor descriptor{ vkImageType2TextureType(VK_IMAGE_TYPE_2D), vkFormat2TextureFormat(m_format) };
+        TextureDescriptor descriptor{ TextureType::k2D, m_textureFormat };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }
@@ -150,45 +138,15 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     for (std::unique_ptr<Texture>& texture : m_textures)
     {
         TextureViewDescriptor descriptor{};
-        auto textureView = std::make_unique<VulkanTextureView>(static_cast<VulkanTexture*>(texture.get()), descriptor);
+        auto textureView = std::make_unique<VulkanTextureView>(downcast(texture.get()), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
-
-    // create image views.
-    // m_imageViews.resize(m_images.size());
-
-    // for (size_t i = 0; i < m_images.size(); i++)
-    // {
-    //     VkImageViewCreateInfo imageViewCreateInfo{};
-    //     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    //     imageViewCreateInfo.image = m_images[i];
-    //     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    //     imageViewCreateInfo.format = m_format;
-
-    //     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-    //     imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    //     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-    //     imageViewCreateInfo.subresourceRange.levelCount = 1;
-    //     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    //     imageViewCreateInfo.subresourceRange.layerCount = 1;
-
-    //     if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
-    //     {
-    //         throw std::runtime_error("failed to create image views!");
-    //     }
-    // }
 }
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-    VkDevice device = static_cast<VulkanDevice*>(m_device)->getDevice();
-    const VulkanAPI& vkAPI = static_cast<VulkanDevice*>(m_device)->vkAPI;
-
-    vkAPI.DestroySwapchainKHR(device, m_swapchain, nullptr);
+    const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
+    vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
 }
 
 VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
@@ -196,14 +154,64 @@ VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
     return m_swapchain;
 }
 
-VkFormat VulkanSwapChain::getFormat() const
+ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace)
 {
-    return m_format;
+    switch (colorSpace)
+    {
+    case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
+        return ColorSpace::kSRGBNonLinear;
+
+    case VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT:
+        return ColorSpace::kSRGBLinear;
+
+    default:
+        return ColorSpace::kUndefined;
+    }
+}
+VkColorSpaceKHR ColorSpace2VkColorSpaceKHR(ColorSpace colorSpace)
+{
+    switch (colorSpace)
+    {
+    case ColorSpace::kSRGBNonLinear:
+        return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+    case ColorSpace::kSRGBLinear:
+        return VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT;
+
+    case ColorSpace::kUndefined:
+        LOG_ERROR("color space is undefined. use srgb non linear mode.");
+        return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    }
 }
 
-VkExtent2D VulkanSwapChain::getExtent2D() const
+PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode)
 {
-    return m_extent;
+    switch (mode)
+    {
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return PresentMode::kMailbox;
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return PresentMode::kFifo;
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return PresentMode::kImmediate;
+    default:
+        return PresentMode::kUndefined;
+    }
+}
+VkPresentModeKHR PresentMode2VkPresentModeKHR(PresentMode mode)
+{
+    switch (mode)
+    {
+    case PresentMode::kMailbox:
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    case PresentMode::kFifo:
+        return VK_PRESENT_MODE_FIFO_KHR;
+    case PresentMode::kImmediate:
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    default:
+        LOG_ERROR("Present Mode is undefined. use immediate mode.");
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    }
 }
 
 } // namespace vkt

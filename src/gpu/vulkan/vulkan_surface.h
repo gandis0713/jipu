@@ -1,7 +1,9 @@
 #pragma once
 
 #include "gpu/surface.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
+
 #include <vector>
 
 namespace vkt
@@ -12,7 +14,7 @@ struct VulkanSurfaceInfo
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
-    std::vector<bool> supportedQueueFamilies;
+    std::vector<bool> supportedQueueFamilies; // TODO: remove or not.
 };
 
 class VulkanAdapter;
@@ -31,10 +33,11 @@ private:
     void gatherSurfaceInfo();
 
 private:
-    VkSurfaceKHR m_surface;
-    VkPhysicalDevice m_physicalDevice;
+    VkSurfaceKHR m_surface{ VK_NULL_HANDLE };
 
     VulkanSurfaceInfo m_surfaceInfo{};
 };
+
+VULKAN_DOWNCAST(Surface);
 
 }; // namespace vkt

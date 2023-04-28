@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/device.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"
@@ -32,8 +33,8 @@ public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
-public: // vulkan object
-    VkDevice getDevice() const;
+public:
+    VkDevice getVkDevice() const;
     VkPhysicalDevice getPhysicalDevice() const;
 
     VkQueue getQueue() const;
@@ -49,11 +50,14 @@ private:
     bool checkDeviceExtensionSupport(const std::vector<const char*>& requiredDeviceExtensions);
 
 private:
-    VkDevice m_device{};
+    VkDevice m_device{ VK_NULL_HANDLE };
 
     std::vector<VkQueue> m_queues{};
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
 };
+
+VULKAN_DOWNCAST(Device);
+
 } // namespace vkt

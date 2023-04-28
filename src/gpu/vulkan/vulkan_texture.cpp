@@ -6,8 +6,8 @@ namespace vkt
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
-    , m_type(textureType2VkImageType(descriptor.type))
-    , m_format(textureFormat2VkFormat(descriptor.format))
+    , m_type(TextureType2VkImageType(descriptor.type))
+    , m_format(TextureFormat2VkFormat(descriptor.format))
     , m_owner(TextureOwner::Internal)
 {
     // TODO: create VkImage
@@ -16,8 +16,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_image(image)
-    , m_type(textureType2VkImageType(descriptor.type))
-    , m_format(textureFormat2VkFormat(descriptor.format))
+    , m_type(TextureType2VkImageType(descriptor.type))
+    , m_format(TextureFormat2VkFormat(descriptor.format))
     , m_owner(TextureOwner::External)
 {
 }
@@ -26,28 +26,18 @@ VulkanTexture::~VulkanTexture()
 {
     if (m_owner == TextureOwner::Internal)
     {
-        VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device);
-        vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getDevice(), m_image, nullptr);
+        VulkanDevice* vulkanDevice = downcast(m_device);
+        vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getVkDevice(), m_image, nullptr);
     }
 }
 
-TextureType VulkanTexture::getType() const
-{
-    return vkImageType2TextureType(m_type);
-}
-
-TextureFormat VulkanTexture::getFormat() const
-{
-    return vkFormat2TextureFormat(m_format);
-}
-
-VkImage VulkanTexture::getImage() const
+VkImage VulkanTexture::getVkImage() const
 {
     return m_image;
 }
 
 // Convert Helper
-VkImageType textureType2VkImageType(TextureType type)
+VkImageType TextureType2VkImageType(TextureType type)
 {
     switch (type)
     {
@@ -63,7 +53,7 @@ VkImageType textureType2VkImageType(TextureType type)
     }
 }
 
-TextureType vkImageType2TextureType(VkImageType type)
+TextureType VkImageType2TextureType(VkImageType type)
 {
     switch (type)
     {
@@ -80,7 +70,7 @@ TextureType vkImageType2TextureType(VkImageType type)
     }
 }
 
-VkFormat textureFormat2VkFormat(TextureFormat format)
+VkFormat TextureFormat2VkFormat(TextureFormat format)
 {
     switch (format)
     {
@@ -93,7 +83,7 @@ VkFormat textureFormat2VkFormat(TextureFormat format)
     }
 }
 
-TextureFormat vkFormat2TextureFormat(VkFormat format)
+TextureFormat VkFormat2TextureFormat(VkFormat format)
 {
     switch (format)
     {

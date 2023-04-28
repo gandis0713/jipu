@@ -12,7 +12,7 @@ namespace vkt
 VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
     : Queue(device, descriptor)
 {
-    VulkanAdapter* adapter = static_cast<VulkanAdapter*>(m_device->getAdapter());
+    VulkanAdapter* adapter = downcast(m_device->getAdapter());
 
     const VulkanDeviceInfo& deviceInfo = adapter->getDeviceInfo();
 
@@ -33,7 +33,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
         }
     }
 
-    device->vkAPI.GetDeviceQueue(device->getDevice(), m_index, 0, &m_queue);
+    device->vkAPI.GetDeviceQueue(device->getVkDevice(), m_index, 0, &m_queue);
 }
 
 VulkanQueue::~VulkanQueue()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/pipeline.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 #include <string>
@@ -33,13 +34,16 @@ public:
 
 private:
     // shader module
-    VkShaderModule m_vertShaderModule;
-    VkShaderModule m_fragShaderModule;
+    VkShaderModule m_vertShaderModule{ VK_NULL_HANDLE };
+    VkShaderModule m_fragShaderModule{ VK_NULL_HANDLE };
 
     // pipeline
-    VkPipelineLayout m_pipelineLayout;
-    VkPipeline m_graphicsPipeline;
+    VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };
+    VkPipeline m_graphicsPipeline{ VK_NULL_HANDLE };
 
     VulkanRenderPass* m_renderPass{ nullptr };
 };
+
+VULKAN_DOWNCAST(Pipeline);
+
 } // namespace vkt
