@@ -38,7 +38,7 @@ public:
 private:
     void gatherDeviceInfo();
 
-private: // vulkan object
+private:
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
     VulkanDeviceInfo m_deviceInfo{};
 };

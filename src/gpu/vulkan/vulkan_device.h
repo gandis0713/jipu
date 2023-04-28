@@ -33,7 +33,7 @@ public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
-public: // vulkan object
+public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getPhysicalDevice() const;
 

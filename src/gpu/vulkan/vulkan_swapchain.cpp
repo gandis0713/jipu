@@ -71,7 +71,6 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
     // Check surface capabilities.
     const VkSurfaceCapabilitiesKHR& surfaceCapabilities = surfaceInfo.capabilities;
-
     uint32_t imageCount = surfaceCapabilities.minImageCount + 1;
     if (surfaceCapabilities.maxImageCount > 0 && imageCount > surfaceCapabilities.maxImageCount)
     {
@@ -120,7 +119,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
         throw std::runtime_error("failed to create swap chain!");
     }
 
-    // get or create swapchain image.
+    // get swapchain image.
     vkAPI.GetSwapchainImagesKHR(device, m_swapchain, &imageCount, nullptr);
 
     std::vector<VkImage> images{};
@@ -146,10 +145,8 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
 VulkanSwapChain::~VulkanSwapChain()
 {
-    VkDevice device = downcast(m_device)->getVkDevice();
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
-
-    vkAPI.DestroySwapchainKHR(device, m_swapchain, nullptr);
+    vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
 }
 
 VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
