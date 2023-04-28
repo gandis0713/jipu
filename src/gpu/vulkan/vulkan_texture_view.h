@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/texture_view.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 namespace vkt
@@ -19,5 +20,7 @@ public:
 private:
     VkImageView m_imageView{ VK_NULL_HANDLE };
 };
+
+VULKAN_DOWNCAST(TextureView);
 
 } // namespace vkt

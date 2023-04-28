@@ -16,8 +16,8 @@ VulkanSurface::VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descripto
 
 VulkanSurface::~VulkanSurface()
 {
-    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
-    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(vulkanAdapter->getDriver())->vkAPI;
+    auto vulkanAdapter = downcast(m_adapter);
+    const VulkanAPI& vkAPI = downcast(vulkanAdapter->getDriver())->vkAPI;
 
     vkAPI.DestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
 }
@@ -34,8 +34,8 @@ const VulkanSurfaceInfo& VulkanSurface::getSurfaceInfo() const
 
 void VulkanSurface::gatherSurfaceInfo()
 {
-    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
-    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(vulkanAdapter->getDriver())->vkAPI;
+    auto vulkanAdapter = downcast(m_adapter);
+    const VulkanAPI& vkAPI = downcast(vulkanAdapter->getDriver())->vkAPI;
 
     VkPhysicalDevice physicalDevice = vulkanAdapter->getPhysicalDevice();
     vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &m_surfaceInfo.capabilities);

@@ -35,7 +35,7 @@ std::unique_ptr<Surface> VulkanAdapter::createSurface(SurfaceDescriptor descript
 
 VkInstance VulkanAdapter::getInstance() const
 {
-    return static_cast<VulkanDriver*>(m_driver)->getInstance();
+    return downcast(m_driver)->getInstance();
 }
 
 VkPhysicalDevice VulkanAdapter::getPhysicalDevice() const
@@ -50,7 +50,7 @@ const VulkanDeviceInfo& VulkanAdapter::getDeviceInfo() const
 
 void VulkanAdapter::gatherDeviceInfo()
 {
-    const VulkanAPI& vkAPI = static_cast<VulkanDriver*>(m_driver)->vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_deviceInfo.physicalDeviceProperties);

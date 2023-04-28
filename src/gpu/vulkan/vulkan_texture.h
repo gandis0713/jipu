@@ -1,11 +1,12 @@
 #pragma once
 
 #include "gpu/texture.h"
+#include "utils/assert.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
-#include "utils/assert.h"
-
 #include <fmt/format.h>
+
 namespace vkt
 {
 
@@ -38,6 +39,8 @@ private:
 
     TextureOwner m_owner;
 };
+
+VULKAN_DOWNCAST(Texture);
 
 // Convert Helper
 VkImageType TextureType2VkImageType(TextureType type);

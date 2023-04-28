@@ -86,10 +86,10 @@ void Application::initVulkan()
     // create swapchain
     {
         SwapChainDescriptor swapChainCreateInfo{ TextureFormat::kBGRA_8888_UInt_Norm,
-                                                 PresentMode::kMailbox,
+                                                 PresentMode::kFifo,
                                                  ColorSpace::kSRGBNonLinear,
-                                                 0,
-                                                 0,
+                                                 400,
+                                                 300,
                                                  m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
@@ -274,8 +274,8 @@ void Application::createGraphicsPipeline()
         m_pipeline = m_device->createPipeline(descriptor);
     }
 
-    auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    auto vulkanPipeline = downcast(m_pipeline.get());
+    auto vulkanDevice = downcast(m_device.get());
     auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
     vulkanPipeline->setRenderPass(vulkanRenderPass);
 
@@ -297,17 +297,17 @@ void Application::createRenderPass()
 
 void Application::createFramebuffers()
 {
-    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
     VulkanRenderPass* renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-    auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+    auto vulkanSwapChain = downcast(m_swapChain.get());
 
     auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
 
     for (size_t i = 0; i < swapChainTextureViews.size(); ++i)
     {
-        VulkanTextureView* textureView = static_cast<VulkanTextureView*>(swapChainTextureViews[i]);
+        VulkanTextureView* textureView = downcast(swapChainTextureViews[i]);
 
-        VulkanFramebufferDescriptor descriptor{ renderPass->getRenderPass(),
+        VulkanFramebufferDescriptor descriptor{ renderPass->getVkRenderPass(),
                                                 { textureView->getImageView() },
                                                 vulkanSwapChain->getWidth(),
                                                 vulkanSwapChain->getHeight() };
@@ -320,7 +320,7 @@ void Application::createFramebuffers()
 
 void Application::createCommandPool()
 {
-    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
 
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
     commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -343,7 +343,7 @@ void Application::createCommandBuffers()
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     if (vkAPI.AllocateCommandBuffers(vulkanDevice->getDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
@@ -365,15 +365,15 @@ void Application::createCommandBuffers()
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 
-        auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+        auto vulkanDevice = downcast(m_device.get());
         auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-        renderPassInfo.renderPass = vulkanRenderPass->getRenderPass();
+        renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
 
         VulkanFrameBuffer* vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
         renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
 
         renderPassInfo.renderArea.offset = { 0, 0 };
-        auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+        auto vulkanSwapChain = downcast(m_swapChain.get());
         renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
 
         VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -383,7 +383,7 @@ void Application::createCommandBuffers()
         vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         // vkCmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        auto vulkanPipeline = static_cast<VulkanPipeline*>(m_pipeline.get());
+        auto vulkanPipeline = downcast(m_pipeline.get());
         vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
 
         vkAPI.CmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
@@ -400,10 +400,10 @@ void Application::createCommandBuffers()
 void Application::drawFrame()
 {
     uint32_t imageIndex;
-    auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
+    auto vulkanSwapChain = downcast(m_swapChain.get());
     VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
 
-    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     vkAPI.AcquireNextImageKHR(vulkanDevice->getDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
@@ -451,7 +451,7 @@ void Application::createSemaphores()
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     if (vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
         vkAPI.CreateSemaphore(vulkanDevice->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)

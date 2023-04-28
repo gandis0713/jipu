@@ -19,14 +19,14 @@ void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
 
 void VulkanPipeline::destroy()
 {
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getDevice(), m_graphicsPipeline, nullptr);
     vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getDevice(), m_pipelineLayout, nullptr);
 }
 
 void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer)
 {
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 }
 
@@ -143,7 +143,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineLayoutCreateInfo.pushConstantRangeCount = 0;    // Optional
     pipelineLayoutCreateInfo.pPushConstantRanges = nullptr; // Optional
 
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
     if (vulkanDevice->vkAPI.CreatePipelineLayout(vulkanDevice->getDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
@@ -163,8 +163,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.pDynamicState = nullptr; // Optional
     pipelineInfo.layout = m_pipelineLayout;
 
-    auto vulkanRenderPass = static_cast<VulkanRenderPass*>(m_renderPass);
-    pipelineInfo.renderPass = vulkanRenderPass->getRenderPass();
+    pipelineInfo.renderPass = m_renderPass->getVkRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
@@ -187,7 +186,7 @@ VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeB
 
     VkShaderModule shaderModule;
 
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
     if (vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create shader module!");

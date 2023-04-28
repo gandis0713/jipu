@@ -1,7 +1,9 @@
 #pragma once
 
 #include "gpu/surface.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
+
 #include <vector>
 
 namespace vkt
@@ -35,5 +37,7 @@ private:
 
     VulkanSurfaceInfo m_surfaceInfo{};
 };
+
+VULKAN_DOWNCAST(Surface);
 
 }; // namespace vkt

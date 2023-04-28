@@ -25,7 +25,7 @@ public:
     VulkanRenderPass(VulkanDevice* device, VulkanRenderPassDescriptor descriptor);
     ~VulkanRenderPass();
 
-    VkRenderPass getRenderPass() const;
+    VkRenderPass getVkRenderPass() const;
 
 private:
     VulkanDevice* m_device{ nullptr };

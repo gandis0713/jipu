@@ -55,12 +55,12 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto vulkanDevice = static_cast<VulkanDevice*>(m_device);
+    auto vulkanDevice = downcast(m_device);
 
     vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getDevice(), m_renderPass, nullptr);
 }
 
-VkRenderPass VulkanRenderPass::getRenderPass() const
+VkRenderPass VulkanRenderPass::getVkRenderPass() const
 {
     return m_renderPass;
 }

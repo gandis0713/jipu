@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/adapter.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 namespace vkt
@@ -41,4 +42,7 @@ private: // vulkan object
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
     VulkanDeviceInfo m_deviceInfo{};
 };
+
+VULKAN_DOWNCAST(Adapter);
+
 } // namespace vkt

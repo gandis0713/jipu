@@ -31,7 +31,7 @@ VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
     : Device(adapter, descriptor)
     , m_frameBufferCache(this)
     , m_renderPassCache(this)
-    , vkAPI(static_cast<VulkanDriver*>(adapter->getDriver())->vkAPI)
+    , vkAPI(downcast(adapter->getDriver())->vkAPI)
 {
     const VulkanDeviceInfo& info = adapter->getDeviceInfo();
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
@@ -101,7 +101,7 @@ VkDevice VulkanDevice::getDevice() const
 
 VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
 {
-    VulkanAdapter* vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
+    VulkanAdapter* vulkanAdapter = downcast(m_adapter);
 
     return vulkanAdapter->getPhysicalDevice();
 }
@@ -145,7 +145,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
     }
 
-    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter);
+    auto vulkanAdapter = downcast(m_adapter);
 
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -175,7 +175,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     //     deviceCreateInfo.enabledLayerCount = 0;
     // }
 
-    VkPhysicalDevice physicalDevice = static_cast<VulkanAdapter*>(m_adapter)->getPhysicalDevice();
+    VkPhysicalDevice physicalDevice = downcast(m_adapter)->getPhysicalDevice();
     if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");

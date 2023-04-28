@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/pipeline.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 #include <string>
@@ -42,4 +43,7 @@ private:
 
     VulkanRenderPass* m_renderPass{ nullptr };
 };
+
+VULKAN_DOWNCAST(Pipeline);
+
 } // namespace vkt

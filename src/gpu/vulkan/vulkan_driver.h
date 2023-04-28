@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gpu/driver.h"
+#include "utils/cast.h"
 #include "utils/dynamic_lib.h"
 #include "vulkan_api.h"
 
@@ -57,5 +58,7 @@ private:
     DynamicLib m_vulkanLib{};
     VulkanDriverInfo m_driverInfo{};
 };
+
+VULKAN_DOWNCAST(Driver);
 
 } // namespace vkt
