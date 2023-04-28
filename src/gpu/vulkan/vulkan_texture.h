@@ -29,10 +29,7 @@ public:
     VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor);
     ~VulkanTexture() override;
 
-    TextureType getType() const override;
-    TextureFormat getFormat() const override;
-
-    VkImage getImage() const;
+    VkImage getVkImage() const;
 
 private:
     VkImage m_image{ nullptr };

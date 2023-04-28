@@ -31,4 +31,9 @@ private:
     VkFormat m_format;   // TODO: need? or get from surface.
     VkExtent2D m_extent; // TODO: need? or get from surface.
 };
+
+// Convert Helper
+PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode);
+VkPresentModeKHR PresentMode2VkPresentModeKHR(PresentMode mode);
+
 } // namespace vkt

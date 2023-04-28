@@ -34,13 +34,16 @@ public:
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
-    virtual TextureType getType() const = 0;
-    virtual TextureFormat getFormat() const = 0;
+    TextureType getType() const;
+    TextureFormat getFormat() const;
 
     Device* getDevice() const;
 
 protected:
     Device* m_device{ nullptr };
+
+    TextureType m_type;
+    TextureFormat m_format;
 };
 
 } // namespace vkt

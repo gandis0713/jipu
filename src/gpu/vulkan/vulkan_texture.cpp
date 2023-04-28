@@ -31,17 +31,7 @@ VulkanTexture::~VulkanTexture()
     }
 }
 
-TextureType VulkanTexture::getType() const
-{
-    return vkImageType2TextureType(m_type);
-}
-
-TextureFormat VulkanTexture::getFormat() const
-{
-    return vkFormat2TextureFormat(m_format);
-}
-
-VkImage VulkanTexture::getImage() const
+VkImage VulkanTexture::getVkImage() const
 {
     return m_image;
 }

@@ -85,7 +85,11 @@ void Application::initVulkan()
 
     // create swapchain
     {
-        SwapChainDescriptor swapChainCreateInfo{ m_surface.get() };
+        SwapChainDescriptor swapChainCreateInfo{ TextureFormat::kBGRA_8888_UInt_Norm,
+                                                 PresentMode::kMailbox,
+                                                 0,
+                                                 0,
+                                                 m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
 
@@ -293,7 +297,7 @@ void Application::createRenderPass()
 void Application::createFramebuffers()
 {
     VulkanDevice* vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
-    auto renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
+    VulkanRenderPass* renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
     auto vulkanSwapChain = static_cast<VulkanSwapChain*>(m_swapChain.get());
 
     auto swapChainTextureViews = vulkanSwapChain->getTextureViews();

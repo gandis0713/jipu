@@ -71,7 +71,7 @@ VulkanDevice::~VulkanDevice()
 
 std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(const SwapChainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapChain>(this, std::move(descriptor));
+    return std::make_unique<VulkanSwapChain>(this, descriptor);
 }
 
 std::unique_ptr<Pipeline> VulkanDevice::createPipeline(const PipelineDescriptor& descriptor)

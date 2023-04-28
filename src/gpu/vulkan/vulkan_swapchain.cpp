@@ -4,6 +4,8 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
+#include "utils/log.h"
+
 #include <stdexcept>
 
 namespace vkt
@@ -204,6 +206,36 @@ VkFormat VulkanSwapChain::getFormat() const
 VkExtent2D VulkanSwapChain::getExtent2D() const
 {
     return m_extent;
+}
+
+PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode)
+{
+    switch (mode)
+    {
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return PresentMode::kMailbox;
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return PresentMode::kFifo;
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return PresentMode::kImmediate;
+    default:
+        return PresentMode::kUndefined;
+    }
+}
+VkPresentModeKHR PresentMode2VkPresentModeKHR(PresentMode mode)
+{
+    switch (mode)
+    {
+    case PresentMode::kMailbox:
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    case PresentMode::kFifo:
+        return VK_PRESENT_MODE_FIFO_KHR;
+    case PresentMode::kImmediate:
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    default:
+        LOG_ERROR("Present Mode is None.");
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    }
 }
 
 } // namespace vkt

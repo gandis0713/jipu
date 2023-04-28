@@ -14,4 +14,14 @@ Device* Texture::getDevice() const
     return m_device;
 }
 
+TextureType Texture::getType() const
+{
+    return m_type;
+}
+
+TextureFormat Texture::getFormat() const
+{
+    return m_format;
+}
+
 } // namespace vkt
