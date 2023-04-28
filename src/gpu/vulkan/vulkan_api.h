@@ -282,6 +282,11 @@ struct VulkanAPI
     // VK_EXT_metal_surface
     PFN_vkCreateMetalSurfaceEXT CreateMetalSurfaceEXT = nullptr;
 #endif
+
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    // VK_KHR_win32_surface
+    PFN_vkCreateWin32SurfaceKHR CreateWin32SurfaceKHR = nullptr;
+#endif
 };
 
 } // namespace vkt

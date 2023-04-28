@@ -122,6 +122,13 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
     }
 #endif
 
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    if (driverKnobs.win32Surface)
+    {
+        GET_INSTANCE_PROC(CreateWin32SurfaceKHR);
+    }
+#endif
+
     // #ifdef VK_USE_PLATFORM_FUCHSIA
     //     if (driverKnobs.fuchsiaImagePipeSurface)
     //     {
