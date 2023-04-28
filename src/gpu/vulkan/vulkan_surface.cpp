@@ -44,22 +44,18 @@ void VulkanSurface::gatherSurfaceInfo()
     {
         uint32_t surfaceFormatCount;
         vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
-        if (surfaceFormatCount != 0)
-        {
-            m_surfaceInfo.formats.resize(surfaceFormatCount);
-            vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceInfo.formats.data());
-        }
+
+        m_surfaceInfo.formats.resize(surfaceFormatCount);
+        vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceInfo.formats.data());
     }
 
     // Surface present modes.
     {
         uint32_t presentModeCount;
         vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
-        if (presentModeCount != 0)
-        {
-            m_surfaceInfo.presentModes.resize(presentModeCount);
-            vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_surfaceInfo.presentModes.data());
-        }
+
+        m_surfaceInfo.presentModes.resize(presentModeCount);
+        vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_surfaceInfo.presentModes.data());
     }
 }
 

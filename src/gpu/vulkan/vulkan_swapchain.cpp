@@ -71,6 +71,11 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 
     const VulkanSurfaceInfo& surfaceInfo = surface->getSurfaceInfo();
 
+    // Check surface formats.
+    for (const VkSurfaceFormatKHR& format : surfaceInfo.formats)
+    {
+    }
+
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(surfaceInfo.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(surfaceInfo.presentModes);
 
@@ -93,12 +98,8 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     swapchainCreateInfo.imageArrayLayers = 1;
     swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    // TODO: check queue family.
-    // QueueFamilyIndices foundQueueFamilyIndices = QueueFamilyIndices::findQueueFamilies(m_context.physicalDevice);
-    // uint32_t queueFamilyIndices[] = { foundQueueFamilyIndices.graphicsFamily.value(),
-    // foundQueueFamilyIndices.presentFamily.value() };
-
-    // if (foundQueueFamilyIndices.graphicsFamily != foundQueueFamilyIndices.presentFamily)
+    // TODO: check sharing mode
+    // if graphics and present queue family are difference.
     // {
     //     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     //     swapchainCreateInfo.queueFamilyIndexCount = 2;
@@ -145,7 +146,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureDescriptor descriptor{ VkImageType2TextureType(VK_IMAGE_TYPE_2D), m_textureFormat };
+        TextureDescriptor descriptor{ TextureType::k2D, m_textureFormat };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }
@@ -157,34 +158,6 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
         auto textureView = std::make_unique<VulkanTextureView>(static_cast<VulkanTexture*>(texture.get()), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
-
-    // create image views.
-    // m_imageViews.resize(m_images.size());
-
-    // for (size_t i = 0; i < m_images.size(); i++)
-    // {
-    //     VkImageViewCreateInfo imageViewCreateInfo{};
-    //     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    //     imageViewCreateInfo.image = m_images[i];
-    //     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    //     imageViewCreateInfo.format = m_format;
-
-    //     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    //     imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-    //     imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    //     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
-    //     imageViewCreateInfo.subresourceRange.levelCount = 1;
-    //     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    //     imageViewCreateInfo.subresourceRange.layerCount = 1;
-
-    //     if (vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
-    //     {
-    //         throw std::runtime_error("failed to create image views!");
-    //     }
-    // }
 }
 
 VulkanSwapChain::~VulkanSwapChain()

@@ -12,7 +12,7 @@ struct VulkanSurfaceInfo
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
-    std::vector<bool> supportedQueueFamilies;
+    std::vector<bool> supportedQueueFamilies; // TODO: remove or not.
 };
 
 class VulkanAdapter;
@@ -31,8 +31,7 @@ private:
     void gatherSurfaceInfo();
 
 private:
-    VkSurfaceKHR m_surface;
-    VkPhysicalDevice m_physicalDevice;
+    VkSurfaceKHR m_surface{ VK_NULL_HANDLE };
 
     VulkanSurfaceInfo m_surfaceInfo{};
 };

@@ -32,7 +32,7 @@ public:
     VkImage getVkImage() const;
 
 private:
-    VkImage m_image{ nullptr };
+    VkImage m_image{ VK_NULL_HANDLE };
     VkImageType m_type{};
     VkFormat m_format{ VK_FORMAT_UNDEFINED };
 

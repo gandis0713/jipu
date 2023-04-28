@@ -20,12 +20,20 @@ enum class PresentMode
     kMailbox,
 };
 
+enum class ColorSpace
+{
+    kUndefined = 0,
+    kSRGBNonLinear,
+    kSRGBLinear,
+};
+
 struct SwapChainDescriptor
 {
-    TextureFormat textureFormat = TextureFormat::kUndefined;
-    PresentMode presentMode = PresentMode::kUndefined;
-    uint32_t width = 0;
-    uint32_t height = 0;
+    TextureFormat textureFormat{ TextureFormat::kUndefined };
+    PresentMode presentMode{ PresentMode::kUndefined };
+    ColorSpace colorSpace{ ColorSpace::kUndefined };
+    uint32_t width{ 0 };
+    uint32_t height{ 0 };
     Surface* surface{ nullptr };
 };
 
@@ -57,6 +65,7 @@ protected:
 
     TextureFormat m_textureFormat{ TextureFormat::kUndefined };
     PresentMode m_presentMode{ PresentMode::kUndefined };
+    ColorSpace m_colorSpace{ ColorSpace::kUndefined };
     uint32_t m_width{ 0 };
     uint32_t m_height{ 0 };
 };

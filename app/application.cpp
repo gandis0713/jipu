@@ -87,6 +87,7 @@ void Application::initVulkan()
     {
         SwapChainDescriptor swapChainCreateInfo{ TextureFormat::kBGRA_8888_UInt_Norm,
                                                  PresentMode::kMailbox,
+                                                 ColorSpace::kSRGBNonLinear,
                                                  0,
                                                  0,
                                                  m_surface.get() };

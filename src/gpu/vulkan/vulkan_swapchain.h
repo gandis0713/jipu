@@ -23,7 +23,7 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
-    VkSwapchainKHR m_swapchain;
+    VkSwapchainKHR m_swapchain{ VK_NULL_HANDLE };
 };
 
 // Convert Helper

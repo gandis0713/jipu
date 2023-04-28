@@ -17,7 +17,7 @@ public:
     VkImageView getImageView() const;
 
 private:
-    VkImageView m_imageView{ nullptr };
+    VkImageView m_imageView{ VK_NULL_HANDLE };
 };
 
 } // namespace vkt

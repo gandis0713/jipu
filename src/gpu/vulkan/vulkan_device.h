@@ -49,7 +49,7 @@ private:
     bool checkDeviceExtensionSupport(const std::vector<const char*>& requiredDeviceExtensions);
 
 private:
-    VkDevice m_device{};
+    VkDevice m_device{ VK_NULL_HANDLE };
 
     std::vector<VkQueue> m_queues{};
 

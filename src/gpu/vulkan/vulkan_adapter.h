@@ -38,7 +38,7 @@ private:
     void gatherDeviceInfo();
 
 private: // vulkan object
-    VkPhysicalDevice m_physicalDevice{ nullptr };
+    VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
     VulkanDeviceInfo m_deviceInfo{};
 };
 } // namespace vkt
