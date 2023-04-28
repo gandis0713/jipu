@@ -1,4 +1,5 @@
 #include "vulkan_adapter.h"
+#include "vulkan_driver.h"
 #include "vulkan_surface.h"
 
 #include <fmt/format.h>
