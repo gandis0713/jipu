@@ -7,6 +7,8 @@
 #include "gpu/vulkan/vulkan_render_pass.h"
 #include "gpu/vulkan/vulkan_swapchain.h"
 #include "gpu/vulkan/vulkan_texture_view.h"
+
+#include "utils/log.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -216,7 +218,7 @@ void Application::cleanup()
 //     populateDefaultDebugUtilsMessengerCreateInfo(createInfo);
 //     if (CreateDebugUtilsMessengerEXT(m_context.instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
 //     {
-//         throw std::runtime_error("failed to set up debug messenger!");
+//         LOG_ERROR("failed to set up debug messenger!");
 //     }
 // }
 
@@ -329,7 +331,7 @@ void Application::createCommandPool()
 
     if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create command pool!");
+        LOG_ERROR("failed to create command pool!");
     }
 }
 
@@ -347,7 +349,7 @@ void Application::createCommandBuffers()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to allocate command buffers!");
+        LOG_ERROR("failed to allocate command buffers!");
     }
 
     for (size_t i = 0; i < m_vecCommandBuffers.size(); i++)
@@ -359,7 +361,7 @@ void Application::createCommandBuffers()
 
         if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to begin recording command buffer!");
+            LOG_ERROR("failed to begin recording command buffer!");
         }
 
         VkRenderPassBeginInfo renderPassInfo{};
@@ -392,7 +394,7 @@ void Application::createCommandBuffers()
 
         if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to record command buffer!");
+            LOG_ERROR("failed to record command buffer!");
         }
     }
 }
@@ -426,7 +428,7 @@ void Application::drawFrame()
     VkQueue queue = vulkanDevice->getQueue();
     if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to submit draw command buffer!");
+        LOG_ERROR("failed to submit draw command buffer!");
     }
 
     VkPresentInfoKHR presentInfo{};
@@ -456,6 +458,6 @@ void Application::createSemaphores()
     if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
         vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create semaphores!");
+        LOG_ERROR("failed to create semaphores!");
     }
 }

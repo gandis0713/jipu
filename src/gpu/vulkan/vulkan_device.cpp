@@ -29,9 +29,9 @@ namespace vkt
 
 VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
     : Device(adapter, descriptor)
-    , m_frameBufferCache(this)
-    , m_renderPassCache(this)
     , vkAPI(downcast(adapter->getDriver())->vkAPI)
+    , m_renderPassCache(this)
+    , m_frameBufferCache(this)
 {
     const VulkanDeviceInfo& info = adapter->getDeviceInfo();
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;

@@ -22,7 +22,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
         throw std::runtime_error("There is no queue family properties.");
     }
 
-    for (auto index = 0; index < queueFamilyPropertiesSize; ++index)
+    for (uint32_t index = 0; index < queueFamilyPropertiesSize; ++index)
     {
         const auto& properties = deviceInfo.queueFamilyProperties[index];
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
