@@ -32,3 +32,16 @@ if(APPLE)
     "-framework Cocoa"
   )
 endif()
+
+target_compile_options(${VKT_PROJECT_NAME}
+  PUBLIC
+  -Wall
+  -Werror
+  -Wno-unused-parameter
+  -Wno-unused-function
+  -Wno-unused-but-set-variable
+  -Wno-unused-variable
+
+  PRIVATE
+  -fno-rtti # -fno-exceptions
+)

@@ -24,15 +24,8 @@ endif()
 
 # set compile options.
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS}\
-  -Wall\
-  -Wextra\
-  -Wno-unused-parameter\
-  -Wno-unused-function\
-  -Wno-unused-but-set-variable\
-  -Wno-unused-variable"
-)
+
+message(STATUS ${CMAKE_CXX_FLAGS})
 
 # set compile definitions.
 add_compile_definitions(VKT_VERSION_MAJOR=${VKT_VERSION_MAJOR})

@@ -86,4 +86,15 @@ else()
     # file(COPY triangle.frag DESTINATION ${SHADER_OUTPUT})
 endif()
 
-# target_compile_options(${PRJ_NAME} PUBLIC -Wall -Werror -fno-rtti)
+target_compile_options(${PRJ_NAME}
+    PUBLIC
+    -Wall
+    -Werror
+    -Wno-unused-parameter
+    -Wno-unused-function
+    -Wno-unused-but-set-variable
+    -Wno-unused-variable
+
+    PRIVATE
+    -fno-rtti # -fno-exceptions
+)
