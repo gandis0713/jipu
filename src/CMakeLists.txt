@@ -36,8 +36,6 @@ if(APPLE)
   )
 endif()
 
-
-
 if(MSVC)
   # TODO
 elseif(APPLE)

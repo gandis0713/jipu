@@ -24,6 +24,11 @@ endif()
 
 # set compile options.
 set(CMAKE_CXX_STANDARD 20)
+if(MSVC)
+  add_compile_options(
+    /MP
+  )
+endif()
 
 message(STATUS ${CMAKE_CXX_FLAGS})
 
