@@ -12,7 +12,7 @@ if(APPLE)
   list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
-add_library(${VKT_PROJECT_NAME} 
+add_library(${VKT_PROJECT_NAME}
   STATIC
   ${SRC_FILES}
 )
@@ -36,21 +36,19 @@ if(APPLE)
   )
 endif()
 
-
-
 if(MSVC)
-  # TODO
+# TODO
 elseif(APPLE)
-target_compile_options(${VKT_PROJECT_NAME}
-  PUBLIC
-  -Wall
-  -Werror
-  -Wno-unused-parameter
-  -Wno-unused-function
-  -Wno-unused-but-set-variable
-  -Wno-unused-variable
+  target_compile_options(${VKT_PROJECT_NAME}
+    PUBLIC
+    -Wall
+    -Werror
+    -Wno-unused-parameter
+    -Wno-unused-function
+    -Wno-unused-but-set-variable
+    -Wno-unused-variable
 
-  PRIVATE
-  -fno-rtti # -fno-exceptions
-)
+    PRIVATE
+    -fno-rtti # -fno-exceptions
+  )
 endif()

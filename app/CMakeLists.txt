@@ -87,18 +87,18 @@ else()
 endif()
 
 if(MSVC)
-    # TODO
+# TODO
 elseif(APPLE)
-target_compile_options(${PRJ_NAME}
-    PUBLIC
-    -Wall
-    -Werror
-    -Wno-unused-parameter
-    -Wno-unused-function
-    -Wno-unused-but-set-variable
-    -Wno-unused-variable
+    target_compile_options(${PRJ_NAME}
+        PUBLIC
+        -Wall
+        -Werror
+        -Wno-unused-parameter
+        -Wno-unused-function
+        -Wno-unused-but-set-variable
+        -Wno-unused-variable
 
-    PRIVATE
-    -fno-rtti # -fno-exceptions
-)
+        PRIVATE
+        -fno-rtti # -fno-exceptions
+    )
 endif()
