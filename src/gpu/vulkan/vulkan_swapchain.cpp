@@ -179,6 +179,7 @@ VkColorSpaceKHR ColorSpace2VkColorSpaceKHR(ColorSpace colorSpace)
         return VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT;
 
     case ColorSpace::kUndefined:
+    default:
         LOG_ERROR("color space is undefined. use srgb non linear mode.");
         return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     }

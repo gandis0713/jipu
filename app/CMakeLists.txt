@@ -86,6 +86,9 @@ else()
     # file(COPY triangle.frag DESTINATION ${SHADER_OUTPUT})
 endif()
 
+if(MSVC)
+    # TODO
+elseif(APPLE)
 target_compile_options(${PRJ_NAME}
     PUBLIC
     -Wall
@@ -98,3 +101,4 @@ target_compile_options(${PRJ_NAME}
     PRIVATE
     -fno-rtti # -fno-exceptions
 )
+endif()

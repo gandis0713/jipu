@@ -12,7 +12,10 @@ if(APPLE)
   list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
-add_library(${VKT_PROJECT_NAME} SHARED ${SRC_FILES})
+add_library(${VKT_PROJECT_NAME} 
+  STATIC
+  ${SRC_FILES}
+)
 
 target_include_directories(${VKT_PROJECT_NAME}
   PUBLIC
@@ -33,6 +36,11 @@ if(APPLE)
   )
 endif()
 
+
+
+if(MSVC)
+  # TODO
+elseif(APPLE)
 target_compile_options(${VKT_PROJECT_NAME}
   PUBLIC
   -Wall
@@ -45,3 +53,4 @@ target_compile_options(${VKT_PROJECT_NAME}
   PRIVATE
   -fno-rtti # -fno-exceptions
 )
+endif()
