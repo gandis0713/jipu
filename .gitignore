@@ -40,6 +40,9 @@
 # build
 build/
 
+# install
+install/
+
 # script
 !scripts/build
 
