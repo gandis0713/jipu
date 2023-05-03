@@ -91,10 +91,6 @@ private:
 private:
     Window* m_window;
 
-    // debug
-    VkDebugUtilsMessengerEXT m_debugMessenger;
-    VkDebugUtilsMessengerCreateInfoEXT m_debugMessengerUtilsCreateInfo;
-
     // wrapper
     std::unique_ptr<Driver> m_driver{ nullptr };
     std::unique_ptr<Adapter> m_adapter{ nullptr };

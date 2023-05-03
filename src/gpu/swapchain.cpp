@@ -8,11 +8,11 @@ namespace vkt
 
 SwapChain::SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept
     : m_device(device)
+    , m_surface(descriptor.surface)
     , m_textureFormat(descriptor.textureFormat)
     , m_presentMode(descriptor.presentMode)
     , m_width(descriptor.width)
     , m_height(descriptor.height)
-    , m_surface(descriptor.surface)
 {
 }
 
