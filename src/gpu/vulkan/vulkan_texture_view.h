@@ -21,6 +21,6 @@ private:
     VkImageView m_imageView{ VK_NULL_HANDLE };
 };
 
-VULKAN_DOWNCAST(TextureView);
+DOWN_CAST(VulkanTextureView, TextureView);
 
 } // namespace vkt

@@ -44,6 +44,6 @@ private:
     VulkanRenderPass* m_renderPass{ nullptr };
 };
 
-VULKAN_DOWNCAST(Pipeline);
+DOWN_CAST(VulkanPipeline, Pipeline);
 
 } // namespace vkt

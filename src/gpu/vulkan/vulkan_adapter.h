@@ -43,6 +43,6 @@ private:
     VulkanDeviceInfo m_deviceInfo{};
 };
 
-VULKAN_DOWNCAST(Adapter);
+DOWN_CAST(VulkanAdapter, Adapter);
 
 } // namespace vkt

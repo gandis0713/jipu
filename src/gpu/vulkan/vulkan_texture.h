@@ -40,7 +40,7 @@ private:
     TextureOwner m_owner;
 };
 
-VULKAN_DOWNCAST(Texture);
+DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
 VkImageType TextureType2VkImageType(TextureType type);

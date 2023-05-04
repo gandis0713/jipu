@@ -58,6 +58,6 @@ private:
     VulkanFrameBufferCache m_frameBufferCache;
 };
 
-VULKAN_DOWNCAST(Device);
+DOWN_CAST(VulkanDevice, Device);
 
 } // namespace vkt

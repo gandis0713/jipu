@@ -27,6 +27,6 @@ private:
     VkQueueFamilyProperties m_properties{};
 };
 
-VULKAN_DOWNCAST(Queue);
+DOWN_CAST(VulkanQueue, Queue);
 
 } // namespace vkt

@@ -28,7 +28,7 @@ private:
     VkSwapchainKHR m_swapchain{ VK_NULL_HANDLE };
 };
 
-VULKAN_DOWNCAST(SwapChain);
+DOWN_CAST(VulkanSwapChain, SwapChain);
 
 // Convert Helper
 ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace);

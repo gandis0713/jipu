@@ -1,19 +1,19 @@
 #pragma once
 
-#define VULKAN_DOWNCAST(CLASS)                                       \
-    inline Vulkan##CLASS& downcast(CLASS& that) noexcept             \
+#define DOWN_CAST(DOWN_CLASS, UP_CLASS)                              \
+    inline DOWN_CLASS& downcast(UP_CLASS& that) noexcept             \
     {                                                                \
-        return static_cast<Vulkan##CLASS&>(that);                    \
+        return static_cast<DOWN_CLASS&>(that);                       \
     }                                                                \
-    inline const Vulkan##CLASS& downcast(const CLASS& that) noexcept \
+    inline const DOWN_CLASS& downcast(const UP_CLASS& that) noexcept \
     {                                                                \
-        return static_cast<const Vulkan##CLASS&>(that);              \
+        return static_cast<const DOWN_CLASS&>(that);                 \
     }                                                                \
-    inline Vulkan##CLASS* downcast(CLASS* that) noexcept             \
+    inline DOWN_CLASS* downcast(UP_CLASS* that) noexcept             \
     {                                                                \
-        return static_cast<Vulkan##CLASS*>(that);                    \
+        return static_cast<DOWN_CLASS*>(that);                       \
     }                                                                \
-    inline Vulkan##CLASS const* downcast(CLASS const* that) noexcept \
+    inline DOWN_CLASS const* downcast(UP_CLASS const* that) noexcept \
     {                                                                \
-        return static_cast<Vulkan##CLASS const*>(that);              \
+        return static_cast<DOWN_CLASS const*>(that);                 \
     }

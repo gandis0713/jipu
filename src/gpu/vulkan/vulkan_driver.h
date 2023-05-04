@@ -59,6 +59,6 @@ private:
     VulkanDriverInfo m_driverInfo{};
 };
 
-VULKAN_DOWNCAST(Driver);
+DOWN_CAST(VulkanDriver, Driver);
 
 } // namespace vkt

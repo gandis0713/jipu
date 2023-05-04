@@ -38,6 +38,6 @@ private:
     VulkanSurfaceInfo m_surfaceInfo{};
 };
 
-VULKAN_DOWNCAST(Surface);
+DOWN_CAST(VulkanSurface, Surface);
 
 }; // namespace vkt
