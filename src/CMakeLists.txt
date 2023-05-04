@@ -12,8 +12,14 @@ if(APPLE)
   list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
+set(LIB_TYPE STATIC)
+
+if(BUILD_SHARED_LIBS)
+  set(LIB_TYPE SHARED)
+endif()
+
 add_library(vkt
-  SHARED # SHARED or STATIC
+  ${LIB_TYPE} # SHARED or STATIC
   ${SRC_FILES}
 )
 add_library(vkt::vkt ALIAS vkt)
@@ -58,6 +64,19 @@ elseif(APPLE)
 
     PRIVATE
     -fno-rtti # -fno-exceptions
+  )
+endif()
+
+# compile definitions
+target_compile_definitions(vkt
+  PRIVATE
+  "VKT_IMPLEMENTATION"
+)
+
+if(BUILD_SHARED_LIBS)
+  target_compile_definitions(vkt
+    PRIVATE
+    "VKT_SHARED_LIBRARY"
   )
 endif()
 

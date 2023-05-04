@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 namespace vkt
 {
 
@@ -9,7 +11,7 @@ struct PipelineDescriptor
 {
 };
 
-class Pipeline
+class VKT_EXPORT Pipeline
 {
 public:
     Pipeline() = delete;

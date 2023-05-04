@@ -13,7 +13,7 @@ namespace vkt
 class VulkanDevice;
 class VulkanRenderPass;
 
-class VulkanPipeline : public Pipeline
+class VKT_EXPORT VulkanPipeline : public Pipeline
 {
 public:
     VulkanPipeline() = delete;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vulkan_api.h"
 
 #include <memory>
@@ -19,7 +20,7 @@ struct VulkanRenderPassDescriptor
 };
 
 class VulkanDevice;
-class VulkanRenderPass
+class VKT_EXPORT VulkanRenderPass
 {
 public:
     VulkanRenderPass(VulkanDevice* device, VulkanRenderPassDescriptor descriptor);

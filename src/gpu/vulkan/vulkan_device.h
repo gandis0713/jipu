@@ -15,7 +15,7 @@ namespace vkt
 
 class VulkanAdapter;
 
-class VulkanDevice : public Device
+class VKT_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;

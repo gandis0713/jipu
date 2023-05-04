@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/swapchain.h"
@@ -15,7 +16,7 @@ struct DeviceDescriptor
 {
 };
 
-class Device
+class VKT_EXPORT Device
 {
 public:
     Device() = delete;

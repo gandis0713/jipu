@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 namespace vkt
 {
 
@@ -24,7 +26,7 @@ struct TextureDescriptor
 };
 
 class Device;
-class Texture
+class VKT_EXPORT Texture
 {
 public:
     Texture() = delete;

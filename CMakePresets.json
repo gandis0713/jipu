@@ -10,7 +10,8 @@
 			"name": "base",
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-				"VKT_TEST": "ON"
+				"VKT_TEST": "ON",
+				"BUILD_SHARED_LIBS": true
 			}
 		},
 		{
@@ -222,7 +223,7 @@
 		},
 		{
 			"name": "x64-windows-ninja-release",
-			"inherits": "base-x64-windows-vs2019",
+			"inherits": "base-x64-windows-ninja",
 			"displayName": "x64-windows-ninja-release",
 			"binaryDir": "${sourceDir}/build/x64-windows-ninja/release",
 			"installDir": "${sourceDir}/install/x64-window-ninja/release",

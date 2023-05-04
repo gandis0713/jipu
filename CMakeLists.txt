@@ -33,3 +33,9 @@ if(VKT_TEST)
   add_subdirectory(test)
   add_dependencies(test_vkt vkt::vkt)
 endif()
+
+# runtime output
+set_target_properties(vkt PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/app
+  RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/app
+)

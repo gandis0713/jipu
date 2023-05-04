@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vkt/gpu/adapter.h"
 
 #include <memory>
@@ -20,7 +21,7 @@ struct DriverDescriptor
     DRIVER_TYPE apiType = DRIVER_TYPE::NONE;
 };
 
-class Driver
+class VKT_EXPORT Driver
 {
 public:
     static std::unique_ptr<Driver> create(DriverDescriptor descriptor);
