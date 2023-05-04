@@ -13,7 +13,7 @@ if(APPLE)
 endif()
 
 add_library(vkt
-  STATIC
+  SHARED # SHARED or STATIC
   ${SRC_FILES}
 )
 add_library(vkt::vkt ALIAS vkt)
@@ -38,7 +38,7 @@ target_link_libraries(vkt
 
 if(APPLE)
   target_link_libraries(vkt
-    PUBLIC
+    PRIVATE
     "-framework Cocoa"
   )
 endif()
@@ -60,3 +60,5 @@ elseif(APPLE)
     -fno-rtti # -fno-exceptions
   )
 endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/install.cmake)

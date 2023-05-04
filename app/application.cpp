@@ -1,5 +1,4 @@
 #include "application.h"
-#include "window.h"
 
 #include "src/gpu/vulkan/vulkan_adapter.h"
 #include "src/gpu/vulkan/vulkan_device.h"
@@ -9,6 +8,7 @@
 #include "src/gpu/vulkan/vulkan_texture_view.h"
 
 #include "utils/log.h"
+#include "window.h"
 #include <string>
 
 std::filesystem::path vkt::Application::path;
