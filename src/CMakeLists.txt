@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 find_package(Vulkan REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ENDF6_SRC ${CMAKE_SOURCE_DIR} *.h *.cpp)
+file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ${CMAKE_SOURCE_DIR} *.h *.cpp)
 
 if(APPLE)
   file(GLOB_RECURSE MM_FILES LIST_DIRECTORIES false *.mm)
@@ -18,11 +18,13 @@ add_library(vkt
 )
 add_library(vkt::vkt ALIAS vkt)
 
+# include directories
 target_include_directories(vkt
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# link libraries
 target_link_libraries(vkt
   PUBLIC
   Vulkan::Vulkan
@@ -37,6 +39,7 @@ if(APPLE)
   )
 endif()
 
+# compile options
 if(MSVC)
 # TODO
 elseif(APPLE)
