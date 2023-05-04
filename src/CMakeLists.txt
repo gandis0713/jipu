@@ -62,6 +62,9 @@ elseif(APPLE)
     -Wno-unused-but-set-variable
     -Wno-unused-variable
 
+    -fvisibility=hidden
+    -fvisibility-inlines-hidden
+
     PRIVATE
     -fno-rtti # -fno-exceptions
   )
