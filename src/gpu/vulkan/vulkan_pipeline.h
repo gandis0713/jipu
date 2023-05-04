@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/pipeline.h"
 #include "utils/cast.h"
+#include "vkt/gpu/pipeline.h"
 #include "vulkan_api.h"
 
 #include <string>

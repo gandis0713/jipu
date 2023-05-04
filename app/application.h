@@ -1,18 +1,17 @@
 #pragma once
 
 // #define GLFW_INCLUDE_VULKAN
-#include "gpu/adapter.h"
-#include "gpu/device.h"
-#include "gpu/driver.h"
-#include "gpu/queue.h"
-#include "gpu/surface.h"
-#include "gpu/swapchain.h"
-#include "gpu/vulkan/vulkan_framebuffer.h"
-#include "gpu/vulkan/vulkan_render_pass.h"
-#include "utils/log.h"
+#include "src/gpu/vulkan/vulkan_framebuffer.h"
+#include "src/gpu/vulkan/vulkan_render_pass.h"
+#include "vkt/gpu/adapter.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/driver.h"
+#include "vkt/gpu/queue.h"
+#include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
 #include <GLFW/glfw3.h>
 
-#include "gpu/pipeline.h"
+#include "vkt/gpu/pipeline.h"
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>

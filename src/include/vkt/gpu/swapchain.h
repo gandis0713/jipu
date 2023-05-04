@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/texture.h"
-#include "gpu/texture_view.h"
+#include "vkt/gpu/texture.h"
+#include "vkt/gpu/texture_view.h"
 
 #include <memory>
 #include <vector>

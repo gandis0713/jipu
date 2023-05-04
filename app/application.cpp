@@ -1,12 +1,12 @@
 #include "application.h"
 #include "window.h"
 
-#include "gpu/vulkan/vulkan_adapter.h"
-#include "gpu/vulkan/vulkan_device.h"
-#include "gpu/vulkan/vulkan_pipeline.h"
-#include "gpu/vulkan/vulkan_render_pass.h"
-#include "gpu/vulkan/vulkan_swapchain.h"
-#include "gpu/vulkan/vulkan_texture_view.h"
+#include "src/gpu/vulkan/vulkan_adapter.h"
+#include "src/gpu/vulkan/vulkan_device.h"
+#include "src/gpu/vulkan/vulkan_pipeline.h"
+#include "src/gpu/vulkan/vulkan_render_pass.h"
+#include "src/gpu/vulkan/vulkan_swapchain.h"
+#include "src/gpu/vulkan/vulkan_texture_view.h"
 
 #include "utils/log.h"
 #include <string>

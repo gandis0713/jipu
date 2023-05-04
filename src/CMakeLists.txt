@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 find_package(Vulkan REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ${CMAKE_SOURCE_DIR} *.h *.cpp)
+file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 if(APPLE)
   file(GLOB_RECURSE MM_FILES LIST_DIRECTORIES false *.mm)
@@ -21,6 +21,10 @@ add_library(vkt::vkt ALIAS vkt)
 # include directories
 target_include_directories(vkt
   PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR} # TODO: remove after it no used vulkan_*.h in app.
+  ${CMAKE_CURRENT_SOURCE_DIR} # TODO: remove after it no used vulkan_*.h in app.
+  PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

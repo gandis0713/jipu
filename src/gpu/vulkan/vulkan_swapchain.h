@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpu/swapchain.h"
+#include "vkt/gpu/swapchain.h"
 #include "vulkan_api.h"
 
 #include "utils/cast.h"

@@ -1,5 +1,5 @@
-#include "gpu/queue.h"
-#include "gpu/device.h"
+#include "vkt/gpu/queue.h"
+#include "vkt/gpu/device.h"
 
 namespace vkt
 {

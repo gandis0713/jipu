@@ -1,4 +1,4 @@
-#include "gpu/adapter.h"
+#include "vkt/gpu/adapter.h"
 
 namespace vkt
 {

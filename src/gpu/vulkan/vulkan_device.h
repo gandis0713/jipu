@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/device.h"
 #include "utils/cast.h"
+#include "vkt/gpu/device.h"
 #include "vulkan_api.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"

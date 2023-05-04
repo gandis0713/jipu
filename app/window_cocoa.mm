@@ -1,6 +1,6 @@
 #include "window.h"
 // clang-format off
-#include "gpu/vulkan/vulkan_api.h"
+#include "src/gpu/vulkan/vulkan_api.h"
 // glfw
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_COCOA
@@ -21,7 +21,8 @@ static NSView* getNSView(GLFWwindow* window)
 namespace vkt
 {
 
-Window::Window(int w, int h, std::string title) : m_window(nullptr)
+Window::Window(int w, int h, std::string title)
+    : m_window(nullptr)
 {
     glfwInit();
 
@@ -53,8 +54,14 @@ int Window::shouldClose()
     return ret;
 }
 
-void* Window::getNativeWindow() { return getNSView(static_cast<GLFWwindow*>(m_window)); }
+void* Window::getNativeWindow()
+{
+    return getNSView(static_cast<GLFWwindow*>(m_window));
+}
 
-void Window::getFrameBufferSize(int* w, int* h) { glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h); }
+void Window::getFrameBufferSize(int* w, int* h)
+{
+    glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h);
+}
 
 } // namespace vkt

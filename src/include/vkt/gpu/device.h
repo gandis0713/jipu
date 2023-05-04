@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gpu/pipeline.h"
-#include "gpu/queue.h"
-#include "gpu/swapchain.h"
+#include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/queue.h"
+#include "vkt/gpu/swapchain.h"
 
 #include <memory>
 

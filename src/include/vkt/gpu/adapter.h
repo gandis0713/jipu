@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/device.h"
-#include "gpu/surface.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/surface.h"
 
 #include <memory>
 

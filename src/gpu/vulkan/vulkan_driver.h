@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gpu/driver.h"
 #include "utils/cast.h"
 #include "utils/dynamic_lib.h"
+#include "vkt/gpu/driver.h"
 #include "vulkan_api.h"
 
 #include <memory>

@@ -1,5 +1,5 @@
-#include "gpu/pipeline.h"
-#include "gpu/device.h"
+#include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/device.h"
 
 namespace vkt
 {

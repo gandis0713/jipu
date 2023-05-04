@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/surface.h"
 #include "utils/cast.h"
+#include "vkt/gpu/surface.h"
 #include "vulkan_api.h"
 
 #include <vector>

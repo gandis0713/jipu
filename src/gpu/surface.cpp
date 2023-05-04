@@ -1,5 +1,5 @@
-#include "gpu/surface.h"
-#include "gpu/adapter.h"
+#include "vkt/gpu/surface.h"
+#include "vkt/gpu/adapter.h"
 
 namespace vkt
 {

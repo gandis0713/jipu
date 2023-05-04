@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpu/adapter.h"
+#include "vkt/gpu/adapter.h"
 
 #include <memory>
 

@@ -1,5 +1,5 @@
-#include "gpu/device.h"
-#include "gpu/adapter.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/adapter.h"
 
 namespace vkt
 {

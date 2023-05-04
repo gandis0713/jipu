@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/adapter.h"
 #include "utils/cast.h"
+#include "vkt/gpu/adapter.h"
 #include "vulkan_api.h"
 
 namespace vkt

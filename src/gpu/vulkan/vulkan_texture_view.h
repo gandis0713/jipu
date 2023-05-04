@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/texture_view.h"
 #include "utils/cast.h"
+#include "vkt/gpu/texture_view.h"
 #include "vulkan_api.h"
 
 namespace vkt

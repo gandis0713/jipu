@@ -1,8 +1,8 @@
 #pragma once
 
-#include "gpu/texture.h"
 #include "utils/assert.h"
 #include "utils/cast.h"
+#include "vkt/gpu/texture.h"
 #include "vulkan_api.h"
 
 #include <fmt/format.h>

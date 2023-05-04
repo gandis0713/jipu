@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gpu/queue.h"
 #include "utils/cast.h"
+#include "vkt/gpu/queue.h"
 #include "vulkan_api.h"
 
 namespace vkt
