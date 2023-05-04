@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/surface.h"
 
@@ -15,7 +16,7 @@ struct AdapterDescriptor
 
 class Driver;
 
-class Adapter
+class VKT_EXPORT Adapter
 {
 public:
     Adapter() = delete;

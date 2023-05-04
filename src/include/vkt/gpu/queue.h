@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 namespace vkt
 {
 
@@ -16,7 +18,7 @@ struct QueueDescriptor
 };
 
 class Device;
-class Queue
+class VKT_EXPORT Queue
 {
 public:
     Queue() = delete;

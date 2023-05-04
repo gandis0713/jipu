@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vkt/gpu/texture.h"
 #include "vkt/gpu/texture_view.h"
 
@@ -37,7 +38,7 @@ struct SwapChainDescriptor
     Surface* surface{ nullptr };
 };
 
-class SwapChain
+class VKT_EXPORT SwapChain
 {
 public:
     SwapChain() = delete;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 namespace vkt
 {
 
@@ -20,7 +22,7 @@ struct TextureViewDescriptor
 };
 
 class Texture;
-class TextureView
+class VKT_EXPORT TextureView
 {
 public:
     TextureView() = delete;

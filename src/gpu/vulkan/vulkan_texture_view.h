@@ -8,7 +8,7 @@ namespace vkt
 {
 
 class VulkanTexture;
-class VulkanTextureView : public TextureView
+class VKT_EXPORT VulkanTextureView : public TextureView
 {
 public:
     VulkanTextureView() = delete;

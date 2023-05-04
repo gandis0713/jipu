@@ -12,8 +12,14 @@ if(APPLE)
   list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
+set(LIB_TYPE STATIC)
+
+if(BUILD_SHARED_LIBS)
+  set(LIB_TYPE SHARED)
+endif()
+
 add_library(vkt
-  STATIC
+  ${LIB_TYPE} # SHARED or STATIC
   ${SRC_FILES}
 )
 add_library(vkt::vkt ALIAS vkt)
@@ -38,7 +44,7 @@ target_link_libraries(vkt
 
 if(APPLE)
   target_link_libraries(vkt
-    PUBLIC
+    PRIVATE
     "-framework Cocoa"
   )
 endif()
@@ -56,7 +62,25 @@ elseif(APPLE)
     -Wno-unused-but-set-variable
     -Wno-unused-variable
 
+    -fvisibility=hidden
+    -fvisibility-inlines-hidden
+
     PRIVATE
     -fno-rtti # -fno-exceptions
   )
 endif()
+
+# compile definitions
+target_compile_definitions(vkt
+  PRIVATE
+  "VKT_IMPLEMENTATION"
+)
+
+if(BUILD_SHARED_LIBS)
+  target_compile_definitions(vkt
+    PRIVATE
+    "VKT_SHARED_LIBRARY"
+  )
+endif()
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/install.cmake)

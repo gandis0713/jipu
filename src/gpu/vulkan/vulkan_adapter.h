@@ -19,7 +19,7 @@ struct VulkanDeviceInfo : VulkanDeviceKnobs
 };
 
 class VulkanDriver;
-class VulkanAdapter : public Adapter
+class VKT_EXPORT VulkanAdapter : public Adapter
 {
 public:
     VulkanAdapter() = delete;

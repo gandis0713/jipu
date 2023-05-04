@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include <memory>
 
 namespace vkt
@@ -11,7 +12,7 @@ struct SurfaceDescriptor
 };
 
 class Adapter;
-class Surface
+class VKT_EXPORT Surface
 {
 public:
     Surface() = delete;
