@@ -48,8 +48,7 @@ add_executable(${PRJ_NAME}
     ${SRC_FILES}
 )
 
-add_dependencies(${PRJ_NAME} ${VKT_PROJECT_NAME})
-
+# add_executable(vkt::app ALIAS ${PRJ_NAME})
 target_include_directories(${PRJ_NAME}
     PUBLIC
     ${VKT_INCLUDE_DIRS}
@@ -58,7 +57,7 @@ target_include_directories(${PRJ_NAME}
 target_link_libraries(${PRJ_NAME}
     PRIVATE
     glfw
-    ${VKT_PROJECT_NAME}
+    vkt::vkt
     spdlog::spdlog_header_only
 )
 

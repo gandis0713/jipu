@@ -12,17 +12,18 @@ if(APPLE)
   list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
 endif()
 
-add_library(${VKT_PROJECT_NAME}
+add_library(vkt
   STATIC
   ${SRC_FILES}
 )
+add_library(vkt::vkt ALIAS vkt)
 
-target_include_directories(${VKT_PROJECT_NAME}
+target_include_directories(vkt
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(${VKT_PROJECT_NAME}
+target_link_libraries(vkt
   PUBLIC
   Vulkan::Vulkan
   PRIVATE
@@ -30,7 +31,7 @@ target_link_libraries(${VKT_PROJECT_NAME}
 )
 
 if(APPLE)
-  target_link_libraries(${VKT_PROJECT_NAME}
+  target_link_libraries(vkt
     PUBLIC
     "-framework Cocoa"
   )
@@ -39,7 +40,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-  target_compile_options(${VKT_PROJECT_NAME}
+  target_compile_options(vkt
     PUBLIC
     -Wall
     -Werror
