@@ -2,8 +2,8 @@
 
 #include "utils/assert.h"
 #include "utils/log.h"
-#include "vulkan_adapter.h"
 #include "vulkan_allocation.h"
+#include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 
 #include <fmt/format.h>
@@ -339,9 +339,9 @@ std::unique_ptr<Surface> VulkanDriver::createSurface(SurfaceDescriptor descripto
     return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
-std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterDescriptor descriptor)
+std::unique_ptr<PhysicalDevice> VulkanDriver::createPhysicalDevice(PhysicalDeviceDescriptor descriptor)
 {
-    return std::make_unique<VulkanAdapter>(this, descriptor);
+    return std::make_unique<VulkanPhysicalDevice>(this, descriptor);
 }
 
 VkInstance VulkanDriver::getInstance() const

@@ -2,9 +2,9 @@
 
 #include "src/gpu/vulkan/vulkan_framebuffer.h"
 #include "src/gpu/vulkan/vulkan_render_pass.h"
-#include "vkt/gpu/adapter.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
+#include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
@@ -91,7 +91,7 @@ private:
 
     // wrapper
     std::unique_ptr<Driver> m_driver{ nullptr };
-    std::unique_ptr<Adapter> m_adapter{ nullptr };
+    std::unique_ptr<PhysicalDevice> m_physicalDevice{ nullptr };
 
     std::unique_ptr<Surface> m_surface{ nullptr };
     std::unique_ptr<Device> m_device{ nullptr };

@@ -13,13 +13,13 @@
 namespace vkt
 {
 
-class VulkanAdapter;
+class VulkanPhysicalDevice;
 
 class VKT_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
-    VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor);
+    VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescriptor descriptor);
     ~VulkanDevice() override;
 
     VulkanDevice(const VulkanDevice&) = delete;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "export.h"
-#include "vkt/gpu/adapter.h"
+#include "vkt/gpu/physical_device.h"
 
 #include <memory>
 
@@ -33,7 +33,7 @@ public:
     Driver& operator=(const Driver&) = delete;
 
 public:
-    virtual std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) = 0;
+    virtual std::unique_ptr<PhysicalDevice> createPhysicalDevice(PhysicalDeviceDescriptor descriptor) = 0;
     virtual std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) = 0;
 
 protected:

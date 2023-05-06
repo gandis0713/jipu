@@ -1,6 +1,6 @@
 #include "vulkan_queue.h"
-#include "vulkan_adapter.h"
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 
 #include "utils/log.h"
 
@@ -12,9 +12,9 @@ namespace vkt
 VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
     : Queue(device, descriptor)
 {
-    VulkanAdapter* adapter = downcast(m_device->getAdapter());
+    VulkanPhysicalDevice* physicalDevice = downcast(m_device->getPhysicalDevice());
 
-    const VulkanDeviceInfo& deviceInfo = adapter->getDeviceInfo();
+    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getInfo();
 
     const uint32_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
     if (queueFamilyPropertiesSize <= 0)

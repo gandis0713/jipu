@@ -1,7 +1,7 @@
 #include "application.h"
 
-#include "src/gpu/vulkan/vulkan_adapter.h"
 #include "src/gpu/vulkan/vulkan_device.h"
+#include "src/gpu/vulkan/vulkan_physical_device.h"
 #include "src/gpu/vulkan/vulkan_pipeline.h"
 #include "src/gpu/vulkan/vulkan_render_pass.h"
 #include "src/gpu/vulkan/vulkan_swapchain.h"
@@ -73,16 +73,16 @@ void Application::initVulkan()
         m_surface = m_driver->createSurface(descriptor);
     }
 
-    // create Adapter.
+    // create PhysicalDevice.
     {
-        AdapterDescriptor descriptor{};
-        m_adapter = m_driver->createAdapter(descriptor);
+        PhysicalDeviceDescriptor descriptor{};
+        m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
     }
 
     // create Device.
     {
         DeviceDescriptor descriptor{};
-        m_device = m_adapter->createDevice(descriptor);
+        m_device = m_physicalDevice->createDevice(descriptor);
     }
 
     // create swapchain

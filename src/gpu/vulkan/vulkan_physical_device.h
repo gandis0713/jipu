@@ -1,13 +1,13 @@
 #pragma once
 
 #include "utils/cast.h"
-#include "vkt/gpu/adapter.h"
+#include "vkt/gpu/physical_device.h"
 #include "vulkan_api.h"
 
 namespace vkt
 {
 
-struct VulkanDeviceInfo : VulkanDeviceKnobs
+struct VulkanPhysicalDeviceInfo : VulkanDeviceKnobs
 {
     VkPhysicalDeviceFeatures physicalDeviceFeatures{};
     VkPhysicalDeviceProperties physicalDeviceProperties{};
@@ -19,29 +19,29 @@ struct VulkanDeviceInfo : VulkanDeviceKnobs
 };
 
 class VulkanDriver;
-class VKT_EXPORT VulkanAdapter : public Adapter
+class VKT_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
-    VulkanAdapter() = delete;
-    VulkanAdapter(VulkanDriver* driver, AdapterDescriptor descriptor);
-    ~VulkanAdapter() override;
+    VulkanPhysicalDevice() = delete;
+    VulkanPhysicalDevice(VulkanDriver* driver, PhysicalDeviceDescriptor descriptor);
+    ~VulkanPhysicalDevice() override;
 
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
 
-    const VulkanDeviceInfo& getDeviceInfo() const;
+    const VulkanPhysicalDeviceInfo& getInfo() const;
 
 public:
     VkInstance getInstance() const;
     VkPhysicalDevice getPhysicalDevice() const;
 
 private:
-    void gatherDeviceInfo();
+    void gatherPhysicalDeviceInfo();
 
 private:
     VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
-    VulkanDeviceInfo m_deviceInfo{};
+    VulkanPhysicalDeviceInfo m_Info{};
 };
 
-DOWN_CAST(VulkanAdapter, Adapter);
+DOWN_CAST(VulkanPhysicalDevice, PhysicalDevice);
 
 } // namespace vkt

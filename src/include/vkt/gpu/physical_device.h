@@ -9,19 +9,19 @@
 namespace vkt
 {
 
-struct AdapterDescriptor
+struct PhysicalDeviceDescriptor
 {
     uint32_t index{ 0 }; // Index of physical device. If there is a device, index is 0.
 };
 
 class Driver;
 
-class VKT_EXPORT Adapter
+class VKT_EXPORT PhysicalDevice
 {
 public:
-    Adapter() = delete;
-    Adapter(Driver* driver, AdapterDescriptor descriptor);
-    virtual ~Adapter() = default;
+    PhysicalDevice() = delete;
+    PhysicalDevice(Driver* driver, PhysicalDeviceDescriptor descriptor);
+    virtual ~PhysicalDevice() = default;
 
     virtual std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) = 0;
 

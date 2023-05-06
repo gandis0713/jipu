@@ -1,9 +1,9 @@
 #include "vulkan_device.h"
 
 #include "utils/log.h"
-#include "vulkan_adapter.h"
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_physical_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
@@ -27,13 +27,13 @@ const std::vector<const char*> getRequiredDeviceExtension()
 namespace vkt
 {
 
-VulkanDevice::VulkanDevice(VulkanAdapter* adapter, DeviceDescriptor descriptor)
-    : Device(adapter, descriptor)
-    , vkAPI(downcast(adapter->getDriver())->vkAPI)
+VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescriptor descriptor)
+    : Device(physicalDevice, descriptor)
+    , vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
     , m_renderPassCache(this)
     , m_frameBufferCache(this)
 {
-    const VulkanDeviceInfo& info = adapter->getDeviceInfo();
+    const VulkanPhysicalDeviceInfo& info = physicalDevice->getInfo();
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 
     std::unordered_set<uint32_t> queueFamilyIndices{};
@@ -101,9 +101,9 @@ VkDevice VulkanDevice::getVkDevice() const
 
 VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
 {
-    VulkanAdapter* vulkanAdapter = downcast(m_adapter);
+    VulkanPhysicalDevice* vulkanPhysicalDevice = downcast(m_physicalDevice);
 
-    return vulkanAdapter->getPhysicalDevice();
+    return vulkanPhysicalDevice->getPhysicalDevice();
 }
 
 VkQueue VulkanDevice::getQueue() const
@@ -145,13 +145,13 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
     }
 
-    auto vulkanAdapter = downcast(m_adapter);
+    auto vulkanPhysicalDevice = downcast(m_physicalDevice);
 
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &vulkanAdapter->getDeviceInfo().physicalDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
@@ -175,7 +175,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     //     deviceCreateInfo.enabledLayerCount = 0;
     // }
 
-    VkPhysicalDevice physicalDevice = downcast(m_adapter)->getPhysicalDevice();
+    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getPhysicalDevice();
     if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");

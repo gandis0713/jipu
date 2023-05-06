@@ -10,7 +10,7 @@
 namespace vkt
 {
 
-class Adapter;
+class PhysicalDevice;
 
 struct DeviceDescriptor
 {
@@ -20,20 +20,20 @@ class VKT_EXPORT Device
 {
 public:
     Device() = delete;
-    Device(Adapter* adapter, DeviceDescriptor descriptor);
+    Device(PhysicalDevice* physicalDevice, DeviceDescriptor descriptor);
     virtual ~Device() = default;
 
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
 
-    Adapter* getAdapter() const;
+    PhysicalDevice* getPhysicalDevice() const;
 
     virtual std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Pipeline> createPipeline(const PipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
 
 protected:
-    Adapter* m_adapter{ nullptr };
+    PhysicalDevice* m_physicalDevice{ nullptr };
 };
 
 } // namespace vkt
