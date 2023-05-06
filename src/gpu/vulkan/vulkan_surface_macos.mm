@@ -1,5 +1,4 @@
 #include "utils/log.h"
-#include "vulkan_adapter.h"
 #include "vulkan_api.h"
 #include "vulkan_driver.h"
 #include "vulkan_surface.h"
@@ -27,8 +26,8 @@ void VulkanSurface::createSurfaceKHR()
         [nsView setLayer:layer];
         [nsView setWantsLayer:YES];
 
-        VulkanAdapter* adapter = downcast(m_adapter);
-        const VulkanAPI& vkAPI = downcast(m_adapter->getDriver())->vkAPI;
+        VulkanDriver* driver = downcast(m_driver);
+        const VulkanAPI& vkAPI = driver->vkAPI;
         if (vkAPI.CreateMetalSurfaceEXT == nullptr)
         {
             throw std::runtime_error("vkCreateMetalSurfaceEXT is nullptr.");
@@ -38,7 +37,7 @@ void VulkanSurface::createSurfaceKHR()
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
         surfaceCreateInfo.pLayer = layer;
 
-        VkResult result = vkAPI.CreateMetalSurfaceEXT(adapter->getInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+        VkResult result = vkAPI.CreateMetalSurfaceEXT(driver->getInstance(), &surfaceCreateInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {
@@ -65,14 +64,14 @@ void VulkanSurface::createSurfaceKHR()
         createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
         createInfo.pView = (__bridge void*)nsView;
 
-        VulkanAdapter* adapter = downcast(m_adapter);
-        const VulkanAPI& vkAPI = downcast(m_adapter->getDriver())->vkAPI;
+        VulkanDriver* driver = downcast(m_driver);
+        const VulkanAPI& vkAPI = driver->vkAPI;
         if (vkAPI.CreateMacOSSurfaceMVK == nullptr)
         {
             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");
         }
 
-        VkResult result = vkAPI.CreateMacOSSurfaceMVK(adapter->getInstance(), &createInfo, nullptr, &m_surface);
+        VkResult result = vkAPI.CreateMacOSSurfaceMVK(driver->getInstance(), &createInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {

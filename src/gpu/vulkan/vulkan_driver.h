@@ -30,6 +30,7 @@ public:
 
 public:
     std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) override;
+    std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) override;
 
 public: // vulkan
     VkInstance getInstance() const;

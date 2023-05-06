@@ -4,6 +4,7 @@
 #include "utils/log.h"
 #include "vulkan_adapter.h"
 #include "vulkan_allocation.h"
+#include "vulkan_surface.h"
 
 #include <fmt/format.h>
 #include <stdexcept>
@@ -331,6 +332,11 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     return requiredInstanceExtensions;
+}
+
+std::unique_ptr<Surface> VulkanDriver::createSurface(SurfaceDescriptor descriptor)
+{
+    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 std::unique_ptr<Adapter> VulkanDriver::createAdapter(AdapterDescriptor descriptor)

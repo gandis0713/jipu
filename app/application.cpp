@@ -67,6 +67,12 @@ void Application::initVulkan()
         m_driver = Driver::create(descriptor);
     }
 
+    // create surface
+    {
+        SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
+        m_surface = m_driver->createSurface(descriptor);
+    }
+
     // create Adapter.
     {
         AdapterDescriptor descriptor{};
@@ -77,12 +83,6 @@ void Application::initVulkan()
     {
         DeviceDescriptor descriptor{};
         m_device = m_adapter->createDevice(descriptor);
-    }
-
-    // create surface
-    {
-        SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
-        m_surface = m_adapter->createSurface(descriptor);
     }
 
     // create swapchain

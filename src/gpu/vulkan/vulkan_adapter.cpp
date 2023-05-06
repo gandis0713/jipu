@@ -1,7 +1,6 @@
 #include "vulkan_adapter.h"
 #include "vulkan_device.h"
 #include "vulkan_driver.h"
-#include "vulkan_surface.h"
 
 #include "utils/log.h"
 
@@ -26,11 +25,6 @@ VulkanAdapter::~VulkanAdapter()
 std::unique_ptr<Device> VulkanAdapter::createDevice(DeviceDescriptor descriptor)
 {
     return std::make_unique<VulkanDevice>(this, descriptor);
-}
-
-std::unique_ptr<Surface> VulkanAdapter::createSurface(SurfaceDescriptor descriptor)
-{
-    return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
 VkInstance VulkanAdapter::getInstance() const

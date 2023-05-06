@@ -34,6 +34,7 @@ public:
 
 public:
     virtual std::unique_ptr<Adapter> createAdapter(AdapterDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) = 0;
 
 protected:
     Driver() = default;

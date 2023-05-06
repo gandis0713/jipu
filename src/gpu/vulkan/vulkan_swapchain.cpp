@@ -43,7 +43,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 {
     VulkanSurface* surface = downcast(m_surface);
 
-    const VulkanSurfaceInfo& surfaceInfo = surface->getSurfaceInfo();
+    const VulkanSurfaceInfo& surfaceInfo = surface->gatherSurfaceInfo(vulkanDevice->getPhysicalDevice());
 
     // Check surface formats supports.
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),

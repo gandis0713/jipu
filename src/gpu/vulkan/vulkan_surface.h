@@ -17,20 +17,19 @@ struct VulkanSurfaceInfo
     std::vector<bool> supportedQueueFamilies; // TODO: remove or not.
 };
 
-class VulkanAdapter;
+class VulkanDriver;
 class VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descriptor);
+    VulkanSurface(VulkanDriver* driver, SurfaceDescriptor descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getSurfaceKHR() const;
-    const VulkanSurfaceInfo& getSurfaceInfo() const;
+    VulkanSurfaceInfo gatherSurfaceInfo(VkPhysicalDevice physicalDevice) const;
 
 private:
     void createSurfaceKHR();
-    void gatherSurfaceInfo();
 
 private:
     VkSurfaceKHR m_surface{ VK_NULL_HANDLE };

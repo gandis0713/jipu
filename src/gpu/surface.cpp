@@ -1,11 +1,11 @@
 #include "vkt/gpu/surface.h"
-#include "vkt/gpu/adapter.h"
+#include "vkt/gpu/driver.h"
 
 namespace vkt
 {
 
-Surface::Surface(Adapter* adapter, SurfaceDescriptor descriptor)
-    : m_adapter(adapter)
+Surface::Surface(Driver* driver, SurfaceDescriptor descriptor)
+    : m_driver(driver)
     , m_windowHandle(descriptor.windowHandle)
 {
 }

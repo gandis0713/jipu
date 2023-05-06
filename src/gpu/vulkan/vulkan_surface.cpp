@@ -1,25 +1,21 @@
 #include "vulkan_surface.h"
-#include "vulkan_adapter.h"
 #include "vulkan_driver.h"
 
 namespace vkt
 {
 
-VulkanSurface::VulkanSurface(VulkanAdapter* adapter, SurfaceDescriptor descriptor)
-    : Surface(adapter, descriptor)
+VulkanSurface::VulkanSurface(VulkanDriver* driver, SurfaceDescriptor descriptor)
+    : Surface(driver, descriptor)
 {
     createSurfaceKHR();
-
-    // Gather sruface information.
-    gatherSurfaceInfo();
 }
 
 VulkanSurface::~VulkanSurface()
 {
-    auto vulkanAdapter = downcast(m_adapter);
-    const VulkanAPI& vkAPI = downcast(vulkanAdapter->getDriver())->vkAPI;
+    auto vulkanDriver = downcast(m_driver);
+    const VulkanAPI& vkAPI = vulkanDriver->vkAPI;
 
-    vkAPI.DestroySurfaceKHR(vulkanAdapter->getInstance(), m_surface, nullptr);
+    vkAPI.DestroySurfaceKHR(vulkanDriver->getInstance(), m_surface, nullptr);
 }
 
 VkSurfaceKHR VulkanSurface::getSurfaceKHR() const
@@ -27,26 +23,22 @@ VkSurfaceKHR VulkanSurface::getSurfaceKHR() const
     return m_surface;
 }
 
-const VulkanSurfaceInfo& VulkanSurface::getSurfaceInfo() const
+VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevice) const
 {
-    return m_surfaceInfo;
-}
+    // TODO: optimizing surfaceinfo caching or other way.
 
-void VulkanSurface::gatherSurfaceInfo()
-{
-    auto vulkanAdapter = downcast(m_adapter);
-    const VulkanAPI& vkAPI = downcast(vulkanAdapter->getDriver())->vkAPI;
+    VulkanSurfaceInfo surfaceInfo{};
 
-    VkPhysicalDevice physicalDevice = vulkanAdapter->getPhysicalDevice();
-    vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &m_surfaceInfo.capabilities);
+    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
+    vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &surfaceInfo.capabilities);
 
     // Surface formats.
     {
         uint32_t surfaceFormatCount;
         vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
 
-        m_surfaceInfo.formats.resize(surfaceFormatCount);
-        vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, m_surfaceInfo.formats.data());
+        surfaceInfo.formats.resize(surfaceFormatCount);
+        vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, surfaceInfo.formats.data());
     }
 
     // Surface present modes.
@@ -54,9 +46,11 @@ void VulkanSurface::gatherSurfaceInfo()
         uint32_t presentModeCount;
         vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
 
-        m_surfaceInfo.presentModes.resize(presentModeCount);
-        vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, m_surfaceInfo.presentModes.data());
+        surfaceInfo.presentModes.resize(presentModeCount);
+        vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, surfaceInfo.presentModes.data());
     }
+
+    return surfaceInfo;
 }
 
 }; // namespace vkt

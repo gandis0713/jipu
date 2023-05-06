@@ -27,7 +27,6 @@ public:
     ~VulkanAdapter() override;
 
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
-    std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) override;
 
     const VulkanDeviceInfo& getDeviceInfo() const;
 

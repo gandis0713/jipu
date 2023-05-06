@@ -11,19 +11,19 @@ struct SurfaceDescriptor
     void* windowHandle;
 };
 
-class Adapter;
+class Driver;
 class VKT_EXPORT Surface
 {
 public:
     Surface() = delete;
-    Surface(Adapter* adapter, SurfaceDescriptor descriptor);
+    Surface(Driver* driver, SurfaceDescriptor descriptor);
     virtual ~Surface() = default;
 
     Surface(const Surface&) = delete;
     Surface& operator=(const Surface&) = delete;
 
 protected:
-    Adapter* m_adapter{ nullptr };
+    Driver* m_driver{ nullptr };
 
 protected:
     void* m_windowHandle{ nullptr };
