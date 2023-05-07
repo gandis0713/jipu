@@ -388,7 +388,7 @@ void Application::createCommandBuffers()
         auto vulkanPipeline = downcast(m_pipeline.get());
         vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
 
-        vkAPI.CmdDraw(m_vecCommandBuffers[i], 3, 1, 0, 0);
+        vkAPI.CmdDraw(m_vecCommandBuffers[i], 6, 1, 0, 0);
 
         vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
 

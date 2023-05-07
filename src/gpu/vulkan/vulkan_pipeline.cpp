@@ -129,11 +129,18 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
     colorBlendingStateCreateInfo.blendConstants[3] = 0.0f; // Optional
 
-    VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH };
+    VkDynamicState dynamicStates[] = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_LINE_WIDTH,
+        VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        VK_DYNAMIC_STATE_DEPTH_BOUNDS,
+        VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+    };
 
     VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
     dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicStateCreateInfo.dynamicStateCount = 2;
+    dynamicStateCreateInfo.dynamicStateCount = sizeof(dynamicStates) / sizeof(dynamicStates[0]);
     dynamicStateCreateInfo.pDynamicStates = dynamicStates;
 
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
@@ -160,7 +167,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.pMultisampleState = &multisampleStateCreateInfo;
     pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
-    pipelineInfo.pDynamicState = nullptr; // Optional
+    pipelineInfo.pDynamicState = nullptr; // &dynamicStateCreateInfo
     pipelineInfo.layout = m_pipelineLayout;
 
     pipelineInfo.renderPass = m_renderPass->getVkRenderPass();
