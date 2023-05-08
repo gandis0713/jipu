@@ -1,11 +1,14 @@
 #pragma once
 
 #include "export.h"
+#include <stdint.h>
 
 namespace vkt
 {
+
 struct BufferDescriptor
 {
+    uint32_t size = 0;
 };
 
 class Device;

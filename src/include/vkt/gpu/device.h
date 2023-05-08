@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/buffer.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/swapchain.h"
@@ -31,6 +32,7 @@ public:
     virtual std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Pipeline> createPipeline(const PipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
 
 protected:
     PhysicalDevice* m_physicalDevice{ nullptr };

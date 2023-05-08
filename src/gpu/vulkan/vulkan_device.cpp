@@ -1,6 +1,7 @@
 #include "vulkan_device.h"
 
 #include "utils/log.h"
+#include "vulkan_buffer.h"
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
@@ -82,6 +83,11 @@ std::unique_ptr<Pipeline> VulkanDevice::createPipeline(const PipelineDescriptor&
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
 {
     return std::make_unique<VulkanQueue>(this, descriptor);
+}
+
+std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBuffer>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)

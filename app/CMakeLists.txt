@@ -9,6 +9,7 @@ project(
     LANGUAGES CXX
 )
 
+find_package(glm CONFIG REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
 
 if(APPLE)
@@ -57,6 +58,7 @@ target_include_directories(${PRJ_NAME}
 target_link_libraries(${PRJ_NAME}
     PRIVATE
     glfw
+    glm
     vkt::vkt
     spdlog::spdlog_header_only
 )

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/cast.h"
 #include "vkt/gpu/pipeline_layout.h"
 
 namespace vkt
@@ -13,5 +14,7 @@ public:
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
     ~VulkanPipelineLayout() override = default;
 };
+
+DOWN_CAST(VulkanPipelineLayout, PipelineLayout);
 
 } // namespace vkt

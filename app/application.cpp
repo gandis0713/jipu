@@ -9,6 +9,7 @@
 
 #include "utils/log.h"
 #include "window.h"
+#include <glm/glm.hpp>
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -94,6 +95,17 @@ void Application::initVulkan()
                                                  600,
                                                  m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
+    }
+
+    // create buffer
+    {
+        m_vertices = {
+            { { 0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+            { { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+            { { -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } }
+        };
+        BufferDescriptor bufferDescriptor{ static_cast<uint32_t>(sizeof(Vertex) * m_vertices.size()) };
+        m_buffer = m_device->createBuffer(bufferDescriptor);
     }
 
     createRenderPass();

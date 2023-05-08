@@ -1,12 +1,48 @@
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
 
+#include <fmt/format.h>
+#include <spdlog/spdlog.h>
+#include <stdexcept>
+
 namespace vkt
 {
 
-VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor)
+VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
     : Buffer(device, descriptor)
 {
+    VkBufferCreateInfo bufferCreateInfo{};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.size = descriptor.size;
+    bufferCreateInfo.flags = 0;
+    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &bufferCreateInfo, nullptr, &m_buffer);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", result));
+    }
+
+    VkMemoryRequirements memoryRequirements{};
+    vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
+
+    spdlog::info("Buffer Memory Requirements");
+    spdlog::info("  size: {}", memoryRequirements.size);
+    spdlog::info("  alignment: {}", memoryRequirements.alignment);
+    spdlog::info("  memoryTypeBits: {}", memoryRequirements.memoryTypeBits);
+}
+
+VulkanBuffer::~VulkanBuffer()
+{
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
+}
+
+VkBuffer VulkanBuffer::getVkBuffer() const
+{
+    return m_buffer;
 }
 
 } // namespace vkt
