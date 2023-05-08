@@ -34,7 +34,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     spdlog::info("  memoryTypeBits: {}", memoryRequirements.memoryTypeBits);
 
     VkMemoryAllocateInfo memoryAllocateInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memoryAllocateInfo.allocationSize = memoryRequirements.size;
 }
 
