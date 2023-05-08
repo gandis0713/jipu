@@ -12,7 +12,7 @@ namespace vkt
 VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, PhysicalDeviceDescriptor descriptor)
     : PhysicalDevice(vulkanDriver, descriptor)
 {
-    m_physicalDevice = vulkanDriver->getPhysicalDevice(descriptor.index);
+    m_physicalDevice = vulkanDriver->getVkPhysicalDevice(descriptor.index);
 
     // Gather device information.
     gatherPhysicalDeviceInfo();
@@ -29,12 +29,12 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(DeviceDescriptor desc
     return std::make_unique<VulkanDevice>(this, descriptor);
 }
 
-VkInstance VulkanPhysicalDevice::getInstance() const
+VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
-    return downcast(m_driver)->getInstance();
+    return downcast(m_driver)->getVkInstance();
 }
 
-VkPhysicalDevice VulkanPhysicalDevice::getPhysicalDevice() const
+VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
 {
     return m_physicalDevice;
 }

@@ -36,7 +36,7 @@ public:
 
 public:
     VkDevice getVkDevice() const;
-    VkPhysicalDevice getPhysicalDevice() const;
+    VkPhysicalDevice getVkPhysicalDevice() const;
 
     VkQueue getQueue() const;
     uint32_t getQueueIndex() const;

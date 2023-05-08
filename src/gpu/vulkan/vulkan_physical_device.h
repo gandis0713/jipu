@@ -34,8 +34,8 @@ public:
     const VulkanPhysicalDeviceInfo& getInfo() const;
 
 public:
-    VkInstance getInstance() const;
-    VkPhysicalDevice getPhysicalDevice() const;
+    VkInstance getVkInstance() const;
+    VkPhysicalDevice getVkPhysicalDevice() const;
 
 private:
     void gatherPhysicalDeviceInfo();

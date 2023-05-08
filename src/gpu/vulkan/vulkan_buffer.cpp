@@ -1,5 +1,6 @@
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -36,6 +37,40 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     VkMemoryAllocateInfo memoryAllocateInfo{};
     memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     memoryAllocateInfo.allocationSize = memoryRequirements.size;
+
+    // find memory type. TODO: change location.
+    {
+        int memoryTypeIndex = -1;
+        VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        auto vulkanPhysicalDevice = downcast(device->getPhysicalDevice());
+        const auto& physicalDeviceInfo = vulkanPhysicalDevice->getInfo();
+        for (int i = 0u; i < physicalDeviceInfo.memoryTypes.size(); ++i)
+        {
+            const auto& memoryType = physicalDeviceInfo.memoryTypes[i];
+            if ((memoryType.propertyFlags & flags) == flags)
+            {
+                memoryTypeIndex = i;
+                break;
+            }
+        }
+
+        if (memoryTypeIndex == -1)
+        {
+            // TODO: delete VkBuffer resource automatically.
+            device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
+            throw std::runtime_error("Failed to find memory type index");
+        }
+
+        memoryAllocateInfo.memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex);
+    }
+
+    result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &m_deviceMemory);
+    if (result != VK_SUCCESS)
+    {
+        // TODO: delete VkBuffer resource automatically.
+        device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
+        throw std::runtime_error("Failed to allocate memory");
+    }
 }
 
 VulkanBuffer::~VulkanBuffer()

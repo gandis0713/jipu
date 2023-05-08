@@ -37,7 +37,7 @@ void VulkanSurface::createSurfaceKHR()
         surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
         surfaceCreateInfo.pLayer = layer;
 
-        VkResult result = vkAPI.CreateMetalSurfaceEXT(driver->getInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+        VkResult result = vkAPI.CreateMetalSurfaceEXT(driver->getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {
@@ -71,7 +71,7 @@ void VulkanSurface::createSurfaceKHR()
             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");
         }
 
-        VkResult result = vkAPI.CreateMacOSSurfaceMVK(driver->getInstance(), &createInfo, nullptr, &m_surface);
+        VkResult result = vkAPI.CreateMacOSSurfaceMVK(driver->getVkInstance(), &createInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {

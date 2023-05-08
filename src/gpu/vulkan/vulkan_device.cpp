@@ -105,11 +105,11 @@ VkDevice VulkanDevice::getVkDevice() const
     return m_device;
 }
 
-VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
+VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
     VulkanPhysicalDevice* vulkanPhysicalDevice = downcast(m_physicalDevice);
 
-    return vulkanPhysicalDevice->getPhysicalDevice();
+    return vulkanPhysicalDevice->getVkPhysicalDevice();
 }
 
 VkQueue VulkanDevice::getQueue() const
@@ -181,7 +181,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     //     deviceCreateInfo.enabledLayerCount = 0;
     // }
 
-    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getPhysicalDevice();
+    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
     if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");

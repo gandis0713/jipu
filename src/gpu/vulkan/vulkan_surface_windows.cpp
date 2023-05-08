@@ -15,7 +15,7 @@ void VulkanSurface::createSurfaceKHR()
     createInfo.hinstance = GetModuleHandle(nullptr);
 
     VulkanDriver* driver = downcast(m_driver);
-    VkResult result = driver->vkAPI.CreateWin32SurfaceKHR(driver->getInstance(), &createInfo, nullptr, &m_surface);
+    VkResult result = driver->vkAPI.CreateWin32SurfaceKHR(driver->getVkInstance(), &createInfo, nullptr, &m_surface);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", result));
