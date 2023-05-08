@@ -16,6 +16,9 @@ struct VulkanPhysicalDeviceInfo : VulkanDeviceKnobs
 
     std::vector<VkLayerProperties> layerProperties;
     std::vector<VkExtensionProperties> extensionProperties;
+
+    std::vector<VkMemoryType> memoryTypes;
+    std::vector<VkMemoryHeap> memoryHeaps;
 };
 
 class VulkanDriver;

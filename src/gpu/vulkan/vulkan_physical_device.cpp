@@ -52,6 +52,15 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_Info.physicalDeviceProperties);
     vkAPI.GetPhysicalDeviceFeatures(m_physicalDevice, &m_Info.physicalDeviceFeatures);
 
+    // Gather device memory properties.
+    {
+        VkPhysicalDeviceMemoryProperties memoryProperties{};
+        vkAPI.GetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
+
+        m_Info.memoryTypes.assign(memoryProperties.memoryTypes, memoryProperties.memoryTypes + memoryProperties.memoryTypeCount);
+        m_Info.memoryHeaps.assign(memoryProperties.memoryHeaps, memoryProperties.memoryHeaps + memoryProperties.memoryHeapCount);
+    }
+
     // Gather queue Family Properties.
     {
         uint32_t queueFamilyCount = 0;
