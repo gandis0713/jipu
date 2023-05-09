@@ -18,7 +18,7 @@ VulkanSurface::~VulkanSurface()
     auto vulkanDriver = downcast(m_driver);
     const VulkanAPI& vkAPI = vulkanDriver->vkAPI;
 
-    vkAPI.DestroySurfaceKHR(vulkanDriver->getInstance(), m_surface, nullptr);
+    vkAPI.DestroySurfaceKHR(vulkanDriver->getVkInstance(), m_surface, nullptr);
 }
 
 VkSurfaceKHR VulkanSurface::getSurfaceKHR() const

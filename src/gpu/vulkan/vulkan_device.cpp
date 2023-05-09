@@ -1,6 +1,7 @@
 #include "vulkan_device.h"
 
 #include "utils/log.h"
+#include "vulkan_buffer.h"
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
@@ -84,6 +85,11 @@ std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descript
     return std::make_unique<VulkanQueue>(this, descriptor);
 }
 
+std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBuffer>(this, descriptor);
+}
+
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
@@ -99,11 +105,11 @@ VkDevice VulkanDevice::getVkDevice() const
     return m_device;
 }
 
-VkPhysicalDevice VulkanDevice::getPhysicalDevice() const
+VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
     VulkanPhysicalDevice* vulkanPhysicalDevice = downcast(m_physicalDevice);
 
-    return vulkanPhysicalDevice->getPhysicalDevice();
+    return vulkanPhysicalDevice->getVkPhysicalDevice();
 }
 
 VkQueue VulkanDevice::getQueue() const
@@ -175,7 +181,7 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     //     deviceCreateInfo.enabledLayerCount = 0;
     // }
 
-    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getPhysicalDevice();
+    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
     if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");

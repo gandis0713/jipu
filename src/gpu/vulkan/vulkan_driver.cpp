@@ -344,17 +344,17 @@ std::unique_ptr<PhysicalDevice> VulkanDriver::createPhysicalDevice(PhysicalDevic
     return std::make_unique<VulkanPhysicalDevice>(this, descriptor);
 }
 
-VkInstance VulkanDriver::getInstance() const
+VkInstance VulkanDriver::getVkInstance() const
 {
     return m_instance;
 }
 
-const std::vector<VkPhysicalDevice>& VulkanDriver::getPhysicalDevices() const
+const std::vector<VkPhysicalDevice>& VulkanDriver::getVkPhysicalDevices() const
 {
     return m_physicalDevices;
 }
 
-VkPhysicalDevice VulkanDriver::getPhysicalDevice(uint32_t index) const
+VkPhysicalDevice VulkanDriver::getVkPhysicalDevice(uint32_t index) const
 {
     assert(index < m_physicalDevices.size());
 

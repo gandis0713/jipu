@@ -29,13 +29,14 @@ public:
     std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) override;
     std::unique_ptr<Pipeline> createPipeline(const PipelineDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
+    std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
 
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
 public:
     VkDevice getVkDevice() const;
-    VkPhysicalDevice getPhysicalDevice() const;
+    VkPhysicalDevice getVkPhysicalDevice() const;
 
     VkQueue getQueue() const;
     uint32_t getQueueIndex() const;

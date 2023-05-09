@@ -2,6 +2,7 @@
 
 #include "src/gpu/vulkan/vulkan_framebuffer.h"
 #include "src/gpu/vulkan/vulkan_render_pass.h"
+#include "vkt/gpu/buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
@@ -16,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
+#include <glm/glm.hpp>
 #include <memory>
 #include <optional>
 #include <set>
@@ -30,6 +32,12 @@ struct SwapChainSupportDetails
     VkSurfaceCapabilitiesKHR surfaceCapabilities;
     std::vector<VkSurfaceFormatKHR> surfaceFormats;
     std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct Vertex
+{
+    glm::vec2 pos;
+    glm::vec3 color;
 };
 
 class Window;
@@ -89,6 +97,9 @@ private:
 private:
     Window* m_window;
 
+    // data
+    std::vector<Vertex> m_vertices = {};
+
     // wrapper
     std::unique_ptr<Driver> m_driver{ nullptr };
     std::unique_ptr<PhysicalDevice> m_physicalDevice{ nullptr };
@@ -98,6 +109,8 @@ private:
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline{ nullptr };
+
+    std::unique_ptr<Buffer> m_buffer{ nullptr };
 
     VulkanRenderPassDescriptor m_renderPassDescriptor{};
     std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};

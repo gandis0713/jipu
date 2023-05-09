@@ -33,9 +33,9 @@ public:
     std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) override;
 
 public: // vulkan
-    VkInstance getInstance() const;
-    const std::vector<VkPhysicalDevice>& getPhysicalDevices() const;
-    VkPhysicalDevice getPhysicalDevice(uint32_t index) const;
+    VkInstance getVkInstance() const;
+    const std::vector<VkPhysicalDevice>& getVkPhysicalDevices() const;
+    VkPhysicalDevice getVkPhysicalDevice(uint32_t index) const;
 
     const VulkanDriverInfo& getDriverInfo() const;
 

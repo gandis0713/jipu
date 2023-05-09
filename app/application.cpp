@@ -1,5 +1,6 @@
 #include "application.h"
 
+#include "src/gpu/vulkan/vulkan_buffer.h"
 #include "src/gpu/vulkan/vulkan_device.h"
 #include "src/gpu/vulkan/vulkan_physical_device.h"
 #include "src/gpu/vulkan/vulkan_pipeline.h"
@@ -9,6 +10,7 @@
 
 #include "utils/log.h"
 #include "window.h"
+#include <glm/glm.hpp>
 #include <string>
 
 std::filesystem::path vkt::Application::path;
@@ -96,6 +98,23 @@ void Application::initVulkan()
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
 
+    // create buffer
+    {
+        m_vertices = {
+            { { 0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+            { { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+            { { -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } }
+        };
+
+        uint64_t size = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+        BufferDescriptor bufferDescriptor{ .size = size };
+        m_buffer = m_device->createBuffer(bufferDescriptor);
+
+        void* mappedPointer = m_buffer->map();
+        memcpy(mappedPointer, m_vertices.data(), size);
+        m_buffer->unmap();
+    }
+
     createRenderPass();
     createGraphicsPipeline();
     createFramebuffers();
@@ -150,123 +169,6 @@ void Application::cleanup()
 
     glfwTerminate();
 }
-
-// TODO: remove
-// const std::vector<const char*>& Application::getRequiredValidationLayers()
-// {
-//     static std::vector<const char*> requiredValidationLayers;
-
-//     if (requiredValidationLayers.size() == 0)
-//     {
-//         if (enableValidationLayers)
-//         {
-//             // requiredValidationLayers.push_back("VK_LAYER_KHRONOS_validation");
-//         }
-
-//         LOG_DEBUG("Required Validataion Layers :");
-//         for (const auto& validationLayer : requiredValidationLayers)
-//         {
-//             LOG_DEBUG("  : {}", validationLayer);
-//         }
-//     }
-
-//     return requiredValidationLayers;
-// }
-
-// bool Application::checkValidationLayerSupport(const std::vector<const char*> validationLayers)
-// {
-//     uint32_t layerCount;
-//     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-//     std::vector<VkLayerProperties> availableLayers(layerCount);
-//     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-//     LOG_DEBUG("Available Validation Layer Count : {}", availableLayers.size());
-//     LOG_DEBUG("Available Aalidation Layer : ");
-//     for (const VkLayerProperties& layerProperties : availableLayers)
-//     {
-//         LOG_DEBUG("  : {}", layerProperties.layerName);
-//     }
-
-//     for (const char* layerName : validationLayers)
-//     {
-//         bool layerFound = false;
-//         for (const auto& layerProperties : availableLayers)
-//         {
-//             if (strcmp(layerName, layerProperties.layerName) == 0)
-//             {
-//                 layerFound = true;
-//                 break;
-//             }
-//         }
-
-//         if (!layerFound)
-//         {
-//             return false;
-//         }
-//     }
-
-//     return true;
-// }
-
-// void Application::setupDebugMessenger()
-// {
-//     if (!enableValidationLayers)
-//         return;
-
-//     VkDebugUtilsMessengerCreateInfoEXT createInfo;
-//     populateDefaultDebugUtilsMessengerCreateInfo(createInfo);
-//     if (CreateDebugUtilsMessengerEXT(m_context.instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS)
-//     {
-//         LOG_ERROR("failed to set up debug messenger!");
-//     }
-// }
-
-// VkResult Application::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
-// pDebugUtilsMessengerCreateInfoEXT,
-//                                                    const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
-//                                                    pDebugUtilsMessengerEXT)
-// {
-//     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
-//     "vkCreateDebugUtilsMessengerEXT"); if (func != nullptr)
-//     {
-//         return func(instance, pDebugUtilsMessengerCreateInfoEXT, pAllocator, pDebugUtilsMessengerEXT);
-//     }
-//     else
-//     {
-//         return VK_ERROR_EXTENSION_NOT_PRESENT;
-//     }
-// }
-
-// void Application::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
-// VkAllocationCallbacks* pAllocator)
-// {
-//     if (!enableValidationLayers)
-//         return;
-
-//     auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
-//     "vkDestroyDebugUtilsMessengerEXT"); if (func != nullptr)
-//     {
-//         func(instance, debugMessenger, pAllocator);
-//     }
-// }
-
-// void Application::populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT&
-// debugUtilsMessengerCreateInfo)
-// {
-//     debugUtilsMessengerCreateInfo = {};
-//     debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-//     debugUtilsMessengerCreateInfo.messageSeverity =
-//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-//         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-//     debugUtilsMessengerCreateInfo.messageType =
-//         VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-//         VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-//     debugUtilsMessengerCreateInfo.pfnUserCallback = debugCallback;
-//     debugUtilsMessengerCreateInfo.flags = 0;
-//     debugUtilsMessengerCreateInfo.pNext = nullptr;
-//     debugUtilsMessengerCreateInfo.pUserData = nullptr; // Optional
-// }
 
 void Application::createGraphicsPipeline()
 {
@@ -388,7 +290,12 @@ void Application::createCommandBuffers()
         auto vulkanPipeline = downcast(m_pipeline.get());
         vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
 
-        vkAPI.CmdDraw(m_vecCommandBuffers[i], 6, 1, 0, 0);
+        auto vulkanBuffer = downcast(m_buffer.get());
+        VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
+        VkDeviceSize offsets[] = { 0 };
+        vkAPI.CmdBindVertexBuffers(m_vecCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+        vkAPI.CmdDraw(m_vecCommandBuffers[i], static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
 
         vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
 
