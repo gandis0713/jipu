@@ -2,6 +2,7 @@
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 
+#include "utils/log.h"
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -71,12 +72,41 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
         device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
         throw std::runtime_error("Failed to allocate memory");
     }
+
+    result = vkAPI.BindBufferMemory(device->getVkDevice(), m_buffer, m_deviceMemory, 0);
+    if (result != VK_SUCCESS)
+    {
+        // TODO: delete VkBuffer resource automatically.
+        device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
+        device->vkAPI.FreeMemory(device->getVkDevice(), m_deviceMemory, nullptr);
+        throw std::runtime_error("Failed to bind memory");
+    }
 }
 
 VulkanBuffer::~VulkanBuffer()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
+    vulkanDevice->vkAPI.FreeMemory(vulkanDevice->getVkDevice(), m_deviceMemory, nullptr);
+}
+
+void* VulkanBuffer::map()
+{
+    void* mappedPointer = nullptr;
+
+    auto device = downcast(m_device);
+    VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_deviceMemory, 0, m_size, 0, &mappedPointer);
+    if (result != VK_SUCCESS)
+    {
+        LOG_ERROR("Failed to map to pointer. error: {}", result);
+    }
+
+    return mappedPointer;
+}
+void VulkanBuffer::unmap()
+{
+    auto device = downcast(m_device);
+    device->vkAPI.UnmapMemory(device->getVkDevice(), m_deviceMemory);
 }
 
 VkBuffer VulkanBuffer::getVkBuffer() const
