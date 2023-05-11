@@ -11,6 +11,7 @@
 #include "vulkan_swapchain.h"
 
 #include <stdexcept>
+
 const std::vector<const char*> getRequiredDeviceExtension()
 {
     std::vector<const char*> requiredDeviceExtension;
@@ -35,13 +36,14 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     , m_frameBufferCache(this)
 {
     const VulkanPhysicalDeviceInfo& info = physicalDevice->getInfo();
-    constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+
+    // GRAPHICS and COMPUTE imply TRANSFER
+    constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
 
     std::unordered_set<uint32_t> queueFamilyIndices{};
     for (uint32_t i = 0; i < info.queueFamilyProperties.size(); ++i)
     {
-        if ((info.queueFamilyProperties[i].queueFlags & queueFlags) ==
-            queueFlags)
+        if ((info.queueFamilyProperties[i].queueFlags & queueFlags) == queueFlags)
         {
             queueFamilyIndices.insert(i);
         }
