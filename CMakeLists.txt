@@ -24,7 +24,7 @@ endif()
 # find package
 find_package(spdlog CONFIG REQUIRED)
 
-add_subdirectory(src)
+add_subdirectory(vkt)
 add_subdirectory(app)
 add_dependencies(app vkt::vkt)
 

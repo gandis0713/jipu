@@ -1,7 +1,5 @@
 #pragma once
 
-#include "src/gpu/vulkan/vulkan_framebuffer.h"
-#include "src/gpu/vulkan/vulkan_render_pass.h"
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
@@ -10,6 +8,8 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/vulkan/vulkan_framebuffer.h"
+#include "vkt/gpu/vulkan/vulkan_render_pass.h"
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
