@@ -32,6 +32,7 @@ public:
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
 
     const VulkanPhysicalDeviceInfo& getInfo() const;
+    int fineMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
 
 public:
     VkInstance getVkInstance() const;
