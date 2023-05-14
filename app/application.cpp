@@ -267,18 +267,16 @@ void Application::createCommandBuffers()
             LOG_ERROR("failed to begin recording command buffer!");
         }
 
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-
         auto vulkanDevice = downcast(m_device.get());
         auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-        renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
-
-        VulkanFrameBuffer* vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
-        renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
-
-        renderPassInfo.renderArea.offset = { 0, 0 };
+        auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
         auto vulkanSwapChain = downcast(m_swapChain.get());
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
+        renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
+        renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
 
         VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -287,9 +285,8 @@ void Application::createCommandBuffers()
 
         vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        // vkCmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
         auto vulkanPipeline = downcast(m_pipeline.get());
-        vulkanPipeline->bindPipeline(m_vecCommandBuffers[i]);
+        vkAPI.CmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
 
         auto vulkanBuffer = downcast(m_buffer.get());
         VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
