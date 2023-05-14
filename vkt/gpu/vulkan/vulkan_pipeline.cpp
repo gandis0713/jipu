@@ -15,6 +15,11 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, const PipelineDescrip
 {
 }
 
+VkPipeline VulkanPipeline::getVkPipeline() const
+{
+    return m_graphicsPipeline;
+}
+
 void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
 {
     m_renderPass = renderPass;
@@ -25,12 +30,6 @@ void VulkanPipeline::destroy()
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
     vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
-}
-
-void VulkanPipeline::bindPipeline(VkCommandBuffer commandBuffer)
-{
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.CmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
 }
 
 void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath)

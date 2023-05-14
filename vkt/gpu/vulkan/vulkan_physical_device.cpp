@@ -105,4 +105,20 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
     }
 }
 
+int VulkanPhysicalDevice::fineMemoryTypeIndex(VkMemoryPropertyFlags flags) const
+{
+    int memoryTypeIndex = -1;
+    for (int i = 0u; i < m_Info.memoryTypes.size(); ++i)
+    {
+        const auto& memoryType = m_Info.memoryTypes[i];
+        if ((memoryType.propertyFlags & flags) == flags)
+        {
+            memoryTypeIndex = i;
+            break;
+        }
+    }
+
+    return memoryTypeIndex;
+}
+
 } // namespace vkt

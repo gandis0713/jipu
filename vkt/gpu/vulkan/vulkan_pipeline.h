@@ -23,11 +23,11 @@ public:
     VulkanPipeline(const VulkanPipeline&) = delete;
     VulkanPipeline& operator=(const VulkanPipeline&) = delete;
 
+    VkPipeline getVkPipeline() const;
+
     void setRenderPass(VulkanRenderPass* renderPass);
 
     void destroy();
-
-    void bindPipeline(VkCommandBuffer commandBuffer);
 
     void createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath);
     VkShaderModule createShaderModule(const std::vector<char>& codeBuffer);

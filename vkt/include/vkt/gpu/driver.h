@@ -18,7 +18,7 @@ enum class DRIVER_TYPE
 
 struct DriverDescriptor
 {
-    DRIVER_TYPE apiType = DRIVER_TYPE::NONE;
+    DRIVER_TYPE type = DRIVER_TYPE::NONE;
 };
 
 class VKT_EXPORT Driver
