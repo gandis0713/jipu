@@ -18,45 +18,6 @@ const char kExtensionNameExtMetalSurface[] = "VK_EXT_metal_surface";
 
 const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 
-// static VkPhysicalDevice selectPhysicalDevice(const std::vector<VkPhysicalDevice>& physicalDevices,
-//                                              VkQueueFlags queueFlags = VK_QUEUE_GRAPHICS_BIT)
-// {
-//     for (const VkPhysicalDevice& candidatePhysicalDevice : physicalDevices)
-//     {
-//         uint32_t queueFamilyCount = 0;
-//         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount, nullptr);
-
-//         std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-//         vkGetPhysicalDeviceQueueFamilyProperties(candidatePhysicalDevice, &queueFamilyCount,
-//                                                  queueFamilyProperties.data());
-
-//         LOG_INFO("Queue Family Size: {}", queueFamilyProperties.size());
-//         for (auto i = 0; i < queueFamilyProperties.size(); ++i)
-//         {
-
-//             // check graphic family
-//             const auto& queueFamily = queueFamilyProperties[i];
-
-//             LOG_INFO("Queue Family Index: {0}, queueFlags: {1:b}", i, queueFamily.queueFlags);
-
-//             const int family = queueFamily.queueFlags & queueFlags;
-
-//             if (family == queueFlags)
-//             {
-//                 return candidatePhysicalDevice;
-//             }
-
-//             // TODO: check support swap chain
-
-//             // TODO: check preset???
-//         }
-//     }
-
-//     throw std::runtime_error("Failed to find a suitable GPU!");
-
-//     return VK_NULL_HANDLE;
-// }
-
 namespace vkt
 {
 
