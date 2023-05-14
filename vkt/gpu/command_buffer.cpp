@@ -1,11 +1,11 @@
 #include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
+#include "vkt/gpu/device.h"
 
 namespace vkt
 {
 
-CommandBuffer::CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor& descriptor)
-    : m_encoder(encoder)
+CommandBuffer::CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor)
+    : m_device(device)
 {
 }
 

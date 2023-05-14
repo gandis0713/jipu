@@ -2,7 +2,6 @@
 
 #include "utils/assert.h"
 #include "utils/log.h"
-#include "vulkan_allocation.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 
@@ -158,7 +157,7 @@ void VulkanDriver::createInstance() noexcept(false)
     //     instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
     // }
 
-    VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, vkt::VK_ALLOC_CB, &m_instance);
+    VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, nullptr, &m_instance);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", result));

@@ -5,12 +5,12 @@
 namespace vkt
 {
 
-class VulkanCommandEncoder;
+class VulkanDevice;
 class VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;
-    VulkanCommandBuffer(VulkanCommandEncoder* encoder, const CommandBufferDescriptor& descriptor);
+    VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor);
     ~VulkanCommandBuffer() override = default;
 };
 } // namespace vkt

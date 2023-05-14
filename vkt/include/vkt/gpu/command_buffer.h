@@ -1,5 +1,6 @@
 #pragma once
 
+#include "export.h"
 #include "vkt/gpu/buffer.h"
 
 namespace vkt
@@ -26,15 +27,15 @@ struct CommandBufferDescriptor
 {
 };
 
-class CommandEncoder;
+class Device;
 class CommandBuffer
 {
 public:
     CommandBuffer() = delete;
-    CommandBuffer(CommandEncoder* encoder, const CommandBufferDescriptor& descriptor);
+    CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor);
     virtual ~CommandBuffer() = default;
 
 protected:
-    CommandEncoder* m_encoder = nullptr;
+    Device* m_device = nullptr;
 };
 } // namespace vkt

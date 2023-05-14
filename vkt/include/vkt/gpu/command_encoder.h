@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 namespace vkt
 {
 
@@ -7,15 +9,15 @@ struct CommandEncoderDescriptor
 {
 };
 
-class Device;
+class CommandBuffer;
 class CommandEncoder
 {
 public:
     CommandEncoder() = delete;
-    CommandEncoder(Device* device, const CommandEncoderDescriptor& descriptor);
+    CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     virtual ~CommandEncoder() = default;
 
 protected:
-    Device* m_device = nullptr;
+    CommandBuffer* m_commandBuffer = nullptr;
 };
 } // namespace vkt
