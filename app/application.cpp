@@ -65,13 +65,13 @@ void Application::initVulkan()
 {
     // create Driver.
     {
-        DriverDescriptor descriptor{ DRIVER_TYPE::VULKAN };
+        DriverDescriptor descriptor{ .type = DRIVER_TYPE::VULKAN };
         m_driver = Driver::create(descriptor);
     }
 
     // create surface
     {
-        SurfaceDescriptor descriptor{ m_window->getNativeWindow() };
+        SurfaceDescriptor descriptor{ .windowHandle = m_window->getNativeWindow() };
         m_surface = m_driver->createSurface(descriptor);
     }
 
@@ -89,11 +89,11 @@ void Application::initVulkan()
 
     // create swapchain
     {
-        SwapChainDescriptor swapChainCreateInfo{ TextureFormat::kBGRA_8888_UInt_Norm,
-                                                 PresentMode::kFifo,
-                                                 ColorSpace::kSRGBNonLinear,
-                                                 800,
-                                                 600,
+        SwapChainDescriptor swapChainCreateInfo{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
+                                                 .presentMode = PresentMode::kFifo,
+                                                 .colorSpace = ColorSpace::kSRGBNonLinear,
+                                                 .width = 800,
+                                                 .height = 600,
                                                  m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
@@ -107,7 +107,8 @@ void Application::initVulkan()
         };
 
         uint64_t size = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor bufferDescriptor{ .size = size };
+        BufferDescriptor bufferDescriptor{ .size = size,
+                                           .usage = BufferUsage::kVertex };
         m_buffer = m_device->createBuffer(bufferDescriptor);
 
         void* mappedPointer = m_buffer->map();

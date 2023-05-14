@@ -1,4 +1,4 @@
-#include "vulkan_heap_memory.h"
+#include "vulkan_memory.h"
 
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
@@ -8,7 +8,7 @@
 namespace vkt
 {
 
-VulkanHeapMemory::VulkanHeapMemory(VulkanDevice* device, const VulkanHeapMemoryDescriptor& descriptor) noexcept(false)
+VulkanMemory::VulkanMemory(VulkanDevice* device, const VulkanMemoryDescriptor& descriptor) noexcept(false)
     : m_device(device)
 {
     int memoryTypeIndex = downcast(device->getPhysicalDevice())->fineMemoryTypeIndex(descriptor.flags);
@@ -30,13 +30,13 @@ VulkanHeapMemory::VulkanHeapMemory(VulkanDevice* device, const VulkanHeapMemoryD
     }
 }
 
-VulkanHeapMemory::~VulkanHeapMemory()
+VulkanMemory::~VulkanMemory()
 {
     const VulkanAPI& vkAPI = m_device->vkAPI;
     vkAPI.FreeMemory(m_device->getVkDevice(), m_deviceMemory, nullptr);
 }
 
-VkDeviceMemory VulkanHeapMemory::getVkDeviceMemory() const
+VkDeviceMemory VulkanMemory::getVkDeviceMemory() const
 {
     return m_deviceMemory;
 }

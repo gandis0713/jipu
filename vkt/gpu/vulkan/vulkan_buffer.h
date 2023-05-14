@@ -2,7 +2,7 @@
 #include "utils/cast.h"
 #include "vkt/gpu/buffer.h"
 #include "vulkan_api.h"
-#include "vulkan_heap_memory.h"
+#include "vulkan_memory.h"
 
 #include <memory>
 
@@ -24,9 +24,13 @@ public:
 
 private:
     VkBuffer m_buffer{ VK_NULL_HANDLE };
-    std::unique_ptr<VulkanHeapMemory> m_heapMemory{ nullptr };
+    std::unique_ptr<VulkanMemory> m_memory{ nullptr };
 };
 
 DOWN_CAST(VulkanBuffer, Buffer);
+
+// Convert Helper
+VkAccessFlags BufferUsage2VkAccessFlags(BufferUsage usage);
+BufferUsage VkAccessFlags2BufferUsage(VkAccessFlags flags);
 
 } // namespace vkt

@@ -5,19 +5,19 @@
 namespace vkt
 {
 
-struct VulkanHeapMemoryDescriptor
+struct VulkanMemoryDescriptor
 {
     VkMemoryPropertyFlags flags{};
     VkMemoryRequirements requirements{};
 };
 
 class VulkanDevice;
-class VulkanHeapMemory
+class VulkanMemory
 {
 public:
-    VulkanHeapMemory() = delete;
-    VulkanHeapMemory(VulkanDevice* device, const VulkanHeapMemoryDescriptor& descriptor) noexcept(false);
-    ~VulkanHeapMemory();
+    VulkanMemory() = delete;
+    VulkanMemory(VulkanDevice* device, const VulkanMemoryDescriptor& descriptor) noexcept(false);
+    ~VulkanMemory();
 
     VkDeviceMemory getVkDeviceMemory() const;
 
