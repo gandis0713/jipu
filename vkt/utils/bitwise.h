@@ -41,8 +41,6 @@ inline constexpr bool operator!=(size_t lhs, Enum rhs) noexcept
     return rhs != lhs;
 }
 
-// ------------------------------------------------------------------------------------------------
-
 template <typename Enum, typename std::enable_if_t<
                              std::is_enum<Enum>::value || std::is_enum_v<Enum>, int> = 0>
 inline constexpr bool operator!(Enum rhs) noexcept
