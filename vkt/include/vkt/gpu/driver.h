@@ -2,6 +2,7 @@
 
 #include "export.h"
 #include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/surface.h"
 
 #include <memory>
 

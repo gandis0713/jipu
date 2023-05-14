@@ -1,7 +1,6 @@
 #pragma once
 
 #include "export.h"
-#include <memory>
 
 namespace vkt
 {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "export.h"
-#include "utils/bitwise.h"
 #include <stdint.h>
 
 namespace vkt
