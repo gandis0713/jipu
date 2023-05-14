@@ -94,7 +94,7 @@ void Application::initVulkan()
                                                  .colorSpace = ColorSpace::kSRGBNonLinear,
                                                  .width = 800,
                                                  .height = 600,
-                                                 m_surface.get() };
+                                                 .surface = m_surface.get() };
         m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
     }
 
