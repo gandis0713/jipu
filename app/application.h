@@ -117,8 +117,6 @@ private:
     VulkanRenderPassDescriptor m_renderPassDescriptor{};
     std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 
-    // command
-    std::vector<VkCommandBuffer> m_vecCommandBuffers;
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 
     // sync

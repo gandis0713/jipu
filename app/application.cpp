@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include "vkt/gpu/vulkan/vulkan_buffer.h"
+#include "vkt/gpu/vulkan/vulkan_command_buffer.h"
 #include "vkt/gpu/vulkan/vulkan_device.h"
 #include "vkt/gpu/vulkan/vulkan_physical_device.h"
 #include "vkt/gpu/vulkan/vulkan_pipeline.h"
@@ -269,74 +270,8 @@ void Application::createCommandBuffers()
         commandEncoder->begin();
         commandEncoder->setPipeline(m_pipeline.get());
         commandEncoder->setVertexBuffer(m_buffer.get());
+        commandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         commandEncoder->end();
-    }
-
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    {
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
-        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        commandBufferAllocateInfo.commandPool = vulkanDevice->getCommandPool();
-        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
-
-        if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
-        {
-            LOG_ERROR("failed to allocate command buffers!");
-        }
-    }
-
-    // TODO: replace this to comand encoder.
-    {
-        for (size_t i = 0; i < m_vecCommandBuffers.size(); i++)
-        {
-            VkCommandBufferBeginInfo commandBufferBeginInfo{};
-            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            commandBufferBeginInfo.flags = 0;                  // Optional
-            commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
-
-            if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
-            {
-                LOG_ERROR("failed to begin recording command buffer!");
-            }
-
-            auto vulkanDevice = downcast(m_device.get());
-            auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-            auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
-            auto vulkanSwapChain = downcast(m_swapChain.get());
-
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
-            renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
-            renderPassInfo.renderArea.offset = { 0, 0 };
-            renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
-
-            VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearValue;
-
-            vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-            auto vulkanPipeline = downcast(m_pipeline.get());
-            vkAPI.CmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
-
-            auto vulkanBuffer = downcast(m_buffer.get());
-            VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
-            VkDeviceSize offsets[] = { 0 };
-            vkAPI.CmdBindVertexBuffers(m_vecCommandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-            vkAPI.CmdDraw(m_vecCommandBuffers[i], static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
-
-            vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
-
-            if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
-            {
-                LOG_ERROR("failed to record command buffer!");
-            }
-        }
     }
 }
 
@@ -360,7 +295,8 @@ void Application::drawFrame()
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_vecCommandBuffers[imageIndex];
+    VkCommandBuffer commandBuffer = downcast(m_commandBuffers[imageIndex].get())->getVkCommandBuffer();
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphore };
     submitInfo.signalSemaphoreCount = 1;

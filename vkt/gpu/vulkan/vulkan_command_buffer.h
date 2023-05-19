@@ -3,13 +3,14 @@
 #include "vkt/gpu/command_buffer.h"
 #include "vulkan_api.h"
 
+#include "export.h"
 #include "utils/cast.h"
 
 namespace vkt
 {
 
 class VulkanDevice;
-class VulkanCommandBuffer : public CommandBuffer
+class VKT_EXPORT VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;
