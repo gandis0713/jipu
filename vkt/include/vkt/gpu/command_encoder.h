@@ -66,8 +66,8 @@ public:
     CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     virtual ~CommandEncoder() = default;
 
-    virtual void startEncoding() = 0;
-    virtual void endEncoding() = 0;
+    virtual void begin() = 0;
+    virtual void end() = 0;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
     virtual void setVertexBuffer(Buffer* buffer) = 0;

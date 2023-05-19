@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include <stdint.h>
 
 namespace vkt
 {
@@ -23,6 +24,8 @@ struct TextureDescriptor
 {
     TextureType type;
     TextureFormat format;
+    uint32_t width;
+    uint32_t height;
 };
 
 class Device;
@@ -38,6 +41,8 @@ public:
 
     TextureType getType() const;
     TextureFormat getFormat() const;
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
 
     Device* getDevice() const;
 
@@ -46,6 +51,8 @@ protected:
 
     TextureType m_type;
     TextureFormat m_format;
+    uint32_t m_width;
+    uint32_t m_height;
 };
 
 } // namespace vkt

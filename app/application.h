@@ -9,6 +9,7 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/texture_view.h"
 #include "vkt/gpu/vulkan/vulkan_framebuffer.h"
 #include "vkt/gpu/vulkan/vulkan_render_pass.h"
 

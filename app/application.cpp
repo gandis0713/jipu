@@ -241,7 +241,9 @@ void Application::createCommandPool()
 void Application::createCommandBuffers()
 {
 
-    auto commandBufferCount = m_framebufferDescriptors.size();
+    std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
+
+    auto commandBufferCount = swapChainTextureViews.size();
     m_commandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
@@ -250,17 +252,25 @@ void Application::createCommandBuffers()
         m_commandBuffers[i] = std::move(commandBuffer);
     }
 
-    // for (auto i = 0; i < commandBufferCount; ++i)
-    // {
-    //     auto commandBuffer = m_commandBuffers[i].get();
+    for (auto i = 0; i < commandBufferCount; ++i)
+    {
+        auto commandBuffer = m_commandBuffers[i].get();
 
-    //     CommandEncoderDescriptor descriptor{};
-    //     auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
-    //     commandEncoder->startEncoding();
-    //     commandEncoder->setPipeline(m_pipeline.get());
-    //     commandEncoder->setVertexBuffer(m_buffer.get());
-    //     commandEncoder->endEncoding();
-    // }
+        std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+        colorAttachments[0] = { .textureView = swapChainTextureViews[i],
+                                .loadOp = LoadOp::kClear,
+                                .storeOp = StoreOp::kStore,
+                                .clearValue.float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+        DepthStencilAttachment depthStencilAttachment{};
+
+        CommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                             .depthStencilAttachment = depthStencilAttachment };
+        auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
+        commandEncoder->begin();
+        commandEncoder->setPipeline(m_pipeline.get());
+        commandEncoder->setVertexBuffer(m_buffer.get());
+        commandEncoder->end();
+    }
 
     VulkanDevice* vulkanDevice = downcast(m_device.get());
     m_vecCommandBuffers.resize(m_framebufferDescriptors.size());

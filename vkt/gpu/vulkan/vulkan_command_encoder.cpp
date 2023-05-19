@@ -3,6 +3,8 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
+#include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include "utils/log.h"
 
@@ -16,7 +18,7 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, c
 {
 }
 
-void VulkanCommandEncoder::startEncoding()
+void VulkanCommandEncoder::begin()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
 
@@ -31,10 +33,19 @@ void VulkanCommandEncoder::startEncoding()
         throw std::runtime_error("failed to begin command buffer.");
     }
 
-    VulkanRenderPassDescriptor renderPassDescriptor{};
+    // TODO: support multiple color sample.
+    const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = TextureFormat2VkFormat(colorAttachment.textureView->getFormat()),
+                                                     .loadOp = LoadOp2VkAttachmentLoadOp(colorAttachment.loadOp),
+                                                     .storeOp = StoreOp2VkAttachmentStoreOp(colorAttachment.storeOp),
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT /* TODO: use not vulkan defines */ };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    VulkanFramebufferDescriptor framebufferDescriptor{};
+    auto vulkanTextureView = downcast(colorAttachment.textureView);
+    VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
+                                                       .imageViews = { vulkanTextureView->getImageView() },
+                                                       .width = vulkanTextureView->getWidth(),
+                                                       .height = vulkanTextureView->getHeight() };
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
 
     VkRenderPassBeginInfo renderPassInfo{};
@@ -44,14 +55,19 @@ void VulkanCommandEncoder::startEncoding()
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = { vulkanFrameBuffer->getWidth(), vulkanFrameBuffer->getHeight() };
 
-    VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+    ColorClearValue value = colorAttachment.clearValue;
+    VkClearValue clearValue{};
+    for (uint32_t i = 0; i < 4; ++i)
+    {
+        clearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+    }
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearValue;
 
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VulkanCommandEncoder::endEncoding()
+void VulkanCommandEncoder::end()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());

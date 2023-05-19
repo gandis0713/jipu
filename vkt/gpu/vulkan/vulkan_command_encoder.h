@@ -14,8 +14,8 @@ public:
     VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     ~VulkanCommandEncoder() override = default;
 
-    void startEncoding() override;
-    void endEncoding() override;
+    void begin() override;
+    void end() override;
 
     void setPipeline(Pipeline* pipeline) override;
     void setVertexBuffer(Buffer* buffer) override;

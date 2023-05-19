@@ -31,6 +31,10 @@ public:
     TextureView(Texture* texture, TextureViewDescriptor descriptor);
     virtual ~TextureView() = default;
 
+    TextureFormat getFormat() const;
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
+
 protected:
     Texture* m_texture = nullptr;
 };
