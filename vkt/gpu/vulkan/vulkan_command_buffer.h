@@ -1,16 +1,31 @@
 #pragma once
 
 #include "vkt/gpu/command_buffer.h"
+#include "vulkan_api.h"
+
+#include "export.h"
+#include "utils/cast.h"
 
 namespace vkt
 {
 
 class VulkanDevice;
-class VulkanCommandBuffer : public CommandBuffer
+class VKT_EXPORT VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;
     VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor);
-    ~VulkanCommandBuffer() override = default;
+    ~VulkanCommandBuffer() override;
+
+    std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
+
+    VkCommandBuffer getVkCommandBuffer() const;
+
+private:
+    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
+    VkCommandPool m_commandPool = VK_NULL_HANDLE;
 };
+
+DOWN_CAST(VulkanCommandBuffer, CommandBuffer);
+
 } // namespace vkt

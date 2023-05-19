@@ -38,6 +38,6 @@ public:
     }
 
 private:
-    void* m_handle{ nullptr };
+    void* m_handle = nullptr;
 };
 } // namespace vkt

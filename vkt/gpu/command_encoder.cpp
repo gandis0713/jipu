@@ -6,6 +6,7 @@ namespace vkt
 
 CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
+    , m_descriptor(descriptor)
 {
 }
 

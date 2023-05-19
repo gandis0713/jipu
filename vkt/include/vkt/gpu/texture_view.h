@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/texture.h"
 
 namespace vkt
 {
@@ -19,9 +20,10 @@ enum class TextureViewType
 
 struct TextureViewDescriptor
 {
+    TextureViewType type;
+    TextureFormat format;
 };
 
-class Texture;
 class VKT_EXPORT TextureView
 {
 public:
@@ -29,8 +31,12 @@ public:
     TextureView(Texture* texture, TextureViewDescriptor descriptor);
     virtual ~TextureView() = default;
 
+    TextureFormat getFormat() const;
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
+
 protected:
-    Texture* m_texture{ nullptr };
+    Texture* m_texture = nullptr;
 };
 
 } // namespace vkt

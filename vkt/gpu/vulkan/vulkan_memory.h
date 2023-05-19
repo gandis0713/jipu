@@ -22,8 +22,8 @@ public:
     VkDeviceMemory getVkDeviceMemory() const;
 
 private:
-    VulkanDevice* m_device{ nullptr };
-    VkDeviceMemory m_deviceMemory{ VK_NULL_HANDLE };
+    VulkanDevice* m_device = nullptr;
+    VkDeviceMemory m_deviceMemory = VK_NULL_HANDLE;
 };
 
 } // namespace vkt

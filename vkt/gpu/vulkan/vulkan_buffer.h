@@ -23,8 +23,8 @@ public:
     VkBuffer getVkBuffer() const;
 
 private:
-    VkBuffer m_buffer{ VK_NULL_HANDLE };
-    std::unique_ptr<VulkanMemory> m_memory{ nullptr };
+    VkBuffer m_buffer = VK_NULL_HANDLE;
+    std::unique_ptr<VulkanMemory> m_memory = nullptr;
 };
 
 DOWN_CAST(VulkanBuffer, Buffer);

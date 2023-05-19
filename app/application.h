@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vkt/gpu/buffer.h"
+#include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
@@ -8,6 +9,7 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/texture_view.h"
 #include "vkt/gpu/vulkan/vulkan_framebuffer.h"
 #include "vkt/gpu/vulkan/vulkan_render_pass.h"
 
@@ -73,26 +75,10 @@ private:
     void cleanup();
 
     void createGraphicsPipeline();
-    void createRenderPass();
-    void createFramebuffers();
-    void createCommandPool();
     void createCommandBuffers();
     void createSemaphores();
 
     void drawFrame();
-
-    // TODO: remove
-    // Validation layer
-    // const std::vector<const char*>& getRequiredValidationLayers();
-    // bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
-    // void setupDebugMessenger();
-    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
-    // pDebugUtilsMessengerCreateInfoEXT,
-    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
-    //                                       pDebugUtilsMessengerEXT);
-    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
-    // VkAllocationCallbacks* pAllocator); void
-    // populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
 
 private:
     Window* m_window;
@@ -101,23 +87,18 @@ private:
     std::vector<Vertex> m_vertices = {};
 
     // wrapper
-    std::unique_ptr<Driver> m_driver{ nullptr };
-    std::unique_ptr<PhysicalDevice> m_physicalDevice{ nullptr };
+    std::unique_ptr<Driver> m_driver = nullptr;
+    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
 
-    std::unique_ptr<Surface> m_surface{ nullptr };
-    std::unique_ptr<Device> m_device{ nullptr };
+    std::unique_ptr<Surface> m_surface = nullptr;
+    std::unique_ptr<Device> m_device = nullptr;
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline{ nullptr };
+    std::unique_ptr<Pipeline> m_pipeline = nullptr;
 
-    std::unique_ptr<Buffer> m_buffer{ nullptr };
+    std::unique_ptr<Buffer> m_buffer = nullptr;
 
-    VulkanRenderPassDescriptor m_renderPassDescriptor{};
-    std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
-
-    // command
-    VkCommandPool m_commandPool;
-    std::vector<VkCommandBuffer> m_vecCommandBuffers;
+    std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 
     // sync
     VkSemaphore m_imageAvailableSemaphore;

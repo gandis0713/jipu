@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include "vkt/gpu/vulkan/vulkan_buffer.h"
+#include "vkt/gpu/vulkan/vulkan_command_buffer.h"
 #include "vkt/gpu/vulkan/vulkan_device.h"
 #include "vkt/gpu/vulkan/vulkan_physical_device.h"
 #include "vkt/gpu/vulkan/vulkan_pipeline.h"
@@ -116,10 +117,7 @@ void Application::initVulkan()
         m_buffer->unmap();
     }
 
-    createRenderPass();
     createGraphicsPipeline();
-    createFramebuffers();
-    createCommandPool();
     createCommandBuffers();
     createSemaphores();
 }
@@ -181,126 +179,50 @@ void Application::createGraphicsPipeline()
 
     auto vulkanPipeline = downcast(m_pipeline.get());
     auto vulkanDevice = downcast(m_device.get());
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
+                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
+    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     vulkanPipeline->setRenderPass(vulkanRenderPass);
 
     vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
                                            (Application::getDir() / "triangle_frag.spv").generic_string());
 }
 
-void Application::createRenderPass()
-{
-    // create render pass descriptor.
-    {
-        m_renderPassDescriptor.format = VK_FORMAT_B8G8R8A8_SRGB;
-        m_renderPassDescriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-
-        m_renderPassDescriptor.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        m_renderPassDescriptor.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    }
-}
-
-void Application::createFramebuffers()
-{
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    VulkanRenderPass* renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-    auto vulkanSwapChain = downcast(m_swapChain.get());
-
-    auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
-
-    for (size_t i = 0; i < swapChainTextureViews.size(); ++i)
-    {
-        VulkanTextureView* textureView = downcast(swapChainTextureViews[i]);
-
-        VulkanFramebufferDescriptor descriptor{ renderPass->getVkRenderPass(),
-                                                { textureView->getImageView() },
-                                                vulkanSwapChain->getWidth(),
-                                                vulkanSwapChain->getHeight() };
-
-        m_framebufferDescriptors.push_back(descriptor);
-
-        [[maybe_unused]] auto framebuffer = vulkanDevice->getFrameBuffer(descriptor); // pre-generated.
-    }
-}
-
-void Application::createCommandPool()
-{
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-
-    VkCommandPoolCreateInfo commandPoolCreateInfo{};
-    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
-    commandPoolCreateInfo.flags = 0; // Optional
-
-    if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-    {
-        LOG_ERROR("failed to create command pool!");
-    }
-}
-
 void Application::createCommandBuffers()
 {
-    m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
 
-    VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
-    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    commandBufferAllocateInfo.commandPool = m_commandPool;
-    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
+    std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
 
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+    auto commandBufferCount = swapChainTextureViews.size();
+    m_commandBuffers.resize(commandBufferCount);
+    for (auto i = 0; i < commandBufferCount; ++i)
     {
-        LOG_ERROR("failed to allocate command buffers!");
+        CommandBufferDescriptor descriptor{};
+        auto commandBuffer = m_device->createCommandBuffer(descriptor);
+        m_commandBuffers[i] = std::move(commandBuffer);
     }
 
-    for (size_t i = 0; i < m_vecCommandBuffers.size(); i++)
+    for (auto i = 0; i < commandBufferCount; ++i)
     {
-        VkCommandBufferBeginInfo commandBufferBeginInfo{};
-        commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        commandBufferBeginInfo.flags = 0;                  // Optional
-        commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+        auto commandBuffer = m_commandBuffers[i].get();
 
-        if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
-        {
-            LOG_ERROR("failed to begin recording command buffer!");
-        }
+        std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+        colorAttachments[0] = { .textureView = swapChainTextureViews[i],
+                                .loadOp = LoadOp::kClear,
+                                .storeOp = StoreOp::kStore,
+                                .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
+        DepthStencilAttachment depthStencilAttachment{};
 
-        auto vulkanDevice = downcast(m_device.get());
-        auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-        auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
-        auto vulkanSwapChain = downcast(m_swapChain.get());
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
-        renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
-
-        VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearValue;
-
-        vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        auto vulkanPipeline = downcast(m_pipeline.get());
-        vkAPI.CmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
-
-        auto vulkanBuffer = downcast(m_buffer.get());
-        VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
-        VkDeviceSize offsets[] = { 0 };
-        vkAPI.CmdBindVertexBuffers(m_vecCommandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-        vkAPI.CmdDraw(m_vecCommandBuffers[i], static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
-
-        vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
-
-        if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
-        {
-            LOG_ERROR("failed to record command buffer!");
-        }
+        CommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                             .depthStencilAttachment = depthStencilAttachment };
+        auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
+        commandEncoder->begin();
+        commandEncoder->setPipeline(m_pipeline.get());
+        commandEncoder->setVertexBuffer(m_buffer.get());
+        commandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        commandEncoder->end();
     }
 }
 
@@ -324,7 +246,8 @@ void Application::drawFrame()
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &m_vecCommandBuffers[imageIndex];
+    VkCommandBuffer commandBuffer = downcast(m_commandBuffers[imageIndex].get())->getVkCommandBuffer();
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphore };
     submitInfo.signalSemaphoreCount = 1;

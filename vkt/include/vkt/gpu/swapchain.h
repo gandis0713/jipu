@@ -35,7 +35,7 @@ struct SwapChainDescriptor
     ColorSpace colorSpace{ ColorSpace::kUndefined };
     uint32_t width{ 0 };
     uint32_t height{ 0 };
-    Surface* surface{ nullptr };
+    Surface* surface = nullptr;
 };
 
 class VKT_EXPORT SwapChain
@@ -58,8 +58,8 @@ public:
     uint32_t getHeight() const;
 
 protected:
-    Device* m_device{ nullptr };
-    Surface* m_surface{ nullptr };
+    Device* m_device = nullptr;
+    Surface* m_surface = nullptr;
 
     std::vector<std::unique_ptr<Texture>> m_textures{};
     std::vector<std::unique_ptr<TextureView>> m_textureViews{};

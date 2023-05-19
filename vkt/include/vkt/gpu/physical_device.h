@@ -28,7 +28,7 @@ public:
     Driver* getDriver() const;
 
 protected:
-    Driver* m_driver{ nullptr };
+    Driver* m_driver = nullptr;
 };
 
 } // namespace vkt

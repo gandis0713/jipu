@@ -22,7 +22,7 @@ public:
     Pipeline& operator=(const Pipeline&) = delete;
 
 protected:
-    Device* m_device{ nullptr };
+    Device* m_device = nullptr;
 };
 
 } // namespace vkt

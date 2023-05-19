@@ -42,7 +42,7 @@ private:
     void gatherPhysicalDeviceInfo();
 
 private:
-    VkPhysicalDevice m_physicalDevice{ VK_NULL_HANDLE };
+    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VulkanPhysicalDeviceInfo m_Info{};
 };
 

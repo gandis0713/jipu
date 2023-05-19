@@ -34,14 +34,14 @@ public:
 
 private:
     // shader module
-    VkShaderModule m_vertShaderModule{ VK_NULL_HANDLE };
-    VkShaderModule m_fragShaderModule{ VK_NULL_HANDLE };
+    VkShaderModule m_vertShaderModule = VK_NULL_HANDLE;
+    VkShaderModule m_fragShaderModule = VK_NULL_HANDLE;
 
     // pipeline
-    VkPipelineLayout m_pipelineLayout{ VK_NULL_HANDLE };
-    VkPipeline m_graphicsPipeline{ VK_NULL_HANDLE };
+    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+    VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
 
-    VulkanRenderPass* m_renderPass{ nullptr };
+    VulkanRenderPass* m_renderPass = nullptr;
 };
 
 DOWN_CAST(VulkanPipeline, Pipeline);
