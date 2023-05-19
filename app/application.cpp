@@ -117,10 +117,7 @@ void Application::initVulkan()
         m_buffer->unmap();
     }
 
-    createRenderPass();
     createGraphicsPipeline();
-    createFramebuffers();
-    createCommandPool();
     createCommandBuffers();
     createSemaphores();
 }
@@ -182,61 +179,15 @@ void Application::createGraphicsPipeline()
 
     auto vulkanPipeline = downcast(m_pipeline.get());
     auto vulkanDevice = downcast(m_device.get());
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT,
+                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE };
+    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     vulkanPipeline->setRenderPass(vulkanRenderPass);
 
     vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
                                            (Application::getDir() / "triangle_frag.spv").generic_string());
-}
-
-void Application::createRenderPass()
-{
-    // create render pass descriptor.
-    {
-        m_renderPassDescriptor.format = VK_FORMAT_B8G8R8A8_SRGB;
-        m_renderPassDescriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-
-        m_renderPassDescriptor.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        m_renderPassDescriptor.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    }
-}
-
-void Application::createFramebuffers()
-{
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    VulkanRenderPass* renderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-    auto vulkanSwapChain = downcast(m_swapChain.get());
-
-    auto swapChainTextureViews = vulkanSwapChain->getTextureViews();
-
-    for (size_t i = 0; i < swapChainTextureViews.size(); ++i)
-    {
-        VulkanTextureView* textureView = downcast(swapChainTextureViews[i]);
-
-        VulkanFramebufferDescriptor descriptor{ renderPass->getVkRenderPass(),
-                                                { textureView->getImageView() },
-                                                vulkanSwapChain->getWidth(),
-                                                vulkanSwapChain->getHeight() };
-
-        m_framebufferDescriptors.push_back(descriptor);
-
-        [[maybe_unused]] auto framebuffer = vulkanDevice->getFrameBuffer(descriptor); // pre-generated.
-    }
-}
-
-void Application::createCommandPool()
-{
-    // VulkanDevice* vulkanDevice = downcast(m_device.get());
-
-    // VkCommandPoolCreateInfo commandPoolCreateInfo{};
-    // commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    // commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
-    // commandPoolCreateInfo.flags = 0; // Optional
-
-    // if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-    // {
-    //     LOG_ERROR("failed to create command pool!");
-    // }
 }
 
 void Application::createCommandBuffers()

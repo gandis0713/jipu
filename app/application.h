@@ -75,26 +75,10 @@ private:
     void cleanup();
 
     void createGraphicsPipeline();
-    void createRenderPass();
-    void createFramebuffers();
-    void createCommandPool();
     void createCommandBuffers();
     void createSemaphores();
 
     void drawFrame();
-
-    // TODO: remove
-    // Validation layer
-    // const std::vector<const char*>& getRequiredValidationLayers();
-    // bool checkValidationLayerSupport(const std::vector<const char*> validationLayers);
-    // void setupDebugMessenger();
-    // VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT*
-    // pDebugUtilsMessengerCreateInfoEXT,
-    //                                       const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT*
-    //                                       pDebugUtilsMessengerEXT);
-    // void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const
-    // VkAllocationCallbacks* pAllocator); void
-    // populateDefaultDebugUtilsMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugUtilsMessengerCreateInfo);
 
 private:
     Window* m_window;
@@ -113,9 +97,6 @@ private:
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
 
     std::unique_ptr<Buffer> m_buffer = nullptr;
-
-    VulkanRenderPassDescriptor m_renderPassDescriptor{};
-    std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 
