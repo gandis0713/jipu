@@ -92,6 +92,11 @@ std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descr
     return std::make_unique<VulkanBuffer>(this, descriptor);
 }
 
+std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
+{
+    return std::make_unique<VulkanCommandBuffer>(this, descriptor);
+}
+
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
@@ -136,6 +141,25 @@ uint32_t VulkanDevice::getQueueIndex() const
     throw std::runtime_error("There is no queue in device.");
 
     return 0;
+}
+
+VkCommandPool VulkanDevice::getCommandPool()
+{
+    // TODO: get or create by command pool create information (not VkCommandPoolCreateInfo).
+    if (m_commandPool == VK_NULL_HANDLE)
+    {
+        VkCommandPoolCreateInfo commandPoolCreateInfo{};
+        commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        commandPoolCreateInfo.queueFamilyIndex = getQueueIndex(); // TODO: get queue index by create information.
+        commandPoolCreateInfo.flags = 0;                          // Optional
+
+        if (vkAPI.CreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create command pool.");
+        }
+    }
+
+    return m_commandPool;
 }
 
 void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices)

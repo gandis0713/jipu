@@ -9,4 +9,16 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, c
 {
 }
 
+void VulkanCommandEncoder::setPipeline(Pipeline* pipeline)
+{
+}
+
+void VulkanCommandEncoder::setVertexBuffer(Buffer* buffer)
+{
+}
+
+void VulkanCommandEncoder::setIndexBuffer(Buffer* buffer)
+{
+}
+
 } // namespace vkt

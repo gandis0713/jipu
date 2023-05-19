@@ -9,4 +9,9 @@ CommandBuffer::CommandBuffer(Device* device, const CommandBufferDescriptor& desc
 {
 }
 
+Device* CommandBuffer::getDevice() const
+{
+    return m_device;
+}
+
 } // namespace vkt
