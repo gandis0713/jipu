@@ -17,14 +17,13 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
 {
     LOG_TRACE(__func__);
 
-    VkFramebufferCreateInfo framebufferCreateInfo{};
-    framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferCreateInfo.renderPass = descriptor.renderPass;
-    framebufferCreateInfo.attachmentCount = descriptor.imageViews.size();
-    framebufferCreateInfo.pAttachments = descriptor.imageViews.data();
-    framebufferCreateInfo.width = m_width;
-    framebufferCreateInfo.height = m_height;
-    framebufferCreateInfo.layers = 1;
+    VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                                                   .renderPass = descriptor.renderPass,
+                                                   .attachmentCount = static_cast<uint32_t>(descriptor.imageViews.size()),
+                                                   .pAttachments = descriptor.imageViews.data(),
+                                                   .width = m_width,
+                                                   .height = m_height,
+                                                   .layers = 1 };
 
     if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
     {

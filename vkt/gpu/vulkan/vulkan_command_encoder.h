@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vkt/gpu/command_encoder.h"
+#include "vulkan_api.h"
 
 namespace vkt
 {
@@ -23,4 +24,11 @@ public:
     void draw(uint32_t vertexCount) override;
     void drawIndexed(uint32_t indexCount) override;
 };
+
+// Convert Helper
+VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp);
+LoadOp VkAttachmentLoadOp2LoadOp(VkAttachmentLoadOp loadOp);
+VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp);
+StoreOp VkAttachmentStoreOp2StoreOp(VkAttachmentStoreOp storeOp);
+
 } // namespace vkt

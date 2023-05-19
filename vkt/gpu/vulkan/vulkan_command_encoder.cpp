@@ -4,6 +4,8 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 
+#include "utils/log.h"
+
 #include <stdexcept>
 
 namespace vkt
@@ -99,6 +101,68 @@ void VulkanCommandEncoder::drawIndexed(uint32_t indexCount)
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
+}
+
+VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp)
+{
+    switch (loadOp)
+    {
+    case LoadOp::kClear:
+        return VK_ATTACHMENT_LOAD_OP_CLEAR;
+
+    case LoadOp::kLoad:
+        return VK_ATTACHMENT_LOAD_OP_LOAD;
+
+    case LoadOp::kDontCare:
+        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    }
+}
+
+LoadOp VkAttachmentLoadOp2LoadOp(VkAttachmentLoadOp loadOp)
+{
+    switch (loadOp)
+    {
+    case VK_ATTACHMENT_LOAD_OP_CLEAR:
+        return LoadOp::kClear;
+
+    case VK_ATTACHMENT_LOAD_OP_LOAD:
+        return LoadOp::kLoad;
+
+    case VK_ATTACHMENT_LOAD_OP_DONT_CARE:
+        return LoadOp::kDontCare;
+
+    default:
+        LOG_ERROR("{} Load Op type is not supported.", loadOp);
+        return LoadOp::kDontCare;
+    }
+}
+
+VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp)
+{
+    switch (storeOp)
+    {
+    case StoreOp::kStore:
+        return VK_ATTACHMENT_STORE_OP_STORE;
+
+    case StoreOp::kDontCare:
+        return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    }
+}
+
+StoreOp VkAttachmentStoreOp2StoreOp(VkAttachmentStoreOp storeOp)
+{
+    switch (storeOp)
+    {
+    case VK_ATTACHMENT_STORE_OP_STORE:
+        return StoreOp::kStore;
+
+    case VK_ATTACHMENT_STORE_OP_DONT_CARE:
+        return StoreOp::kDontCare;
+
+    default:
+        LOG_ERROR("{} Store Op type is not supported.", storeOp);
+        return StoreOp::kDontCare;
+    }
 }
 
 } // namespace vkt

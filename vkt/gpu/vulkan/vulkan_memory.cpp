@@ -17,10 +17,9 @@ VulkanMemory::VulkanMemory(VulkanDevice* device, const VulkanMemoryDescriptor& d
         throw std::runtime_error("Failed to find memory type index");
     }
 
-    VkMemoryAllocateInfo memoryAllocateInfo{};
-    memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    memoryAllocateInfo.allocationSize = descriptor.requirements.size;
-    memoryAllocateInfo.memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex);
+    VkMemoryAllocateInfo memoryAllocateInfo{ .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                                             .allocationSize = descriptor.requirements.size,
+                                             .memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex) };
 
     const VulkanAPI& vkAPI = device->vkAPI;
     VkResult result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &m_deviceMemory);

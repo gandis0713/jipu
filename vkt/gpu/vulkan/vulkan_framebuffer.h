@@ -38,8 +38,8 @@ private:
 private:
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 
-    float m_width = 0.0f;
-    float m_height = 0.0f;
+    uint32_t m_width = 0;
+    uint32_t m_height = 0;
 };
 
 class VulkanFrameBufferCache final

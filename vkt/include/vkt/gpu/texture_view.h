@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/texture.h"
 
 namespace vkt
 {
@@ -19,9 +20,10 @@ enum class TextureViewType
 
 struct TextureViewDescriptor
 {
+    TextureViewType type;
+    TextureFormat format;
 };
 
-class Texture;
 class VKT_EXPORT TextureView
 {
 public:
