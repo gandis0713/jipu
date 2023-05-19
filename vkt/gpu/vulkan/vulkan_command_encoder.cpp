@@ -131,6 +131,10 @@ VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp)
 
     case LoadOp::kDontCare:
         return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+
+    default:
+        LOG_ERROR("{} Load Op type is not supported.", static_cast<uint8_t>(loadOp));
+        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     }
 }
 
@@ -161,6 +165,10 @@ VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp)
         return VK_ATTACHMENT_STORE_OP_STORE;
 
     case StoreOp::kDontCare:
+        return VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    default:
+        LOG_ERROR("{} Store Op type is not supported.", static_cast<uint8_t>(storeOp));
         return VK_ATTACHMENT_STORE_OP_DONT_CARE;
     }
 }

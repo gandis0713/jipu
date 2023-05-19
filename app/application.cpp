@@ -180,9 +180,9 @@ void Application::createGraphicsPipeline()
     auto vulkanPipeline = downcast(m_pipeline.get());
     auto vulkanDevice = downcast(m_device.get());
     VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
-                                                     .samples = VK_SAMPLE_COUNT_1_BIT,
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE };
+                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     vulkanPipeline->setRenderPass(vulkanRenderPass);
 
@@ -212,7 +212,7 @@ void Application::createCommandBuffers()
         colorAttachments[0] = { .textureView = swapChainTextureViews[i],
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
-                                .clearValue.float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+                                .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
         DepthStencilAttachment depthStencilAttachment{};
 
         CommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
