@@ -102,16 +102,16 @@ private:
     std::vector<Vertex> m_vertices = {};
 
     // wrapper
-    std::unique_ptr<Driver> m_driver{ nullptr };
-    std::unique_ptr<PhysicalDevice> m_physicalDevice{ nullptr };
+    std::unique_ptr<Driver> m_driver = nullptr;
+    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
 
-    std::unique_ptr<Surface> m_surface{ nullptr };
-    std::unique_ptr<Device> m_device{ nullptr };
+    std::unique_ptr<Surface> m_surface = nullptr;
+    std::unique_ptr<Device> m_device = nullptr;
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline{ nullptr };
+    std::unique_ptr<Pipeline> m_pipeline = nullptr;
 
-    std::unique_ptr<Buffer> m_buffer{ nullptr };
+    std::unique_ptr<Buffer> m_buffer = nullptr;
 
     VulkanRenderPassDescriptor m_renderPassDescriptor{};
     std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};

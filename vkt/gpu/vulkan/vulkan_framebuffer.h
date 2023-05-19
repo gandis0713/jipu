@@ -12,7 +12,7 @@ namespace vkt
 
 struct VulkanFramebufferDescriptor
 {
-    VkRenderPass renderPass{ nullptr };
+    VkRenderPass renderPass = nullptr;
     std::vector<VkImageView> imageViews{};
 
     uint32_t width{ 0 };
@@ -31,10 +31,10 @@ public:
     VkFramebuffer getVkFrameBuffer() const;
 
 private:
-    VulkanDevice* m_device{ nullptr };
+    VulkanDevice* m_device = nullptr;
 
 private:
-    VkFramebuffer m_framebuffer{ VK_NULL_HANDLE };
+    VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 };
 
 class VulkanFrameBufferCache final
@@ -49,7 +49,7 @@ public:
     void clear();
 
 private:
-    VulkanDevice* m_device{ nullptr };
+    VulkanDevice* m_device = nullptr;
 
 private:
     struct Functor

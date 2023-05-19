@@ -30,7 +30,7 @@ public:
     virtual ~TextureView() = default;
 
 protected:
-    Texture* m_texture{ nullptr };
+    Texture* m_texture = nullptr;
 };
 
 } // namespace vkt

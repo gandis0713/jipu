@@ -42,7 +42,7 @@ public:
     Device* getDevice() const;
 
 protected:
-    Device* m_device{ nullptr };
+    Device* m_device = nullptr;
 
     TextureType m_type;
     TextureFormat m_format;

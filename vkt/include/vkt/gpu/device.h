@@ -37,7 +37,7 @@ public:
     virtual std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) = 0;
 
 protected:
-    PhysicalDevice* m_physicalDevice{ nullptr };
+    PhysicalDevice* m_physicalDevice = nullptr;
 };
 
 } // namespace vkt

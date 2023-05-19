@@ -38,7 +38,7 @@ public:
     uint64_t getSize() const;
 
 protected:
-    Device* m_device{ nullptr };
+    Device* m_device = nullptr;
     uint64_t m_size{ 0 };
 };
 

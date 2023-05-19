@@ -22,10 +22,10 @@ public:
     Surface& operator=(const Surface&) = delete;
 
 protected:
-    Driver* m_driver{ nullptr };
+    Driver* m_driver = nullptr;
 
 protected:
-    void* m_windowHandle{ nullptr };
+    void* m_windowHandle = nullptr;
 };
 
 }; // namespace vkt

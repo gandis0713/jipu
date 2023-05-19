@@ -29,10 +29,10 @@ public:
     VkRenderPass getVkRenderPass() const;
 
 private:
-    VulkanDevice* m_device{ nullptr };
+    VulkanDevice* m_device = nullptr;
 
 private:
-    VkRenderPass m_renderPass{ nullptr };
+    VkRenderPass m_renderPass = nullptr;
 };
 
 class VulkanRenderPassCache final
@@ -47,7 +47,7 @@ public:
     void clear();
 
 private:
-    VulkanDevice* m_device{ nullptr };
+    VulkanDevice* m_device = nullptr;
 
 private:
     struct Functor

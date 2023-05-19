@@ -25,7 +25,7 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
-    VkSwapchainKHR m_swapchain{ VK_NULL_HANDLE };
+    VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanSwapChain, SwapChain);

@@ -18,7 +18,7 @@ public:
     virtual ~PipelineLayout() = default;
 
 protected:
-    Device* m_device{ nullptr };
+    Device* m_device = nullptr;
 };
 
 } // namespace vkt

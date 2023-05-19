@@ -18,7 +18,7 @@ public:
     VkImageView getImageView() const;
 
 private:
-    VkImageView m_imageView{ VK_NULL_HANDLE };
+    VkImageView m_imageView = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanTextureView, TextureView);
