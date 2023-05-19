@@ -14,9 +14,8 @@ struct VulkanFramebufferDescriptor
 {
     VkRenderPass renderPass = nullptr;
     std::vector<VkImageView> imageViews{};
-
-    uint32_t width{ 0 };
-    uint32_t height{ 0 };
+    uint32_t width = 0;
+    uint32_t height = 0;
 };
 
 class VulkanDevice;
@@ -30,11 +29,17 @@ public:
 
     VkFramebuffer getVkFrameBuffer() const;
 
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
+
 private:
     VulkanDevice* m_device = nullptr;
 
 private:
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
+
+    float m_width = 0.0f;
+    float m_height = 0.0f;
 };
 
 class VulkanFrameBufferCache final

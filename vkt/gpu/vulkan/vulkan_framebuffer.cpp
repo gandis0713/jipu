@@ -12,6 +12,8 @@ namespace vkt
 
 VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
+    , m_width(descriptor.width)
+    , m_height(descriptor.height)
 {
     LOG_TRACE(__func__);
 
@@ -20,8 +22,8 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     framebufferCreateInfo.renderPass = descriptor.renderPass;
     framebufferCreateInfo.attachmentCount = descriptor.imageViews.size();
     framebufferCreateInfo.pAttachments = descriptor.imageViews.data();
-    framebufferCreateInfo.width = descriptor.width;
-    framebufferCreateInfo.height = descriptor.height;
+    framebufferCreateInfo.width = m_width;
+    framebufferCreateInfo.height = m_height;
     framebufferCreateInfo.layers = 1;
 
     if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
@@ -38,6 +40,16 @@ VulkanFrameBuffer::~VulkanFrameBuffer()
 VkFramebuffer VulkanFrameBuffer::getVkFrameBuffer() const
 {
     return m_framebuffer;
+}
+
+uint32_t VulkanFrameBuffer::getWidth() const
+{
+    return m_width;
+}
+
+uint32_t VulkanFrameBuffer::getHeight() const
+{
+    return m_height;
 }
 
 size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const

@@ -240,17 +240,29 @@ void Application::createCommandPool()
 
 void Application::createCommandBuffers()
 {
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
 
     auto commandBufferCount = m_framebufferDescriptors.size();
     m_commandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
         CommandBufferDescriptor descriptor{};
-        auto commandBuffer = vulkanDevice->createCommandBuffer(descriptor);
+        auto commandBuffer = m_device->createCommandBuffer(descriptor);
         m_commandBuffers[i] = std::move(commandBuffer);
     }
 
+    // for (auto i = 0; i < commandBufferCount; ++i)
+    // {
+    //     auto commandBuffer = m_commandBuffers[i].get();
+
+    //     CommandEncoderDescriptor descriptor{};
+    //     auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
+    //     commandEncoder->startEncoding();
+    //     commandEncoder->setPipeline(m_pipeline.get());
+    //     commandEncoder->setVertexBuffer(m_buffer.get());
+    //     commandEncoder->endEncoding();
+    // }
+
+    VulkanDevice* vulkanDevice = downcast(m_device.get());
     m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     {
