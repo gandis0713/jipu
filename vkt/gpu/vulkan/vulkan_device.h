@@ -33,6 +33,7 @@ public:
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
     std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) override;
 
+public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 

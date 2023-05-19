@@ -225,81 +225,95 @@ void Application::createFramebuffers()
 
 void Application::createCommandPool()
 {
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
+    // VulkanDevice* vulkanDevice = downcast(m_device.get());
 
-    VkCommandPoolCreateInfo commandPoolCreateInfo{};
-    commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
-    commandPoolCreateInfo.flags = 0; // Optional
+    // VkCommandPoolCreateInfo commandPoolCreateInfo{};
+    // commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    // commandPoolCreateInfo.queueFamilyIndex = vulkanDevice->getQueueIndex();
+    // commandPoolCreateInfo.flags = 0; // Optional
 
-    if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-    {
-        LOG_ERROR("failed to create command pool!");
-    }
+    // if (vulkanDevice->vkAPI.CreateCommandPool(vulkanDevice->getVkDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    // {
+    //     LOG_ERROR("failed to create command pool!");
+    // }
 }
 
 void Application::createCommandBuffers()
 {
-    m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
-
-    VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
-    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    commandBufferAllocateInfo.commandPool = m_commandPool;
-    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
-
     VulkanDevice* vulkanDevice = downcast(m_device.get());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
+
+    auto commandBufferCount = m_framebufferDescriptors.size();
+    m_commandBuffers.resize(commandBufferCount);
+    for (auto i = 0; i < commandBufferCount; ++i)
     {
-        LOG_ERROR("failed to allocate command buffers!");
+        CommandBufferDescriptor descriptor{};
+        auto commandBuffer = vulkanDevice->createCommandBuffer(descriptor);
+        m_commandBuffers[i] = std::move(commandBuffer);
     }
 
-    for (size_t i = 0; i < m_vecCommandBuffers.size(); i++)
+    m_vecCommandBuffers.resize(m_framebufferDescriptors.size());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
     {
-        VkCommandBufferBeginInfo commandBufferBeginInfo{};
-        commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        commandBufferBeginInfo.flags = 0;                  // Optional
-        commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
+        commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        commandBufferAllocateInfo.commandPool = vulkanDevice->getCommandPool();
+        commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_vecCommandBuffers.size());
 
-        if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
+        if (vkAPI.AllocateCommandBuffers(vulkanDevice->getVkDevice(), &commandBufferAllocateInfo, m_vecCommandBuffers.data()) != VK_SUCCESS)
         {
-            LOG_ERROR("failed to begin recording command buffer!");
+            LOG_ERROR("failed to allocate command buffers!");
         }
+    }
 
-        auto vulkanDevice = downcast(m_device.get());
-        auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
-        auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
-        auto vulkanSwapChain = downcast(m_swapChain.get());
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
-        renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
-
-        VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearValue;
-
-        vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        auto vulkanPipeline = downcast(m_pipeline.get());
-        vkAPI.CmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
-
-        auto vulkanBuffer = downcast(m_buffer.get());
-        VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
-        VkDeviceSize offsets[] = { 0 };
-        vkAPI.CmdBindVertexBuffers(m_vecCommandBuffers[i], 0, 1, vertexBuffers, offsets);
-
-        vkAPI.CmdDraw(m_vecCommandBuffers[i], static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
-
-        vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
-
-        if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
+    // TODO: replace this to comand encoder.
+    {
+        for (size_t i = 0; i < m_vecCommandBuffers.size(); i++)
         {
-            LOG_ERROR("failed to record command buffer!");
+            VkCommandBufferBeginInfo commandBufferBeginInfo{};
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.flags = 0;                  // Optional
+            commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+
+            if (vkAPI.BeginCommandBuffer(m_vecCommandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
+            {
+                LOG_ERROR("failed to begin recording command buffer!");
+            }
+
+            auto vulkanDevice = downcast(m_device.get());
+            auto vulkanRenderPass = vulkanDevice->getRenderPass(m_renderPassDescriptor);
+            auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(m_framebufferDescriptors[i]);
+            auto vulkanSwapChain = downcast(m_swapChain.get());
+
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = vulkanRenderPass->getVkRenderPass();
+            renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
+            renderPassInfo.renderArea.offset = { 0, 0 };
+            renderPassInfo.renderArea.extent = { vulkanSwapChain->getWidth(), vulkanSwapChain->getHeight() };
+
+            VkClearValue clearValue = { { { 0.0f, 0.0f, 0.0f, 1.0f } } };
+            renderPassInfo.clearValueCount = 1;
+            renderPassInfo.pClearValues = &clearValue;
+
+            vkAPI.CmdBeginRenderPass(m_vecCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+            auto vulkanPipeline = downcast(m_pipeline.get());
+            vkAPI.CmdBindPipeline(m_vecCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
+
+            auto vulkanBuffer = downcast(m_buffer.get());
+            VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
+            VkDeviceSize offsets[] = { 0 };
+            vkAPI.CmdBindVertexBuffers(m_vecCommandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+            vkAPI.CmdDraw(m_vecCommandBuffers[i], static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
+
+            vkAPI.CmdEndRenderPass(m_vecCommandBuffers[i]);
+
+            if (vkAPI.EndCommandBuffer(m_vecCommandBuffers[i]) != VK_SUCCESS)
+            {
+                LOG_ERROR("failed to record command buffer!");
+            }
         }
     }
 }

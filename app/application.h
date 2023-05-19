@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vkt/gpu/buffer.h"
+#include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
@@ -116,8 +117,8 @@ private:
     std::vector<VulkanFramebufferDescriptor> m_framebufferDescriptors{};
 
     // command
-    VkCommandPool m_commandPool;
     std::vector<VkCommandBuffer> m_vecCommandBuffers;
+    std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 
     // sync
     VkSemaphore m_imageAvailableSemaphore;
