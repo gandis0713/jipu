@@ -18,7 +18,10 @@ Window::Window(int w, int h, std::string title)
     m_window = static_cast<void*>(glfwCreateWindow(w, h, title.c_str(), nullptr, nullptr));
 }
 
-Window::~Window() {}
+Window::~Window()
+{
+    glfwTerminate();
+}
 
 void Window::open()
 {

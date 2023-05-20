@@ -54,6 +54,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
     vkAPI.loadDeviceProcs(m_device, deviceKnobs);
 
+    // get queues.
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
@@ -121,25 +122,17 @@ VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 
 VkQueue VulkanDevice::getQueue() const
 {
-    // TODO: return suit queue
-    if (!m_queues.empty())
-    {
-        return m_queues[0];
-    }
+    assert(!m_queues.empty());
 
-    return VK_NULL_HANDLE;
+    // TODO: return suit queue
+    return m_queues[0];
 }
 
 uint32_t VulkanDevice::getQueueIndex() const
 {
+    assert(!m_queues.empty());
+
     // TODO: return suit queue index
-    if (!m_queues.empty())
-    {
-        return 3;
-    }
-
-    throw std::runtime_error("There is no queue in device.");
-
     return 0;
 }
 
@@ -212,16 +205,6 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     {
         throw std::runtime_error("failed to create logical device!");
     }
-}
-
-void VulkanDevice::gatherQueues()
-{
-    // for (const uint32_t& index : queueFamilyIndices)
-    // {
-    //     VkQueue queue{};
-    //     vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
-    //     m_queues.push_back(queue);
-    // }
 }
 
 } // namespace vkt

@@ -13,6 +13,8 @@
 #include "vkt/gpu/vulkan/vulkan_framebuffer.h"
 #include "vkt/gpu/vulkan/vulkan_render_pass.h"
 
+#include "window.h"
+
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cstdint>
@@ -33,8 +35,6 @@ struct Vertex
     glm::vec2 pos;
     glm::vec3 color;
 };
-
-class Window;
 
 class Application
 {
@@ -73,10 +73,10 @@ private:
     void drawFrame();
 
 private:
-    Window* m_window;
+    std::unique_ptr<Window> m_window = nullptr;
 
     // data
-    std::vector<Vertex> m_vertices = {};
+    std::vector<Vertex> m_vertices{};
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;

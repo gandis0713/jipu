@@ -10,7 +10,6 @@
 #include "vkt/gpu/vulkan/vulkan_texture_view.h"
 
 #include "utils/log.h"
-#include "window.h"
 #include <glm/glm.hpp>
 #include <string>
 
@@ -33,7 +32,7 @@ void Application::run()
 
 void Application::initWindow()
 {
-    m_window = new Window(800, 600, "Triangle Window");
+    m_window = std::make_unique<Window>(800, 600, "Triangle Window");
 }
 
 void Application::initVulkan()
@@ -120,9 +119,7 @@ void Application::cleanup()
     m_surface.reset();
     m_driver.reset();
 
-    delete m_window; // glfwDestroyWindow(m_window);
-
-    glfwTerminate();
+    m_window.reset();
 }
 
 void Application::createGraphicsPipeline()
