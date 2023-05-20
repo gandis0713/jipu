@@ -9,29 +9,29 @@
 namespace vkt
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, const PipelineDescriptor& info)
-    : Pipeline(vulkanDevice, info)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& info)
+    : RenderPipeline(vulkanDevice, info)
 {
 }
 
-VulkanPipeline::~VulkanPipeline()
+VulkanRenderPipeline::~VulkanRenderPipeline()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
     vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
 }
 
-VkPipeline VulkanPipeline::getVkPipeline() const
+VkPipeline VulkanRenderPipeline::getVkPipeline() const
 {
     return m_graphicsPipeline;
 }
 
-void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
+void VulkanRenderPipeline::setRenderPass(VulkanRenderPass* renderPass)
 {
     m_renderPass = renderPass;
 }
 
-void VulkanPipeline::createGraphicsPipeline()
+void VulkanRenderPipeline::createGraphicsPipeline()
 {
     auto vertexShaderModule = downcast(m_vertex)->getVkShaderModule();
     auto fragmentShaderModule = downcast(m_fragment)->getVkShaderModule();

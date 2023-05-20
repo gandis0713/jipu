@@ -4,8 +4,13 @@
 namespace vkt
 {
 
-CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
+CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
     : m_commandBuffer(commandBuffer)
+{
+}
+
+RenderCommandEncoder::RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
+    : CommandEncoder(commandBuffer)
     , m_descriptor(descriptor)
 {
 }

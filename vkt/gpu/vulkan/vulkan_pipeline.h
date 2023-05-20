@@ -14,15 +14,15 @@ namespace vkt
 class VulkanDevice;
 class VulkanRenderPass;
 
-class VKT_EXPORT VulkanPipeline : public Pipeline
+class VKT_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
-    VulkanPipeline() = delete;
-    VulkanPipeline(VulkanDevice* device, const PipelineDescriptor& descriptor);
-    ~VulkanPipeline() override;
+    VulkanRenderPipeline() = delete;
+    VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
+    ~VulkanRenderPipeline() override;
 
-    VulkanPipeline(const VulkanPipeline&) = delete;
-    VulkanPipeline& operator=(const VulkanPipeline&) = delete;
+    VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
+    VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
     VkPipeline getVkPipeline() const;
 
@@ -37,6 +37,6 @@ private:
     VulkanRenderPass* m_renderPass = nullptr;
 };
 
-DOWN_CAST(VulkanPipeline, Pipeline);
+DOWN_CAST(VulkanRenderPipeline, Pipeline);
 
 } // namespace vkt

@@ -7,12 +7,12 @@ namespace vkt
 {
 
 class VulkanCommandBuffer;
-class VulkanCommandEncoder : public CommandEncoder
+class VulkanRenderCommandEncoder : public RenderCommandEncoder
 {
 public:
-    VulkanCommandEncoder() = delete;
-    VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
-    ~VulkanCommandEncoder() override = default;
+    VulkanRenderCommandEncoder() = delete;
+    VulkanRenderCommandEncoder(VulkanCommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor);
+    ~VulkanRenderCommandEncoder() override = default;
 
     void begin() override;
     void end() override;

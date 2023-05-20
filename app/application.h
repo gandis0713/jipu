@@ -87,7 +87,7 @@ private:
     std::unique_ptr<Device> m_device = nullptr;
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;

@@ -114,7 +114,7 @@ void Application::cleanup()
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
-    m_pipeline.reset();
+    m_renderPipeline.reset();
     m_buffer.reset();
     m_swapChain.reset();
 
@@ -143,20 +143,20 @@ void Application::createGraphicsPipeline()
                                                            .codeSize = fragShaderCode.size() };
     m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModeulDescriptor);
 
-    PipelineDescriptor descriptor{ .vertex = m_vertexShaderModule.get(),
-                                   .fragment = m_fragmentShaderModule.get() };
-    m_pipeline = m_device->createPipeline(descriptor);
+    RenderPipelineDescriptor descriptor{ .vertex = m_vertexShaderModule.get(),
+                                         .fragment = m_fragmentShaderModule.get() };
+    m_renderPipeline = m_device->createRenderPipeline(descriptor);
 
-    auto vulkanPipeline = downcast(m_pipeline.get());
+    auto vulkanRenderPipeline = downcast(m_renderPipeline.get());
 
     VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = VK_SAMPLE_COUNT_1_BIT };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
-    vulkanPipeline->setRenderPass(vulkanRenderPass);
+    vulkanRenderPipeline->setRenderPass(vulkanRenderPass);
 
-    vulkanPipeline->createGraphicsPipeline();
+    vulkanRenderPipeline->createGraphicsPipeline();
 }
 
 void Application::createCommandBuffers()
@@ -184,14 +184,14 @@ void Application::createCommandBuffers()
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
         DepthStencilAttachment depthStencilAttachment{};
 
-        CommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                             .depthStencilAttachment = depthStencilAttachment };
-        auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
-        commandEncoder->begin();
-        commandEncoder->setPipeline(m_pipeline.get());
-        commandEncoder->setVertexBuffer(m_buffer.get());
-        commandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
-        commandEncoder->end();
+        RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                                   .depthStencilAttachment = depthStencilAttachment };
+        auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
+        renderCommandEncoder->begin();
+        renderCommandEncoder->setPipeline(m_renderPipeline.get());
+        renderCommandEncoder->setVertexBuffer(m_buffer.get());
+        renderCommandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderCommandEncoder->end();
     }
 }
 

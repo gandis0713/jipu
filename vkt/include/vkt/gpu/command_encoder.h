@@ -50,12 +50,6 @@ struct DepthStencilAttachment
     DepthStencilClearValue clearValue{};
 };
 
-struct CommandEncoderDescriptor
-{
-    std::vector<ColorAttachment> colorAttachments{};
-    DepthStencilAttachment depthStencilAttachment{};
-};
-
 class Pipeline;
 class Buffer;
 class CommandBuffer;
@@ -63,13 +57,31 @@ class VKT_EXPORT CommandEncoder
 {
 public:
     CommandEncoder() = delete;
-    CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
+    CommandEncoder(CommandBuffer* commandBuffer);
     virtual ~CommandEncoder() = default;
 
     virtual void begin() = 0;
     virtual void end() = 0;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
+
+protected:
+    CommandBuffer* m_commandBuffer = nullptr;
+};
+
+struct RenderCommandEncoderDescriptor
+{
+    std::vector<ColorAttachment> colorAttachments{};
+    DepthStencilAttachment depthStencilAttachment{};
+};
+
+class VKT_EXPORT RenderCommandEncoder : public CommandEncoder
+{
+public:
+    RenderCommandEncoder() = delete;
+    RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor);
+    virtual ~RenderCommandEncoder() = default;
+
     virtual void setVertexBuffer(Buffer* buffer) = 0;
     virtual void setIndexBuffer(Buffer* buffer) = 0;
 
@@ -77,7 +89,6 @@ public:
     virtual void drawIndexed(uint32_t indexCount) = 0;
 
 protected:
-    CommandBuffer* m_commandBuffer = nullptr;
-    CommandEncoderDescriptor m_descriptor{};
+    RenderCommandEncoderDescriptor m_descriptor{};
 };
 } // namespace vkt

@@ -20,7 +20,7 @@ public:
     CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor);
     virtual ~CommandBuffer() = default;
 
-    virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) = 0;
 
 public:
     Device* getDevice() const;
