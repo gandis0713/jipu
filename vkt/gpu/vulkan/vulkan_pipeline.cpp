@@ -1,6 +1,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_device.h"
 #include "vulkan_render_pass.h"
+#include "vulkan_texture.h"
 
 #include <array>
 #include <stddef.h>
@@ -12,6 +13,7 @@ namespace vkt
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& info)
     : RenderPipeline(vulkanDevice, info)
 {
+    initialize();
 }
 
 VulkanRenderPipeline::~VulkanRenderPipeline()
@@ -26,15 +28,10 @@ VkPipeline VulkanRenderPipeline::getVkPipeline() const
     return m_graphicsPipeline;
 }
 
-void VulkanRenderPipeline::setRenderPass(VulkanRenderPass* renderPass)
+void VulkanRenderPipeline::initialize()
 {
-    m_renderPass = renderPass;
-}
-
-void VulkanRenderPipeline::createGraphicsPipeline()
-{
-    auto vertexShaderModule = downcast(m_vertex)->getVkShaderModule();
-    auto fragmentShaderModule = downcast(m_fragment)->getVkShaderModule();
+    auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
+    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -176,6 +173,13 @@ void VulkanRenderPipeline::createGraphicsPipeline()
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
+    // TODO : multi sample
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = TextureFormat2VkFormat(m_descriptor.fragment.targets[0].format),
+                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
+
+    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
@@ -189,8 +193,7 @@ void VulkanRenderPipeline::createGraphicsPipeline()
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
     pipelineInfo.pDynamicState = nullptr; // &dynamicStateCreateInfo
     pipelineInfo.layout = m_pipelineLayout;
-
-    pipelineInfo.renderPass = m_renderPass->getVkRenderPass();
+    pipelineInfo.renderPass = vulkanRenderPass->getVkRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional

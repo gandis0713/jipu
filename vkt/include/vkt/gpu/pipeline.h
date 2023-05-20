@@ -2,12 +2,14 @@
 
 #include "export.h"
 #include "shader_module.h"
+#include "texture.h"
+
+#include <vector>
 
 namespace vkt
 {
 
 class Device;
-
 class VKT_EXPORT Pipeline
 {
 public:
@@ -22,10 +24,30 @@ protected:
     Device* m_device = nullptr;
 };
 
+struct ProgrammableStage
+{
+    ShaderModule* shader = nullptr;
+};
+
+// Render Pipeline
+struct VertexStage : ProgrammableStage
+{
+};
+
+struct FragmentStage : ProgrammableStage
+{
+    struct Target
+    {
+        TextureFormat format;
+    };
+
+    std::vector<FragmentStage::Target> targets{};
+};
+
 struct RenderPipelineDescriptor
 {
-    ShaderModule* vertex = nullptr;
-    ShaderModule* fragment = nullptr;
+    VertexStage vertex{};
+    FragmentStage fragment{};
 };
 
 class VKT_EXPORT RenderPipeline : public Pipeline
@@ -39,8 +61,7 @@ public:
     RenderPipeline& operator=(const RenderPipeline&) = delete;
 
 protected:
-    ShaderModule* m_vertex = nullptr;
-    ShaderModule* m_fragment = nullptr;
+    const RenderPipelineDescriptor m_descriptor{};
 };
 
 } // namespace vkt

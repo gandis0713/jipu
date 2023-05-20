@@ -26,15 +26,13 @@ public:
 
     VkPipeline getVkPipeline() const;
 
-    void setRenderPass(VulkanRenderPass* renderPass);
-    void createGraphicsPipeline();
+private:
+    void initialize();
 
 private:
     // pipeline
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
     VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
-
-    VulkanRenderPass* m_renderPass = nullptr;
 };
 
 DOWN_CAST(VulkanRenderPipeline, Pipeline);

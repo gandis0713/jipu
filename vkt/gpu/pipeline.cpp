@@ -4,19 +4,16 @@
 namespace vkt
 {
 
-/* Pipeline */
-
+// Pipeline
 Pipeline::Pipeline(Device* device)
     : m_device(device)
 {
 }
 
-/* RenderPipeline */
-
+// RenderPipeline
 RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor)
     : Pipeline(device)
-    , m_vertex(descriptor.vertex)
-    , m_fragment(descriptor.fragment)
+    , m_descriptor(descriptor)
 {
 }
 

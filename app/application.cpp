@@ -133,35 +133,33 @@ void Application::createGraphicsPipeline()
 
     // vertex shader
     const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
-    ShaderModuleDescriptor vertexShaderModeulDescriptor{ .code = vertShaderCode.data(),
+    ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                          .codeSize = vertShaderCode.size() };
-    m_vertexShaderModule = vulkanDevice->createShaderModule(vertexShaderModeulDescriptor);
+    m_vertexShaderModule = vulkanDevice->createShaderModule(vertexShaderModuleDescriptor);
 
     // fragment shader
     const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
-    ShaderModuleDescriptor fragmentShaderModeulDescriptor{ .code = fragShaderCode.data(),
+    ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                            .codeSize = fragShaderCode.size() };
-    m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModeulDescriptor);
+    m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModuleDescriptor);
 
-    RenderPipelineDescriptor descriptor{ .vertex = m_vertexShaderModule.get(),
-                                         .fragment = m_fragmentShaderModule.get() };
+    // vertex stage
+    VertexStage vertexStage{};
+    vertexStage.shader = m_vertexShaderModule.get();
+
+    // fragment stage
+    FragmentStage fragmentStage{};
+    fragmentStage.shader = m_fragmentShaderModule.get();
+    fragmentStage.targets = { { .format = m_swapChain->getTextureFormat() } };
+
+    RenderPipelineDescriptor descriptor{ .vertex = vertexStage,
+                                         .fragment = fragmentStage };
+
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
-
-    auto vulkanRenderPipeline = downcast(m_renderPipeline.get());
-
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
-                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
-    vulkanRenderPipeline->setRenderPass(vulkanRenderPass);
-
-    vulkanRenderPipeline->createGraphicsPipeline();
 }
 
 void Application::createCommandBuffers()
 {
-
     std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
 
     auto commandBufferCount = swapChainTextureViews.size();
