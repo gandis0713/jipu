@@ -29,6 +29,11 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     }
 }
 
+VulkanFrameBuffer::~VulkanFrameBuffer()
+{
+    m_device->vkAPI.DestroyFramebuffer(m_device->getVkDevice(), m_framebuffer, nullptr);
+}
+
 VkFramebuffer VulkanFrameBuffer::getVkFrameBuffer() const
 {
     return m_framebuffer;

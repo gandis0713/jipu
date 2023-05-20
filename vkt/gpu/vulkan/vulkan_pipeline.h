@@ -18,7 +18,7 @@ class VKT_EXPORT VulkanPipeline : public Pipeline
 public:
     VulkanPipeline() = delete;
     VulkanPipeline(VulkanDevice* device, const PipelineDescriptor& descriptor);
-    ~VulkanPipeline() override = default;
+    ~VulkanPipeline() override;
 
     VulkanPipeline(const VulkanPipeline&) = delete;
     VulkanPipeline& operator=(const VulkanPipeline&) = delete;
@@ -26,8 +26,6 @@ public:
     VkPipeline getVkPipeline() const;
 
     void setRenderPass(VulkanRenderPass* renderPass);
-
-    void destroy();
 
     void createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath);
     VkShaderModule createShaderModule(const std::vector<char>& codeBuffer);

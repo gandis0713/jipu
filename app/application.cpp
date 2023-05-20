@@ -17,29 +17,6 @@
 std::filesystem::path Application::path;
 std::filesystem::path Application::dir;
 
-#ifdef NDEBUG
-const bool enableValidationLayers = true;
-const bool enableDebugMessenger = true;
-#else
-const bool enableValidationLayers = false;
-const bool enableDebugMessenger = false;
-#endif
-
-const std::vector<const char*> requiredDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                    void* pUserData)
-{
-    if (messageType != 1)
-    {
-        LOG_ERROR("pCallbackData->pMessage : {}", pCallbackData->pMessage);
-    }
-
-    return VK_FALSE;
-}
-
 Application::Application(int argc, char** argv)
 {
     path = std::filesystem::path(argv[0]);
@@ -131,35 +108,17 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
-    // vkDestroySemaphore(m_context.device, m_renderFinishedSemaphore, nullptr);
-    // vkDestroySemaphore(m_context.device, m_imageAvailableSemaphore, nullptr);
+    m_commandBuffers.clear();
 
-    // vkDestroyCommandPool(m_context.device, m_commandPool, nullptr);
+    m_pipeline.reset();
+    m_buffer.reset();
+    m_swapChain.reset();
 
-    // for (auto framebuffer : m_vecSwapChainFramebuffers)
-    // {
-    //     vkDestroyFramebuffer(m_context.device, framebuffer, nullptr);
-    // }
+    m_physicalDevice.reset();
+    m_device.reset();
 
-    //    m_pipeline.destroy();
-
-    //    vkDestroyRenderPass(m_context.device, m_renderPass, nullptr);
-
-    //    for (const VkImageView& imageView : m_swapChain->getImageViews()) // TODO: move into SwapChain object.
-    //    {
-    //        vkDestroyImageView(m_context.device, imageView, nullptr);
-    //    }
-
-    //    vkDestroySwapchainKHR(m_context.device, static_cast<VkSwapchainKHR>(m_swapChain->getHandle()), nullptr); //
-    //    TODO: move into SwapChain object.
-
-    //    vkDestroyDevice(m_context.device, nullptr);
-
-    // DestroyDebugUtilsMessengerEXT(m_context.instance, m_debugMessenger, nullptr);
-
-    //    vkDestroySurfaceKHR(m_context.instance, m_context.surface, nullptr);
-
-    //    m_context.finalize(); // vkDestroyInstance(m_context.instance, nullptr);
+    m_surface.reset();
+    m_driver.reset();
 
     delete m_window; // glfwDestroyWindow(m_window);
 

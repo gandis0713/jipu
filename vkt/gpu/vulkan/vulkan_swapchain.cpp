@@ -12,32 +12,6 @@
 namespace vkt
 {
 
-static VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities)
-{
-    VkExtent2D extent;
-    if (surfaceCapabilities.currentExtent.width != UINT32_MAX)
-    {
-        extent = surfaceCapabilities.currentExtent;
-    }
-    else
-    {
-        // TODO: calculate by frame buffer.
-        // int frameBufferWidth, frameBufferHeight;
-        // m_window->getFrameBufferSize(&frameBufferWidth, &frameBufferHeight);
-
-        // VkExtent2D actualImageExtent = { static_cast<uint32_t>(frameBufferWidth),
-        // static_cast<uint32_t>(frameBufferHeight) };
-
-        // actualImageExtent.width = std::clamp(actualImageExtent.width, surfaceCapabilities.minImageExtent.width,
-        // surfaceCapabilities.maxImageExtent.width); actualImageExtent.height = std::clamp(actualImageExtent.height,
-        // surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-
-        // extent = actualImageExtent;
-    }
-
-    return extent;
-}
-
 VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDescriptor& descriptor) noexcept(false)
     : SwapChain(vulkanDevice, descriptor)
 {
@@ -149,6 +123,9 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
 VulkanSwapChain::~VulkanSwapChain()
 {
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
+
+    /* do not delete VkImages from swapchain. */
+
     vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
 }
 
