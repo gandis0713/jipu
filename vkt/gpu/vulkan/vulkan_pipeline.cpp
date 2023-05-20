@@ -4,6 +4,7 @@
 
 #include <array>
 #include <stddef.h>
+#include <stdexcept>
 
 namespace vkt
 {
