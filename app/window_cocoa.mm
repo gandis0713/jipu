@@ -18,9 +18,6 @@ static NSView* getNSView(GLFWwindow* window)
     return [nsWindow contentView];
 }
 
-namespace vkt
-{
-
 Window::Window(int w, int h, std::string title)
     : m_window(nullptr)
 {
@@ -63,5 +60,3 @@ void Window::getFrameBufferSize(int* w, int* h)
 {
     glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h);
 }
-
-} // namespace vkt

@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include <string>
 
-namespace vkt
-{
-
 class Window
 {
 public:
@@ -27,5 +24,3 @@ public:
 private:
     void* m_window;
 };
-
-} // namespace vkt

@@ -7,10 +7,8 @@
 // clang-format on
 #include "utils/log.h"
 
-namespace vkt
-{
-
-Window::Window(int w, int h, std::string title) : m_window(nullptr)
+Window::Window(int w, int h, std::string title)
+    : m_window(nullptr)
 {
     glfwInit();
 
@@ -42,8 +40,12 @@ int Window::shouldClose()
     return ret;
 }
 
-void* Window::getNativeWindow() { return glfwGetWin32Window(static_cast<GLFWwindow*>(m_window)); }
+void* Window::getNativeWindow()
+{
+    return glfwGetWin32Window(static_cast<GLFWwindow*>(m_window));
+}
 
-void Window::getFrameBufferSize(int* w, int* h) { glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h); }
-
-} // namespace vkt
+void Window::getFrameBufferSize(int* w, int* h)
+{
+    glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_window), w, h);
+}

@@ -26,8 +26,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace vkt
-{
+using namespace vkt;
 
 struct Vertex
 {
@@ -97,5 +96,3 @@ private:
     VkSemaphore m_imageAvailableSemaphore;
     VkSemaphore m_renderFinishedSemaphore;
 };
-
-} // namespace vkt

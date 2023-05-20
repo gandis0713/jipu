@@ -14,8 +14,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
-std::filesystem::path vkt::Application::path;
-std::filesystem::path vkt::Application::dir;
+std::filesystem::path Application::path;
+std::filesystem::path Application::dir;
 
 #ifdef NDEBUG
 const bool enableValidationLayers = true;
@@ -39,9 +39,6 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 
     return VK_FALSE;
 }
-
-using namespace vkt;
-namespace fs = std::filesystem;
 
 Application::Application(int argc, char** argv)
 {
