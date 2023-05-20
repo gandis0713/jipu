@@ -9,8 +9,8 @@
 #include "vkt/gpu/vulkan/vulkan_swapchain.h"
 #include "vkt/gpu/vulkan/vulkan_texture_view.h"
 
-#include "utils/log.h"
 #include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 #include <string>
 
 std::filesystem::path Application::path;
@@ -209,7 +209,7 @@ void Application::drawFrame()
     VkQueue queue = vulkanDevice->getQueue();
     if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-        LOG_ERROR("failed to submit draw command buffer!");
+        spdlog::error("failed to submit draw command buffer!");
     }
 
     VkPresentInfoKHR presentInfo{};
@@ -239,6 +239,6 @@ void Application::createSemaphores()
     if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
         vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
-        LOG_ERROR("failed to create semaphores!");
+        spdlog::error("failed to create semaphores!");
     }
 }

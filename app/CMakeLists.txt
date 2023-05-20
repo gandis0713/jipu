@@ -21,12 +21,13 @@ if(APPLE)
 endif()
 
 if(WIN32)
-    set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/vkt/${CMAKE_BUILD_TYPE}/vkt.lib")
-    set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/vkt/inc/")
+    set(VKT_LIB_NAME "vkt.lib")
 elseif(APPLE)
-    set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/vkt/${CMAKE_BUILD_TYPE}/libvkt.a")
-    set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/vkt/inc/")
+    set(VKT_LIB_NAME "libvkt.a")
 endif()
+
+set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/vkt/${CMAKE_BUILD_TYPE}/${VKT_LIB_NAME}")
+set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/vkt/inc/")
 
 list(APPEND SRC_FILES
     main.cpp
