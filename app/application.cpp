@@ -9,6 +9,8 @@
 #include "vkt/gpu/vulkan/vulkan_swapchain.h"
 #include "vkt/gpu/vulkan/vulkan_texture_view.h"
 
+#include "utils/file.h"
+
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <string>
@@ -109,6 +111,9 @@ void Application::cleanup()
 {
     m_commandBuffers.clear();
 
+    m_vertexShaderModule.reset();
+    m_fragmentShaderModule.reset();
+
     m_pipeline.reset();
     m_buffer.reset();
     m_swapChain.reset();
@@ -124,14 +129,26 @@ void Application::cleanup()
 
 void Application::createGraphicsPipeline()
 {
-    // create pipeline
-    {
-        PipelineDescriptor descriptor{};
-        m_pipeline = m_device->createPipeline(descriptor);
-    }
+    auto vulkanDevice = downcast(m_device.get());
+
+    // vertex shader
+    const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
+    ShaderModuleDescriptor vertexShaderModeulDescriptor{ .code = vertShaderCode.data(),
+                                                         .codeSize = vertShaderCode.size() };
+    m_vertexShaderModule = vulkanDevice->createShaderModule(vertexShaderModeulDescriptor);
+
+    // fragment shader
+    const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
+    ShaderModuleDescriptor fragmentShaderModeulDescriptor{ .code = fragShaderCode.data(),
+                                                           .codeSize = fragShaderCode.size() };
+    m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModeulDescriptor);
+
+    PipelineDescriptor descriptor{ .vertex = m_vertexShaderModule.get(),
+                                   .fragment = m_fragmentShaderModule.get() };
+    m_pipeline = m_device->createPipeline(descriptor);
 
     auto vulkanPipeline = downcast(m_pipeline.get());
-    auto vulkanDevice = downcast(m_device.get());
+
     VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -139,8 +156,7 @@ void Application::createGraphicsPipeline()
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     vulkanPipeline->setRenderPass(vulkanRenderPass);
 
-    vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
-                                           (Application::getDir() / "triangle_frag.spv").generic_string());
+    vulkanPipeline->createGraphicsPipeline();
 }
 
 void Application::createCommandBuffers()

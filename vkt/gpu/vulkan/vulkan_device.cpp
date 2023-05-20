@@ -98,6 +98,11 @@ std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBu
     return std::make_unique<VulkanCommandBuffer>(this, descriptor);
 }
 
+std::unique_ptr<ShaderModule> VulkanDevice::createShaderModule(const ShaderModuleDescriptor& descriptor)
+{
+    return std::make_unique<VulkanShaderModule>(this, descriptor);
+}
+
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);

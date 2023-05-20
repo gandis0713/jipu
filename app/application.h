@@ -7,6 +7,7 @@
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
+#include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 #include "vkt/gpu/texture_view.h"
@@ -87,6 +88,9 @@ private:
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
+
+    std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
+    std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
     std::unique_ptr<Buffer> m_buffer = nullptr;
 

@@ -5,6 +5,7 @@
 #include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
+#include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/swapchain.h"
 
 #include <memory>
@@ -35,6 +36,7 @@ public:
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) = 0;
 
 protected:
     PhysicalDevice* m_physicalDevice = nullptr;

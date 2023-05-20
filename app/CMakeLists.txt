@@ -34,6 +34,8 @@ list(APPEND SRC_FILES
     application.cpp
     application.h
     window.h
+    utils/file.cpp
+    utils/file.h
 )
 
 if(WIN32)

@@ -3,6 +3,8 @@
 #include "vkt/gpu/shader_module.h"
 #include "vulkan_api.h"
 
+#include "utils/cast.h"
+
 namespace vkt
 {
 
@@ -19,5 +21,7 @@ public:
 private:
     VkShaderModule m_shaderModule = VK_NULL_HANDLE;
 };
+
+DOWN_CAST(VulkanShaderModule, ShaderModule);
 
 } // namespace vkt

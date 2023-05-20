@@ -27,15 +27,9 @@ public:
     VkPipeline getVkPipeline() const;
 
     void setRenderPass(VulkanRenderPass* renderPass);
-
-    void createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath);
-    VkShaderModule createShaderModule(const std::vector<char>& codeBuffer);
+    void createGraphicsPipeline();
 
 private:
-    // shader module
-    VkShaderModule m_vertShaderModule = VK_NULL_HANDLE;
-    VkShaderModule m_fragShaderModule = VK_NULL_HANDLE;
-
     // pipeline
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
     VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
