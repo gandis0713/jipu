@@ -1,55 +1,48 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_device.h"
 #include "vulkan_render_pass.h"
-
-#include "utils/file.h"
+#include "vulkan_texture.h"
 
 #include <array>
 #include <stddef.h>
+#include <stdexcept>
 
 namespace vkt
 {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* vulkanDevice, const PipelineDescriptor& info)
-    : Pipeline(vulkanDevice, info)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& info)
+    : RenderPipeline(vulkanDevice, info)
 {
+    initialize();
 }
 
-VulkanPipeline::~VulkanPipeline()
+VulkanRenderPipeline::~VulkanRenderPipeline()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
     vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
 }
 
-VkPipeline VulkanPipeline::getVkPipeline() const
+VkPipeline VulkanRenderPipeline::getVkPipeline() const
 {
     return m_graphicsPipeline;
 }
 
-void VulkanPipeline::setRenderPass(VulkanRenderPass* renderPass)
+void VulkanRenderPipeline::initialize()
 {
-    m_renderPass = renderPass;
-}
-
-void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, const std::string& fragShaderPath)
-{
-    const std::vector<char> vertShaderCode = utils::readFile(vertShaderPath);
-    const std::vector<char> fragShaderCode = utils::readFile(fragShaderPath);
-
-    m_vertShaderModule = createShaderModule(vertShaderCode);
-    m_fragShaderModule = createShaderModule(fragShaderCode);
+    auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
+    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = m_vertShaderModule;
+    vertexShaderStageInfo.module = vertexShaderModule;
     vertexShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = m_fragShaderModule;
+    fragmentShaderStageInfo.module = fragmentShaderModule;
     fragmentShaderStageInfo.pName = "main";
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
@@ -180,6 +173,13 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
         throw std::runtime_error("failed to create pipeline layout!");
     }
 
+    // TODO : multi sample
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = TextureFormat2VkFormat(m_descriptor.fragment.targets[0].format),
+                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
+
+    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
@@ -193,8 +193,7 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
     pipelineInfo.pDynamicState = nullptr; // &dynamicStateCreateInfo
     pipelineInfo.layout = m_pipelineLayout;
-
-    pipelineInfo.renderPass = m_renderPass->getVkRenderPass();
+    pipelineInfo.renderPass = vulkanRenderPass->getVkRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
@@ -203,27 +202,6 @@ void VulkanPipeline::createGraphicsPipeline(const std::string& vertShaderPath, c
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
-
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_fragShaderModule, nullptr);
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_vertShaderModule, nullptr);
-}
-
-VkShaderModule VulkanPipeline::createShaderModule(const std::vector<char>& codeBuffer)
-{
-    VkShaderModuleCreateInfo shaderModuleCreateInfo{};
-    shaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderModuleCreateInfo.codeSize = codeBuffer.size();
-    shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(codeBuffer.data());
-
-    VkShaderModule shaderModule;
-
-    auto vulkanDevice = downcast(m_device);
-    if (vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getVkDevice(), &shaderModuleCreateInfo, nullptr, &shaderModule) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create shader module!");
-    }
-
-    return shaderModule;
 }
 
 } // namespace vkt

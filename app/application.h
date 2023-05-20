@@ -7,11 +7,14 @@
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/queue.h"
+#include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 #include "vkt/gpu/texture_view.h"
 #include "vkt/gpu/vulkan/vulkan_framebuffer.h"
 #include "vkt/gpu/vulkan/vulkan_render_pass.h"
+
+#include "window.h"
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
@@ -33,8 +36,6 @@ struct Vertex
     glm::vec2 pos;
     glm::vec3 color;
 };
-
-class Window;
 
 class Application
 {
@@ -73,10 +74,10 @@ private:
     void drawFrame();
 
 private:
-    Window* m_window;
+    std::unique_ptr<Window> m_window = nullptr;
 
     // data
-    std::vector<Vertex> m_vertices = {};
+    std::vector<Vertex> m_vertices{};
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -86,7 +87,10 @@ private:
     std::unique_ptr<Device> m_device = nullptr;
 
     std::unique_ptr<SwapChain> m_swapChain = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
+    std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
     std::unique_ptr<Buffer> m_buffer = nullptr;
 

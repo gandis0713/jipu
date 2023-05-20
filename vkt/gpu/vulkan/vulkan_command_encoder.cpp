@@ -13,12 +13,12 @@
 namespace vkt
 {
 
-VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
-    : CommandEncoder(commandBuffer, descriptor)
+VulkanRenderCommandEncoder::VulkanRenderCommandEncoder(VulkanCommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
+    : RenderCommandEncoder(commandBuffer, descriptor)
 {
 }
 
-void VulkanCommandEncoder::begin()
+void VulkanRenderCommandEncoder::begin()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
 
@@ -67,7 +67,7 @@ void VulkanCommandEncoder::begin()
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VulkanCommandEncoder::end()
+void VulkanRenderCommandEncoder::end()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -79,7 +79,7 @@ void VulkanCommandEncoder::end()
     }
 }
 
-void VulkanCommandEncoder::setPipeline(Pipeline* pipeline)
+void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -88,7 +88,7 @@ void VulkanCommandEncoder::setPipeline(Pipeline* pipeline)
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
 }
 
-void VulkanCommandEncoder::setVertexBuffer(Buffer* buffer)
+void VulkanRenderCommandEncoder::setVertexBuffer(Buffer* buffer)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -99,11 +99,11 @@ void VulkanCommandEncoder::setVertexBuffer(Buffer* buffer)
     vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, vertexBuffers, offsets);
 }
 
-void VulkanCommandEncoder::setIndexBuffer(Buffer* buffer)
+void VulkanRenderCommandEncoder::setIndexBuffer(Buffer* buffer)
 {
 }
 
-void VulkanCommandEncoder::draw(uint32_t vertexCount)
+void VulkanRenderCommandEncoder::draw(uint32_t vertexCount)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -111,7 +111,7 @@ void VulkanCommandEncoder::draw(uint32_t vertexCount)
     vulkanDevice->vkAPI.CmdDraw(vulkanCommandBuffer->getVkCommandBuffer(), vertexCount, 1, 0, 0);
 }
 
-void VulkanCommandEncoder::drawIndexed(uint32_t indexCount)
+void VulkanRenderCommandEncoder::drawIndexed(uint32_t indexCount)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());

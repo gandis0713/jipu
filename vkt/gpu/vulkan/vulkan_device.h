@@ -28,10 +28,11 @@ public:
 
 public:
     std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) override;
-    std::unique_ptr<Pipeline> createPipeline(const PipelineDescriptor& descriptor) override;
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
     std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) override;
+    std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) override;
 
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
@@ -51,9 +52,6 @@ public:
 
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
-
-    void gatherQueues();
-    bool checkDeviceExtensionSupport(const std::vector<const char*>& requiredDeviceExtensions);
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;

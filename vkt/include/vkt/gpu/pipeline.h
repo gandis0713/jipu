@@ -1,21 +1,20 @@
 #pragma once
 
 #include "export.h"
+#include "shader_module.h"
+#include "texture.h"
+
+#include <vector>
 
 namespace vkt
 {
 
 class Device;
-
-struct PipelineDescriptor
-{
-};
-
 class VKT_EXPORT Pipeline
 {
 public:
     Pipeline() = delete;
-    Pipeline(Device* device, const PipelineDescriptor& descriptor);
+    Pipeline(Device* device);
     virtual ~Pipeline() = default;
 
     Pipeline(const Pipeline&) = delete;
@@ -23,6 +22,46 @@ public:
 
 protected:
     Device* m_device = nullptr;
+};
+
+struct ProgrammableStage
+{
+    ShaderModule* shader = nullptr;
+};
+
+// Render Pipeline
+struct VertexStage : ProgrammableStage
+{
+};
+
+struct FragmentStage : ProgrammableStage
+{
+    struct Target
+    {
+        TextureFormat format;
+    };
+
+    std::vector<FragmentStage::Target> targets{};
+};
+
+struct RenderPipelineDescriptor
+{
+    VertexStage vertex{};
+    FragmentStage fragment{};
+};
+
+class VKT_EXPORT RenderPipeline : public Pipeline
+{
+public:
+    RenderPipeline() = delete;
+    RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor);
+    virtual ~RenderPipeline() = default;
+
+    RenderPipeline(const RenderPipeline&) = delete;
+    RenderPipeline& operator=(const RenderPipeline&) = delete;
+
+protected:
+    const RenderPipelineDescriptor m_descriptor{};
 };
 
 } // namespace vkt

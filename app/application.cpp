@@ -9,9 +9,10 @@
 #include "vkt/gpu/vulkan/vulkan_swapchain.h"
 #include "vkt/gpu/vulkan/vulkan_texture_view.h"
 
-#include "utils/log.h"
-#include "window.h"
+#include "utils/file.h"
+
 #include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 #include <string>
 
 std::filesystem::path Application::path;
@@ -33,7 +34,7 @@ void Application::run()
 
 void Application::initWindow()
 {
-    m_window = new Window(800, 600, "Triangle Window");
+    m_window = std::make_unique<Window>(800, 600, "Triangle Window");
 }
 
 void Application::initVulkan()
@@ -110,7 +111,10 @@ void Application::cleanup()
 {
     m_commandBuffers.clear();
 
-    m_pipeline.reset();
+    m_vertexShaderModule.reset();
+    m_fragmentShaderModule.reset();
+
+    m_renderPipeline.reset();
     m_buffer.reset();
     m_swapChain.reset();
 
@@ -120,35 +124,42 @@ void Application::cleanup()
     m_surface.reset();
     m_driver.reset();
 
-    delete m_window; // glfwDestroyWindow(m_window);
-
-    glfwTerminate();
+    m_window.reset();
 }
 
 void Application::createGraphicsPipeline()
 {
-    // create pipeline
-    {
-        PipelineDescriptor descriptor{};
-        m_pipeline = m_device->createPipeline(descriptor);
-    }
-
-    auto vulkanPipeline = downcast(m_pipeline.get());
     auto vulkanDevice = downcast(m_device.get());
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = VK_FORMAT_B8G8R8A8_SRGB,
-                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                                     .samples = VK_SAMPLE_COUNT_1_BIT };
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
-    vulkanPipeline->setRenderPass(vulkanRenderPass);
 
-    vulkanPipeline->createGraphicsPipeline((Application::getDir() / "triangle_vert.spv").generic_string(),
-                                           (Application::getDir() / "triangle_frag.spv").generic_string());
+    // vertex shader
+    const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
+    ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
+                                                         .codeSize = vertShaderCode.size() };
+    m_vertexShaderModule = vulkanDevice->createShaderModule(vertexShaderModuleDescriptor);
+
+    // fragment shader
+    const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
+    ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
+                                                           .codeSize = fragShaderCode.size() };
+    m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModuleDescriptor);
+
+    // vertex stage
+    VertexStage vertexStage{};
+    vertexStage.shader = m_vertexShaderModule.get();
+
+    // fragment stage
+    FragmentStage fragmentStage{};
+    fragmentStage.shader = m_fragmentShaderModule.get();
+    fragmentStage.targets = { { .format = m_swapChain->getTextureFormat() } };
+
+    RenderPipelineDescriptor descriptor{ .vertex = vertexStage,
+                                         .fragment = fragmentStage };
+
+    m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 void Application::createCommandBuffers()
 {
-
     std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
 
     auto commandBufferCount = swapChainTextureViews.size();
@@ -171,14 +182,14 @@ void Application::createCommandBuffers()
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
         DepthStencilAttachment depthStencilAttachment{};
 
-        CommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                             .depthStencilAttachment = depthStencilAttachment };
-        auto commandEncoder = commandBuffer->createCommandEncoder(descriptor);
-        commandEncoder->begin();
-        commandEncoder->setPipeline(m_pipeline.get());
-        commandEncoder->setVertexBuffer(m_buffer.get());
-        commandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
-        commandEncoder->end();
+        RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                                   .depthStencilAttachment = depthStencilAttachment };
+        auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
+        renderCommandEncoder->begin();
+        renderCommandEncoder->setPipeline(m_renderPipeline.get());
+        renderCommandEncoder->setVertexBuffer(m_buffer.get());
+        renderCommandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderCommandEncoder->end();
     }
 }
 
@@ -212,7 +223,7 @@ void Application::drawFrame()
     VkQueue queue = vulkanDevice->getQueue();
     if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-        LOG_ERROR("failed to submit draw command buffer!");
+        spdlog::error("failed to submit draw command buffer!");
     }
 
     VkPresentInfoKHR presentInfo{};
@@ -242,6 +253,6 @@ void Application::createSemaphores()
     if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
         vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
     {
-        LOG_ERROR("failed to create semaphores!");
+        spdlog::error("failed to create semaphores!");
     }
 }
