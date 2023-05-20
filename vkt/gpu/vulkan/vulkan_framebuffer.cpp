@@ -15,8 +15,6 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     , m_width(descriptor.width)
     , m_height(descriptor.height)
 {
-    LOG_TRACE(__func__);
-
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                                                    .renderPass = descriptor.renderPass,
                                                    .attachmentCount = static_cast<uint32_t>(descriptor.imageViews.size()),
@@ -29,11 +27,6 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     {
         throw std::runtime_error("failed to create framebuffer!");
     }
-}
-
-VulkanFrameBuffer::~VulkanFrameBuffer()
-{
-    LOG_TRACE(__func__);
 }
 
 VkFramebuffer VulkanFrameBuffer::getVkFrameBuffer() const
@@ -109,8 +102,6 @@ VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(const VulkanFramebuffe
 
 void VulkanFrameBufferCache::clear()
 {
-    LOG_TRACE(__func__);
-
     m_cache.clear();
 }
 

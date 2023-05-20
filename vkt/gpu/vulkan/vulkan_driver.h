@@ -22,15 +22,15 @@ class VKT_EXPORT VulkanDriver : public Driver
 
 public:
     VulkanDriver() = delete;
-    VulkanDriver(DriverDescriptor descriptor) noexcept(false);
+    VulkanDriver(const DriverDescriptor& descriptor) noexcept(false);
     ~VulkanDriver() override;
 
     VulkanDriver(const VulkanDriver&) = delete;
     VulkanDriver& operator=(const VulkanDriver&) = delete;
 
 public:
-    std::unique_ptr<PhysicalDevice> createPhysicalDevice(PhysicalDeviceDescriptor descriptor) override;
-    std::unique_ptr<Surface> createSurface(SurfaceDescriptor descriptor) override;
+    std::unique_ptr<PhysicalDevice> createPhysicalDevice(const PhysicalDeviceDescriptor& descriptor) override;
+    std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
 
 public: // vulkan
     VkInstance getVkInstance() const;

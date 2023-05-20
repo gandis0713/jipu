@@ -29,13 +29,6 @@
 namespace vkt
 {
 
-struct SwapChainSupportDetails
-{
-    VkSurfaceCapabilitiesKHR surfaceCapabilities;
-    std::vector<VkSurfaceFormatKHR> surfaceFormats;
-    std::vector<VkPresentModeKHR> presentModes;
-};
-
 struct Vertex
 {
     glm::vec2 pos;

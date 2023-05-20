@@ -39,7 +39,7 @@ class VulkanRenderPassCache final
 
 public:
     VulkanRenderPassCache(VulkanDevice* device);
-    ~VulkanRenderPassCache();
+    ~VulkanRenderPassCache() = default;
 
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
 

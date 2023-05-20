@@ -21,16 +21,15 @@ const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 namespace vkt
 {
 
-VulkanDriver::VulkanDriver(DriverDescriptor descriptor) noexcept(false)
-    : Driver()
+VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
+    : Driver(descriptor)
 {
     initialize();
 }
 
 VulkanDriver::~VulkanDriver()
 {
-    // TODO: destroy instance.
-    LOG_TRACE(__func__);
+    vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
 void VulkanDriver::initialize() noexcept(false)
@@ -294,12 +293,12 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     return requiredInstanceExtensions;
 }
 
-std::unique_ptr<Surface> VulkanDriver::createSurface(SurfaceDescriptor descriptor)
+std::unique_ptr<Surface> VulkanDriver::createSurface(const SurfaceDescriptor& descriptor)
 {
     return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
-std::unique_ptr<PhysicalDevice> VulkanDriver::createPhysicalDevice(PhysicalDeviceDescriptor descriptor)
+std::unique_ptr<PhysicalDevice> VulkanDriver::createPhysicalDevice(const PhysicalDeviceDescriptor& descriptor)
 {
     return std::make_unique<VulkanPhysicalDevice>(this, descriptor);
 }

@@ -64,7 +64,6 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
 
 VulkanDevice::~VulkanDevice()
 {
-    LOG_TRACE(__func__);
 
     m_frameBufferCache.clear();
     m_renderPassCache.clear();

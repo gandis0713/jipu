@@ -25,7 +25,7 @@ class VKT_EXPORT VulkanFrameBuffer
 public:
     VulkanFrameBuffer() = delete;
     VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
-    ~VulkanFrameBuffer();
+    ~VulkanFrameBuffer() = default;
 
     VkFramebuffer getVkFrameBuffer() const;
 

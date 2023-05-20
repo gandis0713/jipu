@@ -21,7 +21,6 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, PhysicalD
 VulkanPhysicalDevice::~VulkanPhysicalDevice()
 {
     // doesn't need to destroy VkPhysicalDevice.
-    LOG_TRACE(__func__);
 }
 
 std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(DeviceDescriptor descriptor)

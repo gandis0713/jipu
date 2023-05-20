@@ -39,7 +39,6 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 VulkanQueue::~VulkanQueue()
 {
     // Doesn't need to destroy VkQueue.
-    LOG_TRACE(__func__);
 }
 
 VkQueue VulkanQueue::getQueue() const

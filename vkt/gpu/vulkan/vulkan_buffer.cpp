@@ -102,11 +102,6 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     VkMemoryRequirements memoryRequirements{};
     vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
 
-    spdlog::info("Buffer Memory Requirements");
-    spdlog::info("  size: {}", memoryRequirements.size);
-    spdlog::info("  alignment: {}", memoryRequirements.alignment);
-    spdlog::info("  memoryTypeBits: {}", memoryRequirements.memoryTypeBits);
-
     VulkanMemoryDescriptor heapMemoryDescriptor{ .flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                                  .requirements = memoryRequirements };
     m_memory = std::make_unique<VulkanMemory>(device, heapMemoryDescriptor);
