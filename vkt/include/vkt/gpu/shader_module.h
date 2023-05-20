@@ -1,10 +1,14 @@
 #pragma once
 
+#include <cstddef>
+
 namespace vkt
 {
 
 struct ShaderModuleDescriptor
 {
+    char* code = nullptr;
+    size_t codeSize = 0;
 };
 
 class Device;

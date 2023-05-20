@@ -3,6 +3,7 @@
 #include "utils/cast.h"
 #include "vkt/gpu/pipeline.h"
 #include "vulkan_api.h"
+#include "vulkan_shader_module.h"
 
 #include <string>
 #include <vector>
