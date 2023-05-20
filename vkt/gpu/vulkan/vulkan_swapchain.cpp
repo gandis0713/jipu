@@ -118,6 +118,16 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
         auto textureView = std::make_unique<VulkanTextureView>(downcast(texture.get()), descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
+
+    // create semaphore
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
+        vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    {
+        spdlog::error("failed to create semaphores!");
+    }
 }
 
 VulkanSwapChain::~VulkanSwapChain()
@@ -127,6 +137,10 @@ VulkanSwapChain::~VulkanSwapChain()
     /* do not delete VkImages from swapchain. */
 
     vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
+}
+
+void VulkanSwapChain::present()
+{
 }
 
 VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const

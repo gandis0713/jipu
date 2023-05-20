@@ -22,10 +22,15 @@ public:
     VulkanSwapChain(const SwapChain&) = delete;
     VulkanSwapChain& operator=(const SwapChain&) = delete;
 
+    void present() override;
+
+public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
+    VkSemaphore m_imageAvailableSemaphore = VK_NULL_HANDLE;
+    VkSemaphore m_renderFinishedSemaphore = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanSwapChain, SwapChain);

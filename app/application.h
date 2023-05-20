@@ -67,7 +67,7 @@ private:
     void mainLoop();
     void cleanup();
 
-    void createGraphicsPipeline();
+    void createRenderPipeline();
     void createCommandBuffers();
     void createSemaphores();
 

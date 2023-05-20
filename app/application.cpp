@@ -92,7 +92,7 @@ void Application::initVulkan()
         m_buffer->unmap();
     }
 
-    createGraphicsPipeline();
+    createRenderPipeline();
     createCommandBuffers();
     createSemaphores();
 }
@@ -127,7 +127,7 @@ void Application::cleanup()
     m_window.reset();
 }
 
-void Application::createGraphicsPipeline()
+void Application::createRenderPipeline()
 {
     auto vulkanDevice = downcast(m_device.get());
 

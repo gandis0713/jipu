@@ -48,6 +48,8 @@ public:
     SwapChain(const SwapChain&) = delete;
     SwapChain& operator=(const SwapChain&) = delete;
 
+    virtual void present() = 0;
+
     std::vector<Texture*> getTextures() const;
     std::vector<TextureView*> getTextureViews() const;
 
