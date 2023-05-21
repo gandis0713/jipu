@@ -169,13 +169,13 @@ void VulkanSwapchain::present()
 
 TextureView* VulkanSwapchain::getCurrentView()
 {
-    uint32_t imageIndex;
+    uint32_t imageIndex = 0;
 
     VulkanDevice* vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &imageIndex);
 
-    return nullptr;
+    return m_textureViews[imageIndex].get();
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

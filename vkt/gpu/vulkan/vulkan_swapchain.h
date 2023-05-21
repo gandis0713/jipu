@@ -30,7 +30,7 @@ public:
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-    VkSemaphore m_imageAvailableSemaphore = VK_NULL_HANDLE;
+    VkSemaphore m_acquireNextImageSemaphore = VK_NULL_HANDLE;
     std::vector<VkSemaphore> m_semaphores{};
 };
 
