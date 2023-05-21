@@ -73,9 +73,9 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DestroyDevice(m_device, nullptr);
 }
 
-std::unique_ptr<SwapChain> VulkanDevice::createSwapChain(const SwapChainDescriptor& descriptor)
+std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapChain>(this, descriptor);
+    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
@@ -125,7 +125,7 @@ VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
     return vulkanPhysicalDevice->getVkPhysicalDevice();
 }
 
-VkQueue VulkanDevice::getQueue() const
+VkQueue VulkanDevice::getVkQueue() const
 {
     assert(!m_queues.empty());
 
@@ -133,7 +133,7 @@ VkQueue VulkanDevice::getQueue() const
     return m_queues[0];
 }
 
-uint32_t VulkanDevice::getQueueIndex() const
+uint32_t VulkanDevice::getVkQueueIndex() const
 {
     assert(!m_queues.empty());
 
@@ -148,8 +148,8 @@ VkCommandPool VulkanDevice::getCommandPool()
     {
         VkCommandPoolCreateInfo commandPoolCreateInfo{};
         commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        commandPoolCreateInfo.queueFamilyIndex = getQueueIndex(); // TODO: get queue index by create information.
-        commandPoolCreateInfo.flags = 0;                          // Optional
+        commandPoolCreateInfo.queueFamilyIndex = getVkQueueIndex(); // TODO: get queue index by create information.
+        commandPoolCreateInfo.flags = 0;                            // Optional
 
         if (vkAPI.CreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
         {

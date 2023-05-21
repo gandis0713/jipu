@@ -28,7 +28,7 @@ enum class ColorSpace
     kSRGBLinear,
 };
 
-struct SwapChainDescriptor
+struct SwapchainDescriptor
 {
     TextureFormat textureFormat{ TextureFormat::kUndefined };
     PresentMode presentMode{ PresentMode::kUndefined };
@@ -38,17 +38,18 @@ struct SwapChainDescriptor
     Surface* surface = nullptr;
 };
 
-class VKT_EXPORT SwapChain
+class VKT_EXPORT Swapchain
 {
 public:
-    SwapChain() = delete;
-    SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept;
-    virtual ~SwapChain() noexcept = default;
+    Swapchain() = delete;
+    Swapchain(Device* device, const SwapchainDescriptor& descriptor) noexcept;
+    virtual ~Swapchain() noexcept = default;
 
-    SwapChain(const SwapChain&) = delete;
-    SwapChain& operator=(const SwapChain&) = delete;
+    Swapchain(const Swapchain&) = delete;
+    Swapchain& operator=(const Swapchain&) = delete;
 
     virtual void present() = 0;
+    virtual TextureView* getCurrentView() = 0;
 
     std::vector<Texture*> getTextures() const;
     std::vector<TextureView*> getTextureViews() const;

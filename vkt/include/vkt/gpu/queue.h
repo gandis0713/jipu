@@ -7,7 +7,8 @@ namespace vkt
 
 enum class QueueType
 {
-    kGraphics = 0,
+    kUndefined = 0,
+    kGraphics,
     kCompute,
     kTransfer,
 };
@@ -25,10 +26,15 @@ public:
     Queue(Device* device, const QueueDescriptor& descriptor);
     virtual ~Queue() = default;
 
-    virtual QueueType getType() const = 0;
+    virtual void submit() = 0;
+
+public:
+    QueueType getType() const;
 
 protected:
     Device* m_device;
+
+    QueueType m_type = QueueType::kUndefined;
 };
 
 } // namespace vkt

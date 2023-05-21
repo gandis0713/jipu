@@ -9,4 +9,9 @@ Queue::Queue(Device* device, const QueueDescriptor& descriptor)
 {
 }
 
+QueueType Queue::getType() const
+{
+    return m_type;
+}
+
 } // namespace vkt

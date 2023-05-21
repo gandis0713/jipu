@@ -84,8 +84,8 @@ void VulkanRenderPipeline::initialize()
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    // viewport.width = (float)m_swapChainExtent.width;
-    // viewport.height = (float)m_swapChainExtent.height;
+    // viewport.width = (float)m_swapchainExtent.width;
+    // viewport.height = (float)m_swapchainExtent.height;
     viewport.width = 800;
     viewport.height = 600;
     viewport.minDepth = 0.0f;

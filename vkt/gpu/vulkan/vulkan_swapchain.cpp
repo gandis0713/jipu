@@ -12,8 +12,8 @@
 namespace vkt
 {
 
-VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDescriptor& descriptor) noexcept(false)
-    : SwapChain(vulkanDevice, descriptor)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDescriptor& descriptor) noexcept(false)
+    : Swapchain(vulkanDevice, descriptor)
 {
     VulkanSurface* surface = downcast(m_surface);
 
@@ -90,7 +90,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
     if (vkAPI.CreateSwapchainKHR(device, &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create swap chain!");
+        throw std::runtime_error("Failed to create swap chain");
     }
 
     // get swapchain image.
@@ -120,17 +120,23 @@ VulkanSwapChain::VulkanSwapChain(VulkanDevice* vulkanDevice, const SwapChainDesc
     }
 
     // create semaphore
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    m_semaphores.resize(m_textures.size());
 
-    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
+    VkSemaphoreCreateInfo semaphoreCreateInfo;
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = nullptr;
+    semaphoreCreateInfo.flags = 0;
+
+    for (auto i = 0; i < m_semaphores.size(); ++i)
     {
-        spdlog::error("failed to create semaphores!");
+        if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_semaphores[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create swap chain");
+        }
     }
 }
 
-VulkanSwapChain::~VulkanSwapChain()
+VulkanSwapchain::~VulkanSwapchain()
 {
     const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
 
@@ -139,11 +145,40 @@ VulkanSwapChain::~VulkanSwapChain()
     vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
 }
 
-void VulkanSwapChain::present()
+void VulkanSwapchain::present()
 {
+    auto vulkanDevice = downcast(m_device);
+    auto queue = vulkanDevice->getVkQueue();
+
+    // VkPresentInfoKHR presentInfo{};
+    // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    // presentInfo.waitSemaphoreCount = 1;
+    // presentInfo.pWaitSemaphores = signalSemaphores;
+
+    // VkSwapchainKHR swapchains[] = { swapchain };
+    // presentInfo.swapchainCount = 1;
+    // presentInfo.pSwapchains = swapchains;
+    // presentInfo.pImageIndices = &imageIndex;
+    // presentInfo.pResults = nullptr; // Optional
+
+    // vkAPI.QueuePresentKHR(queue, &presentInfo);
+
+    vulkanDevice->vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
 }
 
-VkSwapchainKHR VulkanSwapChain::getVkSwapchainKHR() const
+TextureView* VulkanSwapchain::getCurrentView()
+{
+    uint32_t imageIndex;
+
+    VulkanDevice* vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+    return nullptr;
+}
+
+VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 {
     return m_swapchain;
 }

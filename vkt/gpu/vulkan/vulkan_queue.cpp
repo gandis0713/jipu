@@ -41,14 +41,13 @@ VulkanQueue::~VulkanQueue()
     // Doesn't need to destroy VkQueue.
 }
 
-VkQueue VulkanQueue::getQueue() const
+void VulkanQueue::submit()
 {
-    return m_queue;
 }
 
-QueueType VulkanQueue::getType() const
+VkQueue VulkanQueue::getVkQueue() const
 {
-    return QueueType::kGraphics; // TODO: use m_properties;
+    return m_queue;
 }
 
 } // namespace vkt

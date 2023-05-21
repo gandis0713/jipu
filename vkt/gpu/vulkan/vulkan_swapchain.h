@@ -13,16 +13,17 @@ namespace vkt
 
 class VulkanDevice;
 
-class VKT_EXPORT VulkanSwapChain : public SwapChain
+class VKT_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
-    VulkanSwapChain(VulkanDevice* device, const SwapChainDescriptor& descriptor) noexcept(false);
-    ~VulkanSwapChain() override;
+    VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
+    ~VulkanSwapchain() override;
 
-    VulkanSwapChain(const SwapChain&) = delete;
-    VulkanSwapChain& operator=(const SwapChain&) = delete;
+    VulkanSwapchain(const Swapchain&) = delete;
+    VulkanSwapchain& operator=(const Swapchain&) = delete;
 
     void present() override;
+    TextureView* getCurrentView() override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
@@ -30,10 +31,10 @@ public:
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_imageAvailableSemaphore = VK_NULL_HANDLE;
-    VkSemaphore m_renderFinishedSemaphore = VK_NULL_HANDLE;
+    std::vector<VkSemaphore> m_semaphores{};
 };
 
-DOWN_CAST(VulkanSwapChain, SwapChain);
+DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Convert Helper
 ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace);

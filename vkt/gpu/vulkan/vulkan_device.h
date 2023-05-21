@@ -27,7 +27,7 @@ public:
     VulkanDevice& operator=(const VulkanDevice&) = delete;
 
 public:
-    std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) override;
+    std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
     std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
@@ -42,8 +42,8 @@ public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
 
-    VkQueue getQueue() const;
-    uint32_t getQueueIndex() const;
+    VkQueue getVkQueue() const;
+    uint32_t getVkQueueIndex() const;
 
     VkCommandPool getCommandPool();
 

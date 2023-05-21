@@ -65,13 +65,19 @@ void Application::initVulkan()
 
     // create swapchain
     {
-        SwapChainDescriptor swapChainCreateInfo{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
-                                                 .presentMode = PresentMode::kFifo,
-                                                 .colorSpace = ColorSpace::kSRGBNonLinear,
-                                                 .width = 800,
-                                                 .height = 600,
-                                                 .surface = m_surface.get() };
-        m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
+        SwapchainDescriptor descriptor{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
+                                        .presentMode = PresentMode::kFifo,
+                                        .colorSpace = ColorSpace::kSRGBNonLinear,
+                                        .width = 800,
+                                        .height = 600,
+                                        .surface = m_surface.get() };
+        m_swapchain = m_device->createSwapchain(descriptor);
+    }
+
+    // create queue
+    {
+        QueueDescriptor descriptor{ .type = QueueType::kGraphics };
+        m_renderQueue = m_device->createQueue(descriptor);
     }
 
     // create buffer
@@ -116,7 +122,7 @@ void Application::cleanup()
 
     m_renderPipeline.reset();
     m_buffer.reset();
-    m_swapChain.reset();
+    m_swapchain.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -150,7 +156,7 @@ void Application::createRenderPipeline()
     // fragment stage
     FragmentStage fragmentStage{};
     fragmentStage.shader = m_fragmentShaderModule.get();
-    fragmentStage.targets = { { .format = m_swapChain->getTextureFormat() } };
+    fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
 
     RenderPipelineDescriptor descriptor{ .vertex = vertexStage,
                                          .fragment = fragmentStage };
@@ -160,9 +166,9 @@ void Application::createRenderPipeline()
 
 void Application::createCommandBuffers()
 {
-    std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
+    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
-    auto commandBufferCount = swapChainTextureViews.size();
+    auto commandBufferCount = swapchainTextureViews.size();
     m_commandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
@@ -176,7 +182,7 @@ void Application::createCommandBuffers()
         auto commandBuffer = m_commandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .textureView = swapChainTextureViews[i],
+        colorAttachments[0] = { .textureView = swapchainTextureViews[i],
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -196,12 +202,12 @@ void Application::createCommandBuffers()
 void Application::drawFrame()
 {
     uint32_t imageIndex;
-    auto vulkanSwapChain = downcast(m_swapChain.get());
-    VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
+    auto vulkanSwapchain = downcast(m_swapchain.get());
+    VkSwapchainKHR swapchain = vulkanSwapchain->getVkSwapchainKHR();
 
     VulkanDevice* vulkanDevice = downcast(m_device.get());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), swapchain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -220,7 +226,7 @@ void Application::drawFrame()
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    VkQueue queue = vulkanDevice->getQueue();
+    VkQueue queue = vulkanDevice->getVkQueue();
     if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         spdlog::error("failed to submit draw command buffer!");
@@ -232,15 +238,15 @@ void Application::drawFrame()
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = { swapChain };
+    VkSwapchainKHR swapchains[] = { swapchain };
     presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
+    presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Optional
 
     vkAPI.QueuePresentKHR(queue, &presentInfo);
 
-    vkAPI.QueueWaitIdle(vulkanDevice->getQueue());
+    vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
 }
 
 void Application::createSemaphores()

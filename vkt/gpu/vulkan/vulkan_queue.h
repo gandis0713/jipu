@@ -15,9 +15,10 @@ public:
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
-    VkQueue getQueue() const;
+    void submit() override;
 
-    QueueType getType() const override;
+public:
+    VkQueue getVkQueue() const;
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
