@@ -17,12 +17,7 @@ public:
 
     void submit() override;
 
-public:
-    VkQueue getVkQueue() const;
-
 private:
-    VkQueue m_queue = VK_NULL_HANDLE;
-
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
     VkQueueFamilyProperties m_properties{};

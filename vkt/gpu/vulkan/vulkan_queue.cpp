@@ -45,9 +45,4 @@ void VulkanQueue::submit()
 {
 }
 
-VkQueue VulkanQueue::getVkQueue() const
-{
-    return m_queue;
-}
-
 } // namespace vkt
