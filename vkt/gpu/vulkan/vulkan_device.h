@@ -42,8 +42,10 @@ public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
 
-    VkQueue getVkQueue() const;
-    uint32_t getVkQueueIndex() const;
+    VkQueue getVkQueue(uint32_t index = 0) const;
+
+    std::vector<VkSemaphore>& getWaitSemaphore();
+    std::vector<VkSemaphore>& getSignalSemaphore();
 
     VkCommandPool getCommandPool();
 
@@ -58,6 +60,9 @@ private:
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
 
     std::vector<VkQueue> m_queues{};
+
+    std::vector<VkSemaphore> m_waitSemaphore{};
+    std::vector<VkSemaphore> m_signalSemaphore{};
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;

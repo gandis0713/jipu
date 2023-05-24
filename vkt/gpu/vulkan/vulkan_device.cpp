@@ -125,35 +125,38 @@ VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
     return vulkanPhysicalDevice->getVkPhysicalDevice();
 }
 
-VkQueue VulkanDevice::getVkQueue() const
+VkQueue VulkanDevice::getVkQueue(uint32_t index) const
 {
-    assert(!m_queues.empty());
+    assert(m_queues.size() > index);
 
     // TODO: return suit queue
-    return m_queues[0];
+    return m_queues[index];
 }
 
-uint32_t VulkanDevice::getVkQueueIndex() const
+std::vector<VkSemaphore>& VulkanDevice::getWaitSemaphore()
 {
-    assert(!m_queues.empty());
+    return m_waitSemaphore;
+}
 
-    // TODO: return suit queue index
-    return 0;
+std::vector<VkSemaphore>& VulkanDevice::getSignalSemaphore()
+{
+    return m_signalSemaphore;
 }
 
 VkCommandPool VulkanDevice::getCommandPool()
 {
     // TODO: get or create by command pool create information (not VkCommandPoolCreateInfo).
+    // for instance, use queue index.
     if (m_commandPool == VK_NULL_HANDLE)
     {
         VkCommandPoolCreateInfo commandPoolCreateInfo{};
         commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        commandPoolCreateInfo.queueFamilyIndex = getVkQueueIndex(); // TODO: get queue index by create information.
-        commandPoolCreateInfo.flags = 0;                            // Optional
+        commandPoolCreateInfo.queueFamilyIndex = 0; // TODO: get queue index by create information.
+        commandPoolCreateInfo.flags = 0;            // Optional
 
         if (vkAPI.CreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to create command pool.");
+            throw std::runtime_error("Failed to create command pool.");
         }
     }
 

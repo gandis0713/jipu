@@ -1,21 +1,23 @@
 #pragma once
 
 #include "export.h"
+#include <stdint.h>
 
 namespace vkt
 {
 
-enum class QueueType
+enum QueueFlagBits : uint8_t
 {
-    kUndefined = 0,
-    kGraphics,
-    kCompute,
-    kTransfer,
+    kUndefined = 0x00000001,
+    kGraphics = 0x00000002,
+    kCompute = 0x00000004,
+    kTransfer = 0x00000008,
 };
+using QueueFlags = uint8_t;
 
 struct QueueDescriptor
 {
-    QueueType type;
+    QueueFlags flags;
 };
 
 class Device;
@@ -29,12 +31,12 @@ public:
     virtual void submit() = 0;
 
 public:
-    QueueType getType() const;
+    QueueFlags getFlags() const;
 
 protected:
     Device* m_device;
 
-    QueueType m_type = QueueType::kUndefined;
+    QueueFlags m_flags = QueueFlagBits::kUndefined;
 };
 
 } // namespace vkt

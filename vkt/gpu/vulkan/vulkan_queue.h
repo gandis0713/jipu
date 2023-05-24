@@ -17,12 +17,20 @@ public:
 
     void submit() override;
 
+    VkQueue getVkQueue() const;
+
 private:
+    VkQueue m_queue = VK_NULL_HANDLE;
+
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
     VkQueueFamilyProperties m_properties{};
 };
 
 DOWN_CAST(VulkanQueue, Queue);
+
+// Convert Helper
+QueueFlags VkQueueFlags2QueueFlags(VkQueueFlags vkflags);
+VkQueueFlags QueueFlags2VkQueueFlags(QueueFlags flags);
 
 } // namespace vkt

@@ -32,6 +32,7 @@ private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_acquireNextImageSemaphore = VK_NULL_HANDLE;
     std::vector<VkSemaphore> m_semaphores{};
+    uint32_t m_swapImageIndex = 0u;
 };
 
 DOWN_CAST(VulkanSwapchain, Swapchain);

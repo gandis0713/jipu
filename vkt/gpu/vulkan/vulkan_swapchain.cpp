@@ -150,32 +150,35 @@ void VulkanSwapchain::present()
     auto vulkanDevice = downcast(m_device);
     auto queue = vulkanDevice->getVkQueue();
 
-    // VkPresentInfoKHR presentInfo{};
-    // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    VkSwapchainKHR swapchains[] = { m_swapchain };
+    VkSemaphore semaphore = m_semaphores[m_swapImageIndex];
 
-    // presentInfo.waitSemaphoreCount = 1;
-    // presentInfo.pWaitSemaphores = signalSemaphores;
+    vulkanDevice->getSignalSemaphore().push_back(semaphore);
 
-    // VkSwapchainKHR swapchains[] = { swapchain };
-    // presentInfo.swapchainCount = 1;
-    // presentInfo.pSwapchains = swapchains;
-    // presentInfo.pImageIndices = &imageIndex;
-    // presentInfo.pResults = nullptr; // Optional
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &semaphore;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapchains;
+    presentInfo.pImageIndices = &m_swapImageIndex;
+    presentInfo.pResults = nullptr; // Optional
 
-    // vkAPI.QueuePresentKHR(queue, &presentInfo);
+    vulkanDevice->vkAPI.QueuePresentKHR(queue, &presentInfo);
 
+    // TODO: check really need below?
     vulkanDevice->vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
 }
 
 TextureView* VulkanSwapchain::getCurrentView()
 {
-    uint32_t imageIndex = 0;
-
     VulkanDevice* vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_swapImageIndex);
 
-    return m_textureViews[imageIndex].get();
+    vulkanDevice->getWaitSemaphore().push_back(m_acquireNextImageSemaphore);
+
+    return m_textureViews[m_swapImageIndex].get();
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

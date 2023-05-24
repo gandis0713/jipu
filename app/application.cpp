@@ -76,7 +76,7 @@ void Application::initVulkan()
 
     // create queue
     {
-        QueueDescriptor descriptor{ .type = QueueType::kGraphics };
+        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
         m_renderQueue = m_device->createQueue(descriptor);
     }
 
