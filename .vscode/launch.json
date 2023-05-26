@@ -36,7 +36,7 @@
             "name": "Ninja debug for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/app/app",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle_sample",
             "args": [],
             "stopAtEntry": false,
             "environment": [],

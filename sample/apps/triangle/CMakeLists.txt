@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
-# The information about project.
-set(PRJ_NAME "app")
 project(
-    ${PRJ_NAME}
+    triangle_sample
     VERSION 0.1
-    DESCRIPTION "${PRJ_NAME} sample"
+    DESCRIPTION "triangle sample"
     LANGUAGES CXX
 )
 
@@ -28,14 +26,15 @@ endif()
 
 set(VKT_LIBRARIES "${CMAKE_BINARY_DIR}/vkt/${CMAKE_BUILD_TYPE}/${VKT_LIB_NAME}")
 set(VKT_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/vkt/inc/")
-
 list(APPEND SRC_FILES
     main.cpp
-    application.cpp
-    application.h
+    sample.cpp
+    sample.h
+    triangle_sample.cpp
+    triangle_sample.h
     window.h
-    utils/file.cpp
-    utils/file.h
+    file.cpp
+    file.h
 )
 
 if(WIN32)
@@ -48,17 +47,16 @@ elseif(APPLE)
     )
 endif()
 
-add_executable(${PRJ_NAME}
+add_executable(triangle_sample
     ${SRC_FILES}
 )
 
-# add_executable(vkt::app ALIAS ${PRJ_NAME})
-target_include_directories(${PRJ_NAME}
+target_include_directories(triangle_sample
     PUBLIC
     ${VKT_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PRJ_NAME}
+target_link_libraries(triangle_sample
     PRIVATE
     glfw
     glm
@@ -69,16 +67,18 @@ target_link_libraries(${PRJ_NAME}
 set(GLSLC_EXE $ENV{VULKAN_SDK}/bin/glslc)
 
 if(CMAKE_GENERATOR STREQUAL "Ninja")
-    set(SHADER_OUTPUT ${CMAKE_BINARY_DIR}/${PRJ_NAME})
+    set(SHADER_OUTPUT ${CMAKE_CURRENT_BINARY_DIR})
 else()
-    set(SHADER_OUTPUT ${CMAKE_BINARY_DIR}/${PRJ_NAME}/${CMAKE_BUILD_TYPE})
+    set(SHADER_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 endif()
 
+message(STATUS "SHADER_OUTPUT : ${SHADER_OUTPUT}")
+
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+    add_custom_command(TARGET triangle_sample POST_BUILD
         COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/triangle.vert -o ${SHADER_OUTPUT}/triangle_vert.spv
     )
-    add_custom_command(TARGET ${PRJ_NAME} POST_BUILD
+    add_custom_command(TARGET triangle_sample POST_BUILD
         COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/triangle.frag -o ${SHADER_OUTPUT}/triangle_frag.spv
     )
 else()
@@ -93,7 +93,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(${PRJ_NAME}
+    target_compile_options(triangle_sample
         PUBLIC
         -Wall
         -Werror

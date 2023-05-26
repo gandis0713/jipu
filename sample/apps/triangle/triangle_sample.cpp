@@ -1,35 +1,15 @@
-#include "application.h"
+#include "triangle_sample.h"
 
-#include "utils/file.h"
+#include "file.h"
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <string>
 
-std::filesystem::path Application::path;
-std::filesystem::path Application::dir;
-
-Application::Application(int argc, char** argv)
+TriangleSample::TriangleSample(int argc, char** argv)
+    : Sample(argc, argv)
 {
-    path = std::filesystem::path(argv[0]);
-    dir = path.parent_path();
-}
 
-void Application::run()
-{
-    initWindow();
-    initVulkan();
-    mainLoop();
-    cleanup();
-}
-
-void Application::initWindow()
-{
-    m_window = std::make_unique<Window>(800, 600, "Triangle Window");
-}
-
-void Application::initVulkan()
-{
     // create Driver.
     {
         DriverDescriptor descriptor{ .type = DRIVER_TYPE::VULKAN };
@@ -38,7 +18,7 @@ void Application::initVulkan()
 
     // create surface
     {
-        SurfaceDescriptor descriptor{ .windowHandle = m_window->getNativeWindow() };
+        SurfaceDescriptor descriptor{ .windowHandle = getNativeWindow() };
         m_surface = m_driver->createSurface(descriptor);
     }
 
@@ -93,15 +73,7 @@ void Application::initVulkan()
     createCommandBuffers();
 }
 
-void Application::mainLoop()
-{
-    while (!m_window->shouldClose())
-    {
-        drawFrame();
-    }
-}
-
-void Application::cleanup()
+TriangleSample::~TriangleSample()
 {
     m_commandBuffers.clear();
 
@@ -120,20 +92,18 @@ void Application::cleanup()
 
     m_surface.reset();
     m_driver.reset();
-
-    m_window.reset();
 }
 
-void Application::createRenderPipeline()
+void TriangleSample::createRenderPipeline()
 {
     // vertex shader
-    const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
+    const std::vector<char> vertShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_vert.spv"));
     ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                          .codeSize = vertShaderCode.size() };
     m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
 
     // fragment shader
-    const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
+    const std::vector<char> fragShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_frag.spv"));
     ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                            .codeSize = fragShaderCode.size() };
     m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
@@ -153,7 +123,7 @@ void Application::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void Application::createCommandBuffers()
+void TriangleSample::createCommandBuffers()
 {
     std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
@@ -188,7 +158,7 @@ void Application::createCommandBuffers()
     }
 }
 
-void Application::drawFrame()
+void TriangleSample::draw()
 {
     int nextImageIndex = m_swapchain->acquireNextTexture();
     m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());

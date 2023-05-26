@@ -14,20 +14,7 @@
 #include "vkt/gpu/vulkan/vulkan_framebuffer.h"
 #include "vkt/gpu/vulkan/vulkan_render_pass.h"
 
-#include "window.h"
-
-#include <GLFW/glfw3.h>
-#include <algorithm>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <filesystem>
-#include <glm/glm.hpp>
-#include <memory>
-#include <optional>
-#include <set>
-#include <stdexcept>
-#include <vector>
+#include "sample.h"
 
 using namespace vkt;
 
@@ -37,44 +24,24 @@ struct Vertex
     glm::vec3 color;
 };
 
-class Application
+class TriangleSample : public Sample
 {
 public:
-    Application() = default;
-    Application(int argc, char** argv);
-
-public:
-    void run();
-
-public:
-    static std::filesystem::path getPath()
-    {
-        return path;
-    }
-    static std::filesystem::path getDir()
-    {
-        return dir;
-    }
+    TriangleSample() = default;
+    TriangleSample(int argc, char** argv);
+    ~TriangleSample() override;
 
 private:
-    static std::filesystem::path path;
-    static std::filesystem::path dir;
-
-private:
-    void initWindow();
     void initVulkan();
 
-    void mainLoop();
     void cleanup();
 
     void createRenderPipeline();
     void createCommandBuffers();
 
-    void drawFrame();
+    void draw() override;
 
 private:
-    std::unique_ptr<Window> m_window = nullptr;
-
     // data
     std::vector<Vertex> m_vertices{};
 

@@ -5,7 +5,6 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 // clang-format on
-#include "utils/log.h"
 
 Window::Window(int w, int h, std::string title)
     : m_window(nullptr)

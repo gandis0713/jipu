@@ -7,8 +7,6 @@
 #include <GLFW/glfw3native.h>
 // clang-format on
 
-#include "utils/log.h"
-
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
