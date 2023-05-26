@@ -1,16 +1,14 @@
 #pragma once
 
+#include "utils/cast.h"
 #include "vkt/gpu/command_buffer.h"
 #include "vulkan_api.h"
-
-#include "export.h"
-#include "utils/cast.h"
 
 namespace vkt
 {
 
 class VulkanDevice;
-class VKT_EXPORT VulkanCommandBuffer : public CommandBuffer
+class VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;

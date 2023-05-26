@@ -17,7 +17,7 @@ struct VulkanDriverInfo : VulkanDriverKnobs
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class VKT_EXPORT VulkanDriver : public Driver
+class VulkanDriver : public Driver
 {
 
 public:

@@ -13,7 +13,7 @@ namespace vkt
 
 class VulkanDevice;
 
-class VKT_EXPORT VulkanSwapchain : public Swapchain
+class VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);

@@ -28,7 +28,7 @@ public:
     ~VulkanSynchronization() = default;
 
     void injectSemaphore(const SemaphoreDescriptor& descriptor, VkSemaphore semaphore);
-    std::vector<VkSemaphore> takeoutSemaphore(const SemaphoreDescriptor& descriptor);
+    [[nodiscard]] std::vector<VkSemaphore> takeoutSemaphore(const SemaphoreDescriptor& descriptor);
 
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;

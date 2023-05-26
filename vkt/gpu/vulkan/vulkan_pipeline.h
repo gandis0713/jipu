@@ -14,7 +14,7 @@ namespace vkt
 class VulkanDevice;
 class VulkanRenderPass;
 
-class VKT_EXPORT VulkanRenderPipeline : public RenderPipeline
+class VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;

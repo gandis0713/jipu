@@ -4,7 +4,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "export.h"
 #include "vulkan_api.h"
 
 namespace vkt
@@ -20,7 +19,7 @@ struct VulkanFramebufferDescriptor
 
 class VulkanDevice;
 
-class VKT_EXPORT VulkanFrameBuffer
+class VulkanFrameBuffer
 {
 public:
     VulkanFrameBuffer() = delete;

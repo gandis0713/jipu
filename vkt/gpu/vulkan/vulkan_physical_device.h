@@ -22,7 +22,7 @@ struct VulkanPhysicalDeviceInfo : VulkanDeviceKnobs
 };
 
 class VulkanDriver;
-class VKT_EXPORT VulkanPhysicalDevice : public PhysicalDevice
+class VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;
