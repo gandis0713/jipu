@@ -49,7 +49,8 @@ public:
     Swapchain& operator=(const Swapchain&) = delete;
 
     virtual void present() = 0;
-    virtual TextureView* getCurrentView() = 0;
+    virtual uint32_t acquireNextTextureIndex() = 0;
+    virtual TextureView* getTextureView(uint32_t index) = 0;
 
     std::vector<Texture*> getTextures() const;
     std::vector<TextureView*> getTextureViews() const;

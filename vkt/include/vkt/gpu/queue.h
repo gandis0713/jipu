@@ -1,6 +1,10 @@
 #pragma once
 
 #include "export.h"
+
+#include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/swapchain.h"
+
 #include <stdint.h>
 
 namespace vkt
@@ -28,7 +32,7 @@ public:
     Queue(Device* device, const QueueDescriptor& descriptor);
     virtual ~Queue() = default;
 
-    virtual void submit() = 0;
+    virtual void submit(CommandBuffer* commandBuffer) = 0;
 
 public:
     QueueFlags getFlags() const;

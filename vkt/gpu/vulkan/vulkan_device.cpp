@@ -65,6 +65,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
 
 VulkanDevice::~VulkanDevice()
 {
+    vkAPI.DeviceWaitIdle(m_device);
+
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
 
     m_frameBufferCache.clear();

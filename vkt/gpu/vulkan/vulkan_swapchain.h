@@ -23,7 +23,8 @@ public:
     VulkanSwapchain& operator=(const Swapchain&) = delete;
 
     void present() override;
-    TextureView* getCurrentView() override;
+    uint32_t acquireNextTextureIndex() override;
+    TextureView* getTextureView(uint32_t index) override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
@@ -31,7 +32,7 @@ public:
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_acquireNextImageSemaphore = VK_NULL_HANDLE;
-    std::vector<VkSemaphore> m_semaphores{};
+    VkSemaphore m_renderingFinisheSemaphore = VK_NULL_HANDLE;
     uint32_t m_swapImageIndex = 0u;
 };
 

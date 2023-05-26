@@ -15,7 +15,7 @@ public:
     VulkanTextureView(VulkanTexture* texture, TextureViewDescriptor descriptor);
     ~VulkanTextureView() override;
 
-    VkImageView getImageView() const;
+    VkImageView getVkImageView() const;
 
 private:
     VkImageView m_imageView = VK_NULL_HANDLE;

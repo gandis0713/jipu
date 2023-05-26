@@ -43,7 +43,7 @@ void VulkanRenderCommandEncoder::begin()
 
     auto vulkanTextureView = downcast(colorAttachment.textureView);
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
-                                                       .imageViews = { vulkanTextureView->getImageView() },
+                                                       .imageViews = { vulkanTextureView->getVkImageView() },
                                                        .width = vulkanTextureView->getWidth(),
                                                        .height = vulkanTextureView->getHeight() };
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);

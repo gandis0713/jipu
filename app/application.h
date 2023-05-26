@@ -69,7 +69,6 @@ private:
 
     void createRenderPipeline();
     void createCommandBuffers();
-    void createSemaphores();
 
     void drawFrame();
 
@@ -97,8 +96,4 @@ private:
     std::unique_ptr<Buffer> m_buffer = nullptr;
 
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
-
-    // sync
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
 };

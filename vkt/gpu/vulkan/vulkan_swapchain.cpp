@@ -120,25 +120,23 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     }
 
     // create semaphore
-    m_semaphores.resize(m_textures.size());
-
-    VkSemaphoreCreateInfo semaphoreCreateInfo;
+    VkSemaphoreCreateInfo semaphoreCreateInfo{};
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreCreateInfo.pNext = nullptr;
     semaphoreCreateInfo.flags = 0;
 
-    for (auto i = 0; i < m_semaphores.size(); ++i)
+    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_acquireNextImageSemaphore) != VK_SUCCESS)
     {
-        if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_semaphores[i]) != VK_SUCCESS)
-        {
-            throw std::runtime_error("Failed to create swap chain");
-        }
+        throw std::runtime_error("Failed to create swap chain semephore.");
     }
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    const VulkanAPI& vkAPI = downcast(m_device)->vkAPI;
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_acquireNextImageSemaphore, nullptr);
 
     /* do not delete VkImages from swapchain. */
 
@@ -147,38 +145,19 @@ VulkanSwapchain::~VulkanSwapchain()
 
 void VulkanSwapchain::present()
 {
-    auto vulkanDevice = downcast(m_device);
-    auto queue = vulkanDevice->getVkQueue();
-
-    VkSwapchainKHR swapchains[] = { m_swapchain };
-    VkSemaphore semaphore = m_semaphores[m_swapImageIndex];
-
-    vulkanDevice->getSignalSemaphore().push_back(semaphore);
-
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &semaphore;
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapchains;
-    presentInfo.pImageIndices = &m_swapImageIndex;
-    presentInfo.pResults = nullptr; // Optional
-
-    vulkanDevice->vkAPI.QueuePresentKHR(queue, &presentInfo);
-
-    // TODO: check really need below?
-    vulkanDevice->vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
+    // TODO
 }
 
-TextureView* VulkanSwapchain::getCurrentView()
+uint32_t VulkanSwapchain::acquireNextTextureIndex()
 {
-    VulkanDevice* vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_swapImageIndex);
+    // TODO
+    return 0;
+}
 
-    vulkanDevice->getWaitSemaphore().push_back(m_acquireNextImageSemaphore);
-
-    return m_textureViews[m_swapImageIndex].get();
+TextureView* VulkanSwapchain::getTextureView(uint32_t index)
+{
+    // TODO
+    return nullptr;
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

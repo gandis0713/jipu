@@ -43,7 +43,7 @@ VulkanTextureView::~VulkanTextureView()
     vkAPI.DestroyImageView(device, m_imageView, nullptr);
 }
 
-VkImageView VulkanTextureView::getImageView() const
+VkImageView VulkanTextureView::getVkImageView() const
 {
     return m_imageView;
 }
