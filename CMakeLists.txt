@@ -25,8 +25,7 @@ endif()
 find_package(spdlog CONFIG REQUIRED)
 
 add_subdirectory(vkt)
-add_subdirectory(app)
-add_dependencies(app vkt::vkt)
+add_subdirectory(sample)
 
 if(VKT_TEST)
   enable_testing()

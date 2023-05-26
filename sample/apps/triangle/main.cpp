@@ -1,35 +1,61 @@
-#include "application.h"
 
-#include "utils/file.h"
+
+#include "file.h"
+#include "sample.h"
+#include "vkt_headers.h"
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
-#include <string>
 
-std::filesystem::path Application::path;
-std::filesystem::path Application::dir;
+using namespace vkt;
 
-Application::Application(int argc, char** argv)
+class TriangleSample : public Sample
 {
-    path = std::filesystem::path(argv[0]);
-    dir = path.parent_path();
-}
+public:
+    TriangleSample() = default;
+    TriangleSample(int argc, char** argv);
+    ~TriangleSample() override;
 
-void Application::run()
-{
-    initWindow();
-    initVulkan();
-    mainLoop();
-    cleanup();
-}
+private:
+    void createRenderPipeline();
+    void createCommandBuffers();
 
-void Application::initWindow()
-{
-    m_window = std::make_unique<Window>(800, 600, "Triangle Window");
-}
+    void draw() override;
 
-void Application::initVulkan()
+private:
+    struct Vertex
+    {
+        glm::vec2 pos;
+        glm::vec3 color;
+    };
+
+    // data
+    std::vector<Vertex> m_vertices{};
+
+    // wrapper
+    std::unique_ptr<Driver> m_driver = nullptr;
+    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+
+    std::unique_ptr<Surface> m_surface = nullptr;
+    std::unique_ptr<Device> m_device = nullptr;
+
+    std::unique_ptr<Queue> m_renderQueue = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+    std::unique_ptr<Buffer> m_buffer = nullptr;
+
+    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
+    std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
+
+    std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
+};
+
+TriangleSample::TriangleSample(int argc, char** argv)
+    : Sample(argc, argv)
 {
+
     // create Driver.
     {
         DriverDescriptor descriptor{ .type = DRIVER_TYPE::VULKAN };
@@ -38,7 +64,7 @@ void Application::initVulkan()
 
     // create surface
     {
-        SurfaceDescriptor descriptor{ .windowHandle = m_window->getNativeWindow() };
+        SurfaceDescriptor descriptor{ .windowHandle = getNativeWindow() };
         m_surface = m_driver->createSurface(descriptor);
     }
 
@@ -93,15 +119,7 @@ void Application::initVulkan()
     createCommandBuffers();
 }
 
-void Application::mainLoop()
-{
-    while (!m_window->shouldClose())
-    {
-        drawFrame();
-    }
-}
-
-void Application::cleanup()
+TriangleSample::~TriangleSample()
 {
     m_commandBuffers.clear();
 
@@ -120,20 +138,18 @@ void Application::cleanup()
 
     m_surface.reset();
     m_driver.reset();
-
-    m_window.reset();
 }
 
-void Application::createRenderPipeline()
+void TriangleSample::createRenderPipeline()
 {
     // vertex shader
-    const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
+    const std::vector<char> vertShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_vert.spv"));
     ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                          .codeSize = vertShaderCode.size() };
     m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
 
     // fragment shader
-    const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
+    const std::vector<char> fragShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_frag.spv"));
     ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                            .codeSize = fragShaderCode.size() };
     m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
@@ -153,7 +169,7 @@ void Application::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void Application::createCommandBuffers()
+void TriangleSample::createCommandBuffers()
 {
     std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
@@ -188,9 +204,18 @@ void Application::createCommandBuffers()
     }
 }
 
-void Application::drawFrame()
+void TriangleSample::draw()
 {
     int nextImageIndex = m_swapchain->acquireNextTexture();
     m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());
     m_swapchain->present(m_renderQueue.get());
+}
+
+int main(int argc, char** argv)
+{
+    spdlog::set_level(spdlog::level::trace);
+
+    TriangleSample triangleSample(argc, argv);
+
+    return triangleSample.exec();
 }
