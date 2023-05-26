@@ -19,7 +19,7 @@ target_link_libraries(triangle
     PRIVATE
     glm
     vkt::vkt
-    vkt_sample_base
+    vkt::sample_base
     spdlog::spdlog_header_only
 )
 

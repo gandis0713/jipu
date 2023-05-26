@@ -28,6 +28,7 @@ elseif(APPLE)
 endif()
 
 add_library(vkt_sample_base STATIC ${SRC_FILES})
+add_library(vkt::sample_base ALIAS vkt_sample_base)
 
 target_link_libraries(vkt_sample_base
     PUBLIC
