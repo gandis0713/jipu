@@ -12,6 +12,7 @@ namespace vkt
 
 class Device;
 class Surface;
+class Queue;
 
 enum class PresentMode
 {
@@ -48,8 +49,8 @@ public:
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
 
-    virtual void present() = 0;
-    virtual uint32_t acquireNextTextureIndex() = 0;
+    virtual void present(Queue* queue) = 0;
+    virtual int acquireNextTexture() = 0;
     virtual TextureView* getTextureView(uint32_t index) = 0;
 
     std::vector<Texture*> getTextures() const;

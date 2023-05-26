@@ -1,6 +1,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include "vkt/gpu/device.h"
+#include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 
 namespace vkt

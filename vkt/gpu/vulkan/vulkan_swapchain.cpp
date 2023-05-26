@@ -1,6 +1,8 @@
 #include "vulkan_swapchain.h"
 #include "vulkan_device.h"
+#include "vulkan_queue.h"
 #include "vulkan_surface.h"
+#include "vulkan_synchronization.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -143,21 +145,61 @@ VulkanSwapchain::~VulkanSwapchain()
     vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
 }
 
-void VulkanSwapchain::present()
+void VulkanSwapchain::present(Queue* queue)
 {
-    // TODO
+    VulkanDevice* vulkanDevice = downcast(m_device);
+    VulkanQueue* vulkanQueue = downcast(queue);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    // takeout dependency.
+    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
+    SemaphoreDescriptor descriptor{ .type = SemephoreType::kQueueToHost };
+    std::vector<VkSemaphore> semaphore = sync.takeoutSemaphore(descriptor);
+
+    // present
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = semaphore.size();
+    presentInfo.pWaitSemaphores = semaphore.data();
+
+    VkSwapchainKHR swapChains[] = { m_swapchain };
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &m_acquiredImageIndex;
+    presentInfo.pResults = nullptr; // Optional
+
+    vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
+
+    vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
 }
 
-uint32_t VulkanSwapchain::acquireNextTextureIndex()
+int VulkanSwapchain::acquireNextTexture()
 {
-    // TODO
-    return 0;
+    VulkanDevice* vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to acquire next image index. error: {}", result);
+        return -1;
+    }
+
+    // inject dependency.
+    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
+    SemaphoreDescriptor descriptor{ .type = SemephoreType::kHostToQueue };
+    sync.injectSemaphore(descriptor, m_acquireNextImageSemaphore);
+
+    return m_acquiredImageIndex;
 }
 
 TextureView* VulkanSwapchain::getTextureView(uint32_t index)
 {
-    // TODO
-    return nullptr;
+    if (index >= m_textureViews.size())
+        return nullptr;
+
+    return m_textureViews[index].get();
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

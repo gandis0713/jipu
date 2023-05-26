@@ -9,7 +9,7 @@ VulkanSynchronization::VulkanSynchronization(VulkanDevice* device)
 {
 }
 
-void VulkanSynchronization::injectSemephore(const SemaphoreDescriptor& descriptor, VkSemaphore semaphore)
+void VulkanSynchronization::injectSemaphore(const SemaphoreDescriptor& descriptor, VkSemaphore semaphore)
 {
     switch (descriptor.type)
     {
@@ -28,7 +28,7 @@ void VulkanSynchronization::injectSemephore(const SemaphoreDescriptor& descripto
     }
 }
 
-std::vector<VkSemaphore> VulkanSynchronization::takeoutSemephore(const SemaphoreDescriptor& descriptor)
+std::vector<VkSemaphore> VulkanSynchronization::takeoutSemaphore(const SemaphoreDescriptor& descriptor)
 {
     std::vector<VkSemaphore> semaphores;
     switch (descriptor.type)

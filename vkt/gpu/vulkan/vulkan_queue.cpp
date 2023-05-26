@@ -2,6 +2,7 @@
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_swapchain.h"
+#include "vulkan_synchronization.h"
 
 #include "utils/log.h"
 
@@ -63,21 +64,27 @@ void VulkanQueue::submit(CommandBuffer* commandBuffer)
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
+    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
+
+    SemaphoreDescriptor waitDescriptor{ .type = SemephoreType::kHostToQueue };
+    std::vector<VkSemaphore> waitSemaphores = sync.takeoutSemaphore(waitDescriptor);
+    SemaphoreDescriptor signalDescriptor{ .type = SemephoreType::kQueueToHost };
+    sync.injectSemaphore(signalDescriptor, m_renderingFinishSemaphore);
+
     // submit command buffer
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = { readySemamphore };
     VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 
     submitInfo.commandBufferCount = 1;
     VkCommandBuffer commandBuf = downcast(commandBuffer)->getVkCommandBuffer();
     submitInfo.pCommandBuffers = &commandBuf;
 
-    VkSemaphore signalSemaphores[] = { presentSemamphore };
+    VkSemaphore signalSemaphores[] = { m_renderingFinishSemaphore };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 

@@ -54,6 +54,12 @@ void Application::initVulkan()
         m_device = m_physicalDevice->createDevice(descriptor);
     }
 
+    // create queue
+    {
+        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
+        m_renderQueue = m_device->createQueue(descriptor);
+    }
+
     // create swapchain
     {
         SwapchainDescriptor descriptor{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
@@ -63,12 +69,6 @@ void Application::initVulkan()
                                         .height = 600,
                                         .surface = m_surface.get() };
         m_swapchain = m_device->createSwapchain(descriptor);
-    }
-
-    // create queue
-    {
-        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
-        m_renderQueue = m_device->createQueue(descriptor);
     }
 
     // create buffer
@@ -109,8 +109,11 @@ void Application::cleanup()
     m_fragmentShaderModule.reset();
 
     m_renderPipeline.reset();
+
     m_buffer.reset();
+
     m_swapchain.reset();
+    m_renderQueue.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -187,5 +190,7 @@ void Application::createCommandBuffers()
 
 void Application::drawFrame()
 {
-    m_renderQueue->submit(m_commandBuffers[0].get(), m_swapchain.get());
+    int nextImageIndex = m_swapchain->acquireNextTexture();
+    m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());
+    m_swapchain->present(m_renderQueue.get());
 }

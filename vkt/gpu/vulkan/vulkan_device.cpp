@@ -34,6 +34,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     , vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
     , m_renderPassCache(this)
     , m_frameBufferCache(this)
+    , m_synchronization(this)
 {
     const VulkanPhysicalDeviceInfo& info = physicalDevice->getInfo();
 
@@ -115,6 +116,11 @@ VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }
 
+VulkanSynchronization& VulkanDevice::getSynchronization()
+{
+    return m_synchronization;
+}
+
 VkDevice VulkanDevice::getVkDevice() const
 {
     return m_device;
@@ -133,16 +139,6 @@ VkQueue VulkanDevice::getVkQueue(uint32_t index) const
 
     // TODO: return suit queue
     return m_queues[index];
-}
-
-std::vector<VkSemaphore>& VulkanDevice::getWaitSemaphore()
-{
-    return m_waitSemaphore;
-}
-
-std::vector<VkSemaphore>& VulkanDevice::getSignalSemaphore()
-{
-    return m_signalSemaphore;
 }
 
 VkCommandPool VulkanDevice::getCommandPool()
