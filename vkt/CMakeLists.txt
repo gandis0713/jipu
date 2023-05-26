@@ -27,7 +27,7 @@ add_library(vkt::vkt ALIAS vkt)
 # include directories
 target_include_directories(vkt
   PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include # for export
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )

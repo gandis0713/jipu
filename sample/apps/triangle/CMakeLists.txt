@@ -9,24 +9,9 @@ project(
 
 list(APPEND SRC_FILES
     main.cpp
-    sample.cpp
-    sample.h
     triangle_sample.cpp
     triangle_sample.h
-    window.h
-    file.cpp
-    file.h
 )
-
-if(WIN32)
-    list(APPEND SRC_FILES
-        window_win32.cpp
-    )
-elseif(APPLE)
-    list(APPEND SRC_FILES
-        window_cocoa.mm
-    )
-endif()
 
 add_executable(triangle_sample
     ${SRC_FILES}
@@ -35,13 +20,14 @@ add_executable(triangle_sample
 target_include_directories(triangle_sample
     PUBLIC
     ${VKT_INCLUDE_DIRS}
+    ${BASE_INCLUDE_DIRS}
 )
 
 target_link_libraries(triangle_sample
     PRIVATE
-    glfw
     glm
     vkt::vkt
+    vkt_sample_base
     spdlog::spdlog_header_only
 )
 

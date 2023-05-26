@@ -14,6 +14,8 @@
 
 #include "sample.h"
 
+#include <glm/glm.hpp>
+
 using namespace vkt;
 
 struct Vertex
