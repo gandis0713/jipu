@@ -2,7 +2,7 @@
 
 #include "gpu/vulkan/vulkan_driver.h"
 
-#include <spdlog/spdlog.h>
+#include "utils/log.h"
 
 namespace vkt
 {
@@ -22,6 +22,7 @@ std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
 
 Driver::Driver(const DriverDescriptor& descriptor)
 {
+    // TODO: use log utils.
     spdlog::set_level(spdlog::level::trace);
 }
 

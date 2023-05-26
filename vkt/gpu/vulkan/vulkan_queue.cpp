@@ -90,7 +90,7 @@ void VulkanQueue::submit(CommandBuffer* commandBuffer)
 
     if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
-        spdlog::error("failed to submit draw command buffer!");
+        LOG_ERROR("failed to submit draw command buffer!");
     }
 
     // TODO: check really need below?

@@ -182,7 +182,7 @@ int VulkanSwapchain::acquireNextTexture()
     VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
     if (result != VK_SUCCESS)
     {
-        spdlog::error("Failed to acquire next image index. error: {}", result);
+        LOG_ERROR("Failed to acquire next image index. error: {}", result);
         return -1;
     }
 
