@@ -33,15 +33,15 @@ endif()
 
 if(EXISTS ${GLSLC_EXE})
     add_custom_command(TARGET triangle_sample POST_BUILD
-        COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/triangle.vert -o ${SHADER_OUTPUT}/triangle_vert.spv
+        COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.vert -o ${SHADER_OUTPUT}/triangle_vert.spv
     )
     add_custom_command(TARGET triangle_sample POST_BUILD
-        COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/triangle.frag -o ${SHADER_OUTPUT}/triangle_frag.spv
+        COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.frag -o ${SHADER_OUTPUT}/triangle_frag.spv
     )
 else()
     # TODO: compile shader at not run time.
-    file(COPY triangle_vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY triangle_frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle_vert.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle_frag.spv DESTINATION ${SHADER_OUTPUT})
 
     # file(COPY triangle.vert DESTINATION ${SHADER_OUTPUT})
     # file(COPY triangle.frag DESTINATION ${SHADER_OUTPUT})
