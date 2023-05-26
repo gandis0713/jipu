@@ -9,18 +9,10 @@ project(
 
 list(APPEND SRC_FILES
     main.cpp
-    triangle_sample.cpp
-    triangle_sample.h
 )
 
 add_executable(triangle_sample
     ${SRC_FILES}
-)
-
-target_include_directories(triangle_sample
-    PUBLIC
-    ${VKT_INCLUDE_DIRS}
-    ${BASE_INCLUDE_DIRS}
 )
 
 target_link_libraries(triangle_sample
