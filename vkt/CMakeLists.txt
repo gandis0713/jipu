@@ -28,8 +28,6 @@ add_library(vkt::vkt ALIAS vkt)
 target_include_directories(vkt
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR} # TODO: remove after it no used vulkan_*.h in app.
-  ${CMAKE_CURRENT_SOURCE_DIR} # TODO: remove after it no used vulkan_*.h in app.
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )

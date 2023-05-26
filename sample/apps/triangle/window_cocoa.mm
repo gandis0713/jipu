@@ -1,6 +1,5 @@
 #include "window.h"
 // clang-format off
-#include "vkt/gpu/vulkan/vulkan_api.h"
 // glfw
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_COCOA

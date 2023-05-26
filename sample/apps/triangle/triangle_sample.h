@@ -11,8 +11,6 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 #include "vkt/gpu/texture_view.h"
-#include "vkt/gpu/vulkan/vulkan_framebuffer.h"
-#include "vkt/gpu/vulkan/vulkan_render_pass.h"
 
 #include "sample.h"
 
@@ -32,10 +30,6 @@ public:
     ~TriangleSample() override;
 
 private:
-    void initVulkan();
-
-    void cleanup();
-
     void createRenderPipeline();
     void createCommandBuffers();
 
