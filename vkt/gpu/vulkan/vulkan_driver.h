@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils/cast.h"
-#include "utils/dynamic_lib.h"
+#include "utils/dylib.h"
 #include "vkt/gpu/driver.h"
 #include "vulkan_api.h"
 
@@ -56,7 +56,7 @@ private:
     VkInstance m_instance = VK_NULL_HANDLE;
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
-    DynamicLib m_vulkanLib{};
+    DyLib m_vulkanLib{};
     VulkanDriverInfo m_driverInfo{};
 };
 

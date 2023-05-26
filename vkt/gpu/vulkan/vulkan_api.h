@@ -15,7 +15,7 @@
 namespace vkt
 {
 
-class DynamicLib;
+class DyLib;
 
 struct VulkanDriverKnobs
 {
@@ -37,7 +37,7 @@ struct VulkanDeviceKnobs
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h
 struct VulkanAPI
 {
-    bool loadDriverProcs(DynamicLib* vulkanLib);
+    bool loadDriverProcs(DyLib* vulkanLib);
     bool loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& globalInfo);
     bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs);
 

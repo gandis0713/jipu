@@ -1,11 +1,11 @@
 #include "vulkan_api.h"
 
-#include "utils/dynamic_lib.h"
+#include "utils/dylib.h"
 #include "utils/log.h"
 
 namespace vkt
 {
-bool VulkanAPI::loadDriverProcs(DynamicLib* vulkanLib)
+bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 {
 #define GET_GLOBAL_PROC(name)                                                          \
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \

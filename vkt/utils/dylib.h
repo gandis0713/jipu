@@ -8,17 +8,17 @@
 namespace vkt
 {
 
-class DynamicLib
+class DyLib
 {
 public:
-    DynamicLib() = default;
-    ~DynamicLib();
+    DyLib() = default;
+    ~DyLib();
 
-    DynamicLib(const DynamicLib&) = delete;
-    DynamicLib& operator=(const DynamicLib&) = delete;
+    DyLib(const DyLib&) = delete;
+    DyLib& operator=(const DyLib&) = delete;
 
-    DynamicLib(DynamicLib&& other);
-    DynamicLib& operator=(DynamicLib&& other);
+    DyLib(DyLib&& other);
+    DyLib& operator=(DyLib&& other);
 
     bool isValid() const;
 

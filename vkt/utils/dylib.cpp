@@ -1,5 +1,4 @@
-#include "utils/dynamic_lib.h"
-
+#include "utils/dylib.h"
 #include "utils/log.h"
 
 #if defined(__linux__) || defined(__APPLE__)
@@ -12,28 +11,28 @@
 namespace vkt
 {
 
-DynamicLib::~DynamicLib()
+DyLib::~DyLib()
 {
     close();
 }
 
-DynamicLib::DynamicLib(DynamicLib&& rhs)
+DyLib::DyLib(DyLib&& rhs)
 {
     std::swap(m_handle, rhs.m_handle);
 }
 
-DynamicLib& DynamicLib::operator=(DynamicLib&& rhs)
+DyLib& DyLib::operator=(DyLib&& rhs)
 {
     std::swap(m_handle, rhs.m_handle);
     return *this;
 }
 
-bool DynamicLib::isValid() const
+bool DyLib::isValid() const
 {
     return m_handle != nullptr;
 }
 
-bool DynamicLib::open(const std::string& filename)
+bool DyLib::open(const std::string& filename)
 {
 #if defined(__linux__) || defined(__APPLE__)
     m_handle = dlopen(filename.c_str(), RTLD_NOW);
@@ -50,13 +49,13 @@ bool DynamicLib::open(const std::string& filename)
         LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
     }
 #else
-    LOG_ERROR("Unsupported platform for DynamicLib");
+    LOG_ERROR("Unsupported platform for DyLib");
 #endif
 
     return m_handle != nullptr;
 }
 
-void DynamicLib::close()
+void DyLib::close()
 {
     if (m_handle == nullptr)
     {
@@ -68,13 +67,13 @@ void DynamicLib::close()
 #elif defined(WIN32)
     FreeLibrary(static_cast<HMODULE>(m_handle));
 #else
-    LOG_ERROR("Unsupported platform for DynamicLib");
+    LOG_ERROR("Unsupported platform for DyLib");
 #endif
 
     m_handle = nullptr;
 }
 
-void* DynamicLib::getProc(const std::string& procName) const
+void* DyLib::getProc(const std::string& procName) const
 {
     void* proc = nullptr;
 
@@ -93,7 +92,7 @@ void* DynamicLib::getProc(const std::string& procName) const
         LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
     }
 #else
-    LOG_ERROR("Unsupported platform for DynamicLib");
+    LOG_ERROR("Unsupported platform for DyLib");
 #endif
 
     return proc;
