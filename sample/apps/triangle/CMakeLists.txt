@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    triangle_sample
+    triangle
     VERSION 0.1
     DESCRIPTION "triangle sample"
     LANGUAGES CXX
@@ -11,11 +11,11 @@ list(APPEND SRC_FILES
     main.cpp
 )
 
-add_executable(triangle_sample
+add_executable(triangle
     ${SRC_FILES}
 )
 
-target_link_libraries(triangle_sample
+target_link_libraries(triangle
     PRIVATE
     glm
     vkt::vkt
@@ -32,10 +32,10 @@ else()
 endif()
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET triangle_sample POST_BUILD
+    add_custom_command(TARGET triangle POST_BUILD
         COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.vert -o ${SHADER_OUTPUT}/triangle_vert.spv
     )
-    add_custom_command(TARGET triangle_sample POST_BUILD
+    add_custom_command(TARGET triangle POST_BUILD
         COMMAND ${GLSLC_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/shaders/triangle.frag -o ${SHADER_OUTPUT}/triangle_frag.spv
     )
 else()
@@ -50,7 +50,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(triangle_sample
+    target_compile_options(triangle
         PUBLIC
         -Wall
         -Werror
