@@ -10,8 +10,7 @@
 			"name": "base",
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-				"VKT_TEST": "ON",
-				"BUILD_SHARED_LIBS": true
+				"VKT_TEST": "ON"
 			}
 		},
 		{
@@ -21,6 +20,9 @@
 				"type": "equals",
 				"lhs": "${hostSystemName}",
 				"rhs": "Darwin"
+			},
+			"cacheVariables": {
+				"BUILD_SHARED_LIBS": true
 			}
 		},
 		{
@@ -146,6 +148,9 @@
 				"type": "equals",
 				"lhs": "${hostSystemName}",
 				"rhs": "Windows"
+			},
+			"cacheVariables": {
+				"BUILD_SHARED_LIBS": false
 			}
 		},
 		{
