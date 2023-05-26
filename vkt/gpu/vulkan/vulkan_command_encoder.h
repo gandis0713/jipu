@@ -26,9 +26,9 @@ public:
 };
 
 // Convert Helper
-VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp);
-LoadOp VkAttachmentLoadOp2LoadOp(VkAttachmentLoadOp loadOp);
-VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp);
-StoreOp VkAttachmentStoreOp2StoreOp(VkAttachmentStoreOp storeOp);
+VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp);
+LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp);
+VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp);
+StoreOp ToStoreOp(VkAttachmentStoreOp storeOp);
 
 } // namespace vkt

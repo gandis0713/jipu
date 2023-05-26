@@ -25,8 +25,8 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),
                                           surfaceInfo.formats.end(),
                                           [textureFormat = m_textureFormat, colorSpace = m_colorSpace](const VkSurfaceFormatKHR& surfaceFormat)
-                                          { return surfaceFormat.format == TextureFormat2VkFormat(textureFormat) &&
-                                                   surfaceFormat.colorSpace == ColorSpace2VkColorSpaceKHR(colorSpace); });
+                                          { return surfaceFormat.format == ToVkFormat(textureFormat) &&
+                                                   surfaceFormat.colorSpace == ToVkColorSpaceKHR(colorSpace); });
     if (surfaceFormatIter == surfaceInfo.formats.end())
     {
         throw std::runtime_error(fmt::format("{} texture format or/and {} color space are not supported.",
@@ -38,7 +38,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     // Check surface present mode.
     auto presentModeIter = std::find(surfaceInfo.presentModes.begin(),
                                      surfaceInfo.presentModes.end(),
-                                     PresentMode2VkPresentModeKHR(m_presentMode));
+                                     ToVkPresentModeKHR(m_presentMode));
     if (presentModeIter == surfaceInfo.presentModes.end())
     {
         throw std::runtime_error(fmt::format("{} present mode is not supported.", static_cast<uint32_t>(m_presentMode)));
@@ -207,7 +207,8 @@ VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
     return m_swapchain;
 }
 
-ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace)
+// Convert Helper
+ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace)
 {
     switch (colorSpace)
     {
@@ -221,7 +222,7 @@ ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace)
         return ColorSpace::kUndefined;
     }
 }
-VkColorSpaceKHR ColorSpace2VkColorSpaceKHR(ColorSpace colorSpace)
+VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace)
 {
     switch (colorSpace)
     {
@@ -238,7 +239,7 @@ VkColorSpaceKHR ColorSpace2VkColorSpaceKHR(ColorSpace colorSpace)
     }
 }
 
-PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode)
+PresentMode ToPresentMode(VkPresentModeKHR mode)
 {
     switch (mode)
     {
@@ -252,7 +253,7 @@ PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode)
         return PresentMode::kUndefined;
     }
 }
-VkPresentModeKHR PresentMode2VkPresentModeKHR(PresentMode mode)
+VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode)
 {
     switch (mode)
     {

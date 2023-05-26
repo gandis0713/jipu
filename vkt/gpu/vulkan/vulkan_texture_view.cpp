@@ -27,9 +27,8 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescript
     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
     imageViewCreateInfo.subresourceRange.layerCount = 1;
 
-    VkDevice device = downcast(m_texture->getDevice())->getVkDevice();
-    const VulkanAPI& vkAPI = downcast(m_texture->getDevice())->vkAPI;
-    if (vkAPI.CreateImageView(device, &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    auto vulkanDevice = downcast(m_texture->getDevice());
+    if (vulkanDevice->vkAPI.CreateImageView(vulkanDevice->getVkDevice(), &imageViewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create image views!");
     }
@@ -37,10 +36,8 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescript
 
 VulkanTextureView::~VulkanTextureView()
 {
-    VkDevice device = downcast(m_texture->getDevice())->getVkDevice();
-    const VulkanAPI& vkAPI = downcast(m_texture->getDevice())->vkAPI;
-
-    vkAPI.DestroyImageView(device, m_imageView, nullptr);
+    auto vulkanDevice = downcast(m_texture->getDevice());
+    vulkanDevice->vkAPI.DestroyImageView(vulkanDevice->getVkDevice(), m_imageView, nullptr);
 }
 
 VkImageView VulkanTextureView::getVkImageView() const

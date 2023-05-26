@@ -32,7 +32,7 @@ private:
 DOWN_CAST(VulkanQueue, Queue);
 
 // Convert Helper
-QueueFlags VkQueueFlags2QueueFlags(VkQueueFlags vkflags);
-VkQueueFlags QueueFlags2VkQueueFlags(QueueFlags flags);
+VkQueueFlags ToVkQueueFlags(QueueFlags flags);
+QueueFlags ToQueueFlags(VkQueueFlags vkflags);
 
 } // namespace vkt

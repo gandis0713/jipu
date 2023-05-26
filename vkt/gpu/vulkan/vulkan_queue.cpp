@@ -102,7 +102,8 @@ VkQueue VulkanQueue::getVkQueue() const
     return m_queue;
 }
 
-VkQueueFlags QueueFlags2VkQueueFlags(QueueFlags flags)
+// Convert Helper
+VkQueueFlags ToVkQueueFlags(QueueFlags flags)
 {
     VkQueueFlags vkflags = 0x00000000; // 0x00000000
 
@@ -121,7 +122,8 @@ VkQueueFlags QueueFlags2VkQueueFlags(QueueFlags flags)
 
     return vkflags;
 }
-QueueFlags VkQueueFlags2QueueFlags(VkQueueFlags vkflags)
+
+QueueFlags ToQueueFlags(VkQueueFlags vkflags)
 {
     QueueFlags flags = QueueFlagBits::kUndefined; // 0x00000000
 

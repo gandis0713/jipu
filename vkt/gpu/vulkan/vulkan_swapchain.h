@@ -38,9 +38,9 @@ private:
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Convert Helper
-ColorSpace VkColorSpaceKHR2ColorSpace(VkColorSpaceKHR colorSpace);
-VkColorSpaceKHR ColorSpace2VkColorSpaceKHR(ColorSpace colorSpace);
-PresentMode VkPresentModeKHR2PresentMode(VkPresentModeKHR mode);
-VkPresentModeKHR PresentMode2VkPresentModeKHR(PresentMode mode);
+ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace);
+VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace);
+PresentMode ToPresentMode(VkPresentModeKHR mode);
+VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode);
 
 } // namespace vkt

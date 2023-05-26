@@ -43,9 +43,9 @@ private:
 DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
-VkImageType TextureType2VkImageType(TextureType type);
-TextureType VkImageType2TextureType(VkImageType type);
-VkFormat TextureFormat2VkFormat(TextureFormat format);
-TextureFormat VkFormat2TextureFormat(VkFormat format);
+VkImageType ToVkImageType(TextureType type);
+TextureType ToTextureType(VkImageType type);
+VkFormat ToVkFormat(TextureFormat format);
+TextureFormat ToTextureFormat(VkFormat format);
 
 } // namespace vkt

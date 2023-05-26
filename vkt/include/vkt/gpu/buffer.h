@@ -6,7 +6,7 @@
 namespace vkt
 {
 
-enum class BufferUsage : uint32_t
+enum BufferFlagBits : uint32_t
 {
     kInvalid = 1 << 0,  // 0x00000000
     kMapRead = 1 << 1,  // 0x00000001
@@ -17,11 +17,12 @@ enum class BufferUsage : uint32_t
     kCopySrc = 1 << 6,  // 0x00000020
     kCopyDst = 1 << 7,  // 0x00000040
 };
+using BufferFlags = uint32_t;
 
 struct BufferDescriptor
 {
     uint64_t size = 0;
-    BufferUsage usage = BufferUsage::kInvalid;
+    BufferFlags flags = BufferFlagBits::kInvalid;
 };
 
 class Device;

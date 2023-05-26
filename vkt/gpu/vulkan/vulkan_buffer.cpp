@@ -10,78 +10,6 @@
 namespace vkt
 {
 
-VkAccessFlags BufferUsage2VkAccessFlags(BufferUsage usage)
-{
-    VkAccessFlags flags = VK_ACCESS_NONE; // 0x00000000
-
-    if (any(usage & BufferUsage::kMapRead))
-    {
-        flags |= VK_ACCESS_HOST_READ_BIT;
-    }
-    if (any(usage & BufferUsage::kMapWrite))
-    {
-        flags |= VK_ACCESS_HOST_WRITE_BIT;
-    }
-    if (any(usage & BufferUsage::kCopySrc))
-    {
-        flags |= VK_ACCESS_TRANSFER_READ_BIT;
-    }
-    if (any(usage & BufferUsage::kCopyDst))
-    {
-        flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-    }
-    if (any(usage & BufferUsage::kIndex))
-    {
-        flags |= VK_ACCESS_INDEX_READ_BIT;
-    }
-    if (any(usage & BufferUsage::kVertex))
-    {
-        flags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-    }
-    if (any(usage & BufferUsage::kUniform))
-    {
-        flags |= VK_ACCESS_UNIFORM_READ_BIT;
-    }
-
-    return flags;
-}
-
-BufferUsage VkAccessFlags2BufferUsage(VkAccessFlags flags)
-{
-    BufferUsage usage = BufferUsage::kInvalid; // 0x00000000
-
-    if (flags & VK_ACCESS_HOST_READ_BIT)
-    {
-        usage |= BufferUsage::kMapRead;
-    }
-    if (flags & VK_ACCESS_HOST_WRITE_BIT)
-    {
-        usage |= BufferUsage::kMapWrite;
-    }
-    if (flags & VK_ACCESS_TRANSFER_READ_BIT)
-    {
-        usage |= BufferUsage::kCopySrc;
-    }
-    if (flags & VK_ACCESS_TRANSFER_WRITE_BIT)
-    {
-        usage |= BufferUsage::kCopyDst;
-    }
-    if (flags & VK_ACCESS_INDEX_READ_BIT)
-    {
-        usage = BufferUsage::kIndex | BufferUsage::kCopyDst;
-    }
-    if (flags & VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
-    {
-        usage = usage | BufferUsage::kVertex;
-    }
-    if (flags & VK_ACCESS_UNIFORM_READ_BIT)
-    {
-        usage |= BufferUsage::kUniform;
-    }
-
-    return usage;
-}
-
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
     : Buffer(device, descriptor)
 {
@@ -145,4 +73,76 @@ VkBuffer VulkanBuffer::getVkBuffer() const
     return m_buffer;
 }
 
+// Convert Helper
+VkAccessFlags ToVkAccessFlags(BufferFlags flags)
+{
+    VkAccessFlags vkFlags = VK_ACCESS_NONE; // 0x00000000
+
+    if (flags & BufferFlagBits::kMapRead)
+    {
+        vkFlags |= VK_ACCESS_HOST_READ_BIT;
+    }
+    if (flags & BufferFlagBits::kMapWrite)
+    {
+        vkFlags |= VK_ACCESS_HOST_WRITE_BIT;
+    }
+    if (flags & BufferFlagBits::kCopySrc)
+    {
+        vkFlags |= VK_ACCESS_TRANSFER_READ_BIT;
+    }
+    if (flags & BufferFlagBits::kCopyDst)
+    {
+        vkFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    }
+    if (flags & BufferFlagBits::kIndex)
+    {
+        vkFlags |= VK_ACCESS_INDEX_READ_BIT;
+    }
+    if (flags & BufferFlagBits::kVertex)
+    {
+        vkFlags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    }
+    if (flags & BufferFlagBits::kUniform)
+    {
+        vkFlags |= VK_ACCESS_UNIFORM_READ_BIT;
+    }
+
+    return vkFlags;
+}
+
+BufferFlags ToBufferFlags(VkAccessFlags vkflags)
+{
+    BufferFlags flags = BufferFlagBits::kInvalid; // 0x00000000
+
+    if (vkflags & VK_ACCESS_HOST_READ_BIT)
+    {
+        flags |= BufferFlagBits::kMapRead;
+    }
+    if (vkflags & VK_ACCESS_HOST_WRITE_BIT)
+    {
+        flags |= BufferFlagBits::kMapWrite;
+    }
+    if (vkflags & VK_ACCESS_TRANSFER_READ_BIT)
+    {
+        flags |= BufferFlagBits::kCopySrc;
+    }
+    if (vkflags & VK_ACCESS_TRANSFER_WRITE_BIT)
+    {
+        flags |= BufferFlagBits::kCopyDst;
+    }
+    if (vkflags & VK_ACCESS_INDEX_READ_BIT)
+    {
+        flags = BufferFlagBits::kIndex | BufferFlagBits::kCopyDst;
+    }
+    if (vkflags & VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
+    {
+        flags = flags | BufferFlagBits::kVertex;
+    }
+    if (vkflags & VK_ACCESS_UNIFORM_READ_BIT)
+    {
+        flags |= BufferFlagBits::kUniform;
+    }
+
+    return flags;
+}
 } // namespace vkt

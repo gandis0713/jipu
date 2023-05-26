@@ -172,7 +172,7 @@ void VulkanRenderPipeline::initialize()
     }
 
     // TODO : multi sample
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = TextureFormat2VkFormat(m_descriptor.fragment.targets[0].format),
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(m_descriptor.fragment.targets[0].format),
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = VK_SAMPLE_COUNT_1_BIT };

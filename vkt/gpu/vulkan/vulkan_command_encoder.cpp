@@ -35,9 +35,9 @@ void VulkanRenderCommandEncoder::begin()
 
     // TODO: support multiple color sample.
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = TextureFormat2VkFormat(colorAttachment.textureView->getFormat()),
-                                                     .loadOp = LoadOp2VkAttachmentLoadOp(colorAttachment.loadOp),
-                                                     .storeOp = StoreOp2VkAttachmentStoreOp(colorAttachment.storeOp),
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(colorAttachment.textureView->getFormat()),
+                                                     .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
+                                                     .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
                                                      .samples = VK_SAMPLE_COUNT_1_BIT /* TODO: use not vulkan defines */ };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
@@ -119,7 +119,8 @@ void VulkanRenderCommandEncoder::drawIndexed(uint32_t indexCount)
     vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
 }
 
-VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp)
+// Convert Helper
+VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp)
 {
     switch (loadOp)
     {
@@ -138,7 +139,7 @@ VkAttachmentLoadOp LoadOp2VkAttachmentLoadOp(LoadOp loadOp)
     }
 }
 
-LoadOp VkAttachmentLoadOp2LoadOp(VkAttachmentLoadOp loadOp)
+LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp)
 {
     switch (loadOp)
     {
@@ -157,7 +158,7 @@ LoadOp VkAttachmentLoadOp2LoadOp(VkAttachmentLoadOp loadOp)
     }
 }
 
-VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp)
+VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp)
 {
     switch (storeOp)
     {
@@ -173,7 +174,7 @@ VkAttachmentStoreOp StoreOp2VkAttachmentStoreOp(StoreOp storeOp)
     }
 }
 
-StoreOp VkAttachmentStoreOp2StoreOp(VkAttachmentStoreOp storeOp)
+StoreOp ToStoreOp(VkAttachmentStoreOp storeOp)
 {
     switch (storeOp)
     {

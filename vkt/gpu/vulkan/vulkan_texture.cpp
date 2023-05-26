@@ -6,8 +6,8 @@ namespace vkt
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
-    , m_type(TextureType2VkImageType(descriptor.type))
-    , m_format(TextureFormat2VkFormat(descriptor.format))
+    , m_type(ToVkImageType(descriptor.type))
+    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::Internal)
 {
     // TODO: create VkImage
@@ -16,8 +16,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_image(image)
-    , m_type(TextureType2VkImageType(descriptor.type))
-    , m_format(TextureFormat2VkFormat(descriptor.format))
+    , m_type(ToVkImageType(descriptor.type))
+    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::External)
 {
 }
@@ -37,7 +37,7 @@ VkImage VulkanTexture::getVkImage() const
 }
 
 // Convert Helper
-VkImageType TextureType2VkImageType(TextureType type)
+VkImageType ToVkImageType(TextureType type)
 {
     switch (type)
     {
@@ -53,7 +53,7 @@ VkImageType TextureType2VkImageType(TextureType type)
     }
 }
 
-TextureType VkImageType2TextureType(VkImageType type)
+TextureType ToTextureType(VkImageType type)
 {
     switch (type)
     {
@@ -70,7 +70,7 @@ TextureType VkImageType2TextureType(VkImageType type)
     }
 }
 
-VkFormat TextureFormat2VkFormat(TextureFormat format)
+VkFormat ToVkFormat(TextureFormat format)
 {
     switch (format)
     {
@@ -83,7 +83,7 @@ VkFormat TextureFormat2VkFormat(TextureFormat format)
     }
 }
 
-TextureFormat VkFormat2TextureFormat(VkFormat format)
+TextureFormat ToTextureFormat(VkFormat format)
 {
     switch (format)
     {

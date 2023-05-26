@@ -81,7 +81,7 @@ void Application::initVulkan()
 
         uint64_t size = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
         BufferDescriptor bufferDescriptor{ .size = size,
-                                           .usage = BufferUsage::kVertex };
+                                           .flags = BufferFlagBits::kVertex };
         m_buffer = m_device->createBuffer(bufferDescriptor);
 
         void* mappedPointer = m_buffer->map();
