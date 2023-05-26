@@ -1,4 +1,3 @@
-#include "export.h"
 #include "utils/cast.h"
 #include "vkt/gpu/buffer.h"
 #include "vulkan_api.h"
@@ -10,7 +9,7 @@ namespace vkt
 {
 
 class VulkanDevice;
-class VKT_EXPORT VulkanBuffer : public Buffer
+class VulkanBuffer : public Buffer
 {
 public:
     VulkanBuffer() = delete;

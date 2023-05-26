@@ -69,7 +69,6 @@ private:
 
     void createRenderPipeline();
     void createCommandBuffers();
-    void createSemaphores();
 
     void drawFrame();
 
@@ -86,17 +85,15 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
 
-    std::unique_ptr<SwapChain> m_swapChain = nullptr;
+    std::unique_ptr<Queue> m_renderQueue = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+    std::unique_ptr<Buffer> m_buffer = nullptr;
+
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::unique_ptr<Buffer> m_buffer = nullptr;
-
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
-
-    // sync
-    VkSemaphore m_imageAvailableSemaphore;
-    VkSemaphore m_renderFinishedSemaphore;
 };

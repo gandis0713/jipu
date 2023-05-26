@@ -15,12 +15,14 @@ public:
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
-    VkQueue getQueue() const;
+    void submit(CommandBuffer* commandBuffer) override;
 
-    QueueType getType() const override;
+public:
+    VkQueue getVkQueue() const;
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
+    VkSemaphore m_renderingFinishSemaphore = VK_NULL_HANDLE;
 
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
@@ -28,5 +30,9 @@ private:
 };
 
 DOWN_CAST(VulkanQueue, Queue);
+
+// Convert Helper
+QueueFlags VkQueueFlags2QueueFlags(VkQueueFlags vkflags);
+VkQueueFlags QueueFlags2VkQueueFlags(QueueFlags flags);
 
 } // namespace vkt

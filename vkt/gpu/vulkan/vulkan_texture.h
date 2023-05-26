@@ -17,7 +17,7 @@ enum class TextureOwner
 };
 
 class VulkanDevice;
-class VKT_EXPORT VulkanTexture : public Texture
+class VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;

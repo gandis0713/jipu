@@ -6,6 +6,7 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"
+#include "vulkan_synchronization.h"
 
 #include <memory>
 #include <unordered_set>
@@ -16,7 +17,7 @@ namespace vkt
 
 class VulkanPhysicalDevice;
 
-class VKT_EXPORT VulkanDevice : public Device
+class VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
@@ -27,7 +28,7 @@ public:
     VulkanDevice& operator=(const VulkanDevice&) = delete;
 
 public:
-    std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) override;
+    std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
     std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
@@ -38,12 +39,13 @@ public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
+    VulkanSynchronization& getSynchronization();
+
 public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
 
-    VkQueue getQueue() const;
-    uint32_t getQueueIndex() const;
+    VkQueue getVkQueue(uint32_t index = 0) const;
 
     VkCommandPool getCommandPool();
 
@@ -59,8 +61,12 @@ private:
 
     std::vector<VkQueue> m_queues{};
 
+    std::vector<VkSemaphore> m_waitSemaphore{};
+    std::vector<VkSemaphore> m_signalSemaphore{};
+
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
+    VulkanSynchronization m_synchronization;
 };
 
 DOWN_CAST(VulkanDevice, Device);

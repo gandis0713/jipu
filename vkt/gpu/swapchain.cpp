@@ -1,12 +1,13 @@
 #include "vkt/gpu/swapchain.h"
 
 #include "vkt/gpu/device.h"
+#include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 
 namespace vkt
 {
 
-SwapChain::SwapChain(Device* device, const SwapChainDescriptor& descriptor) noexcept
+Swapchain::Swapchain(Device* device, const SwapchainDescriptor& descriptor) noexcept
     : m_device(device)
     , m_surface(descriptor.surface)
     , m_textureFormat(descriptor.textureFormat)
@@ -16,7 +17,7 @@ SwapChain::SwapChain(Device* device, const SwapChainDescriptor& descriptor) noex
 {
 }
 
-std::vector<Texture*> SwapChain::getTextures() const
+std::vector<Texture*> Swapchain::getTextures() const
 {
     std::vector<Texture*> textures{};
 
@@ -28,7 +29,7 @@ std::vector<Texture*> SwapChain::getTextures() const
     return textures;
 }
 
-std::vector<TextureView*> SwapChain::getTextureViews() const
+std::vector<TextureView*> Swapchain::getTextureViews() const
 {
     std::vector<TextureView*> textureViews{};
 
@@ -40,22 +41,22 @@ std::vector<TextureView*> SwapChain::getTextureViews() const
     return textureViews;
 }
 
-TextureFormat SwapChain::getTextureFormat() const
+TextureFormat Swapchain::getTextureFormat() const
 {
     return m_textureFormat;
 }
 
-PresentMode SwapChain::getPresentMode() const
+PresentMode Swapchain::getPresentMode() const
 {
     return m_presentMode;
 }
 
-uint32_t SwapChain::getWidth() const
+uint32_t Swapchain::getWidth() const
 {
     return m_width;
 }
 
-uint32_t SwapChain::getHeight() const
+uint32_t Swapchain::getHeight() const
 {
     return m_height;
 }

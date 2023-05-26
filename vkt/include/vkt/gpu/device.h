@@ -30,7 +30,7 @@ public:
     Device& operator=(const Device&) = delete;
 
 public:
-    virtual std::unique_ptr<SwapChain> createSwapChain(const SwapChainDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;

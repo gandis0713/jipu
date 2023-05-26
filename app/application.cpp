@@ -1,14 +1,5 @@
 #include "application.h"
 
-#include "vkt/gpu/vulkan/vulkan_buffer.h"
-#include "vkt/gpu/vulkan/vulkan_command_buffer.h"
-#include "vkt/gpu/vulkan/vulkan_device.h"
-#include "vkt/gpu/vulkan/vulkan_physical_device.h"
-#include "vkt/gpu/vulkan/vulkan_pipeline.h"
-#include "vkt/gpu/vulkan/vulkan_render_pass.h"
-#include "vkt/gpu/vulkan/vulkan_swapchain.h"
-#include "vkt/gpu/vulkan/vulkan_texture_view.h"
-
 #include "utils/file.h"
 
 #include <glm/glm.hpp>
@@ -63,15 +54,21 @@ void Application::initVulkan()
         m_device = m_physicalDevice->createDevice(descriptor);
     }
 
+    // create queue
+    {
+        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
+        m_renderQueue = m_device->createQueue(descriptor);
+    }
+
     // create swapchain
     {
-        SwapChainDescriptor swapChainCreateInfo{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
-                                                 .presentMode = PresentMode::kFifo,
-                                                 .colorSpace = ColorSpace::kSRGBNonLinear,
-                                                 .width = 800,
-                                                 .height = 600,
-                                                 .surface = m_surface.get() };
-        m_swapChain = m_device->createSwapChain(swapChainCreateInfo);
+        SwapchainDescriptor descriptor{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
+                                        .presentMode = PresentMode::kFifo,
+                                        .colorSpace = ColorSpace::kSRGBNonLinear,
+                                        .width = 800,
+                                        .height = 600,
+                                        .surface = m_surface.get() };
+        m_swapchain = m_device->createSwapchain(descriptor);
     }
 
     // create buffer
@@ -94,7 +91,6 @@ void Application::initVulkan()
 
     createRenderPipeline();
     createCommandBuffers();
-    createSemaphores();
 }
 
 void Application::mainLoop()
@@ -103,8 +99,6 @@ void Application::mainLoop()
     {
         drawFrame();
     }
-
-    // vkDeviceWaitIdle(m_context.device);
 }
 
 void Application::cleanup()
@@ -115,8 +109,11 @@ void Application::cleanup()
     m_fragmentShaderModule.reset();
 
     m_renderPipeline.reset();
+
     m_buffer.reset();
-    m_swapChain.reset();
+
+    m_swapchain.reset();
+    m_renderQueue.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -129,19 +126,17 @@ void Application::cleanup()
 
 void Application::createRenderPipeline()
 {
-    auto vulkanDevice = downcast(m_device.get());
-
     // vertex shader
     const std::vector<char> vertShaderCode = utils::readFile((Application::getDir() / "triangle_vert.spv"));
     ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                          .codeSize = vertShaderCode.size() };
-    m_vertexShaderModule = vulkanDevice->createShaderModule(vertexShaderModuleDescriptor);
+    m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
 
     // fragment shader
     const std::vector<char> fragShaderCode = utils::readFile((Application::getDir() / "triangle_frag.spv"));
     ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                            .codeSize = fragShaderCode.size() };
-    m_fragmentShaderModule = vulkanDevice->createShaderModule(fragmentShaderModuleDescriptor);
+    m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
     // vertex stage
     VertexStage vertexStage{};
@@ -150,7 +145,7 @@ void Application::createRenderPipeline()
     // fragment stage
     FragmentStage fragmentStage{};
     fragmentStage.shader = m_fragmentShaderModule.get();
-    fragmentStage.targets = { { .format = m_swapChain->getTextureFormat() } };
+    fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
 
     RenderPipelineDescriptor descriptor{ .vertex = vertexStage,
                                          .fragment = fragmentStage };
@@ -160,9 +155,9 @@ void Application::createRenderPipeline()
 
 void Application::createCommandBuffers()
 {
-    std::vector<TextureView*> swapChainTextureViews = m_swapChain->getTextureViews();
+    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
-    auto commandBufferCount = swapChainTextureViews.size();
+    auto commandBufferCount = swapchainTextureViews.size();
     m_commandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
@@ -176,7 +171,7 @@ void Application::createCommandBuffers()
         auto commandBuffer = m_commandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .textureView = swapChainTextureViews[i],
+        colorAttachments[0] = { .textureView = swapchainTextureViews[i],
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -195,64 +190,7 @@ void Application::createCommandBuffers()
 
 void Application::drawFrame()
 {
-    uint32_t imageIndex;
-    auto vulkanSwapChain = downcast(m_swapChain.get());
-    VkSwapchainKHR swapChain = vulkanSwapChain->getVkSwapchainKHR();
-
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), swapChain, UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    VkSemaphore waitSemaphores[] = { m_imageAvailableSemaphore };
-    VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitPipelineStages;
-
-    submitInfo.commandBufferCount = 1;
-    VkCommandBuffer commandBuffer = downcast(m_commandBuffers[imageIndex].get())->getVkCommandBuffer();
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    VkSemaphore signalSemaphores[] = { m_renderFinishedSemaphore };
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-
-    VkQueue queue = vulkanDevice->getQueue();
-    if (vkAPI.QueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
-    {
-        spdlog::error("failed to submit draw command buffer!");
-    }
-
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapChains[] = { swapChain };
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr; // Optional
-
-    vkAPI.QueuePresentKHR(queue, &presentInfo);
-
-    vkAPI.QueueWaitIdle(vulkanDevice->getQueue());
-}
-
-void Application::createSemaphores()
-{
-    VkSemaphoreCreateInfo semaphoreInfo{};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VulkanDevice* vulkanDevice = downcast(m_device.get());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphore) != VK_SUCCESS ||
-        vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphore) != VK_SUCCESS)
-    {
-        spdlog::error("failed to create semaphores!");
-    }
+    int nextImageIndex = m_swapchain->acquireNextTexture();
+    m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());
+    m_swapchain->present(m_renderQueue.get());
 }

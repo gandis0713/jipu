@@ -1,6 +1,5 @@
 #include "vulkan_framebuffer.h"
 #include "vulkan_device.h"
-#include "vulkan_swapchain.h"
 
 #include "utils/hash.h"
 #include "utils/log.h"
