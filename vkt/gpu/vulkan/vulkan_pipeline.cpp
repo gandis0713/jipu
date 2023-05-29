@@ -46,7 +46,8 @@ void VulkanRenderPipeline::initialize()
     vertexStageInfo.module = vertexShaderModule;
     vertexStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
 
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions(m_descriptor.vertex.layouts.size());
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
+    bindingDescriptions.resize(m_descriptor.vertex.layouts.size());
     std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions{};
     for (uint64_t bindingIndex = 0; bindingIndex < m_descriptor.vertex.layouts.size(); ++bindingIndex)
     {
@@ -183,10 +184,9 @@ void VulkanRenderPipeline::initialize()
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = VK_SAMPLE_COUNT_1_BIT };
-
+    VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
 
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;

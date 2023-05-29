@@ -77,14 +77,14 @@ enum class VertexMode
 
 struct VertexAttribute
 {
-    uint64_t offset = 0u;
     VertexFormat format = VertexFormat::kUndefined;
+    uint64_t offset = 0u;
 };
 
 struct VertexBindingLayout
 {
-    uint64_t stride = 0u;
     VertexMode mode = VertexMode::kVertex;
+    uint64_t stride = 0u;
     std::vector<VertexAttribute> attributes{};
 };
 

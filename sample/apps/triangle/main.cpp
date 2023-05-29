@@ -181,10 +181,12 @@ void TriangleSample::createRenderPipeline()
         vertexStage.shader = m_vertexShaderModule.get();
 
         // layouts
-        std::vector<VertexBindingLayout> layouts(1);
+        std::vector<VertexBindingLayout> layouts{};
+        layouts.resize(1);
         {
             // attributes
-            std::vector<VertexAttribute> vertexAttributes(2);
+            std::vector<VertexAttribute> vertexAttributes{};
+            vertexAttributes.resize(2);
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx2,
