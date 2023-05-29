@@ -104,6 +104,7 @@ void VulkanDriver::createInstance() noexcept(false)
     {
         VkApplicationInfo applicationInfo{};
         applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        applicationInfo.apiVersion = m_driverInfo.apiVersion;
 
         instanceCreateInfo.pApplicationInfo = &applicationInfo;
     }
