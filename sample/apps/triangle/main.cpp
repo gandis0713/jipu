@@ -174,16 +174,24 @@ void TriangleSample::createRenderPipeline()
                                                            .codeSize = fragShaderCode.size() };
     m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
+    // Input Assembly
+    InputAssemblyStage inputAssembly{};
+
     // vertex stage
     VertexStage vertexStage{};
     vertexStage.shader = m_vertexShaderModule.get();
+
+    // Rasterization
+    RasterizationStage rasterization{};
 
     // fragment stage
     FragmentStage fragmentStage{};
     fragmentStage.shader = m_fragmentShaderModule.get();
     fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
 
-    RenderPipelineDescriptor descriptor{ .vertex = vertexStage,
+    RenderPipelineDescriptor descriptor{ .inputAssembly = inputAssembly,
+                                         .vertex = vertexStage,
+                                         .rasterization = rasterization,
                                          .fragment = fragmentStage };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);

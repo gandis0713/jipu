@@ -33,19 +33,19 @@ void VulkanRenderPipeline::initialize()
     auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
     auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
 
-    VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
-    vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexShaderStageInfo.module = vertexShaderModule;
-    vertexShaderStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
+    VkPipelineShaderStageCreateInfo VertexStageInfo{};
+    VertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    VertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    VertexStageInfo.module = vertexShaderModule;
+    VertexStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
 
-    VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
-    fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentShaderStageInfo.module = fragmentShaderModule;
-    fragmentShaderStageInfo.pName = m_descriptor.fragment.entryPoint.c_str();
+    VkPipelineShaderStageCreateInfo FragmentStageInfo{};
+    FragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    FragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    FragmentStageInfo.module = fragmentShaderModule;
+    FragmentStageInfo.pName = m_descriptor.fragment.entryPoint.c_str();
 
-    VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
+    VkPipelineShaderStageCreateInfo shaderStages[] = { VertexStageInfo, FragmentStageInfo };
 
     // TODO: remove struct
     struct Vertex
