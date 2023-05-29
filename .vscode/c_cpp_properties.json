@@ -2,8 +2,7 @@
     "env": {
         "defaultIncludePath": [
             "${workspaceFolder}/**",
-            "${env:VULKAN_SDK}/include/",
-            "${env:VCPKG_ROOT}/installed/arm64-osx/include"
+            "${env:VULKAN_SDK}/include/"
         ],
         "cppVersion": "c++17"
     },
