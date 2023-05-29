@@ -37,7 +37,7 @@ void VulkanDriver::initialize() noexcept(false)
 #if defined(__linux__)
     const char vulkanLibraryName[] = "libvulkan.so.1";
 #elif defined(__APPLE__)
-    const char vulkanLibraryName[] = "libMoltenVK.dylib";
+    const char vulkanLibraryName[] = "libvulkan.1.dylib";
 #elif defined(WIN32)
     const char vulkanLibraryName[] = "vulkan-1.dll";
 #endif
