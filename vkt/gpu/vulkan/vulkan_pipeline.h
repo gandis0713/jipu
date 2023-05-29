@@ -37,4 +37,8 @@ private:
 
 DOWN_CAST(VulkanRenderPipeline, Pipeline);
 
+// Convert Helper
+VkFormat ToVkVertexFormat(VertexFormat format);
+VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology);
+
 } // namespace vkt

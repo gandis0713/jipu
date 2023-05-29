@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
+#include <stddef.h>
 
 using namespace vkt;
 
@@ -162,32 +163,66 @@ TriangleSample::~TriangleSample()
 
 void TriangleSample::createRenderPipeline()
 {
-    // vertex shader
-    const std::vector<char> vertShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_vert.spv"));
-    ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
-                                                         .codeSize = vertShaderCode.size() };
-    m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
-
-    // fragment shader
-    const std::vector<char> fragShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_frag.spv"));
-    ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
-                                                           .codeSize = fragShaderCode.size() };
-    m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
     // Input Assembly
     InputAssemblyStage inputAssembly{};
+    {
+        inputAssembly.topology = PrimitiveTopology::kTriangleList;
+    }
 
     // vertex stage
     VertexStage vertexStage{};
-    vertexStage.shader = m_vertexShaderModule.get();
+    {
+        // create vertex shader
+        const std::vector<char> vertShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_vert.spv"));
+        ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
+                                                             .codeSize = vertShaderCode.size() };
+        m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
+        vertexStage.shader = m_vertexShaderModule.get();
+
+        // layouts
+        std::vector<VertexBindingLayout> layouts(1);
+        {
+            // attributes
+            std::vector<VertexAttribute> vertexAttributes(2);
+            {
+                // position
+                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx2,
+                                        .offset = offsetof(Vertex, pos) };
+
+                // color
+                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx3,
+                                        .offset = offsetof(Vertex, color) };
+            }
+
+            VertexBindingLayout vertexLayout{ .mode = VertexMode::kVertex,
+                                              .stride = sizeof(Vertex),
+                                              .attributes = vertexAttributes };
+            layouts[0] = vertexLayout;
+        }
+
+        vertexStage.layouts = layouts;
+    }
 
     // Rasterization
     RasterizationStage rasterization{};
+    {
+    }
 
     // fragment stage
     FragmentStage fragmentStage{};
-    fragmentStage.shader = m_fragmentShaderModule.get();
-    fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
+    {
+        // create fragment shader
+        const std::vector<char> fragShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_frag.spv"));
+        ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
+                                                               .codeSize = fragShaderCode.size() };
+        m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
+
+        fragmentStage.shader = m_fragmentShaderModule.get();
+
+        // output targets
+        fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
+    }
 
     RenderPipelineDescriptor descriptor{ .inputAssembly = inputAssembly,
                                          .vertex = vertexStage,

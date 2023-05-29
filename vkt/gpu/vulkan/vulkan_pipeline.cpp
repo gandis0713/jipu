@@ -3,8 +3,9 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 
+#include "utils/log.h"
+
 #include <array>
-#include <stddef.h>
 #include <stdexcept>
 
 namespace vkt
@@ -30,57 +31,53 @@ VkPipeline VulkanRenderPipeline::getVkPipeline() const
 
 void VulkanRenderPipeline::initialize()
 {
+    // Input Assembly Stage
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{};
+    inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyStateCreateInfo.topology = ToVkPrimitiveTopology(m_descriptor.inputAssembly.topology);
+    inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
+
+    // Vertex Stage
     auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
-    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
 
-    VkPipelineShaderStageCreateInfo VertexStageInfo{};
-    VertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    VertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    VertexStageInfo.module = vertexShaderModule;
-    VertexStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
+    VkPipelineShaderStageCreateInfo vertexStageInfo{};
+    vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertexStageInfo.module = vertexShaderModule;
+    vertexStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
 
-    VkPipelineShaderStageCreateInfo FragmentStageInfo{};
-    FragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    FragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    FragmentStageInfo.module = fragmentShaderModule;
-    FragmentStageInfo.pName = m_descriptor.fragment.entryPoint.c_str();
-
-    VkPipelineShaderStageCreateInfo shaderStages[] = { VertexStageInfo, FragmentStageInfo };
-
-    // TODO: remove struct
-    struct Vertex
+    std::vector<VkVertexInputBindingDescription> bindingDescriptions(m_descriptor.vertex.layouts.size());
+    std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions{};
+    for (uint64_t bindingIndex = 0; bindingIndex < m_descriptor.vertex.layouts.size(); ++bindingIndex)
     {
-        float pos[2];
-        float color[3];
-    };
-    VkVertexInputBindingDescription bindingDescription{};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = bindingIndex;
+        bindingDescription.stride = m_descriptor.vertex.layouts[bindingIndex].stride;
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
+        const auto& attributes = m_descriptor.vertex.layouts[bindingIndex].attributes;
+        for (uint64_t attrIndex = 0; attrIndex < attributes.size(); ++attrIndex)
+        {
+            VkVertexInputAttributeDescription attributeDescription{};
+            attributeDescription.binding = bindingIndex;
+            attributeDescription.location = attrIndex;
+            attributeDescription.format = ToVkVertexFormat(attributes[attrIndex].format);
+            attributeDescription.offset = attributes[attrIndex].offset;
 
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(Vertex, color);
+            vertexAttributeDescriptions.push_back(attributeDescription);
+        }
+
+        bindingDescriptions.push_back(bindingDescription);
+    }
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
     vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
-    vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    vertexInputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+    vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
+    vertexInputStateCreateInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+    vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
 
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{};
-    inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
-
+    // Viewport
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -91,7 +88,7 @@ void VulkanRenderPipeline::initialize()
 
     VkRect2D scissor{};
     scissor.offset = { 0, 0 };
-    scissor.extent = { 800, 600 };
+    scissor.extent = { 800, 600 }; // TODO: dynamic state
 
     VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
     viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -100,6 +97,7 @@ void VulkanRenderPipeline::initialize()
     viewportStateCreateInfo.scissorCount = 1;
     viewportStateCreateInfo.pScissors = &scissor;
 
+    // Rasterization Stage
     VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
@@ -112,6 +110,15 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f; // Optional
     rasterizationStateCreateInfo.depthBiasClamp = 0.0f;          // Optional
     rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;    // Optional
+
+    // Fragment Stage
+    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
+
+    VkPipelineShaderStageCreateInfo fragmentStageInfo{};
+    fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentStageInfo.module = fragmentShaderModule;
+    fragmentStageInfo.pName = m_descriptor.fragment.entryPoint.c_str();
 
     VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -177,6 +184,8 @@ void VulkanRenderPipeline::initialize()
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = VK_SAMPLE_COUNT_1_BIT };
 
+    VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
+
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -199,6 +208,76 @@ void VulkanRenderPipeline::initialize()
     if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
+    }
+}
+
+VkFormat ToVkVertexFormat(VertexFormat format)
+{
+    switch (format)
+    {
+    case VertexFormat::kSFLOAT:
+        return VK_FORMAT_R32_SFLOAT;
+
+    case VertexFormat::kSFLOATx2:
+        return VK_FORMAT_R32G32_SFLOAT;
+
+    case VertexFormat::kSFLOATx3:
+        return VK_FORMAT_R32G32B32_SFLOAT;
+
+    case VertexFormat::kSFLOATx4:
+        return VK_FORMAT_R32G32B32A32_SFLOAT;
+
+    case VertexFormat::kSINT:
+        return VK_FORMAT_R32_SINT;
+
+    case VertexFormat::kSINTx2:
+        return VK_FORMAT_R32G32_SINT;
+
+    case VertexFormat::kSINTx3:
+        return VK_FORMAT_R32G32B32_SINT;
+
+    case VertexFormat::kSINTx4:
+        return VK_FORMAT_R32G32B32A32_SINT;
+
+    case VertexFormat::kUINT:
+        return VK_FORMAT_R32_UINT;
+
+    case VertexFormat::kUINTx2:
+        return VK_FORMAT_R32G32_UINT;
+
+    case VertexFormat::kUINTx3:
+        return VK_FORMAT_R32G32B32_UINT;
+
+    case VertexFormat::kUINTx4:
+        return VK_FORMAT_R32G32B32A32_UINT;
+
+    default:
+        LOG_ERROR("{} vertex format is not supported.", static_cast<uint32_t>(format));
+        return VK_FORMAT_UNDEFINED;
+    }
+}
+
+VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
+{
+    switch (topology)
+    {
+    case PrimitiveTopology::kPointList:
+        return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+
+    case PrimitiveTopology::kLineStrip:
+        return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+
+    case PrimitiveTopology::kLineList:
+        return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+
+    case PrimitiveTopology::kTriangleStrip:
+        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+    case PrimitiveTopology::kTriangleList:
+        return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    default:
+        LOG_ERROR("{} topology is not supported.", static_cast<uint32_t>(topology));
+        return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 }
 

@@ -55,18 +55,18 @@ struct InputAssemblyStage
 enum class VertexFormat
 {
     kUndefined = 0,
-    kR32_SInt,
-    kR32G32_SInt,
-    kR32G32B32_SInt,
-    kR32G32B32A32_SInt,
-    kR32_UInt,
-    kR32G32_UInt,
-    kR32G32B32_UInt,
-    kR32G32B32A32_UInt,
-    kR32_SFloat,
-    kR32G32_SFloat,
-    kR32G32B32_SFloat,
-    kR32G32B32A32_SFloat,
+    kUINT,
+    kUINTx2,
+    kUINTx3,
+    kUINTx4,
+    kSINT,
+    kSINTx2,
+    kSINTx3,
+    kSINTx4,
+    kSFLOAT,
+    kSFLOATx2,
+    kSFLOATx3,
+    kSFLOATx4,
 };
 
 enum class VertexMode
@@ -81,16 +81,16 @@ struct VertexAttribute
     VertexFormat format = VertexFormat::kUndefined;
 };
 
+struct VertexBindingLayout
+{
+    uint64_t stride = 0u;
+    VertexMode mode = VertexMode::kVertex;
+    std::vector<VertexAttribute> attributes{};
+};
+
 struct VertexStage : ProgrammableStage
 {
-    struct Layout
-    {
-        uint64_t stride = 0u;
-        VertexMode mode = VertexMode::kVertex;
-        std::vector<VertexAttribute> attributes{};
-    };
-
-    std::vector<VertexStage::Layout> layouts{};
+    std::vector<VertexBindingLayout> layouts{};
 };
 
 // Rasterization Stage
