@@ -4,6 +4,7 @@
 #include "shader_module.h"
 #include "texture.h"
 
+#include <string>
 #include <vector>
 
 namespace vkt
@@ -27,6 +28,7 @@ protected:
 struct ProgrammableStage
 {
     ShaderModule* shader = nullptr;
+    std::string entryPoint = "main";
 };
 
 // Render Pipeline

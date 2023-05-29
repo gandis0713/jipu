@@ -31,6 +31,7 @@ private:
 
     // data
     std::vector<Vertex> m_vertices{};
+    std::vector<uint16_t> m_indices{};
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -42,7 +43,8 @@ private:
     std::unique_ptr<Queue> m_renderQueue = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
-    std::unique_ptr<Buffer> m_buffer = nullptr;
+    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
@@ -99,20 +101,37 @@ TriangleSample::TriangleSample(int argc, char** argv)
 
     // create buffer
     {
+        // vertex buffer
         m_vertices = {
-            { { 0.0f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
-            { { -0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } }
+            { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+            { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+            { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+            { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
         };
 
-        uint64_t size = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor bufferDescriptor{ .size = size,
-                                           .flags = BufferFlagBits::kVertex };
-        m_buffer = m_device->createBuffer(bufferDescriptor);
+        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                                 .usage = BufferUsageFlagBits::kVertex };
+        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
-        void* mappedPointer = m_buffer->map();
-        memcpy(mappedPointer, m_vertices.data(), size);
-        m_buffer->unmap();
+        void* mappedPointer = m_vertexBuffer->map();
+        memcpy(mappedPointer, m_vertices.data(), vertexSize);
+        m_vertexBuffer->unmap();
+
+        // index buffer
+        m_indices = {
+            0, 1, 2, 2, 3, 0
+        };
+
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
+        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                                .usage = BufferUsageFlagBits::kIndex };
+
+        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+        mappedPointer = m_indexBuffer->map();
+        memcpy(mappedPointer, m_indices.data(), indexSize);
+        m_indexBuffer->unmap();
     }
 
     createRenderPipeline();
@@ -128,7 +147,8 @@ TriangleSample::~TriangleSample()
 
     m_renderPipeline.reset();
 
-    m_buffer.reset();
+    m_indexBuffer.reset();
+    m_vertexBuffer.reset();
 
     m_swapchain.reset();
     m_renderQueue.reset();
@@ -198,8 +218,9 @@ void TriangleSample::createCommandBuffers()
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
         renderCommandEncoder->begin();
         renderCommandEncoder->setPipeline(m_renderPipeline.get());
-        renderCommandEncoder->setVertexBuffer(m_buffer.get());
-        renderCommandEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
+        renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
         renderCommandEncoder->end();
     }
 }

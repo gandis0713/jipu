@@ -101,6 +101,11 @@ void VulkanRenderCommandEncoder::setVertexBuffer(Buffer* buffer)
 
 void VulkanRenderCommandEncoder::setIndexBuffer(Buffer* buffer)
 {
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+
+    auto vulkanBuffer = downcast(buffer);
+    vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 }
 
 void VulkanRenderCommandEncoder::draw(uint32_t vertexCount)

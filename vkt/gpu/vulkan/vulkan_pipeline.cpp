@@ -10,8 +10,8 @@
 namespace vkt
 {
 
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& info)
-    : RenderPipeline(vulkanDevice, info)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
+    : RenderPipeline(vulkanDevice, descriptor)
 {
     initialize();
 }
@@ -37,13 +37,13 @@ void VulkanRenderPipeline::initialize()
     vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     vertexShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
     vertexShaderStageInfo.module = vertexShaderModule;
-    vertexShaderStageInfo.pName = "main";
+    vertexShaderStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
 
     VkPipelineShaderStageCreateInfo fragmentShaderStageInfo{};
     fragmentShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     fragmentShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     fragmentShaderStageInfo.module = fragmentShaderModule;
-    fragmentShaderStageInfo.pName = "main";
+    fragmentShaderStageInfo.pName = m_descriptor.fragment.entryPoint.c_str();
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageInfo, fragmentShaderStageInfo };
 
