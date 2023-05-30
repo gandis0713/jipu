@@ -13,8 +13,8 @@ using namespace vkt;
 class TriangleSample : public Sample
 {
 public:
-    TriangleSample() = default;
-    TriangleSample(int argc, char** argv);
+    TriangleSample() = delete;
+    TriangleSample(int width, int height, const std::string& title, const char* path);
     ~TriangleSample() override;
 
 private:
@@ -55,10 +55,9 @@ private:
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 };
 
-TriangleSample::TriangleSample(int argc, char** argv)
-    : Sample(argc, argv)
+TriangleSample::TriangleSample(int width, int height, const std::string& title, const char* path)
+    : Sample(width, height, title, path)
 {
-
     // create Driver.
     {
         DriverDescriptor descriptor{ .type = DRIVER_TYPE::VULKAN };
@@ -174,7 +173,8 @@ void TriangleSample::createRenderPipeline()
     VertexStage vertexStage{};
     {
         // create vertex shader
-        const std::vector<char> vertShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_vert.spv"));
+        auto appDir = m_path.parent_path();
+        const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle_vert.spv");
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
@@ -215,7 +215,8 @@ void TriangleSample::createRenderPipeline()
     FragmentStage fragmentStage{};
     {
         // create fragment shader
-        const std::vector<char> fragShaderCode = utils::readFile((TriangleSample::getDir() / "triangle_frag.spv"));
+        auto appDir = m_path.parent_path();
+        const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle_frag.spv");
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
@@ -281,7 +282,7 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    TriangleSample triangleSample(argc, argv);
+    TriangleSample triangleSample(800, 600, "Triangle", argv[0]);
 
     return triangleSample.exec();
 }

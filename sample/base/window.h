@@ -7,20 +7,17 @@ class Window
 {
 public:
     Window(int w, int h, std::string title);
-    ~Window();
+    virtual ~Window();
 
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
-    void open();
-    void close();
+    int exec();
 
-    int shouldClose();
-    void* createSurface(void* instance);
-    void getFrameBufferSize(int* w, int* h);
+    virtual void draw() = 0;
 
     void* getNativeWindow();
 
-private:
+protected:
     void* m_window;
 };

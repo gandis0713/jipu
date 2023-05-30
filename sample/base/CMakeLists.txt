@@ -8,10 +8,12 @@ project(
 )
 
 find_package(glfw3 CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 list(APPEND SRC_FILES
     sample.cpp
     sample.h
+    window.cpp
     window.h
     file.cpp
     file.h
@@ -33,6 +35,7 @@ add_library(vkt::sample_base ALIAS vkt_sample_base)
 target_link_libraries(vkt_sample_base
     PUBLIC
     glfw
+    SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static
 )
 
 target_include_directories(vkt
