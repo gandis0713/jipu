@@ -264,7 +264,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     */
 
 #if defined(__linux__)
-    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface"); // for glfw on linux(ubuntu)
+    requiredInstanceExtensions.push_back("VK_KHR_xcb_surface");
 #elif defined(_WIN32)
     requiredInstanceExtensions.push_back("VK_KHR_win32_surface");
 #elif defined(__APPLE__)

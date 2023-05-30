@@ -1,32 +1,7 @@
 #include "sample.h"
 
-std::filesystem::path Sample::path;
-std::filesystem::path Sample::dir;
-
-Sample::Sample(int argc, char** argv)
+Sample::Sample(int width, int height, const std::string& title, const char* path)
+    : Window(width, height, title)
+    , m_path(std::filesystem::path(path))
 {
-    path = std::filesystem::path(argv[0]);
-    dir = path.parent_path();
-
-    m_window = std::make_unique<Window>(800, 600, "vkt sample");
-}
-
-int Sample::exec()
-{
-    mainLoop();
-
-    return 0;
-}
-
-void* Sample::getNativeWindow()
-{
-    return m_window->getNativeWindow();
-}
-
-void Sample::mainLoop()
-{
-    while (!m_window->shouldClose())
-    {
-        draw();
-    }
 }
