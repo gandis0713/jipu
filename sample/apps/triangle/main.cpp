@@ -66,7 +66,7 @@ TriangleSample::TriangleSample(int width, int height, const std::string& title, 
 
     // create surface
     {
-        SurfaceDescriptor descriptor{ .windowHandle = getNativeWindow() };
+        SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
         m_surface = m_driver->createSurface(descriptor);
     }
 

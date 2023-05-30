@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL_syswm.h>
 
-void* Window::getNativeWindow()
+void* Window::getWindowHandle()
 {
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);

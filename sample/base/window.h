@@ -16,7 +16,7 @@ public:
 
     virtual void draw() = 0;
 
-    void* getNativeWindow();
+    void* getWindowHandle();
 
 protected:
     void* m_window;
