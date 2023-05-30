@@ -33,7 +33,7 @@ add_library(vkt::sample_base ALIAS vkt_sample_base)
 
 target_link_libraries(vkt_sample_base
     PUBLIC
-    SDL2::SDL2 SDL2::SDL2main SDL2::SDL2-static
+    SDL2::SDL2 SDL2::SDL2main
 )
 
 target_include_directories(vkt
