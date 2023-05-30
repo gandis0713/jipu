@@ -32,7 +32,7 @@ DOWN_CAST(VulkanBuffer, Buffer);
 VkAccessFlags ToVkAccessFlags(BufferUsageFlags flags);
 VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages);
 
-// TODO: remove or define.
+// TODO: remove or remain.
 // BufferUsageFlags ToBufferUsageFlags(VkAccessFlags vkflags);
 // BufferUsageFlags ToBufferUsageFlags(VkBufferUsageFlags usages);
 } // namespace vkt
