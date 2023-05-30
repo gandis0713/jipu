@@ -29,7 +29,10 @@ private:
 DOWN_CAST(VulkanBuffer, Buffer);
 
 // Convert Helper
-VkAccessFlags ToVkAccessFlags(BufferFlags flags);
-BufferFlags ToBufferFlags(VkAccessFlags vkflags);
+VkAccessFlags ToVkAccessFlags(BufferUsageFlags flags);
+VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages);
 
+// TODO: remove or define.
+// BufferUsageFlags ToBufferUsageFlags(VkAccessFlags vkflags);
+// BufferUsageFlags ToBufferUsageFlags(VkBufferUsageFlags usages);
 } // namespace vkt

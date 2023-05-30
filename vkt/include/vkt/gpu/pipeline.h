@@ -4,6 +4,7 @@
 #include "shader_module.h"
 #include "texture.h"
 
+#include <string>
 #include <vector>
 
 namespace vkt
@@ -27,13 +28,77 @@ protected:
 struct ProgrammableStage
 {
     ShaderModule* shader = nullptr;
+    std::string entryPoint = "main";
 };
 
-// Render Pipeline
+/**
+ * @brief Render Pipeline
+ */
+
+// Input Assembly
+enum class PrimitiveTopology
+{
+    kUndefined = 0,
+    kPointList,
+    kLineStrip,
+    kLineList,
+    kTriangleStrip,
+    kTriangleList
+};
+
+struct InputAssemblyStage
+{
+    PrimitiveTopology topology = PrimitiveTopology::kUndefined;
+};
+
+// Vertex Stage
+enum class VertexFormat
+{
+    kUndefined = 0,
+    kUINT,
+    kUINTx2,
+    kUINTx3,
+    kUINTx4,
+    kSINT,
+    kSINTx2,
+    kSINTx3,
+    kSINTx4,
+    kSFLOAT,
+    kSFLOATx2,
+    kSFLOATx3,
+    kSFLOATx4,
+};
+
+enum class VertexMode
+{
+    kVertex = 0,
+    kInstance,
+};
+
+struct VertexAttribute
+{
+    VertexFormat format = VertexFormat::kUndefined;
+    uint64_t offset = 0u;
+};
+
+struct VertexBindingLayout
+{
+    VertexMode mode = VertexMode::kVertex;
+    uint64_t stride = 0u;
+    std::vector<VertexAttribute> attributes{};
+};
+
 struct VertexStage : ProgrammableStage
+{
+    std::vector<VertexBindingLayout> layouts{};
+};
+
+// Rasterization Stage
+struct RasterizationStage
 {
 };
 
+// Fragment Shader Stage
 struct FragmentStage : ProgrammableStage
 {
     struct Target
@@ -46,7 +111,9 @@ struct FragmentStage : ProgrammableStage
 
 struct RenderPipelineDescriptor
 {
+    InputAssemblyStage inputAssembly{};
     VertexStage vertex{};
+    RasterizationStage rasterization{};
     FragmentStage fragment{};
 };
 

@@ -3,8 +3,7 @@
         "defaultIncludePath": [
             "${workspaceFolder}/**",
             "${env:VULKAN_SDK}/include/"
-        ],
-        "cppVersion": "c++17"
+        ]
     },
     "configurations": [
         {
@@ -31,18 +30,16 @@
             ],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "clang-arm64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "cppStandard": "c++20",
+            "intelliSenseMode": "macos-clang-arm64"
         },
         {
             "name": "Window",
             "includePath": [
                 "${env:defaultIncludePath}"
             ],
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-msvc-x64"
         }
     ],
     "version": 4

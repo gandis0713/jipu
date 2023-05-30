@@ -16,7 +16,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferCreateInfo.size = descriptor.size;
     bufferCreateInfo.flags = 0;
-    bufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
     const VulkanAPI& vkAPI = device->vkAPI;
@@ -29,6 +29,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     VkMemoryRequirements memoryRequirements{};
     vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
 
+    // TODO: memory optimization
     VulkanMemoryDescriptor heapMemoryDescriptor{ .flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                                                  .requirements = memoryRequirements };
     m_memory = std::make_unique<VulkanMemory>(device, heapMemoryDescriptor);
@@ -73,35 +74,35 @@ VkBuffer VulkanBuffer::getVkBuffer() const
 }
 
 // Convert Helper
-VkAccessFlags ToVkAccessFlags(BufferFlags flags)
+VkAccessFlags ToVkAccessFlags(BufferUsageFlagBits usages)
 {
     VkAccessFlags vkFlags = VK_ACCESS_NONE; // 0x00000000
 
-    if (flags & BufferFlagBits::kMapRead)
+    if (usages & BufferUsageFlagBits::kMapRead)
     {
         vkFlags |= VK_ACCESS_HOST_READ_BIT;
     }
-    if (flags & BufferFlagBits::kMapWrite)
+    if (usages & BufferUsageFlagBits::kMapWrite)
     {
         vkFlags |= VK_ACCESS_HOST_WRITE_BIT;
     }
-    if (flags & BufferFlagBits::kCopySrc)
+    if (usages & BufferUsageFlagBits::kCopySrc)
     {
         vkFlags |= VK_ACCESS_TRANSFER_READ_BIT;
     }
-    if (flags & BufferFlagBits::kCopyDst)
+    if (usages & BufferUsageFlagBits::kCopyDst)
     {
         vkFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
     }
-    if (flags & BufferFlagBits::kIndex)
+    if (usages & BufferUsageFlagBits::kIndex)
     {
         vkFlags |= VK_ACCESS_INDEX_READ_BIT;
     }
-    if (flags & BufferFlagBits::kVertex)
+    if (usages & BufferUsageFlagBits::kVertex)
     {
         vkFlags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
     }
-    if (flags & BufferFlagBits::kUniform)
+    if (usages & BufferUsageFlagBits::kUniform)
     {
         vkFlags |= VK_ACCESS_UNIFORM_READ_BIT;
     }
@@ -109,39 +110,95 @@ VkAccessFlags ToVkAccessFlags(BufferFlags flags)
     return vkFlags;
 }
 
-BufferFlags ToBufferFlags(VkAccessFlags vkflags)
+VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
 {
-    BufferFlags flags = BufferFlagBits::kInvalid; // 0x00000000
+    VkBufferUsageFlags vkUsages = 0x00000000;
 
-    if (vkflags & VK_ACCESS_HOST_READ_BIT)
+    if (usages & BufferUsageFlagBits::kCopySrc)
     {
-        flags |= BufferFlagBits::kMapRead;
+        vkUsages |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     }
-    if (vkflags & VK_ACCESS_HOST_WRITE_BIT)
+    if (usages & BufferUsageFlagBits::kCopyDst)
     {
-        flags |= BufferFlagBits::kMapWrite;
+        vkUsages |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     }
-    if (vkflags & VK_ACCESS_TRANSFER_READ_BIT)
+    if (usages & BufferUsageFlagBits::kIndex)
     {
-        flags |= BufferFlagBits::kCopySrc;
+        vkUsages |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
     }
-    if (vkflags & VK_ACCESS_TRANSFER_WRITE_BIT)
+    if (usages & BufferUsageFlagBits::kVertex)
     {
-        flags |= BufferFlagBits::kCopyDst;
+        vkUsages |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     }
-    if (vkflags & VK_ACCESS_INDEX_READ_BIT)
+    if (usages & BufferUsageFlagBits::kUniform)
     {
-        flags = BufferFlagBits::kIndex | BufferFlagBits::kCopyDst;
-    }
-    if (vkflags & VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
-    {
-        flags = flags | BufferFlagBits::kVertex;
-    }
-    if (vkflags & VK_ACCESS_UNIFORM_READ_BIT)
-    {
-        flags |= BufferFlagBits::kUniform;
+        vkUsages |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     }
 
-    return flags;
+    return vkUsages;
 }
+
+// BufferUsageFlags ToBufferUsageFlags(VkAccessFlags vkflags)
+// {
+//     BufferUsageFlags flags = BufferUsageFlagBits::kInvalid; // 0x00000000
+
+//     if (vkflags & VK_ACCESS_HOST_READ_BIT)
+//     {
+//         flags |= BufferUsageFlagBits::kMapRead;
+//     }
+//     if (vkflags & VK_ACCESS_HOST_WRITE_BIT)
+//     {
+//         flags |= BufferUsageFlagBits::kMapWrite;
+//     }
+//     if (vkflags & VK_ACCESS_TRANSFER_READ_BIT)
+//     {
+//         flags |= BufferUsageFlagBits::kCopySrc;
+//     }
+//     if (vkflags & VK_ACCESS_TRANSFER_WRITE_BIT)
+//     {
+//         flags |= BufferUsageFlagBits::kCopyDst;
+//     }
+//     if (vkflags & VK_ACCESS_INDEX_READ_BIT)
+//     {
+//         flags = BufferUsageFlagBits::kIndex | BufferUsageFlagBits::kCopyDst;
+//     }
+//     if (vkflags & VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT)
+//     {
+//         flags = flags | BufferUsageFlagBits::kVertex;
+//     }
+//     if (vkflags & VK_ACCESS_UNIFORM_READ_BIT)
+//     {
+//         flags |= BufferUsageFlagBits::kUniform;
+//     }
+
+//     return flags;
+// }
+
+// BufferUsageFlags ToBufferUsageFlags(VkBufferUsageFlags vkUsages)
+// {
+//     BufferUsageFlags usages = BufferUsageFlagBits::kInvalid;
+
+//     if (vkUsages & VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+//     {
+//         usages |= BufferUsageFlagBits::kCopySrc;
+//     }
+//     if (vkUsages & VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+//     {
+//         usages |= BufferUsageFlagBits::kCopyDst;
+//     }
+//     if (vkUsages & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+//     {
+//         usages |= BufferUsageFlagBits::kIndex;
+//     }
+//     if (vkUsages & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+//     {
+//         usages |= BufferUsageFlagBits::kVertex;
+//     }
+//     if (vkUsages & VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+//     {
+//         usages |= BufferUsageFlagBits::kUniform;
+//     }
+
+//     return usages;
+// }
 } // namespace vkt
