@@ -3,7 +3,6 @@
   "version-string": "0.0.1",
   "builtin-baseline": "8eb76645c009c2a2e778e03bcbfb9b5e1be3aa40",
   "dependencies": [
-    "glfw3",
     "gtest",
     "glm",
     "spdlog",
@@ -18,10 +17,6 @@
     }
   ],
   "overrides": [
-    {
-      "name": "glfw3",
-      "version": "3.3.7"
-    },
     {
       "name": "gtest",
       "version": "1.12.0"
