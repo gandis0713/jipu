@@ -3,7 +3,7 @@
 
 # Sets the minimum version of CMake required to build the native library.
 
-cmake_minimum_required(VERSION 3.18.1)
+cmake_minimum_required(VERSION 3.21.0)
 
 # Declares and names the project.
 project("vulkan_test")
@@ -17,7 +17,7 @@ find_package(game-activity REQUIRED CONFIG)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 add_library(vulkan_test
-    SHARED
+        SHARED
         AndroidMain.cpp
         vulkan_wrapper.cpp
         vulkan_wrapper.h
@@ -25,6 +25,14 @@ add_library(vulkan_test
         VulkanMain.hpp
         GameActivitySources.cpp
 )
+
+add_library(vkt::vkt SHARED IMPORTED)
+set_target_properties(vkt::vkt PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../../../../../../install/android-v7a/debug/include")
+
+set_target_properties(vkt::vkt PROPERTIES
+        IMPORTED_LOCATION_DEBUG "${CMAKE_SOURCE_DIR}/../../../../../../install/android-v7a/debug/lib/libvkt.so")
+set_property(TARGET vkt::vkt APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -39,9 +47,17 @@ find_library(log-lib log)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
                      -DVK_USE_PLATFORM_ANDROID_KHR")
 
+target_include_directories(vulkan_test
+        PUBLIC
+        ${VTK_DIR}/include # for export
+        PRIVATE
+        ${VTK_DIR}
+)
+
 target_link_libraries(vulkan_test
-    PUBLIC
+        PUBLIC
         game-activity::game-activity # game-activity::game-activity_static
         android
+        vkt::vkt
         ${log-lib}
 )

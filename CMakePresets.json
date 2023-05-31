@@ -14,6 +14,43 @@
 			}
 		},
 		{
+			"name": "android-v8a-debug",
+			"displayName": "android-debug",
+			"binaryDir": "${sourceDir}/build/android-v8a/debug",
+			"installDir": "${sourceDir}/install/android-v8a/debug",
+			"cacheVariables": {
+				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+				"VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_SDK_ROOT}/ndk/25.1.8937393/build/cmake/android.toolchain.cmake",
+				"BUILD_SHARED_LIBS": true,
+				"VKT_TEST": "OFF",
+				"VCPKG_CMAKE_SYSTEM_NAME": "Android",
+				"ANDROID_PLATFORM": "android-23",
+				"CMAKE_SYSTEM_VERSION": "23",
+				"CMAKE_ANDROID_ARCH_ABI": "arm64-v8a",
+				"CMAKE_ANDROID_NDK": "$env{ANDROID_SDK_ROOT}/ndk/25.1.8937393",
+				"VCPKG_TARGET_TRIPLET": "arm64-android"
+			},
+			"generator": "Ninja"
+		},
+		{
+			"name": "android-v7a-debug",
+			"displayName": "android-debug",
+			"binaryDir": "${sourceDir}/build/android-v7a/debug",
+			"installDir": "${sourceDir}/install/android-v7a/debug",
+			"cacheVariables": {
+				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+				"VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{ANDROID_SDK_ROOT}/ndk/25.1.8937393/build/cmake/android.toolchain.cmake",
+				"BUILD_SHARED_LIBS": true,
+				"VKT_TEST": "OFF",
+				"VCPKG_CMAKE_SYSTEM_NAME": "Android",
+				"CMAKE_SYSTEM_VERSION": "25",
+				"CMAKE_ANDROID_ARCH_ABI": "armeabi-v7a",
+				"CMAKE_ANDROID_NDK": "$env{ANDROID_SDK_ROOT}/ndk/25.1.8937393",
+				"VCPKG_TARGET_TRIPLET": "arm-android"
+			},
+			"generator": "Ninja"
+		},
+		{
 			"name": "base-osx",
 			"inherits": "base",
 			"condition": {
@@ -238,6 +275,16 @@
 		}
 	],
 	"buildPresets": [
+		{
+			"name": "android-v8a-debug",
+			"configurePreset": "android-v8a-debug",
+			"configuration": "Debug"
+		},
+		{
+			"name": "android-v7a-debug",
+			"configurePreset": "android-v7a-debug",
+			"configuration": "Debug"
+		},
 		{
 			"name": "arm64-osx-ninja-debug",
 			"configurePreset": "arm64-osx-ninja-debug",

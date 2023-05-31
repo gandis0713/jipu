@@ -81,7 +81,7 @@ void VulkanDriver::createInstance() noexcept(false)
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 #if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
+    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
     {
         instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
@@ -276,7 +276,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #endif
 
 #if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.apiVersion >= VK_MAKE_API_VERSION(0, 1, 3, 216))
+    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
     {
         requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     }

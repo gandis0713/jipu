@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 # set options.
-option(VKT_TEST "VKT Test" ON)
+option(VKT_TEST "VKT Test" OFF)
 
 project(
   vkt
@@ -21,11 +21,11 @@ elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
-# find package
-find_package(spdlog CONFIG REQUIRED)
-
 add_subdirectory(vkt)
-add_subdirectory(sample)
+
+if(NOT ANDROID)
+  add_subdirectory(sample)
+endif()
 
 if(VKT_TEST)
   enable_testing()
@@ -34,7 +34,9 @@ if(VKT_TEST)
 endif()
 
 # runtime output
-set_target_properties(vkt PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/app
-  RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/app
-)
+if(NOT ANDROID)
+  set_target_properties(vkt PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/app
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/app
+  )
+endif()

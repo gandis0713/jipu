@@ -76,7 +76,7 @@ VkBuffer VulkanBuffer::getVkBuffer() const
 // Convert Helper
 VkAccessFlags ToVkAccessFlags(BufferUsageFlagBits usages)
 {
-    VkAccessFlags vkFlags = VK_ACCESS_NONE; // 0x00000000
+    VkAccessFlags vkFlags = 0x00000000; // 0x00000000
 
     if (usages & BufferUsageFlagBits::kMapRead)
     {

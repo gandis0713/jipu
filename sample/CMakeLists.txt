@@ -7,5 +7,7 @@ project(
     LANGUAGES CXX
 )
 
+find_package(spdlog CONFIG REQUIRED)
+
 add_subdirectory(base)
 add_subdirectory(apps)

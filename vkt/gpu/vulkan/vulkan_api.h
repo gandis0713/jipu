@@ -1,8 +1,6 @@
 #pragma once
 
-#if defined(__linux__)
-    #define VK_USE_PLATFORM_XCB_KHR
-#elif defined(__APPLE__)
+#if defined(__APPLE__)
     // #define VK_USE_PLATFORM_METAL_EXT
     #define VK_USE_PLATFORM_MACOS_MVK
 #elif defined(WIN32)
@@ -19,7 +17,7 @@ class DyLib;
 
 struct VulkanDriverKnobs
 {
-    uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     // TODO: use bitset instead of bool type.
     bool debugReport = false;

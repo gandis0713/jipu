@@ -1,12 +1,12 @@
 {
   "name": "vulkan-test",
   "version-string": "0.0.1",
-  "builtin-baseline": "8eb76645c009c2a2e778e03bcbfb9b5e1be3aa40",
   "dependencies": [
     "gtest",
     "glm",
     "spdlog",
     "sdl2",
+    "fmt",
     {
       "name": "vcpkg-cmake",
       "host": true
@@ -14,24 +14,6 @@
     {
       "name": "vcpkg-cmake-config",
       "host": true
-    }
-  ],
-  "overrides": [
-    {
-      "name": "gtest",
-      "version": "1.12.0"
-    },
-    {
-      "name": "glm",
-      "version": "0.9.9.8"
-    },
-    {
-      "name": "spdlog",
-      "version": "1.10.0"
-    },
-    {
-      "name": "sdl2",
-      "version": "2.0.22"
     }
   ]
 }

@@ -30,7 +30,7 @@ private:
     VulkanDevice* m_device = nullptr;
 
 private:
-    VkRenderPass m_renderPass = nullptr;
+    VkRenderPass m_renderPass = VK_NULL_HANDLE;
 };
 
 class VulkanRenderPassCache final

@@ -11,7 +11,7 @@ namespace vkt
 
 struct VulkanFramebufferDescriptor
 {
-    VkRenderPass renderPass = nullptr;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
     std::vector<VkImageView> imageViews{};
     uint32_t width = 0;
     uint32_t height = 0;
