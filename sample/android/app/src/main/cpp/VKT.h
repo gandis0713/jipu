@@ -13,7 +13,6 @@ public:
     VKT();
     ~VKT();
 
-    void print();
     std::string getName();
 };
 

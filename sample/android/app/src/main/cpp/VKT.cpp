@@ -14,11 +14,6 @@ VKT::~VKT()
     std::cout << __func__ << std::endl;
 }
 
-void VKT::print()
-{
-    std::cout << __func__ << std::endl;
-}
-
 std::string VKT::getName()
 {
     return "VKT name";
