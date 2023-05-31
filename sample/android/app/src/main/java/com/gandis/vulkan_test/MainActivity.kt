@@ -4,20 +4,11 @@ import android.os.Bundle
 import com.google.androidgamesdk.GameActivity
 
 class MainActivity : GameActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
-    /**
-     * A native method that is implemented by the 'vulkan_test' native library,
-     * which is packaged with this application.
-     */
-    external fun stringFromJNI(): String
-    external fun stringFromJNI2(): String
-
     companion object {
-        // Used to load the 'vulkan_test' library on application startup.
         init {
             System.loadLibrary("vulkan_test")
         }
