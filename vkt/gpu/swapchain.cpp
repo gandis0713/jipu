@@ -12,6 +12,7 @@ Swapchain::Swapchain(Device* device, const SwapchainDescriptor& descriptor) noex
     , m_surface(descriptor.surface)
     , m_textureFormat(descriptor.textureFormat)
     , m_presentMode(descriptor.presentMode)
+    , m_colorSpace(descriptor.colorSpace)
     , m_width(descriptor.width)
     , m_height(descriptor.height)
 {

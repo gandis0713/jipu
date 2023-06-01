@@ -13,6 +13,11 @@
 // limitations under the License.
 #include "VulkanMain.hpp"
 #include "vkt/gpu/driver.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/texture.h"
+#include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
 #include <android/log.h>
 #include <memory>
 
@@ -29,6 +34,14 @@ void InitVKT(android_app* app)
 
     vkt::DeviceDescriptor deviceDesk{};
     std::unique_ptr<vkt::Device> device = physicalDevice->createDevice(deviceDesk);
+
+    vkt::SwapchainDescriptor swapchainDesc{ .textureFormat = vkt::TextureFormat::kRGBA_8888_UInt_Norm,
+            .presentMode = vkt::PresentMode::kFifo,
+            .colorSpace = vkt::ColorSpace::kSRGBNonLinear,
+            .width = 800,
+            .height = 600,
+            .surface = surface.get() };
+    std::unique_ptr<vkt::Swapchain> swapchain = device->createSwapchain(swapchainDesc);
 }
 
 // Process the next main command.

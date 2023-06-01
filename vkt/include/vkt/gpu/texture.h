@@ -18,6 +18,7 @@ enum class TextureFormat
 {
     kUndefined = 0,
     kBGRA_8888_UInt_Norm,
+    kRGBA_8888_UInt_Norm
 };
 
 struct TextureDescriptor

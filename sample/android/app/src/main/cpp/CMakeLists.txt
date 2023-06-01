@@ -26,12 +26,13 @@ add_library(vulkan_test
         GameActivitySources.cpp
 )
 
+set(ROOT_DIR "${CMAKE_SOURCE_DIR}/../../../../../..")
 add_library(vkt::vkt SHARED IMPORTED)
 set_target_properties(vkt::vkt PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/../../../../../../install/android-v8a/debug/include")
+        INTERFACE_INCLUDE_DIRECTORIES "${ROOT_DIR}/install/android-v8a/debug/include")
 
 set_target_properties(vkt::vkt PROPERTIES
-        IMPORTED_LOCATION_DEBUG "${CMAKE_SOURCE_DIR}/../../../../../../install/android-v8a/debug/lib/libvkt.so")
+        IMPORTED_LOCATION_DEBUG "${ROOT_DIR}/install/android-v8a/debug/lib/libvkt.so")
 set_property(TARGET vkt::vkt APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 
 # Searches for a specified prebuilt library and stores the path as a
