@@ -42,6 +42,46 @@ void InitVKT(android_app* app)
             .height = 600,
             .surface = surface.get() };
     std::unique_ptr<vkt::Swapchain> swapchain = device->createSwapchain(swapchainDesc);
+
+    // create vertex buffer.
+    struct Vertex
+    {
+        float pos[2];
+        float color[3];
+    };
+
+    uint64_t vertexCount = 4;
+    Vertex vertices[4] = {
+            { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+            { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+            { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+            { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
+    };
+
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * vertexCount);
+    vkt::BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+            .usage = vkt::BufferUsageFlagBits::kVertex };
+    std::unique_ptr<vkt::Buffer> vertexBuffer = device->createBuffer(vertexBufferDescriptor);
+
+    void* mappedPointer = vertexBuffer->map();
+    memcpy(mappedPointer, &vertices[0], vertexSize);
+    vertexBuffer->unmap();
+
+    // index buffer
+    uint64_t indexCount = 6;
+    float indices[6] = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * indexCount);
+    vkt::BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+            .usage = vkt::BufferUsageFlagBits::kIndex };
+
+    std::unique_ptr<vkt::Buffer> indexBuffer = device->createBuffer(indexBufferDescriptor);
+
+    mappedPointer = indexBuffer->map();
+    memcpy(mappedPointer, &indices[0], indexSize);
+    indexBuffer->unmap();
 }
 
 // Process the next main command.
