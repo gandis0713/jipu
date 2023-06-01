@@ -6,7 +6,6 @@
     "glm",
     "spdlog",
     "sdl2",
-    "fmt",
     {
       "name": "vcpkg-cmake",
       "host": true

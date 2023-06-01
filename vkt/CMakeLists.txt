@@ -117,33 +117,12 @@ target_include_directories(vkt
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_library(spdlog STATIC IMPORTED)
-add_library(fmt SHARED IMPORTED)
-
-set_target_properties(spdlog PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/build/android-v8a/debug/vcpkg_installed/arm64-android/include")
-set_target_properties(fmt PROPERTIES
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/build/android-v8a/debug/vcpkg_installed/arm64-android/include")
-
-set_target_properties(spdlog PROPERTIES
-  IMPORTED_LOCATION_DEBUG "${CMAKE_SOURCE_DIR}/build/android-v8a/debug/vcpkg_installed/arm64-android/lib/libspdlog.a")
-
-set_target_properties(fmt PROPERTIES
-  IMPORTED_LOCATION_DEBUG "${CMAKE_SOURCE_DIR}/build/android-v8a/debug/vcpkg_installed/arm64-android/lib/libfmt.a")
-
-set_property(TARGET spdlog APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-set_property(TARGET fmt APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-
 # link libraries
 target_link_libraries(vkt
   PUBLIC
   Vulkan::Vulkan
   PRIVATE
-
   spdlog::spdlog_header_only
-
-  # fmt
-  # spdlog
 )
 
 if(APPLE)

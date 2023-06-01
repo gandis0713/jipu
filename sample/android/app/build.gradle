@@ -5,10 +5,11 @@ plugins {
 
 android {
     compileSdk 33
+    ndkVersion "25.1.8937393"
 
     defaultConfig {
         applicationId "com.gandis.vulkan_test"
-        minSdk 21
+        minSdk 25
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -18,8 +19,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-                arguments '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=c++_static'
+                abiFilters 'arm64-v8a'
             }
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
