@@ -43,6 +43,10 @@ void InitVKT(android_app* app)
             .surface = surface.get() };
     std::unique_ptr<vkt::Swapchain> swapchain = device->createSwapchain(swapchainDesc);
 
+    // queue
+    vkt::QueueDescriptor queueDesc{ .flags = vkt::QueueFlagBits::kGraphics };
+    std::unique_ptr<vkt::Queue> renderQueue = device->createQueue(queueDesc);
+
     // create vertex buffer.
     struct Vertex
     {
