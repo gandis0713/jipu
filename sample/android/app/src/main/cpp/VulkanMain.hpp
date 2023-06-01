@@ -30,5 +30,3 @@ bool IsVulkanReady(void);
 bool VulkanDrawFrame(void);
 
 #endif // __VULKANMAIN_HPP__
-
-

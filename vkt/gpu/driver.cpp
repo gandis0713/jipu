@@ -11,7 +11,7 @@ std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
 {
     switch (descriptor.type)
     {
-    case DRIVER_TYPE::VULKAN:
+    case DriverType::VULKAN:
         return std::make_unique<VulkanDriver>(descriptor);
     default:
         break;

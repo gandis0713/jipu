@@ -12,6 +12,7 @@ const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
 const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
 const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
 const char kExtensionNameKhrWin32Surface[] = "VK_KHR_win32_surface";
+const char kExtensionNameKhrAndroidSurface[] = "VK_KHR_android_surface";
 const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
 const char kExtensionNameKhrXlibSurface[] = "VK_KHR_xlib_surface";
 const char kExtensionNameExtMetalSurface[] = "VK_EXT_metal_surface";
@@ -34,7 +35,9 @@ VulkanDriver::~VulkanDriver()
 
 void VulkanDriver::initialize() noexcept(false)
 {
-#if defined(__linux__)
+#if defined(__ANDROID__)
+    const char vulkanLibraryName[] = "libvulkan.so";
+#elif defined(__linux__)
     const char vulkanLibraryName[] = "libvulkan.so.1";
 #elif defined(__APPLE__)
     const char vulkanLibraryName[] = "libvulkan.1.dylib";
@@ -198,6 +201,11 @@ void VulkanDriver::gatherDriverInfo()
             {
                 m_driverInfo.surface = true;
             }
+
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrAndroidSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.androidSurface = true;
+            }
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtMetalSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
                 m_driverInfo.metalSurface = true;
@@ -262,8 +270,9 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
         https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
         https://sourceforge.net/p/predef/wiki/OperatingSystems/
     */
-
-#if defined(__linux__)
+#if defined(__ANDROID__)
+    requiredInstanceExtensions.push_back("VK_KHR_android_surface");
+#elif defined(__linux__)
     requiredInstanceExtensions.push_back("VK_KHR_xcb_surface");
 #elif defined(_WIN32)
     requiredInstanceExtensions.push_back("VK_KHR_win32_surface");

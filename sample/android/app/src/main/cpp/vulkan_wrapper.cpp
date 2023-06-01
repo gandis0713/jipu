@@ -15,7 +15,8 @@
 #include "vulkan_wrapper.h"
 #include <dlfcn.h>
 
-int InitVulkan(void) {
+int InitVulkan(void)
+{
     void* libvulkan = dlopen("libvulkan.so", RTLD_NOW | RTLD_LOCAL);
     if (!libvulkan)
         return 0;
@@ -401,4 +402,3 @@ PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR vkGetPhysicalDeviceWin32Prese
 PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
 PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
 PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
-

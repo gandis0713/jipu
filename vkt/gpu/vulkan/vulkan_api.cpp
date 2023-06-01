@@ -108,6 +108,13 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
         GET_INSTANCE_PROC(GetPhysicalDeviceSurfacePresentModesKHR);
     }
 
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    if (driverKnobs.androidSurface)
+    {
+        GET_INSTANCE_PROC(CreateAndroidSurfaceKHR);
+    }
+#endif
+
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
     if (driverKnobs.macosSurface)
     {

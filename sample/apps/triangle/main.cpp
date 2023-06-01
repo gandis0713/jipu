@@ -60,7 +60,7 @@ TriangleSample::TriangleSample(int width, int height, const std::string& title, 
 {
     // create Driver.
     {
-        DriverDescriptor descriptor{ .type = DRIVER_TYPE::VULKAN };
+        DriverDescriptor descriptor{ .type = DriverType::VULKAN };
         m_driver = Driver::create(descriptor);
     }
 
