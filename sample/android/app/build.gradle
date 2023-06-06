@@ -50,6 +50,7 @@ android {
         viewBinding true
         prefab true // for game-activity
     }
+    namespace 'com.gandis.vulkan_test'
 }
 
 dependencies {
