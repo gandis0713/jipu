@@ -51,6 +51,7 @@ std::unique_ptr<vkt::Buffer> m_indexBuffer = nullptr;
 std::unique_ptr<vkt::ShaderModule> m_vertexShaderModule = nullptr;
 std::unique_ptr<vkt::ShaderModule> m_fragmentShaderModule = nullptr;
 std::unique_ptr<vkt::RenderPipeline> m_renderPipeline = nullptr;
+std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 
 struct Vertex
 {
@@ -209,6 +210,42 @@ void InitVKT(android_app* app)
                                                   .fragment = fragmentStage };
 
         m_renderPipeline = m_device->createRenderPipeline(descriptor);
+    }
+
+    // command buffer
+    {
+        std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
+
+        auto commandBufferCount = swapchainTextureViews.size();
+        m_commandBuffers.resize(commandBufferCount);
+        for (auto i = 0; i < commandBufferCount; ++i)
+        {
+            CommandBufferDescriptor descriptor{};
+            auto commandBuffer = m_device->createCommandBuffer(descriptor);
+            m_commandBuffers[i] = std::move(commandBuffer);
+        }
+
+        for (auto i = 0; i < commandBufferCount; ++i)
+        {
+            auto commandBuffer = m_commandBuffers[i].get();
+
+            std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+            colorAttachments[0] = { .textureView = swapchainTextureViews[i],
+                                    .loadOp = LoadOp::kClear,
+                                    .storeOp = StoreOp::kStore,
+                                    .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
+            DepthStencilAttachment depthStencilAttachment{};
+
+            RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                                       .depthStencilAttachment = depthStencilAttachment };
+            auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
+            renderCommandEncoder->begin();
+            renderCommandEncoder->setPipeline(m_renderPipeline.get());
+            renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
+            renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
+            renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
+            renderCommandEncoder->end();
+        }
     }
 }
 
