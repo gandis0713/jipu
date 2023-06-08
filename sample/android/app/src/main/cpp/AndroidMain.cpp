@@ -19,11 +19,12 @@
 #include "vkt/gpu/swapchain.h"
 #include "vkt/gpu/texture.h"
 #include <android/log.h>
+#include <cassert>
 #include <memory>
 #include <vector>
-#include <cassert>
 
-std::vector<char> readFile(android_app* app, const char* filePath) {
+std::vector<char> readFile(android_app* app, const char* filePath)
+{
     // Read the file
     assert(app);
     AAsset* file = AAssetManager_open(app->activity->assetManager,
@@ -39,39 +40,68 @@ std::vector<char> readFile(android_app* app, const char* filePath) {
     return fileContent;
 }
 
+std::unique_ptr<vkt::Driver> m_driver = nullptr;
+std::unique_ptr<vkt::Surface> m_surface = nullptr;
+std::unique_ptr<vkt::PhysicalDevice> m_physicalDevice = nullptr;
+std::unique_ptr<vkt::Device> m_device = nullptr;
+std::unique_ptr<vkt::Swapchain> m_swapchain = nullptr;
+std::unique_ptr<vkt::Queue> m_renderQueue = nullptr;
+std::unique_ptr<vkt::Buffer> m_vertexBuffer = nullptr;
+std::unique_ptr<vkt::Buffer> m_indexBuffer = nullptr;
+std::unique_ptr<vkt::ShaderModule> m_vertexShaderModule = nullptr;
+std::unique_ptr<vkt::ShaderModule> m_fragmentShaderModule = nullptr;
+std::unique_ptr<vkt::RenderPipeline> m_renderPipeline = nullptr;
+
+struct Vertex
+{
+    float pos[2];
+    float color[3];
+};
+
 void InitVKT(android_app* app)
 {
-    vkt::DriverDescriptor driverDesc{ vkt::DriverType::VULKAN };
-    std::unique_ptr<vkt::Driver> driver = vkt::Driver::create(driverDesc);
+    // driver
+    {
+        vkt::DriverDescriptor driverDesc{ vkt::DriverType::VULKAN };
+        m_driver = vkt::Driver::create(driverDesc);
+    }
 
-    vkt::SurfaceDescriptor descriptor{ .windowHandle = static_cast<void*>(app->window) };
-    std::unique_ptr<vkt::Surface> surface = driver->createSurface(descriptor);
+    // surface
+    {
+        vkt::SurfaceDescriptor descriptor{ .windowHandle = static_cast<void*>(app->window) };
+        m_surface = m_driver->createSurface(descriptor);
+    }
 
-    vkt::PhysicalDeviceDescriptor physicalDeviceDesc{};
-    std::unique_ptr<vkt::PhysicalDevice> physicalDevice = driver->createPhysicalDevice(physicalDeviceDesc);
+    // physical device
+    {
+        vkt::PhysicalDeviceDescriptor physicalDeviceDesc{};
+        m_physicalDevice = m_driver->createPhysicalDevice(physicalDeviceDesc);
+    }
 
-    vkt::DeviceDescriptor deviceDesk{};
-    std::unique_ptr<vkt::Device> device = physicalDevice->createDevice(deviceDesk);
+    // device
+    {
+        vkt::DeviceDescriptor deviceDesc{};
+        m_device = physicalDevice->createDevice(deviceDesc);
+    }
 
-    vkt::SwapchainDescriptor swapchainDesc{ .textureFormat = vkt::TextureFormat::kRGBA_8888_UInt_Norm,
-                                            .presentMode = vkt::PresentMode::kFifo,
-                                            .colorSpace = vkt::ColorSpace::kSRGBNonLinear,
-                                            .width = 800,
-                                            .height = 600,
-                                            .surface = surface.get() };
-    std::unique_ptr<vkt::Swapchain> swapchain = device->createSwapchain(swapchainDesc);
+    // swapchain
+    {
+        vkt::SwapchainDescriptor swapchainDesc{ .textureFormat = vkt::TextureFormat::kRGBA_8888_UInt_Norm,
+                                                .presentMode = vkt::PresentMode::kFifo,
+                                                .colorSpace = vkt::ColorSpace::kSRGBNonLinear,
+                                                .width = 800,
+                                                .height = 600,
+                                                .surface = surface.get() };
+        m_swapchain = m_device->createSwapchain(swapchainDesc);
+    }
 
     // queue
-    vkt::QueueDescriptor queueDesc{ .flags = vkt::QueueFlagBits::kGraphics };
-    std::unique_ptr<vkt::Queue> renderQueue = device->createQueue(queueDesc);
-
-    // create vertex buffer.
-    struct Vertex
     {
-        float pos[2];
-        float color[3];
-    };
+        vkt::QueueDescriptor queueDesc{ .flags = vkt::QueueFlagBits::kGraphics };
+        m_renderQueue = m_device->createQueue(queueDesc);
+    }
 
+    // vertex buffer.
     {
         uint64_t vertexCount = 4;
         Vertex vertices[4] = {
@@ -84,13 +114,15 @@ void InitVKT(android_app* app)
         uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * vertexCount);
         vkt::BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
                                                       .usage = vkt::BufferUsageFlagBits::kVertex };
-        std::unique_ptr<vkt::Buffer> vertexBuffer = device->createBuffer(vertexBufferDescriptor);
+        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
-        void* mappedPointer = vertexBuffer->map();
+        void* mappedPointer = m_vertexBuffer->map();
         memcpy(mappedPointer, &vertices[0], vertexSize);
-        vertexBuffer->unmap();
+        m_vertexBuffer->unmap();
+    }
 
-        // index buffer
+    // index buffer
+    {
         uint64_t indexCount = 6;
         float indices[6] = {
             0, 1, 2, 2, 3, 0
@@ -100,11 +132,11 @@ void InitVKT(android_app* app)
         vkt::BufferDescriptor indexBufferDescriptor{ .size = indexSize,
                                                      .usage = vkt::BufferUsageFlagBits::kIndex };
 
-        std::unique_ptr<vkt::Buffer> indexBuffer = device->createBuffer(indexBufferDescriptor);
+        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
 
-        mappedPointer = indexBuffer->map();
+        mappedPointer = m_indexBuffer->map();
         memcpy(mappedPointer, &indices[0], indexSize);
-        indexBuffer->unmap();
+        m_indexBuffer->unmap();
     }
 
     // pipeline
@@ -122,8 +154,8 @@ void InitVKT(android_app* app)
             const std::vector<char> vertShaderCode = readFile(app, "shaders/triangle.vert.spv");
             vkt::ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                                       .codeSize = vertShaderCode.size() };
-            std::unique_ptr<vkt::ShaderModule> vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
-            vertexStage.shader = vertexShaderModule.get();
+            m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
+            vertexStage.shader = m_vertexShaderModule.get();
 
             // layouts
             std::vector<vkt::VertexBindingLayout> layouts{};
@@ -163,9 +195,9 @@ void InitVKT(android_app* app)
             const std::vector<char> fragShaderCode = readFile(app, "shaders/triangle.frag.spv");
             vkt::ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                         .codeSize = fragShaderCode.size() };
-            std::unique_ptr<vkt::ShaderModule> fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
+            m_fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
 
-            fragmentStage.shader = fragmentShaderModule.get();
+            fragmentStage.shader = m_fragmentShaderModule.get();
 
             // output targets
             fragmentStage.targets = { { .format = swapchain->getTextureFormat() } };
@@ -176,7 +208,7 @@ void InitVKT(android_app* app)
                                                   .rasterization = rasterization,
                                                   .fragment = fragmentStage };
 
-        std::unique_ptr<vkt::RenderPipeline> renderPipeline = device->createRenderPipeline(descriptor);
+        m_renderPipeline = m_device->createRenderPipeline(descriptor);
     }
 }
 
