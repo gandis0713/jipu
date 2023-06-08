@@ -59,7 +59,14 @@ struct Vertex
     float color[3];
 };
 
-void InitVKT(android_app* app)
+void drawVKT()
+{
+    int nextImageIndex = m_swapchain->acquireNextTexture();
+    m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());
+    m_swapchain->present(m_renderQueue.get());
+}
+
+void initVKT(android_app* app)
 {
     // driver
     {
@@ -255,7 +262,7 @@ void handle_cmd(android_app* app, int32_t cmd)
     switch (cmd)
     {
     case APP_CMD_INIT_WINDOW:
-        InitVKT(app);
+        initVKT(app);
         // The window is being shown, get it ready.
         InitVulkan(app);
         break;
