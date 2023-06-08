@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(ANDROID)
     #define VK_USE_PLATFORM_ANDROID_KHR
 #elif defined(__linux__)
     #define VK_USE_PLATFORM_XCB_KHR

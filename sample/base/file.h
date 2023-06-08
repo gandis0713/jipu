@@ -6,6 +6,6 @@
 namespace vkt::utils
 {
 
-std::vector<char> readFile(const std::filesystem::path& file_path);
+std::vector<char> readFile(void* platformContext, const std::filesystem::path& filePath);
 
 } // namespace vkt::utils

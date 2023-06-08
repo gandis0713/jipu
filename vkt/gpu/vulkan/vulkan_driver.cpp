@@ -35,7 +35,7 @@ VulkanDriver::~VulkanDriver()
 
 void VulkanDriver::initialize() noexcept(false)
 {
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(ANDROID)
     const char vulkanLibraryName[] = "libvulkan.so";
 #elif defined(__linux__)
     const char vulkanLibraryName[] = "libvulkan.so.1";
@@ -270,7 +270,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
         https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor
         https://sourceforge.net/p/predef/wiki/OperatingSystems/
     */
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || defined(ANDROID)
     requiredInstanceExtensions.push_back("VK_KHR_android_surface");
 #elif defined(__linux__)
     requiredInstanceExtensions.push_back("VK_KHR_xcb_surface");
