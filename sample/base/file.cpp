@@ -57,7 +57,7 @@ std::vector<char> _readFile(const std::filesystem::path& file_path)
 namespace vkt::utils
 {
 
-std::vector<char> readFile(void* platformContext, const std::filesystem::path& filePath)
+std::vector<char> readFile(const std::filesystem::path& filePath, void* platformContext)
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     android_app* app = static_cast<android_app*>(platformContext);
