@@ -51,13 +51,28 @@ std::unique_ptr<vkt::Buffer> m_indexBuffer = nullptr;
 std::unique_ptr<vkt::ShaderModule> m_vertexShaderModule = nullptr;
 std::unique_ptr<vkt::ShaderModule> m_fragmentShaderModule = nullptr;
 std::unique_ptr<vkt::RenderPipeline> m_renderPipeline = nullptr;
-std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
+std::vector<std::unique_ptr<vkt::CommandBuffer>> m_commandBuffers{};
 
 struct Vertex
 {
     float pos[2];
     float color[3];
 };
+
+uint64_t m_vertexCount = 4;
+Vertex m_vertices[4] = {
+    { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+    { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+    { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+    { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
+};
+
+uint64_t m_indexCount = 6;
+uint16_t m_indices[6] = {
+    0, 1, 2, 2, 3, 0
+};
+
+bool isReady = false;
 
 void drawVKT()
 {
@@ -66,7 +81,7 @@ void drawVKT()
     m_swapchain->present(m_renderQueue.get());
 }
 
-void initVKT(android_app* app)
+bool initVKT(android_app* app)
 {
     // driver
     {
@@ -89,7 +104,7 @@ void initVKT(android_app* app)
     // device
     {
         vkt::DeviceDescriptor deviceDesc{};
-        m_device = physicalDevice->createDevice(deviceDesc);
+        m_device = m_physicalDevice->createDevice(deviceDesc);
     }
 
     // swapchain
@@ -99,7 +114,7 @@ void initVKT(android_app* app)
                                                 .colorSpace = vkt::ColorSpace::kSRGBNonLinear,
                                                 .width = 800,
                                                 .height = 600,
-                                                .surface = surface.get() };
+                                                .surface = m_surface.get() };
         m_swapchain = m_device->createSwapchain(swapchainDesc);
     }
 
@@ -111,39 +126,26 @@ void initVKT(android_app* app)
 
     // vertex buffer.
     {
-        uint64_t vertexCount = 4;
-        Vertex vertices[4] = {
-            { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
-            { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-            { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
-        };
-
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * vertexCount);
+        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertexCount);
         vkt::BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
                                                       .usage = vkt::BufferUsageFlagBits::kVertex };
         m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
         void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, &vertices[0], vertexSize);
+        memcpy(mappedPointer, &(m_vertices[0]), vertexSize);
         m_vertexBuffer->unmap();
     }
 
     // index buffer
     {
-        uint64_t indexCount = 6;
-        float indices[6] = {
-            0, 1, 2, 2, 3, 0
-        };
-
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * indexCount);
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indexCount);
         vkt::BufferDescriptor indexBufferDescriptor{ .size = indexSize,
                                                      .usage = vkt::BufferUsageFlagBits::kIndex };
 
         m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
 
-        mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, &indices[0], indexSize);
+        void* mappedPointer = m_indexBuffer->map();
+        memcpy(mappedPointer, &(m_indices[0]), indexSize);
         m_indexBuffer->unmap();
     }
 
@@ -203,12 +205,12 @@ void initVKT(android_app* app)
             const std::vector<char> fragShaderCode = readFile(app, "shaders/triangle.frag.spv");
             vkt::ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                         .codeSize = fragShaderCode.size() };
-            m_fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
+            m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
             fragmentStage.shader = m_fragmentShaderModule.get();
 
             // output targets
-            fragmentStage.targets = { { .format = swapchain->getTextureFormat() } };
+            fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
         }
 
         vkt::RenderPipelineDescriptor descriptor{ .inputAssembly = inputAssembly,
@@ -221,13 +223,13 @@ void initVKT(android_app* app)
 
     // command buffer
     {
-        std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
+        std::vector<vkt::TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
         auto commandBufferCount = swapchainTextureViews.size();
         m_commandBuffers.resize(commandBufferCount);
         for (auto i = 0; i < commandBufferCount; ++i)
         {
-            CommandBufferDescriptor descriptor{};
+            vkt::CommandBufferDescriptor descriptor{};
             auto commandBuffer = m_device->createCommandBuffer(descriptor);
             m_commandBuffers[i] = std::move(commandBuffer);
         }
@@ -236,24 +238,28 @@ void initVKT(android_app* app)
         {
             auto commandBuffer = m_commandBuffers[i].get();
 
-            std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+            std::vector<vkt::ColorAttachment> colorAttachments(1); // in currently. use only one.
             colorAttachments[0] = { .textureView = swapchainTextureViews[i],
-                                    .loadOp = LoadOp::kClear,
-                                    .storeOp = StoreOp::kStore,
+                                    .loadOp = vkt::LoadOp::kClear,
+                                    .storeOp = vkt::StoreOp::kStore,
                                     .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-            DepthStencilAttachment depthStencilAttachment{};
+            vkt::DepthStencilAttachment depthStencilAttachment{};
 
-            RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                                       .depthStencilAttachment = depthStencilAttachment };
+            vkt::RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                                            .depthStencilAttachment = depthStencilAttachment };
             auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
             renderCommandEncoder->begin();
             renderCommandEncoder->setPipeline(m_renderPipeline.get());
             renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
             renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
-            renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
+            renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indexCount));
             renderCommandEncoder->end();
         }
     }
+
+    isReady = true;
+
+    return true;
 }
 
 // Process the next main command.
@@ -262,9 +268,9 @@ void handle_cmd(android_app* app, int32_t cmd)
     switch (cmd)
     {
     case APP_CMD_INIT_WINDOW:
-        initVKT(app);
         // The window is being shown, get it ready.
-        InitVulkan(app);
+        initVKT(app);
+        //        InitVulkan(app);
         break;
     case APP_CMD_TERM_WINDOW:
         // The window is being hidden or closed, clean it up.
@@ -289,17 +295,19 @@ void android_main(struct android_app* app)
     // Main loop
     do
     {
-        if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,
-                            &events, (void**)&source) >= 0)
+        if (ALooper_pollAll(isReady ? 1 : 0, nullptr, &events, (void**)&source) >= 0)
+        //        if (ALooper_pollAll(IsVulkanReady() ? 1 : 0, nullptr,&events, (void**)&source) >= 0)
         {
             if (source != NULL)
                 source->process(app, source);
         }
 
         // render if vulkan is ready
-        if (IsVulkanReady())
+        //        if (IsVulkanReady())
+        if (isReady)
         {
-            VulkanDrawFrame();
+            drawVKT();
+            //            VulkanDrawFrame();
         }
     } while (app->destroyRequested == 0);
 }
