@@ -14,7 +14,7 @@ class TriangleSample : public Sample
 {
 public:
     TriangleSample() = delete;
-    TriangleSample(int width, int height, const std::string& title, const char* path);
+    TriangleSample(const SampleDescriptor& descriptor);
     ~TriangleSample() override;
 
 private:
@@ -55,8 +55,8 @@ private:
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
 };
 
-TriangleSample::TriangleSample(int width, int height, const std::string& title, const char* path)
-    : Sample(width, height, title, path)
+TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
+    : Sample(descriptor)
 {
     // create Driver.
     {
@@ -282,7 +282,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    TriangleSample triangleSample(800, 600, "Triangle", argv[0]);
+    SampleDescriptor descriptor{
+        { 800, 600, "Triangle" },
+        argv[0]
+    };
+
+    TriangleSample triangleSample(descriptor);
 
     return triangleSample.exec();
 }

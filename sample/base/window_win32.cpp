@@ -7,6 +7,6 @@ void* Window::getWindowHandle()
 {
     SDL_SysWMinfo wmi;
     SDL_VERSION(&wmi.version);
-    SDL_GetWindowWMInfo(static_cast<SDL_Window*>(m_window), &wmi);
+    SDL_GetWindowWMInfo(static_cast<SDL_Window*>(m_handle), &wmi);
     return static_cast<void*>(wmi.info.win.window);
 }
