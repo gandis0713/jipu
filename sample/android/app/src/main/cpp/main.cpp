@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-#include "VulkanMain.hpp"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
@@ -22,6 +21,19 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    // GameActivity's C/C++ code
+    #include <game-activity/GameActivity.cpp>
+    #include <game-text-input/gametextinput.cpp>
+
+// Glue from GameActivity to android_main()
+// Passing GameActivity event from main thread to app native thread.
+extern "C"
+{
+    #include <game-activity/native_app_glue/android_native_app_glue.c>
+}
+#endif
 
 std::vector<char> readFile(android_app* app, const char* filePath)
 {
@@ -274,7 +286,7 @@ void handle_cmd(android_app* app, int32_t cmd)
         break;
     case APP_CMD_TERM_WINDOW:
         // The window is being hidden or closed, clean it up.
-        DeleteVulkan();
+        // TODO: delete VKT
         break;
     default:
         __android_log_print(ANDROID_LOG_INFO, "Vulkan Tutorials",

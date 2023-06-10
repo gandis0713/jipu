@@ -17,13 +17,8 @@ find_package(game-activity REQUIRED CONFIG)
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
 add_library(vulkan_test
-        SHARED
-        AndroidMain.cpp
-        vulkan_wrapper.cpp
-        vulkan_wrapper.h
-        VulkanMain.cpp
-        VulkanMain.hpp
-        GameActivitySources.cpp
+    SHARED
+        main.cpp
 )
 
 set(ROOT_DIR "${CMAKE_SOURCE_DIR}/../../../../../..")
