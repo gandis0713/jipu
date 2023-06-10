@@ -17,7 +17,7 @@ add_executable(triangle
 
 target_link_libraries(triangle
     PRIVATE
-    glm
+    glm::glm
     vkt::vkt
     vkt::sample_base
     spdlog::spdlog_header_only
