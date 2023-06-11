@@ -3,16 +3,18 @@ cmake_minimum_required(VERSION 3.21)
 # set options.
 option(VKT_TEST "VKT Test" OFF)
 
-# set VCPKG_TARGET_TRIPLET
-if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
-  if(ANDROID_ABI MATCHES "arm64-v8a")
-    set(VCPKG_TARGET_TRIPLET "arm64-android")
-  elseif(ANDROID_ABI MATCHES "armeabi-v7a")
-    set(VCPKG_TARGET_TRIPLET "arm-neon-android")
-  elseif(ANDROID_ABI MATCHES "x86_64")
-    set(VCPKG_TARGET_TRIPLET "x64-android")
-  elseif(ANDROID_ABI MATCHES "x86")
-    set(VCPKG_TARGET_TRIPLET "x86-android")
+# set VCPKG_TARGET_TRIPLET for android
+if(ANDROID)
+  if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+    if(ANDROID_ABI MATCHES "arm64-v8a")
+      set(VCPKG_TARGET_TRIPLET "arm64-android")
+    elseif(ANDROID_ABI MATCHES "armeabi-v7a")
+      set(VCPKG_TARGET_TRIPLET "arm-neon-android")
+    elseif(ANDROID_ABI MATCHES "x86_64")
+      set(VCPKG_TARGET_TRIPLET "x64-android")
+    elseif(ANDROID_ABI MATCHES "x86")
+      set(VCPKG_TARGET_TRIPLET "x86-android")
+    endif()
   endif()
 endif()
 

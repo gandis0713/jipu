@@ -119,9 +119,9 @@ void TriangleSample::init()
     // create swapchain
     {
 #if defined(__ANDROID__) || defined(ANDROID)
-        TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm;
+        TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
 #else
-        TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm;
+        TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
         SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
                                         .presentMode = PresentMode::kFifo,
