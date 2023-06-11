@@ -188,9 +188,9 @@ void TriangleSample::createRenderPipeline()
         // create vertex shader
         auto appDir = m_path.parent_path();
 #if defined(__ANDROID__) || defined(ANDROID)
-        const std::vector<char> vertShaderCode = utils::readFile("shaders/triangle.vert.spv", m_handle);
+        const std::vector<char> vertShaderCode = utils::readFile("triangle.vert.spv", m_handle);
 #else
-        const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle_vert.spv");
+        const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle.vert.spv");
 #endif
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
@@ -234,9 +234,9 @@ void TriangleSample::createRenderPipeline()
         // create fragment shader
         auto appDir = m_path.parent_path();
 #if defined(__ANDROID__) || defined(ANDROID)
-        const std::vector<char> fragShaderCode = utils::readFile("shaders/triangle.frag.spv", m_handle);
+        const std::vector<char> fragShaderCode = utils::readFile("triangle.frag.spv", m_handle);
 #else
-        const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle_frag.spv");
+        const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle.frag.spv");
 #endif
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };

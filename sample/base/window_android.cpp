@@ -22,7 +22,6 @@ static void onAppCmd(android_app* app, int32_t cmd)
     switch (cmd)
     {
     case APP_CMD_INIT_WINDOW:
-        // TODO: init VKT
         window->init();
         break;
     case APP_CMD_TERM_WINDOW:
@@ -64,7 +63,7 @@ int Window::exec()
                 source->process(app, source);
         }
 
-        if(isInitialized())
+        if (isInitialized())
         {
             draw();
         }
