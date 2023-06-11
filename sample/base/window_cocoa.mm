@@ -6,6 +6,9 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+namespace vkt
+{
+
 void* Window::getWindowHandle()
 {
     SDL_SysWMinfo wmi;
@@ -13,3 +16,5 @@ void* Window::getWindowHandle()
     SDL_GetWindowWMInfo(static_cast<SDL_Window*>(m_handle), &wmi);
     return [wmi.info.cocoa.window contentView];
 }
+
+} // namespace vkt

@@ -11,9 +11,15 @@ list(APPEND SRC_FILES
     main.cpp
 )
 
-add_executable(triangle
-    ${SRC_FILES}
-)
+if(ANDROID)
+    add_library(triangle SHARED
+        ${SRC_FILES}
+    )
+else()
+    add_executable(triangle
+        ${SRC_FILES}
+    )
+endif()
 
 target_link_libraries(triangle
     PRIVATE

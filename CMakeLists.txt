@@ -22,10 +22,7 @@ elseif(APPLE)
 endif()
 
 add_subdirectory(vkt)
-
-if(NOT ANDROID)
-  add_subdirectory(sample)
-endif()
+add_subdirectory(sample)
 
 if(VKT_TEST)
   enable_testing()

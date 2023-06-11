@@ -10,18 +10,21 @@ project("vulkan_test")
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(ROOT_DIR "${CMAKE_SOURCE_DIR}/../../../../../..")
+set(TRIANGLE_DIR "${ROOT_DIR}/sample/apps/triangle")
 find_package(game-activity REQUIRED CONFIG)
+find_library(log-lib log)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
 add_library(vulkan_test
     SHARED
-        main.cpp
+        ${TRIANGLE_DIR}/main.cpp
 )
 
-set(ROOT_DIR "${CMAKE_SOURCE_DIR}/../../../../../..")
+
+#add_library(vkt::sample_base IMPORTED)
+#set_target_properties(vkt::sample_base PROPERTIES
+#        INTERFACE_INCLUDE_DIRECTORIES "${ROOT_DIR}/install/${ANDROID_ABI}/debug/include")
+
 add_library(vkt::vkt SHARED IMPORTED)
 set_target_properties(vkt::vkt PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${ROOT_DIR}/install/${ANDROID_ABI}/debug/include")
@@ -30,16 +33,7 @@ set_target_properties(vkt::vkt PROPERTIES
         IMPORTED_LOCATION_DEBUG "${ROOT_DIR}/install/${ANDROID_ABI}/debug/lib/libvkt.so")
 set_property(TARGET vkt::vkt APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
-find_library(log-lib log)
 
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
                      -DVK_USE_PLATFORM_ANDROID_KHR")
 

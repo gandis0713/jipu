@@ -3,6 +3,9 @@
 #include "window.h"
 #include <filesystem>
 
+namespace vkt
+{
+
 struct SampleDescriptor
 {
     WindowDescriptor windowDescriptor;
@@ -19,3 +22,5 @@ public:
 protected:
     std::filesystem::path m_path;
 };
+
+} // namespace vkt

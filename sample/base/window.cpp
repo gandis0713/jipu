@@ -1,6 +1,13 @@
+
+
 #include "window.h"
 
-void Window::setDrawCB(std::function<void()> f)
+namespace vkt
 {
-    onDraw = f;
+
+bool Window::isInitialized() const
+{
+    return m_initialized;
 }
+
+} // namespace vkt

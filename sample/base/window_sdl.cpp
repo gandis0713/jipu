@@ -3,8 +3,11 @@
 #include <SDL2/SDL.h>
 #include <SDL_syswm.h>
 
-Window::Window(const WindowDescriptor& descriptor, void* handle)
-    : m_handle(nullptr)
+namespace vkt
+{
+
+Window::Window(const WindowDescriptor& descriptor)
+    : m_handle(descriptor.handle)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -34,6 +37,8 @@ Window::~Window()
 
 int Window::exec()
 {
+    init();
+
     SDL_Event event;
     int quit = 0;
     while (!quit)
@@ -51,3 +56,5 @@ int Window::exec()
 
     return 0;
 }
+
+} // namespace vkt

@@ -1,5 +1,6 @@
 #include "file.h"
 
+#include <cassert>
 #include <fmt/format.h>
 #include <fstream>
 

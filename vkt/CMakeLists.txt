@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 # find package
 find_package(Vulkan REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+
 set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/command_encoder.cpp

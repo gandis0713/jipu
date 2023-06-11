@@ -17,6 +17,8 @@ public:
     TriangleSample(const SampleDescriptor& descriptor);
     ~TriangleSample() override;
 
+    void init() override;
+
 private:
     void createRenderPipeline();
     void createCommandBuffers();
@@ -58,6 +60,32 @@ private:
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
+}
+
+TriangleSample::~TriangleSample()
+{
+    m_commandBuffers.clear();
+
+    m_vertexShaderModule.reset();
+    m_fragmentShaderModule.reset();
+
+    m_renderPipeline.reset();
+
+    m_indexBuffer.reset();
+    m_vertexBuffer.reset();
+
+    m_swapchain.reset();
+    m_renderQueue.reset();
+
+    m_physicalDevice.reset();
+    m_device.reset();
+
+    m_surface.reset();
+    m_driver.reset();
+}
+
+void TriangleSample::init()
+{
     // create Driver.
     {
         DriverDescriptor descriptor{ .type = DriverType::VULKAN };
@@ -90,7 +118,12 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
     // create swapchain
     {
-        SwapchainDescriptor descriptor{ .textureFormat = TextureFormat::kBGRA_8888_UInt_Norm,
+#if defined(__ANDROID__) || defined(ANDROID)
+        TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm;
+#else
+        TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm;
+#endif
+        SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
                                         .presentMode = PresentMode::kFifo,
                                         .colorSpace = ColorSpace::kSRGBNonLinear,
                                         .width = 800,
@@ -136,28 +169,8 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
     createRenderPipeline();
     createCommandBuffers();
-}
 
-TriangleSample::~TriangleSample()
-{
-    m_commandBuffers.clear();
-
-    m_vertexShaderModule.reset();
-    m_fragmentShaderModule.reset();
-
-    m_renderPipeline.reset();
-
-    m_indexBuffer.reset();
-    m_vertexBuffer.reset();
-
-    m_swapchain.reset();
-    m_renderQueue.reset();
-
-    m_physicalDevice.reset();
-    m_device.reset();
-
-    m_surface.reset();
-    m_driver.reset();
+    m_initialized = true;
 }
 
 void TriangleSample::createRenderPipeline()
@@ -174,7 +187,11 @@ void TriangleSample::createRenderPipeline()
     {
         // create vertex shader
         auto appDir = m_path.parent_path();
+#if defined(__ANDROID__) || defined(ANDROID)
+        const std::vector<char> vertShaderCode = utils::readFile("shaders/triangle.vert.spv", m_handle);
+#else
         const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle_vert.spv");
+#endif
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
@@ -216,7 +233,11 @@ void TriangleSample::createRenderPipeline()
     {
         // create fragment shader
         auto appDir = m_path.parent_path();
+#if defined(__ANDROID__) || defined(ANDROID)
+        const std::vector<char> fragShaderCode = utils::readFile("shaders/triangle.frag.spv", m_handle);
+#else
         const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle_frag.spv");
+#endif
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
@@ -278,12 +299,39 @@ void TriangleSample::draw()
     m_swapchain->present(m_renderQueue.get());
 }
 
+#if defined(__ANDROID__) || defined(ANDROID)
+
+    // GameActivity's C/C++ code
+    #include <game-activity/GameActivity.cpp>
+    #include <game-text-input/gametextinput.cpp>
+
+// // Glue from GameActivity to android_main()
+// // Passing GameActivity event from main thread to app native thread.
+extern "C"
+{
+    #include <game-activity/native_app_glue/android_native_app_glue.c>
+}
+
+void android_main(struct android_app* app)
+{
+    SampleDescriptor descriptor{
+        { 800, 600, "Triangle", app },
+        ""
+    };
+
+    TriangleSample triangleSample(descriptor);
+
+    triangleSample.exec();
+}
+
+#else
+
 int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
     SampleDescriptor descriptor{
-        { 800, 600, "Triangle" },
+        { 800, 600, "Triangle", nullptr },
         argv[0]
     };
 
@@ -291,3 +339,5 @@ int main(int argc, char** argv)
 
     return triangleSample.exec();
 }
+
+#endif

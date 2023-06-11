@@ -3,6 +3,9 @@
 #include <SDL2/SDL.h>
 #include <SDL_syswm.h>
 
+namespace vkt
+{
+
 void* Window::getWindowHandle()
 {
     SDL_SysWMinfo wmi;
@@ -10,3 +13,5 @@ void* Window::getWindowHandle()
     SDL_GetWindowWMInfo(static_cast<SDL_Window*>(m_handle), &wmi);
     return static_cast<void*>(wmi.info.win.window);
 }
+
+} // namespace vkt
