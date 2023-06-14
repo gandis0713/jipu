@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 # set options.
 option(VKT_TEST "VKT Test" OFF)
 
-# set VCPKG_TARGET_TRIPLET for android
-if(ANDROID)
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
   if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
     if(ANDROID_ABI MATCHES "arm64-v8a")
       set(VCPKG_TARGET_TRIPLET "arm64-android")
