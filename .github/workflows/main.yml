@@ -80,13 +80,17 @@ jobs:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
       # https://github.com/nttld/setup-ndk
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build SampleApplication
+        run: ./gradlew --no-daemon build
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
           ndk-version: r25b
           local-cache: true
-          # add-to-path: false
-      - run: ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=./Android.mk NDK_APPLICATION_MK=./Application.mk
+          add-to-path: false
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: sample/android
