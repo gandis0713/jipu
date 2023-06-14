@@ -31,7 +31,7 @@ android {
                 arguments += "-DCMAKE_TOOLCHAIN_FILE=${vcpkgRootDir}/scripts/buildsystems/vcpkg.cmake"
                 arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidNDKHomeDir}/build/cmake/android.toolchain.cmake"
                 arguments += "-DANDROID_ARM_NEON=ON"
-                arguments += "-DANDROID_STL=c++_shared"
+//                arguments += "-DANDROID_STL=c++_shared"
 
                 targets "triangle"
             }
