@@ -85,8 +85,7 @@ jobs:
           ndk-version: r25b
           local-cache: true
           add-to-path: false
-      - run: ./gradlew :app:assembleRelease
-        working-directory: my/directory
+      - run: pushd ./sample/android && ./gradlew :app:assembleRelease && popd
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
