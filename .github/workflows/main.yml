@@ -96,6 +96,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: sample/android
+      - run: cat /usr/local/lib/android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cmath
       - run: ./gradlew :app:assembleRelease
         working-directory: sample/android
         # env:
