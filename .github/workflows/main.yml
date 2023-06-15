@@ -66,8 +66,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       # https://github.com/marketplace/actions/run-vcpkg
-      - name: Setup CMake
-        uses: lukka/get-cmake@latest
+      # - name: Setup CMake
+        # uses: lukka/get-cmake@latest
       - name: Setup vcpkg and install them.
         uses: lukka/run-vcpkg@v10
         with:
@@ -80,12 +80,6 @@ jobs:
           distribution: 'temurin' # See 'Supported distributions' for available options
           java-version: '17'
       # https://github.com/nttld/setup-ndk
-      - name: Store Gradle cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: $-gradle-$
-          restore-keys: $-gradle-
       # - uses: nttld/setup-ndk@v1
       #   with:
       #     ndk-version: r25b
