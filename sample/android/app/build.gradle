@@ -34,6 +34,8 @@ android {
                 arguments += "-DANDROID_STL=c++_shared"
                 arguments += "-DANDROID_TOOLCHAIN=clang"
                 arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
+                arguments += "-DVCPKG_CRT_LINKAGE=dynamic"
+//                arguments += "-DVCPKG_LIBRARY_LINKAGE=static"
 
                 targets "triangle"
             }
