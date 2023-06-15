@@ -93,6 +93,10 @@ jobs:
           sdkmanager --install "build-tools;31.0.0"
           sdkmanager --install "cmake;3.22.1"
           sdkmanager --install "ndk;25.1.8937393"
+      - name: env test
+        run: |
+          find . -name "math.h"
+          cat /usr/local/lib/android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1
       # - name: Setup Android SDK
         # uses: android-actions/setup-android@v2
       # - name: Install NDK
