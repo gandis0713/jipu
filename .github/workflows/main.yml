@@ -66,8 +66,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       # https://github.com/marketplace/actions/run-vcpkg
-      # - name: Setup CMake
-      #   uses: lukka/get-cmake@latest
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
       - name: Setup vcpkg and install them.
         uses: lukka/run-vcpkg@v10
         with:
