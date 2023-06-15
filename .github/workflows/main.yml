@@ -100,7 +100,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: sample/android
-      - run: ./gradlew :app:assembleRelease
+      - run: ./gradlew clean assembleDebug
         working-directory: sample/android
         # env:
           # ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
