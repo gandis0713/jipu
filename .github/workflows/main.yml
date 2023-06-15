@@ -96,7 +96,7 @@ jobs:
       - name: env test
         run: |
           find . -name "math.h"
-          cat /usr/local/lib/android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1
+          cat /usr/local/lib/android/sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/math.h
       # - name: Setup Android SDK
         # uses: android-actions/setup-android@v2
       # - name: Install NDK
