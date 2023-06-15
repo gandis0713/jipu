@@ -122,7 +122,6 @@ target_include_directories(vkt
 target_link_libraries(vkt
   PUBLIC
   Vulkan::Vulkan
-  m
   PRIVATE
   spdlog::spdlog_header_only
 )
