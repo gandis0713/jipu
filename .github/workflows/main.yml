@@ -86,10 +86,19 @@ jobs:
           path: ~/.gradle/caches
           key: $-gradle-$
           restore-keys: $-gradle-
-      - uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r25b
-          local-cache: true
+      # - uses: nttld/setup-ndk@v1
+      #   with:
+      #     ndk-version: r25b
+      #     local-cache: true
+
+      - name: Setup Android Environment
+        uses: android-actions/setup-android@v2
+
+      - name: Install Android NDK
+        run: |
+          sdkmanager --install "build-tools;31.0.0"
+          sdkmanager --install "cmake;3.22.1"
+          sdkmanager --install "ndk;25.1.8937393"
       # - name: Setup Android SDK
         # uses: android-actions/setup-android@v2
       # - name: Install NDK
