@@ -12,10 +12,12 @@ def shaderDir = "${projectDir}/sample/apps/triangle/shaders"
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
 def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
+//def androidNDKVersion = "25.2.9519653" // r25c
+def androidNDKVersion = "25.1.8937393" // r25b
 
 android {
     compileSdk 33
-    ndkVersion "25.2.9519653"
+    ndkVersion androidNDKVersion
 
     defaultConfig {
         applicationId "com.gandis.vulkan_test"
@@ -24,15 +26,14 @@ android {
         versionCode 1
         versionName "1.0"
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', "x86"
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86'
         }
         externalNativeBuild {
             cmake {
                 arguments += "-DCMAKE_TOOLCHAIN_FILE=${vcpkgRootDir}/scripts/buildsystems/vcpkg.cmake"
-                arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/25.2.9519653/build/cmake/android.toolchain.cmake"
+                arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
                 arguments += "-DANDROID_ARM_NEON=ON"
                 arguments += "-DANDROID_STL=c++_shared"
-                arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 
                 targets "triangle"
             }
