@@ -105,7 +105,7 @@ jobs:
         working-directory: sample/android
         env:
           ANDROID_NDK_VERSION: "25.1.8937393" # r25b
-          VCPKG_ROOT: $VCPKG_INSTALLATION_ROOT # use VCPKG in runner image.
+          VCPKG_ROOT: "/usr/local/share/vcpkg" # use VCPKG in runner image.
 
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
