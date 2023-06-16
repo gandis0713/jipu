@@ -12,8 +12,8 @@ def shaderDir = "${projectDir}/sample/apps/triangle/shaders"
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
 def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
+def androidNDKVersion = System.getenv("ANDROID_NDK_VERSION") // self environment.
 //def androidNDKVersion = "25.2.9519653" // r25c
-def androidNDKVersion = "25.1.8937393" // r25b
 
 android {
     compileSdk 33
