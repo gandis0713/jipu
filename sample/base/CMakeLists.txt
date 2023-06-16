@@ -7,6 +7,8 @@ project(
     LANGUAGES CXX
 )
 
+find_package(spdlog CONFIG REQUIRED)
+
 if(NOT ANDROID)
     find_package(SDL2 CONFIG REQUIRED)
 endif()
@@ -21,8 +23,6 @@ list(APPEND SRC_FILES
 )
 
 if(ANDROID)
-    find_package(game-activity REQUIRED CONFIG)
-    find_library(log-lib log)
     list(APPEND SRC_FILES
         window_android.cpp
     )
@@ -30,16 +30,16 @@ else()
     list(APPEND SRC_FILES
         window_sdl.cpp
     )
-endif()
 
-if(APPLE)
-    list(APPEND SRC_FILES
-        window_cocoa.mm
-    )
-elseif(MSVC)
-    list(APPEND SRC_FILES
-        window_win32.cpp
-    )
+    if(APPLE)
+        list(APPEND SRC_FILES
+            window_cocoa.mm
+        )
+    elseif(MSVC)
+        list(APPEND SRC_FILES
+            window_win32.cpp
+        )
+    endif()
 endif()
 
 add_library(vkt_sample_base STATIC ${SRC_FILES})
@@ -56,6 +56,8 @@ if(NOT ANDROID)
         SDL2::SDL2 SDL2::SDL2main
     )
 else()
+    find_package(game-activity REQUIRED CONFIG)
+    find_library(log-lib log)
     target_link_libraries(vkt_sample_base
         PUBLIC
         game-activity::game-activity # game-activity::game-activity_static

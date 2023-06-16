@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
+find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 if(APPLE)
