@@ -62,7 +62,7 @@ jobs:
   #       if: ${{ failure() }} # always(), failure() # Pick up events even if the job fails or is canceled.
 
   android-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       # https://github.com/marketplace/actions/run-vcpkg
@@ -88,14 +88,10 @@ jobs:
       - name: Setup Android Environment
         uses: android-actions/setup-android@v2
 
-      - name: Install Android NDK
-        run: |
-          sdkmanager --install "build-tools;31.0.0"
-          sdkmanager --install "cmake;3.22.1"
-          sdkmanager --install "ndk;25.1.8937393"
-      # - name: Setup Android SDK
-        # uses: android-actions/setup-android@v2
-      # - name: Install NDK
+      # - name: Install Android NDK
+      #   run: |
+      #     sdkmanager --install "cmake;3.22.1"
+      #     sdkmanager --install "ndk;25.2.9519653"
         # run: echo "y" | sudo /usr/local/lib/android/sdk/tools/bin/sdkmanager --install "ndk;25.1.8937393" --sdk_root=${ANDROID_SDK_ROOT}
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
