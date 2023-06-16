@@ -9,7 +9,7 @@
 namespace vkt
 {
 
-enum class DRIVER_TYPE
+enum class DriverType
 {
     NONE,
     VULKAN,
@@ -19,7 +19,7 @@ enum class DRIVER_TYPE
 
 struct DriverDescriptor
 {
-    DRIVER_TYPE type = DRIVER_TYPE::NONE;
+    DriverType type = DriverType::NONE;
 };
 
 class VKT_EXPORT Driver

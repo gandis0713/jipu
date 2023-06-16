@@ -53,6 +53,10 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
         imageCount = surfaceCapabilities.maxImageCount;
     }
 
+    // TODO: width, height??
+    m_width = surfaceCapabilities.currentExtent.width;
+    m_height = surfaceCapabilities.currentExtent.height;
+
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchainCreateInfo.surface = surface->getSurfaceKHR();

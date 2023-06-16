@@ -3,13 +3,24 @@
 #include "window.h"
 #include <filesystem>
 
+namespace vkt
+{
+
+struct SampleDescriptor
+{
+    WindowDescriptor windowDescriptor;
+    std::filesystem::path path;
+};
+
 class Sample : public Window
 {
 public:
     Sample() = delete;
-    Sample(int width, int height, const std::string& title, const char* path);
+    Sample(const SampleDescriptor& descriptor);
     virtual ~Sample() = default;
 
 protected:
     std::filesystem::path m_path;
 };
+
+} // namespace vkt

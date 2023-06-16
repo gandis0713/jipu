@@ -1,0 +1,85 @@
+import java.nio.file.Paths
+
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+// Paths
+def projectDir = Paths.get(project.projectDir.getParent()).getParent().getParent()
+def shaderDir = "${projectDir}/sample/apps/triangle/shaders"
+
+// Environments
+def vcpkgRootDir = System.getenv("VCPKG_ROOT")
+def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
+def androidNDKVersion = System.getenv("ANDROID_NDK_VERSION") // environment by self.
+
+android {
+    compileSdk 33
+    ndkVersion androidNDKVersion
+
+    defaultConfig {
+        applicationId "com.gandis.vulkan_test"
+        minSdk 25
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        ndk {
+            abiFilters += 'arm64-v8a'
+//            abiFilters += 'armeabi-v7a'
+//            abiFilters += 'x86_64'
+//            abiFilters += 'x86'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments += "-DCMAKE_TOOLCHAIN_FILE=${vcpkgRootDir}/scripts/buildsystems/vcpkg.cmake"
+                arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
+                arguments += "-DANDROID_ARM_NEON=ON"
+                arguments += "-DANDROID_STL=c++_shared"
+
+                targets "triangle"
+            }
+        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    sourceSets {
+        main.assets.srcDirs += "${shaderDir}"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    externalNativeBuild {
+        cmake {
+            path file("${projectDir}/CMakeLists.txt")
+            version '3.22.1'
+        }
+    }
+    buildFeatures {
+        viewBinding true
+        prefab true // for game-activity
+    }
+    namespace 'com.gandis.vulkan_test'
+}
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.games:games-activity:1.1.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 3.21)
 
 # set options.
-option(VKT_TEST "VKT Test" ON)
+option(VKT_TEST "VKT Test" OFF)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  if(CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake")
+    if(ANDROID_ABI MATCHES "arm64-v8a")
+      set(VCPKG_TARGET_TRIPLET "arm64-android")
+    elseif(ANDROID_ABI MATCHES "armeabi-v7a")
+      set(VCPKG_TARGET_TRIPLET "arm-neon-android")
+    elseif(ANDROID_ABI MATCHES "x86_64")
+      set(VCPKG_TARGET_TRIPLET "x64-android")
+    elseif(ANDROID_ABI MATCHES "x86")
+      set(VCPKG_TARGET_TRIPLET "x86-android")
+    endif()
+  endif()
+endif()
 
 project(
   vkt
@@ -21,9 +35,6 @@ elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
-# find package
-find_package(spdlog CONFIG REQUIRED)
-
 add_subdirectory(vkt)
 add_subdirectory(sample)
 
@@ -33,8 +44,10 @@ if(VKT_TEST)
   add_dependencies(test_vkt vkt::vkt)
 endif()
 
-# runtime output
-set_target_properties(vkt PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/app
-  RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/app
-)
+# TODO: runtime output
+if(WIN32 AND BUILD_SHARED_LIBS)
+  set_target_properties(vkt PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/sample/apps/triangle
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/sample/apps/triangle
+  )
+endif()

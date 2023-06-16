@@ -1,6 +1,8 @@
 #pragma once
 
-#if defined(__linux__)
+#if defined(__ANDROID__) || defined(ANDROID)
+    #define VK_USE_PLATFORM_ANDROID_KHR
+#elif defined(__linux__)
     #define VK_USE_PLATFORM_XCB_KHR
 #elif defined(__APPLE__)
     // #define VK_USE_PLATFORM_METAL_EXT
@@ -19,11 +21,12 @@ class DyLib;
 
 struct VulkanDriverKnobs
 {
-    uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     // TODO: use bitset instead of bool type.
     bool debugReport = false;
     bool surface = false;
+    bool androidSurface = false;
     bool macosSurface = false;
     bool metalSurface = false;
     bool win32Surface = false;
@@ -113,6 +116,10 @@ struct VulkanAPI
     PFN_vkGetPhysicalDeviceMemoryProperties2KHR GetPhysicalDeviceMemoryProperties2KHR = nullptr;
     PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR
         GetPhysicalDeviceSparseImageFormatProperties2KHR = nullptr;
+
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    PFN_vkCreateAndroidSurfaceKHR CreateAndroidSurfaceKHR = nullptr;
+#endif
 
 #ifdef VK_USE_PLATFORM_FUCHSIA
     // FUCHSIA_image_pipe_surface

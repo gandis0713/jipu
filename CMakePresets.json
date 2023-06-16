@@ -11,6 +11,11 @@
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
 				"VKT_TEST": "ON"
+			},
+			"debug": {
+				"find": false,
+				"output": false,
+				"tryCompile": false
 			}
 		},
 		{
@@ -150,7 +155,7 @@
 				"rhs": "Windows"
 			},
 			"cacheVariables": {
-				"BUILD_SHARED_LIBS": false
+				"BUILD_SHARED_LIBS": true
 			}
 		},
 		{

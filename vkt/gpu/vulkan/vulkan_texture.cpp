@@ -75,9 +75,14 @@ VkFormat ToVkFormat(TextureFormat format)
     switch (format)
     {
     case TextureFormat::kBGRA_8888_UInt_Norm:
+        return VK_FORMAT_B8G8R8A8_UNORM;
+    case TextureFormat::kBGRA_8888_UInt_Norm_SRGB:
         return VK_FORMAT_B8G8R8A8_SRGB;
+    case TextureFormat::kRGBA_8888_UInt_Norm:
+        return VK_FORMAT_R8G8B8A8_UNORM;
+    case TextureFormat::kRGBA_8888_UInt_Norm_SRGB:
+        return VK_FORMAT_R8G8B8A8_SRGB;
     default:
-
         assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
         return VK_FORMAT_UNDEFINED;
     }
@@ -87,8 +92,14 @@ TextureFormat ToTextureFormat(VkFormat format)
 {
     switch (format)
     {
-    case VK_FORMAT_B8G8R8A8_SRGB:
+    case VK_FORMAT_B8G8R8A8_UNORM:
         return TextureFormat::kBGRA_8888_UInt_Norm;
+    case VK_FORMAT_B8G8R8A8_SRGB:
+        return TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return TextureFormat::kRGBA_8888_UInt_Norm;
+    case VK_FORMAT_R8G8B8A8_SRGB:
+        return TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
     default:
         assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
         return TextureFormat::kUndefined;

@@ -1,15 +1,101 @@
 cmake_minimum_required(VERSION 3.12)
 
+# find package
 find_package(Vulkan REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+set(SRC_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/command_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/swapchain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.cpp
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/export.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/shader_module.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/texture_view.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/swapchain.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/command_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/texture.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/pipeline_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/fmt.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/log.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/cast.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/assert.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/hash.h
+)
 
 if(APPLE)
-  file(GLOB_RECURSE MM_FILES LIST_DIRECTORIES false *.mm)
-  list(APPEND SRC_FILES ${MM_FILES})
-
-  file(GLOB_RECURSE REMOVE_FILES LIST_DIRECTORIES false *_windows.h *_windows.cpp)
-  list(REMOVE_ITEM SRC_FILES ${REMOVE_FILES})
+  list(APPEND SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface_macos.mm
+  )
+elseif(MSVC)
+  list(APPEND SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface_window.cpp
+  )
+elseif(ANDROID)
+  list(APPEND SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface_android.cpp
+  )
 endif()
 
 set(LIB_TYPE STATIC)
