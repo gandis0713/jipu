@@ -65,17 +65,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      # We use vcpkg in runner image.
-      # https://github.com/marketplace/actions/run-vcpkg
-      # - name: Setup CMake
-      #   uses: lukka/get-cmake@latest
-      # - name: Setup vcpkg and install them.
-      #   uses: lukka/run-vcpkg@v10
-      #   with:
-      #     vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-      #     vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
-      #     vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
-      #     runVcpkgInstall: false
 
       # https://github.com/actions/setup-java
       - uses: actions/setup-java@v3
@@ -98,6 +87,19 @@ jobs:
           ndk-version: r25b
           local-cache: true
 
+      # https://github.com/marketplace/actions/get-cmake
+      # - name: Setup CMake
+      #   uses: lukka/get-cmake@latest
+
+      # https://github.com/marketplace/actions/run-vcpkg
+      - name: Setup vcpkg and install them.
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+          vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+          runVcpkgInstall: false
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: sample/android
@@ -105,7 +107,6 @@ jobs:
         working-directory: sample/android
         env:
           ANDROID_NDK_VERSION: "25.1.8937393" # r25b
-          VCPKG_ROOT: "/usr/local/share/vcpkg" # use VCPKG in runner image.
 
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
