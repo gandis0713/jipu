@@ -141,8 +141,8 @@ void TriangleSample::init()
         SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
                                         .presentMode = PresentMode::kFifo,
                                         .colorSpace = ColorSpace::kSRGBNonLinear,
-                                        .width = 800,
-                                        .height = 600,
+                                        // .width = 0, // use surface current with
+                                        // .height = 0, // use surface current height
                                         .surface = m_surface.get() };
         m_swapchain = m_device->createSwapchain(descriptor);
     }
