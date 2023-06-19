@@ -87,6 +87,10 @@ public:
     virtual void setVertexBuffer(Buffer* buffer) = 0;
     virtual void setIndexBuffer(Buffer* buffer) = 0;
 
+    virtual void draw(uint32_t vertexCount) = 0;
+    virtual void drawIndexed(uint32_t indexCount) = 0;
+
+    // state
     virtual void setViewport(float x,
                              float y,
                              float width,
@@ -94,8 +98,10 @@ public:
                              float minDepth,
                              float maxDepth) = 0;
 
-    virtual void draw(uint32_t vertexCount) = 0;
-    virtual void drawIndexed(uint32_t indexCount) = 0;
+    virtual void setScissor(float x,
+                            float y,
+                            float width,
+                            float height) = 0;
 
 protected:
     RenderCommandEncoderDescriptor m_descriptor{};

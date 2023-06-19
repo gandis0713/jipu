@@ -294,6 +294,7 @@ void TriangleSample::createCommandBuffers()
 
         renderCommandEncoder->begin();
         renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+        renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
         renderCommandEncoder->end();
 
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));

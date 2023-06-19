@@ -108,26 +108,6 @@ void VulkanRenderCommandEncoder::setIndexBuffer(Buffer* buffer)
     vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 }
 
-void VulkanRenderCommandEncoder::setViewport(float x,
-                                             float y,
-                                             float width,
-                                             float height,
-                                             float minDepth,
-                                             float maxDepth)
-{
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    VkViewport viewport{ x, y, width, height, minDepth, maxDepth };
-    vulkanDevice->vkAPI.CmdSetViewport(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &viewport);
-    VkRect2D scissorRect{};
-    scissorRect.offset.x = 0;
-    scissorRect.offset.y = 0;
-    scissorRect.extent.width = width;
-    scissorRect.extent.height = height;
-    vulkanDevice->vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
-}
-
 void VulkanRenderCommandEncoder::draw(uint32_t vertexCount)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
@@ -142,6 +122,37 @@ void VulkanRenderCommandEncoder::drawIndexed(uint32_t indexCount)
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
+}
+
+void VulkanRenderCommandEncoder::setViewport(float x,
+                                             float y,
+                                             float width,
+                                             float height,
+                                             float minDepth,
+                                             float maxDepth)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+
+    VkViewport viewport{ x, y, width, height, minDepth, maxDepth };
+    vulkanDevice->vkAPI.CmdSetViewport(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &viewport);
+}
+
+void VulkanRenderCommandEncoder::setScissor(float x,
+                                            float y,
+                                            float width,
+                                            float height)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+
+    VkRect2D scissorRect{};
+    scissorRect.offset.x = x;
+    scissorRect.offset.y = y;
+    scissorRect.extent.width = width;
+    scissorRect.extent.height = height;
+
+    vulkanDevice->vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
 }
 
 // Convert Helper

@@ -21,6 +21,10 @@ public:
     void setVertexBuffer(Buffer* buffer) override;
     void setIndexBuffer(Buffer* buffer) override;
 
+    void draw(uint32_t vertexCount) override;
+    void drawIndexed(uint32_t indexCount) override;
+
+    // state
     void setViewport(float x,
                      float y,
                      float width,
@@ -28,8 +32,10 @@ public:
                      float minDepth,
                      float maxDepth) override;
 
-    void draw(uint32_t vertexCount) override;
-    void drawIndexed(uint32_t indexCount) override;
+    void setScissor(float x,
+                    float y,
+                    float width,
+                    float height) override;
 };
 
 // Convert Helper
