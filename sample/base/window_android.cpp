@@ -11,6 +11,8 @@ static void onAppCmd(android_app* app, int32_t cmd)
     switch (cmd)
     {
     case APP_CMD_INIT_WINDOW:
+        window->setWidth(ANativeWindow_getWidth(app->window));
+        window->setHeight(ANativeWindow_getHeight(app->window));
         window->init();
         break;
     case APP_CMD_TERM_WINDOW:
@@ -23,6 +25,8 @@ static void onAppCmd(android_app* app, int32_t cmd)
 
 Window::Window(const WindowDescriptor& descriptor)
     : m_handle(descriptor.handle)
+    , m_width(descriptor.width)
+    , m_height(descriptor.height)
 {
     struct android_app* app = static_cast<android_app*>(m_handle);
 

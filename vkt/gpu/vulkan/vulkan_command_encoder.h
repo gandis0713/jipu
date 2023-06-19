@@ -21,6 +21,13 @@ public:
     void setVertexBuffer(Buffer* buffer) override;
     void setIndexBuffer(Buffer* buffer) override;
 
+    void setViewport(float x,
+                     float y,
+                     float width,
+                     float height,
+                     float minDepth,
+                     float maxDepth) override;
+
     void draw(uint32_t vertexCount) override;
     void drawIndexed(uint32_t indexCount) override;
 };

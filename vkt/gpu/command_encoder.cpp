@@ -9,6 +9,11 @@ CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
 {
 }
 
+CommandBuffer* CommandEncoder::getCommandBuffer() const
+{
+    return m_commandBuffer;
+}
+
 RenderCommandEncoder::RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
     : CommandEncoder(commandBuffer)
     , m_descriptor(descriptor)

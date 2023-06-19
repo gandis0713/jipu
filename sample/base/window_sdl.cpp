@@ -8,6 +8,8 @@ namespace vkt
 
 Window::Window(const WindowDescriptor& descriptor)
     : m_handle(descriptor.handle)
+    , m_width(descriptor.width)
+    , m_height(descriptor.height)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {

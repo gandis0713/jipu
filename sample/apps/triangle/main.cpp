@@ -70,6 +70,7 @@ private:
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
     std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
+    std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -141,8 +142,8 @@ void TriangleSample::init()
         SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
                                         .presentMode = PresentMode::kFifo,
                                         .colorSpace = ColorSpace::kSRGBNonLinear,
-                                        // .width = 0, // use surface current with
-                                        // .height = 0, // use surface current height
+                                        .width = m_width,
+                                        .height = m_height,
                                         .surface = m_surface.get() };
         m_swapchain = m_device->createSwapchain(descriptor);
     }
@@ -290,19 +291,29 @@ void TriangleSample::createCommandBuffers()
         RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
                                                    .depthStencilAttachment = depthStencilAttachment };
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
+
         renderCommandEncoder->begin();
-        renderCommandEncoder->setPipeline(m_renderPipeline.get());
-        renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
-        renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
-        renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
+        renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
         renderCommandEncoder->end();
+
+        m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
     }
 }
 
 void TriangleSample::draw()
 {
     int nextImageIndex = m_swapchain->acquireNextTexture();
-    m_renderQueue->submit(m_commandBuffers[nextImageIndex].get());
+
+    auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
+
+    renderCommandEncoder->begin();
+    renderCommandEncoder->setPipeline(m_renderPipeline.get());
+    renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
+    renderCommandEncoder->end();
+
+    m_renderQueue->submit(renderCommandEncoder->getCommandBuffer());
     m_swapchain->present(m_renderQueue.get());
 }
 
@@ -311,7 +322,7 @@ void TriangleSample::draw()
 void android_main(struct android_app* app)
 {
     SampleDescriptor descriptor{
-        { 800, 600, "Triangle", app },
+        { 1000, 2000, "Triangle", app },
         ""
     };
 

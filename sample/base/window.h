@@ -24,6 +24,12 @@ public:
     Window(const Window&) = delete;
     Window& operator=(const Window&) = delete;
 
+    void setWidth(uint32_t width);
+    void setHeight(uint32_t height);
+
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
+
     virtual void draw() = 0;
     virtual void init() = 0;
 
@@ -35,5 +41,8 @@ public:
 protected:
     void* m_handle = nullptr;
     bool m_initialized = false;
+
+    uint32_t m_width = 0;
+    uint32_t m_height = 0;
 };
 } // namespace vkt

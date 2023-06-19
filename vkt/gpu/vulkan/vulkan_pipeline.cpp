@@ -78,25 +78,12 @@ void VulkanRenderPipeline::initialize()
     vertexInputStateCreateInfo.pVertexBindingDescriptions = bindingDescriptions.data();
     vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
 
-    // Viewport
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = 800;  // TODO: dynamic state
-    viewport.height = 600; // TODO: dynamic state
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = { 800, 600 }; // TODO: dynamic state
-
     VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
     viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportStateCreateInfo.viewportCount = 1;
-    viewportStateCreateInfo.pViewports = &viewport;
+    viewportStateCreateInfo.pViewports = nullptr; // use dynamic state.
     viewportStateCreateInfo.scissorCount = 1;
-    viewportStateCreateInfo.pScissors = &scissor;
+    viewportStateCreateInfo.pScissors = nullptr; // use dynamic state.
 
     // Rasterization Stage
     VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
@@ -155,10 +142,10 @@ void VulkanRenderPipeline::initialize()
     VkDynamicState dynamicStates[] = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
-        VK_DYNAMIC_STATE_LINE_WIDTH,
-        VK_DYNAMIC_STATE_BLEND_CONSTANTS,
-        VK_DYNAMIC_STATE_DEPTH_BOUNDS,
-        VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+        // VK_DYNAMIC_STATE_LINE_WIDTH,
+        // VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
+        // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
     };
 
     VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
@@ -198,7 +185,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pMultisampleState = &multisampleStateCreateInfo;
     pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
-    pipelineInfo.pDynamicState = nullptr; // &dynamicStateCreateInfo
+    pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
     pipelineInfo.layout = m_pipelineLayout;
     pipelineInfo.renderPass = vulkanRenderPass->getVkRenderPass();
     pipelineInfo.subpass = 0;
