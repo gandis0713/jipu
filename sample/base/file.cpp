@@ -13,7 +13,7 @@ namespace
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
-std::vector<char> _readFile(android_app* app, const std::filesystem::path& filePath)
+std::vector<char> _readFile(const std::filesystem::path& filePath, android_app* app)
 {
     // Read the file
     assert(app);
@@ -32,13 +32,13 @@ std::vector<char> _readFile(android_app* app, const std::filesystem::path& fileP
 
 #else
 
-std::vector<char> _readFile(const std::filesystem::path& file_path)
+std::vector<char> _readFile(const std::filesystem::path& filePath)
 {
-    std::ifstream file(file_path, std::ios::ate | std::ios::binary);
+    std::ifstream file(filePath, std::ios::ate | std::ios::binary);
 
     if (!file.is_open())
     {
-        throw std::runtime_error(fmt::format("Failed to open file: {}", file_path.generic_string()));
+        throw std::runtime_error(fmt::format("Failed to open file: {}", filePath.generic_string()));
     }
 
     size_t fileSize = static_cast<size_t>(file.tellg());
@@ -62,7 +62,7 @@ std::vector<char> readFile(const std::filesystem::path& filePath, void* platform
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     android_app* app = static_cast<android_app*>(platformContext);
-    return _readFile(app, filePath);
+    return _readFile(filePath, app);
 #else
     return _readFile(filePath);
 #endif
