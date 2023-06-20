@@ -14,6 +14,12 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shader_module.cpp
+
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.cpp
@@ -34,12 +40,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/queue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/physical_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/surface.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shader_module.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
@@ -61,7 +61,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/export.h
+
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/shader_module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/surface.h
@@ -76,8 +76,11 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/pipeline_layout.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/utils/fmt.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/export.h
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/fmt.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/log.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/cast.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/assert.h
