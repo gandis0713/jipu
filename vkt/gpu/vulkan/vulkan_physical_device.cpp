@@ -84,6 +84,11 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
         {
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties. Error: {}", result));
         }
+
+        for (const auto& layerProperty : m_Info.layerProperties)
+        {
+            LOG_INFO("Device Layer Name: {}", layerProperty.layerName);
+        }
     }
 
     // Gather device extension properties.
@@ -100,6 +105,17 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties. Error: {}", result));
+        }
+
+        for (const auto& extensionProperty : m_Info.extensionProperties)
+        {
+            LOG_INFO("Device Extention Name: {}", extensionProperty.extensionName);
+
+            // TODO: define "VK_KHR_portability_subset"
+            if (strncmp(extensionProperty.extensionName, "VK_KHR_portability_subset", VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_Info.portabilitySubset = true;
+            }
         }
     }
 }

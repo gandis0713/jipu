@@ -35,6 +35,7 @@ struct VulkanDriverKnobs
 struct VulkanDeviceKnobs
 {
     bool swapchain = false;
+    bool portabilitySubset = false;
 };
 
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h

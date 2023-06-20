@@ -12,6 +12,8 @@
 
 #include <stdexcept>
 
+extern const char kExtensionPortabilitySubset[];
+
 const std::vector<const char*> getRequiredDeviceExtension()
 {
     std::vector<const char*> requiredDeviceExtension;
@@ -185,26 +187,16 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
+    // TODO: check extension supported.
+    if (vulkanPhysicalDevice->getInfo().portabilitySubset)
+    {
+        // TODO: define "VK_KHR_portability_subset"
+        requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
+    }
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 
-    // TODO: validation layer.
-    // // set validation layers to be compatible with older implementations:
-    // if (enableValidationLayers)
-    // {
-    //     const std::vector<const char*>& requiredValidationLayers = getRequiredValidationLayers();
-    //     if (enableValidationLayers && !checkValidationLayerSupport(requiredValidationLayers))
-    //     {
-    //         throw std::runtime_error("validation layers requested, but not "
-    //                                  "available for device!");
-    //     }
-    //     deviceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
-    //     deviceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-    // }
-    // else
-    // {
-    //     deviceCreateInfo.enabledLayerCount = 0;
-    // }
+    // TODO: Layer.
 
     VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
     if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
