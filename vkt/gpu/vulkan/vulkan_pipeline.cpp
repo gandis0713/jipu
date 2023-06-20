@@ -47,15 +47,9 @@ void VulkanRenderPipeline::initialize()
     vertexStageInfo.pName = m_descriptor.vertex.entryPoint.c_str();
 
     std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
-    bindingDescriptions.resize(m_descriptor.vertex.layouts.size());
     std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions{};
     for (uint64_t bindingIndex = 0; bindingIndex < m_descriptor.vertex.layouts.size(); ++bindingIndex)
     {
-        VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = bindingIndex;
-        bindingDescription.stride = m_descriptor.vertex.layouts[bindingIndex].stride;
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
         const auto& attributes = m_descriptor.vertex.layouts[bindingIndex].attributes;
         for (uint64_t attrIndex = 0; attrIndex < attributes.size(); ++attrIndex)
         {
@@ -68,6 +62,10 @@ void VulkanRenderPipeline::initialize()
             vertexAttributeDescriptions.push_back(attributeDescription);
         }
 
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = bindingIndex;
+        bindingDescription.stride = m_descriptor.vertex.layouts[bindingIndex].stride;
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         bindingDescriptions.push_back(bindingDescription);
     }
 
@@ -91,7 +89,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
     rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationStateCreateInfo.lineWidth = 5.0f;
+    rasterizationStateCreateInfo.lineWidth = 1.0f;
     rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
     rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
     rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
