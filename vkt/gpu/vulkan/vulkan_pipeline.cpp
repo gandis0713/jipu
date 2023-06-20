@@ -166,7 +166,7 @@ void VulkanRenderPipeline::initialize()
 
     // TODO : multi sample
     VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(m_descriptor.fragment.targets[0].format),
-                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = VK_SAMPLE_COUNT_1_BIT };
     VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
