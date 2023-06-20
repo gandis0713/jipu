@@ -149,8 +149,8 @@ VkCommandPool VulkanDevice::getCommandPool()
     {
         VkCommandPoolCreateInfo commandPoolCreateInfo{};
         commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        commandPoolCreateInfo.queueFamilyIndex = 0; // TODO: get queue index by create information.
-        commandPoolCreateInfo.flags = 0;            // Optional
+        commandPoolCreateInfo.queueFamilyIndex = 0;                                    // TODO: get queue index by create information.
+        commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
         if (vkAPI.CreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
         {
