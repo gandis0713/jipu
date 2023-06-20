@@ -54,6 +54,9 @@ VulkanQueue::~VulkanQueue()
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
+    // wait idle state before destroy semaphore.
+    vkAPI.QueueWaitIdle(m_queue);
+
     // Doesn't need to destroy VkQueue.
 
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderingFinishSemaphore, nullptr);
