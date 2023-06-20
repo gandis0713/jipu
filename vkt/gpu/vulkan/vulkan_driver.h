@@ -51,6 +51,8 @@ private:
 
     bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions);
     const std::vector<const char*> getRequiredInstanceExtensions();
+    bool checkInstanceLayerSupport(const std::vector<const char*> requiredInstanceLayers);
+    const std::vector<const char*> getRequiredInstanceLayers();
 
 private:
     VkInstance m_instance = VK_NULL_HANDLE;
