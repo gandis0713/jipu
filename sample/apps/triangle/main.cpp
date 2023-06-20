@@ -291,12 +291,6 @@ void TriangleSample::createCommandBuffers()
         RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
                                                    .depthStencilAttachment = depthStencilAttachment };
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
-
-        renderCommandEncoder->begin();
-        renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-        renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-        renderCommandEncoder->end();
-
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
     }
 }
@@ -311,6 +305,8 @@ void TriangleSample::draw()
     renderCommandEncoder->setPipeline(m_renderPipeline.get());
     renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
     renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
     renderCommandEncoder->end();
 
