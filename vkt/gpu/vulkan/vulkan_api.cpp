@@ -11,13 +11,13 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
     if (name == nullptr)                                                               \
     {                                                                                  \
-        LOG_ERROR("Couldn't get driver proc vk{}", #name);                             \
+        spdlog::error("Couldn't get driver proc vk{}", #name);                         \
         return false;                                                                  \
     }
 
     if (!vulkanLib->getProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr"))
     {
-        LOG_ERROR("Couldn't get vkGetInstanceProcAddr");
+        spdlog::error("Couldn't get vkGetInstanceProcAddr");
         return false;
     }
 
@@ -39,13 +39,13 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \
     if (name == nullptr)                                                                \
     {                                                                                   \
-        LOG_ERROR("Couldn't get instance proc vk{}", #name);                            \
+        spdlog::error("Couldn't get instance proc vk{}", #name);                        \
         return false;                                                                   \
     }
 
     if (GetInstanceProcAddr == nullptr)
     {
-        LOG_ERROR("vkGetInstanceProcAddr is nullptr.");
+        spdlog::error("vkGetInstanceProcAddr is nullptr.");
         return false;
     }
 
@@ -152,7 +152,7 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name)); \
     if (name == nullptr)                                                            \
     {                                                                               \
-        LOG_ERROR("Couldn't get device proc vk{}", #name);                          \
+        spdlog::error("Couldn't get device proc vk{}", #name);                      \
         return false;                                                               \
     }
 

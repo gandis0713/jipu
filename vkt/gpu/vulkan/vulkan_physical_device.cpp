@@ -87,7 +87,7 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
         for (const auto& layerProperty : m_Info.layerProperties)
         {
-            LOG_INFO("Device Layer Name: {}", layerProperty.layerName);
+            spdlog::info("Device Layer Name: {}", layerProperty.layerName);
         }
     }
 
@@ -109,7 +109,7 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
         for (const auto& extensionProperty : m_Info.extensionProperties)
         {
-            LOG_INFO("Device Extention Name: {}", extensionProperty.extensionName);
+            spdlog::info("Device Extention Name: {}", extensionProperty.extensionName);
 
             // TODO: define "VK_KHR_portability_subset"
             if (strncmp(extensionProperty.extensionName, "VK_KHR_portability_subset", VK_MAX_EXTENSION_NAME_SIZE) == 0)

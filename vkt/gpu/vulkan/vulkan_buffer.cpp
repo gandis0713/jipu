@@ -57,7 +57,7 @@ void* VulkanBuffer::map()
     VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &mappedPointer);
     if (result != VK_SUCCESS)
     {
-        LOG_ERROR("Failed to map to pointer. error: {}", result);
+        spdlog::error("Failed to map to pointer. error: {}", result);
     }
 
     return mappedPointer;

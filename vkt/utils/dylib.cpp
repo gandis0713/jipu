@@ -39,17 +39,17 @@ bool DyLib::open(const std::string& filename)
 
     if (m_handle == nullptr)
     {
-        LOG_ERROR(dlerror());
+        spdlog::error(dlerror());
     }
 #elif defined(WIN32)
     m_handle = LoadLibraryA(filename.c_str());
 
     if (m_handle == nullptr)
     {
-        LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
+        spdlog::error("Windows Error: {}" + std::to_string(GetLastError()));
     }
 #else
-    LOG_ERROR("Unsupported platform for DyLib");
+    spdlog::error("Unsupported platform for DyLib");
 #endif
 
     return m_handle != nullptr;
@@ -67,7 +67,7 @@ void DyLib::close()
 #elif defined(WIN32)
     FreeLibrary(static_cast<HMODULE>(m_handle));
 #else
-    LOG_ERROR("Unsupported platform for DyLib");
+    spdlog::error("Unsupported platform for DyLib");
 #endif
 
     m_handle = nullptr;
@@ -82,17 +82,17 @@ void* DyLib::getProc(const std::string& procName) const
 
     if (proc == nullptr)
     {
-        LOG_ERROR(dlerror());
+        spdlog::error(dlerror());
     }
 #elif defined(WIN32)
     proc = reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_handle), procName.c_str()));
 
     if (proc == nullptr)
     {
-        LOG_ERROR("Windows Error: {}" + std::to_string(GetLastError()));
+        spdlog::error("Windows Error: {}" + std::to_string(GetLastError()));
     }
 #else
-    LOG_ERROR("Unsupported platform for DyLib");
+    spdlog::error("Unsupported platform for DyLib");
 #endif
 
     return proc;

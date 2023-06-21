@@ -237,7 +237,7 @@ VkFormat ToVkVertexFormat(VertexFormat format)
         return VK_FORMAT_R32G32B32A32_UINT;
 
     default:
-        LOG_ERROR("{} vertex format is not supported.", static_cast<uint32_t>(format));
+        spdlog::error("{} vertex format is not supported.", static_cast<uint32_t>(format));
         return VK_FORMAT_UNDEFINED;
     }
 }
@@ -261,7 +261,7 @@ VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
     case PrimitiveTopology::kTriangleList:
         return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     default:
-        LOG_ERROR("{} topology is not supported.", static_cast<uint32_t>(topology));
+        spdlog::error("{} topology is not supported.", static_cast<uint32_t>(topology));
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 }

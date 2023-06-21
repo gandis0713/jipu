@@ -192,7 +192,7 @@ int VulkanSwapchain::acquireNextTexture()
     VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
     if (result != VK_SUCCESS)
     {
-        LOG_ERROR("Failed to acquire next image index. error: {}", result);
+        spdlog::error("Failed to acquire next image index. error: {}", result);
         return -1;
     }
 
@@ -244,7 +244,7 @@ VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace)
 
     case ColorSpace::kUndefined:
     default:
-        LOG_ERROR("color space is undefined. use srgb non linear mode.");
+        spdlog::error("color space is undefined. use srgb non linear mode.");
         return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     }
 }
@@ -274,7 +274,7 @@ VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode)
     case PresentMode::kImmediate:
         return VK_PRESENT_MODE_IMMEDIATE_KHR;
     default:
-        LOG_ERROR("Present Mode is undefined. use immediate mode.");
+        spdlog::error("Present Mode is undefined. use immediate mode.");
         return VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 }

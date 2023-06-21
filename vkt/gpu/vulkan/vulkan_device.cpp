@@ -20,10 +20,10 @@ const std::vector<const char*> getRequiredDeviceExtension()
 
     requiredDeviceExtension.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-    LOG_INFO("Required Device extensions :");
+    spdlog::info("Required Device extensions :");
     for (const auto& extension : requiredDeviceExtension)
     {
-        LOG_INFO("{}{}", '\t', extension);
+        spdlog::info("{}{}", '\t', extension);
     }
     return requiredDeviceExtension;
 };

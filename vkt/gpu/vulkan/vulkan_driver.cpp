@@ -65,10 +65,10 @@ void VulkanDriver::initialize() noexcept(false)
         vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
     }
 
-    LOG_INFO("Vulkan API Version: {}.{}.{}",
-             VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
-             VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
-             VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
+    spdlog::info("Vulkan API Version: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
+                 VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
+                 VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
 
     gatherDriverInfo();
 
@@ -143,7 +143,7 @@ void VulkanDriver::createPhysicalDevices() noexcept(false)
     uint32_t physicalDeviceCount = 0;
     vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
 
-    LOG_INFO("Physical Device Count: {}", physicalDeviceCount);
+    spdlog::info("Physical Device Count: {}", physicalDeviceCount);
     if (physicalDeviceCount == 0)
     {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
@@ -165,7 +165,7 @@ void VulkanDriver::gatherDriverInfo()
         VkResult result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            LOG_ERROR("Failed to get instance layer properties count. {}", result);
+            spdlog::error("Failed to get instance layer properties count. {}", result);
             return;
         }
 
@@ -173,14 +173,14 @@ void VulkanDriver::gatherDriverInfo()
         result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Failed to enumerate instance layer properties. {}", result);
+            spdlog::error("Failed to enumerate instance layer properties. {}", result);
             return;
         }
 
         for (const auto& layerProperty : m_driverInfo.layerProperties)
         {
             // TODO: set driver knobs for layer
-            LOG_INFO("Instance Layer Name: {}", layerProperty.layerName);
+            spdlog::info("Instance Layer Name: {}", layerProperty.layerName);
         }
     }
 
@@ -190,7 +190,7 @@ void VulkanDriver::gatherDriverInfo()
         VkResult result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            LOG_ERROR("Failed to get instance extension properties count.");
+            spdlog::error("Failed to get instance extension properties count.");
             return;
         }
 
@@ -198,14 +198,14 @@ void VulkanDriver::gatherDriverInfo()
         result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
         if (result != VK_SUCCESS)
         {
-            LOG_ERROR("Failed to enumerate instance extension properties.");
+            spdlog::error("Failed to enumerate instance extension properties.");
             return;
         }
 
         for (const auto& extensionProperty : m_driverInfo.extensionProperties)
         {
             // TODO: set driver knobs for extension
-            LOG_INFO("Instance Extension Name: {}, SpecVersion: {}", extensionProperty.extensionName, extensionProperty.specVersion);
+            spdlog::info("Instance Extension Name: {}, SpecVersion: {}", extensionProperty.extensionName, extensionProperty.specVersion);
 
             if (strncmp(extensionProperty.extensionName, kExtensionNameKhrSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
@@ -314,10 +314,10 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     }
 #endif
 
-    LOG_INFO("Required Instance extensions :");
+    spdlog::info("Required Instance extensions :");
     for (const auto& extension : requiredInstanceExtensions)
     {
-        LOG_INFO("{}{}", '\t', extension);
+        spdlog::info("{}{}", '\t', extension);
     }
 
     // TODO: Debug Utils
@@ -354,7 +354,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
     std::vector<const char*> requiredInstanceLayers{};
 
 #ifndef NDEBUG
-    requiredInstanceLayers.push_back(kLayerKhronosValidation);
+//    requiredInstanceLayers.push_back(kLayerKhronosValidation);
 #endif
 
     return requiredInstanceLayers;
