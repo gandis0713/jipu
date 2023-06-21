@@ -357,6 +357,12 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
     requiredInstanceLayers.push_back(kLayerKhronosValidation);
 #endif
 
+    spdlog::info("Required Instance layers :");
+    for (const auto& layer : requiredInstanceLayers)
+    {
+        spdlog::info("{}{}", '\t', layer);
+    }
+
     return requiredInstanceLayers;
 }
 
