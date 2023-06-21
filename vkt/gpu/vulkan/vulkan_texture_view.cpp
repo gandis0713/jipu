@@ -13,8 +13,8 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescript
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.image = texture->getVkImage();
-    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageViewCreateInfo.format = VK_FORMAT_B8G8R8A8_SRGB; // TODO: set by texture or surface.
+    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // TODO: from texture
+    imageViewCreateInfo.format = ToVkFormat(texture->getFormat());
 
     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     imageViewCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
