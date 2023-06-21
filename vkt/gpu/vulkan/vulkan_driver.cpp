@@ -354,7 +354,7 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
     std::vector<const char*> requiredInstanceLayers{};
 
 #ifndef NDEBUG
-//    requiredInstanceLayers.push_back(kLayerKhronosValidation);
+    requiredInstanceLayers.push_back(kLayerKhronosValidation);
 #endif
 
     return requiredInstanceLayers;
