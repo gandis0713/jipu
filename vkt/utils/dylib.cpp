@@ -1,5 +1,4 @@
 #include "utils/dylib.h"
-#include "utils/log.h"
 
 #if defined(__linux__) || defined(__APPLE__)
     #include <dlfcn.h>
@@ -7,6 +6,7 @@
     // TODO: other header include
     #include <windows.h>
 #endif
+#include <spdlog/spdlog.h>
 
 namespace vkt
 {

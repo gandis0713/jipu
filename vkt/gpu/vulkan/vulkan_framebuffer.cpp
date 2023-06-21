@@ -1,9 +1,9 @@
 #include "vulkan_framebuffer.h"
-#include "vulkan_device.h"
 
 #include "utils/hash.h"
-#include "utils/log.h"
+#include "vulkan_device.h"
 
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt

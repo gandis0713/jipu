@@ -6,8 +6,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
-#include "utils/log.h"
-
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt

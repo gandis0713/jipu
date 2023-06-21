@@ -1,4 +1,3 @@
-#include "utils/log.h"
 #include "vulkan_api.h"
 #include "vulkan_driver.h"
 #include "vulkan_surface.h"
@@ -6,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
 namespace vkt
 {

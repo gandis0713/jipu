@@ -4,8 +4,7 @@
 #include "vulkan_swapchain.h"
 #include "vulkan_synchronization.h"
 
-#include "utils/log.h"
-
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt

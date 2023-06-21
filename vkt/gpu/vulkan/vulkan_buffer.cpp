@@ -2,8 +2,7 @@
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 
-#include "utils/log.h"
-
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt

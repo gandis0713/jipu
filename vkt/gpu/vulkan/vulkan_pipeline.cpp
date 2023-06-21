@@ -3,9 +3,8 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 
-#include "utils/log.h"
-
 #include <array>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt

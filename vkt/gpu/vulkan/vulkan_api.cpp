@@ -1,7 +1,7 @@
 #include "vulkan_api.h"
 
 #include "utils/dylib.h"
-#include "utils/log.h"
+#include <spdlog/spdlog.h>
 
 namespace vkt
 {

@@ -1,6 +1,5 @@
 #include "vulkan_device.h"
 
-#include "utils/log.h"
 #include "vulkan_buffer.h"
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
@@ -10,6 +9,7 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
 
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 extern const char kExtensionPortabilitySubset[];

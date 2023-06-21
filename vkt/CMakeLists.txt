@@ -81,7 +81,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/fmt.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/utils/log.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/cast.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/assert.h
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/hash.h

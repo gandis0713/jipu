@@ -1,11 +1,11 @@
 #include "vulkan_driver.h"
 
 #include "utils/assert.h"
-#include "utils/log.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 // surface

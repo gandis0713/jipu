@@ -7,7 +7,7 @@
 #else
     #include "spdlog/sinks/stdout_color_sinks.h"
 #endif
-#include "utils/log.h"
+#include <spdlog/spdlog.h>
 
 namespace vkt
 {
