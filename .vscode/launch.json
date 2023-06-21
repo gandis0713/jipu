@@ -6,10 +6,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Triangle for x64 windows",
+            "name": "Triangle Debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/triangle/triangle.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "Triangle Release for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/release/sample/apps/triangle/triangle.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
