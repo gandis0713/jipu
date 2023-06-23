@@ -81,7 +81,7 @@ struct VertexAttribute
     uint64_t offset = 0u;
 };
 
-struct VertexBindingLayout
+struct VertexBufferLayout
 {
     VertexMode mode = VertexMode::kVertex;
     uint64_t stride = 0u;
@@ -90,7 +90,7 @@ struct VertexBindingLayout
 
 struct VertexStage : ProgrammableStage
 {
-    std::vector<VertexBindingLayout> layouts{};
+    std::vector<VertexBufferLayout> layouts{};
 };
 
 // Rasterization Stage

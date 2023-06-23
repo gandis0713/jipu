@@ -210,7 +210,7 @@ void TriangleSample::createRenderPipeline()
         vertexStage.shader = m_vertexShaderModule.get();
 
         // layouts
-        std::vector<VertexBindingLayout> layouts{};
+        std::vector<VertexBufferLayout> layouts{};
         layouts.resize(1);
         {
             // attributes
@@ -226,9 +226,9 @@ void TriangleSample::createRenderPipeline()
                                         .offset = offsetof(Vertex, color) };
             }
 
-            VertexBindingLayout vertexLayout{ .mode = VertexMode::kVertex,
-                                              .stride = sizeof(Vertex),
-                                              .attributes = vertexAttributes };
+            VertexBufferLayout vertexLayout{ .mode = VertexMode::kVertex,
+                                             .stride = sizeof(Vertex),
+                                             .attributes = vertexAttributes };
             layouts[0] = vertexLayout;
         }
 
