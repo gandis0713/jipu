@@ -91,7 +91,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     swapchainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
 
     swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
-    swapchainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapchainCreateInfo.compositeAlpha = getCompositeAlphaFlagBit(surfaceCapabilities.supportedCompositeAlpha);
     swapchainCreateInfo.presentMode = presentMode;
     swapchainCreateInfo.clipped = VK_TRUE;
 
@@ -214,6 +214,28 @@ TextureView* VulkanSwapchain::getTextureView(uint32_t index)
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 {
     return m_swapchain;
+}
+
+VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)
+{
+    std::array<VkCompositeAlphaFlagBitsKHR, 4> compositeAlphaFlagBits = {
+        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+    };
+
+    for (const auto compositeAlphaFlagBit : compositeAlphaFlagBits)
+    {
+        if (supportedCompositeAlpha & compositeAlphaFlagBit)
+        {
+            return compositeAlphaFlagBit;
+        }
+    }
+
+    throw std::runtime_error(fmt::format("Failed to find supported composite alpha flag bit. [{}]", supportedCompositeAlpha));
+
+    return static_cast<VkCompositeAlphaFlagBitsKHR>(0x00000000);
 }
 
 // Convert Helper
