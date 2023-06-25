@@ -11,6 +11,8 @@ VulkanSynchronization::VulkanSynchronization(VulkanDevice* device)
 
 void VulkanSynchronization::injectSemaphore(const SemaphoreDescriptor& descriptor, VkSemaphore semaphore)
 {
+    // TODO:  support multi thread.
+
     switch (descriptor.type)
     {
     case SemephoreType::kHostToQueue:
@@ -30,6 +32,8 @@ void VulkanSynchronization::injectSemaphore(const SemaphoreDescriptor& descripto
 
 std::vector<VkSemaphore> VulkanSynchronization::takeoutSemaphore(const SemaphoreDescriptor& descriptor)
 {
+    // TODO:  support multi thread.
+
     std::vector<VkSemaphore> semaphores;
     switch (descriptor.type)
     {
