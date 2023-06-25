@@ -51,7 +51,7 @@ protected:
 
 struct PipelineLayoutDescriptor
 {
-    std::vector<BindingLayout> layouts = {};
+    std::vector<BindingLayout*> layouts = {};
 };
 
 class VKT_EXPORT PipelineLayout

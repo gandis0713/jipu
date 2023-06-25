@@ -14,10 +14,12 @@ class VulkanBindingLayout : public BindingLayout
 public:
     VulkanBindingLayout() = delete;
     VulkanBindingLayout(VulkanDevice* device, const BindingLayoutDescriptor& descriptor);
-    ~VulkanBindingLayout() override = default;
+    ~VulkanBindingLayout() override;
+
+    VkDescriptorSetLayout getVkDescriptorSetLayout() const;
 
 private:
-    VkDescriptorSetLayout m_layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
 };
 DOWN_CAST(VulkanBindingLayout, BindingLayout);
 
@@ -27,6 +29,9 @@ public:
     VulkanPipelineLayout() = delete;
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
     ~VulkanPipelineLayout() override = default;
+
+private:
+    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanPipelineLayout, PipelineLayout);

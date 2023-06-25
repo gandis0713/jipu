@@ -24,16 +24,43 @@ VulkanBindingLayout::VulkanBindingLayout(VulkanDevice* device, const BindingLayo
                                                       .bindingCount = static_cast<uint32_t>(layoutBindings.size()),
                                                       .pBindings = layoutBindings.data() };
     const VulkanAPI& vkAPI = device->vkAPI;
-    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_layout);
+    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create VkDescriptorSetLayout");
     }
 }
 
+VulkanBindingLayout::~VulkanBindingLayout()
+{
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyDescriptorSetLayout(vulkanDevice->getVkDevice(), m_descriptorSetLayout, nullptr);
+}
+
+VkDescriptorSetLayout VulkanBindingLayout::getVkDescriptorSetLayout() const
+{
+    return m_descriptorSetLayout;
+}
+
 VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor)
     : PipelineLayout(device, descriptor)
 {
+    std::vector<VkDescriptorSetLayout> layouts{};
+    layouts.resize(descriptor.layouts.size());
+    for (uint32_t i = 0; i < descriptor.layouts.size(); ++i)
+    {
+        layouts[i] = downcast(descriptor.layouts[i])->getVkDescriptorSetLayout();
+    }
+
+    VkPipelineLayoutCreateInfo createInfo{ .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+                                           .setLayoutCount = static_cast<uint32_t>(layouts.size()),
+                                           .pSetLayouts = layouts.data() };
+
+    VkResult result = device->vkAPI.CreatePipelineLayout(device->getVkDevice(), &createInfo, nullptr, &m_pipelineLayout);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create VkPipelineLayout");
+    }
 }
 
 } // namespace vkt
