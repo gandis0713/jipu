@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "pipeline_layout.h"
 #include "shader_module.h"
 #include "texture.h"
 
@@ -111,6 +112,9 @@ struct FragmentStage : ProgrammableStage
 
 struct RenderPipelineDescriptor
 {
+    /// @brief pipeline layout
+    PipelineLayout* layout = nullptr;
+
     InputAssemblyStage inputAssembly{};
     VertexStage vertex{};
     RasterizationStage rasterization{};

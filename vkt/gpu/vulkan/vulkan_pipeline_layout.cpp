@@ -63,4 +63,15 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineL
     }
 }
 
+VulkanPipelineLayout::~VulkanPipelineLayout()
+{
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipelineLayout(vulkanDevice->getVkDevice(), m_pipelineLayout, nullptr);
+}
+
+VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const
+{
+    return m_pipelineLayout;
+}
+
 } // namespace vkt

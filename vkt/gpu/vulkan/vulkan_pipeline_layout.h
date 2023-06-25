@@ -28,7 +28,9 @@ class VulkanPipelineLayout : public PipelineLayout
 public:
     VulkanPipelineLayout() = delete;
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
-    ~VulkanPipelineLayout() override = default;
+    ~VulkanPipelineLayout() override;
+
+    VkPipelineLayout getVkPipelineLayout() const;
 
 private:
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
