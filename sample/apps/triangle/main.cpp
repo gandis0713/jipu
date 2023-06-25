@@ -38,11 +38,11 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
-
     void createPipelineLayout();
     void createRenderPipeline();
     void createCommandBuffers();
 
+    void updateUniformBuffer();
     void draw() override;
 
 private:
@@ -239,6 +239,14 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createPipelineLayout()
 {
+    std::vector<BindingResource> bindingResources{ { .index = 0,
+                                                     .type = BindingType::kUniformBuffer,
+                                                     .stages = BindingStageBits::kVertexStage } };
+    BindingLayoutDescriptor bindingLayoutDescriptor{ .bindings = bindingResources };
+    m_bindingLayout = m_device->createBindingLayout(bindingLayoutDescriptor);
+
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingLayout.get() } };
+    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
 void TriangleSample::createRenderPipeline()
@@ -347,8 +355,14 @@ void TriangleSample::createCommandBuffers()
     }
 }
 
+void TriangleSample::updateUniformBuffer()
+{
+}
+
 void TriangleSample::draw()
 {
+    updateUniformBuffer();
+
     int nextImageIndex = m_swapchain->acquireNextTexture();
 
     auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
