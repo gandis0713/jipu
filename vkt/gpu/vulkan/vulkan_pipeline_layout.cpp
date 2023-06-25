@@ -4,6 +4,16 @@
 namespace vkt
 {
 
+VulkanBindingResource::VulkanBindingResource(VulkanDevice* device, const BindingResourceDescriptor& descriptor)
+    : BindingResource(device, descriptor)
+{
+}
+
+VulkanBindingLayout::VulkanBindingLayout(VulkanDevice* device, const BindingLayoutDescriptor& descriptor)
+    : BindingLayout(device, descriptor)
+{
+}
+
 VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor)
     : PipelineLayout(device, descriptor)
 {

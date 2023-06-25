@@ -6,6 +6,22 @@
 namespace vkt
 {
 
+class VulkanBindingResource : BindingResource
+{
+public:
+    VulkanBindingResource() = delete;
+    VulkanBindingResource(VulkanDevice* device, const BindingResourceDescriptor& descriptor);
+    ~VulkanBindingResource() override = default;
+};
+
+class VulkanBindingLayout : BindingLayout
+{
+public:
+    VulkanBindingLayout() = delete;
+    VulkanBindingLayout(VulkanDevice* device, const BindingLayoutDescriptor& descriptor);
+    ~VulkanBindingLayout() override = default;
+};
+
 class VulkanDevice;
 class VulkanPipelineLayout : public PipelineLayout
 {
