@@ -5,6 +5,7 @@
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_pipeline.h"
+#include "vulkan_pipeline_layout.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
@@ -81,6 +82,16 @@ VulkanDevice::~VulkanDevice()
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
 {
     return std::make_unique<VulkanSwapchain>(this, descriptor);
+}
+
+std::unique_ptr<BindingLayout> VulkanDevice::createBindingLayout(const BindingLayoutDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBindingLayout>(this, descriptor);
+}
+
+std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
+{
+    return std::make_unique<VulkanPipelineLayout>(this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)

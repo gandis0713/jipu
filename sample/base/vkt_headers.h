@@ -6,6 +6,7 @@
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/surface.h"

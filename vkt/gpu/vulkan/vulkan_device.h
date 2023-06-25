@@ -29,6 +29,8 @@ public:
 
 public:
     std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
+    std::unique_ptr<BindingLayout> createBindingLayout(const BindingLayoutDescriptor& descriptor) override;
+    std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) override;
     std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override;
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
