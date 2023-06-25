@@ -79,6 +79,8 @@ private:
     std::vector<std::unique_ptr<Buffer>> m_uniformBuffers{};
     std::vector<void*> m_uniformBufferMappedPointers{};
 
+    std::unique_ptr<BindingLayout> m_bindingLayout = nullptr;
+    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
@@ -95,19 +97,24 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
+    // clear swapchain first.
+    m_swapchain.reset();
+
     m_commandBuffers.clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
     m_renderPipeline.reset();
+    m_pipelineLayout.reset();
+    m_bindingLayout.reset();
 
+    m_uniformBufferMappedPointers.clear();
     m_uniformBuffers.clear();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_swapchain.reset();
     m_renderQueue.reset();
 
     m_physicalDevice.reset();
