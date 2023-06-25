@@ -37,10 +37,18 @@ public:
 private:
     void createRenderPipeline();
     void createCommandBuffers();
+    void createUniformBuffer();
 
     void draw() override;
 
 private:
+    struct UnifromBufferObject
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     struct Vertex
     {
         glm::vec2 pos;
@@ -64,6 +72,9 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
+    std::vector<std::unique_ptr<Buffer>> m_uniformBuffers{};
+    std::vector<void*> m_uniformBufferMappedPointers{};
+
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
@@ -86,6 +97,8 @@ TriangleSample::~TriangleSample()
     m_fragmentShaderModule.reset();
 
     m_renderPipeline.reset();
+
+    m_uniformBuffers.clear();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
@@ -183,6 +196,7 @@ void TriangleSample::init()
         m_indexBuffer->unmap();
     }
 
+    createUniformBuffer();
     createRenderPipeline();
     createCommandBuffers();
 
@@ -292,6 +306,21 @@ void TriangleSample::createCommandBuffers()
                                                    .depthStencilAttachment = depthStencilAttachment };
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
+    }
+}
+
+void TriangleSample::createUniformBuffer()
+{
+    m_uniformBuffers.resize(2);
+    m_uniformBufferMappedPointers.resize(2);
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        BufferDescriptor descriptor{ .size = sizeof(UnifromBufferObject),
+                                     .usage = BufferUsageFlagBits::kUniform };
+        auto buffer = m_device->createBuffer(descriptor);
+
+        m_uniformBufferMappedPointers[i] = buffer->map();
+        m_uniformBuffers[i] = std::move(buffer);
     }
 }
 
