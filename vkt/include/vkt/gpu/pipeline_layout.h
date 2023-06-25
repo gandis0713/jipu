@@ -26,23 +26,11 @@ enum BindingStageBits : uint32_t
 };
 using BindingStages = uint32_t;
 
-struct BindingResourceDescriptor
+struct BindingResource
 {
-    /// @brief The index of binding.
-    uint32_t binding = 0;
+    uint32_t index = 0;
     BindingType type = BindingType::kUndefined;
     BindingStages stages = 0u;
-};
-
-class VKT_EXPORT BindingResource
-{
-public:
-    BindingResource() = delete;
-    BindingResource(Device* device, const BindingResourceDescriptor& descriptor);
-    virtual ~BindingResource() = default;
-
-protected:
-    Device* m_device = nullptr;
 };
 
 struct BindingLayoutDescriptor
