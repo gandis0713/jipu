@@ -35,9 +35,13 @@ public:
     void init() override;
 
 private:
+    void createVertexBuffer();
+    void createIndexBuffer();
+    void createUniformBuffer();
+
+    void createPipelineLayout();
     void createRenderPipeline();
     void createCommandBuffers();
-    void createUniformBuffer();
 
     void draw() override;
 
@@ -162,45 +166,72 @@ void TriangleSample::init()
     }
 
     // create buffer
-    {
-        // vertex buffer
-        m_vertices = {
-            { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
-            { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-            { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
-        };
-
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
-                                                 .usage = BufferUsageFlagBits::kVertex };
-        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
-
-        void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, m_vertices.data(), vertexSize);
-        m_vertexBuffer->unmap();
-
-        // index buffer
-        m_indices = {
-            0, 1, 2, 2, 3, 0
-        };
-
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
-        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
-                                                .usage = BufferUsageFlagBits::kIndex };
-
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
-
-        mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_indices.data(), indexSize);
-        m_indexBuffer->unmap();
-    }
-
+    createVertexBuffer();
+    createIndexBuffer();
     createUniformBuffer();
+
+    createPipelineLayout();
     createRenderPipeline();
     createCommandBuffers();
 
     m_initialized = true;
+}
+
+void TriangleSample::createVertexBuffer()
+{
+    // vertex buffer
+    m_vertices = {
+        { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+        { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
+        { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+        { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
+    };
+
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+    BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                             .usage = BufferUsageFlagBits::kVertex };
+    m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+
+    void* mappedPointer = m_vertexBuffer->map();
+    memcpy(mappedPointer, m_vertices.data(), vertexSize);
+    m_vertexBuffer->unmap();
+}
+
+void TriangleSample::createIndexBuffer()
+{
+    // index buffer
+    m_indices = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
+    BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                            .usage = BufferUsageFlagBits::kIndex };
+
+    m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+    void* mappedPointer = m_indexBuffer->map();
+    memcpy(mappedPointer, m_indices.data(), indexSize);
+    m_indexBuffer->unmap();
+}
+
+void TriangleSample::createUniformBuffer()
+{
+    m_uniformBuffers.resize(2);
+    m_uniformBufferMappedPointers.resize(2);
+    for (uint32_t i = 0; i < 2; ++i)
+    {
+        BufferDescriptor descriptor{ .size = sizeof(UnifromBufferObject),
+                                     .usage = BufferUsageFlagBits::kUniform };
+        auto buffer = m_device->createBuffer(descriptor);
+
+        m_uniformBufferMappedPointers[i] = buffer->map();
+        m_uniformBuffers[i] = std::move(buffer);
+    }
+}
+
+void TriangleSample::createPipelineLayout()
+{
 }
 
 void TriangleSample::createRenderPipeline()
@@ -306,21 +337,6 @@ void TriangleSample::createCommandBuffers()
                                                    .depthStencilAttachment = depthStencilAttachment };
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
-    }
-}
-
-void TriangleSample::createUniformBuffer()
-{
-    m_uniformBuffers.resize(2);
-    m_uniformBufferMappedPointers.resize(2);
-    for (uint32_t i = 0; i < 2; ++i)
-    {
-        BufferDescriptor descriptor{ .size = sizeof(UnifromBufferObject),
-                                     .usage = BufferUsageFlagBits::kUniform };
-        auto buffer = m_device->createBuffer(descriptor);
-
-        m_uniformBufferMappedPointers[i] = buffer->map();
-        m_uniformBuffers[i] = std::move(buffer);
     }
 }
 
