@@ -4,7 +4,11 @@
 #include "sample.h"
 #include "vkt_headers.h"
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 #include <spdlog/spdlog.h>
 #include <stddef.h>
 
@@ -42,11 +46,11 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
-    void updateUniformBuffer();
+    void updateUniformBuffer(uint32_t swapImageIndex);
     void draw() override;
 
 private:
-    struct UnifromBufferObject
+    struct UniformBufferObject
     {
         glm::mat4 model;
         glm::mat4 view;
@@ -224,11 +228,12 @@ void TriangleSample::createIndexBuffer()
 
 void TriangleSample::createUniformBuffer()
 {
-    m_uniformBuffers.resize(2);
-    m_uniformBufferMappedPointers.resize(2);
-    for (uint32_t i = 0; i < 2; ++i)
+    const uint32_t swapImageCount = m_swapchain->getTextureViews().size();
+    m_uniformBuffers.resize(swapImageCount);
+    m_uniformBufferMappedPointers.resize(swapImageCount);
+    for (uint32_t i = 0; i < swapImageCount; ++i)
     {
-        BufferDescriptor descriptor{ .size = sizeof(UnifromBufferObject),
+        BufferDescriptor descriptor{ .size = sizeof(UniformBufferObject),
                                      .usage = BufferUsageFlagBits::kUniform };
         auto buffer = m_device->createBuffer(descriptor);
 
@@ -316,7 +321,8 @@ void TriangleSample::createRenderPipeline()
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
     }
 
-    RenderPipelineDescriptor descriptor{ .inputAssembly = inputAssembly,
+    RenderPipelineDescriptor descriptor{ .layout = m_pipelineLayout.get(),
+                                         .inputAssembly = inputAssembly,
                                          .vertex = vertexStage,
                                          .rasterization = rasterization,
                                          .fragment = fragmentStage };
@@ -355,15 +361,28 @@ void TriangleSample::createCommandBuffers()
     }
 }
 
-void TriangleSample::updateUniformBuffer()
+void TriangleSample::updateUniformBuffer(uint32_t swapImageIndex)
 {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    UniformBufferObject ubo{};
+    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 10.0f);
+
+    ubo.proj[1][1] *= -1;
+
+    memcpy(m_uniformBufferMappedPointers[swapImageIndex], &ubo, sizeof(ubo));
 }
 
 void TriangleSample::draw()
 {
-    updateUniformBuffer();
 
     int nextImageIndex = m_swapchain->acquireNextTexture();
+    updateUniformBuffer(nextImageIndex);
 
     auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
 
