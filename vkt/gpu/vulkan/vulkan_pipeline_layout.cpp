@@ -16,9 +16,9 @@ VulkanBindingLayout::VulkanBindingLayout(VulkanDevice* device, const BindingLayo
     {
         const auto& binding = descriptor.bindings[i];
         layoutBindings[i] = { .binding = binding.index,
-                              .descriptorCount = 1,
                               .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, // TODO: need from descriptor
-                              .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,            // TODO: need from descriptor
+                              .descriptorCount = 1,
+                              .stageFlags = VK_SHADER_STAGE_VERTEX_BIT, // TODO: need from descriptor
                               .pImmutableSamplers = nullptr };
     }
 
