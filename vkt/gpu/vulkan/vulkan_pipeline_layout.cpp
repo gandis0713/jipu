@@ -1,6 +1,8 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_device.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 
