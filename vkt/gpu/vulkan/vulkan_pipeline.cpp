@@ -28,11 +28,6 @@ VkPipeline VulkanRenderPipeline::getVkPipeline() const
     return m_graphicsPipeline;
 }
 
-VkPipelineLayout VulkanRenderPipeline::getVkPipelineLayout() const
-{
-    return downcast(m_descriptor.layout)->getVkPipelineLayout();
-}
-
 void VulkanRenderPipeline::initialize()
 {
     // Input Assembly Stage
@@ -177,7 +172,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
-    pipelineInfo.layout = getVkPipelineLayout();
+    pipelineInfo.layout = downcast(m_descriptor.layout)->getVkPipelineLayout();
     pipelineInfo.renderPass = vulkanRenderPass->getVkRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional

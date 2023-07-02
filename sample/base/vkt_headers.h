@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vkt/gpu/binding_group.h"
+#include "vkt/gpu/binding_group_layout.h"
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/device.h"

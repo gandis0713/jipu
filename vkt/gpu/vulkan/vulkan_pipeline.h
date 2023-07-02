@@ -25,7 +25,6 @@ public:
     VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
     VkPipeline getVkPipeline() const;
-    VkPipelineLayout getVkPipelineLayout() const;
 
 private:
     void initialize();

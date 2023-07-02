@@ -83,7 +83,9 @@ private:
     std::vector<std::unique_ptr<Buffer>> m_uniformBuffers{};
     std::vector<void*> m_uniformBufferMappedPointers{};
 
-    std::unique_ptr<BindingGroupLayout> m_bindingLayout = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
@@ -111,7 +113,9 @@ TriangleSample::~TriangleSample()
 
     m_renderPipeline.reset();
     m_pipelineLayout.reset();
-    m_bindingLayout.reset();
+
+    m_bindingGroupLayout.reset();
+    m_bindingGroup.reset();
 
     m_uniformBufferMappedPointers.clear();
     m_uniformBuffers.clear();
@@ -244,14 +248,17 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createPipelineLayout()
 {
-    // std::vector<BindingAttribute> bindingAttributes{ { .index = 0,
-    //                                                    .type = BindingType::kUniformBuffer,
-    //                                                    .stages = BindingStageBits::kVertexStage } };
-    // BindingLayoutDescriptor bindingLayoutDescriptor{ .bindings = bindingAttributes };
-    // m_bindingLayout = m_device->createBindingLayout(bindingLayoutDescriptor);
+    BufferBindingLayout bufferBindingLayout{ .type = BufferBindingType::kUniform };
+    BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{ { .index = 0,
+                                                                   .stages = BindingStageFlagBits::kVertexStage },
+                                                                 .layout = bufferBindingLayout };
+    std::vector<BufferBindingGroupLayoutEntry> bufferLayoutEntries{ bufferBindingGroupLayoutEntry };
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferLayoutEntries };
 
-    // PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingLayout.get() } };
-    // m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
+    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayout.get() } };
+    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
 void TriangleSample::createRenderPipeline()
