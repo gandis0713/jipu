@@ -256,9 +256,14 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createBindingGroupLayout()
 {
     BufferBindingLayout bufferBindingLayout{ .type = BufferBindingType::kUniform };
-    BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{ { .index = 0,
-                                                                   .stages = BindingStageFlagBits::kVertexStage },
-                                                                 .layout = bufferBindingLayout };
+    // BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{ { .index = 0,
+    //                                                                .stages = BindingStageFlagBits::kVertexStage },
+    //                                                              .layout = bufferBindingLayout };
+    BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{};
+    bufferBindingGroupLayoutEntry.index = 0;
+    bufferBindingGroupLayoutEntry.stages = BindingStageFlagBits::kVertexStage;
+    bufferBindingGroupLayoutEntry.layout = bufferBindingLayout;
+
     std::vector<BufferBindingGroupLayoutEntry> bufferLayoutEntries{ bufferBindingGroupLayoutEntry };
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferLayoutEntries };
 
