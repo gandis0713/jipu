@@ -244,14 +244,14 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createPipelineLayout()
 {
-    std::vector<BindingResource> bindingResources{ { .index = 0,
-                                                     .type = BindingType::kUniformBuffer,
-                                                     .stages = BindingStageBits::kVertexStage } };
-    BindingLayoutDescriptor bindingLayoutDescriptor{ .bindings = bindingResources };
-    m_bindingLayout = m_device->createBindingLayout(bindingLayoutDescriptor);
+    // std::vector<BindingAttribute> bindingAttributes{ { .index = 0,
+    //                                                    .type = BindingType::kUniformBuffer,
+    //                                                    .stages = BindingStageBits::kVertexStage } };
+    // BindingLayoutDescriptor bindingLayoutDescriptor{ .bindings = bindingAttributes };
+    // m_bindingLayout = m_device->createBindingLayout(bindingLayoutDescriptor);
 
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingLayout.get() } };
-    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
+    // PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingLayout.get() } };
+    // m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
 void TriangleSample::createRenderPipeline()

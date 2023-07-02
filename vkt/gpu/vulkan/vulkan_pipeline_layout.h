@@ -8,21 +8,6 @@ namespace vkt
 {
 
 class VulkanDevice;
-
-class VulkanBindingLayout : public BindingLayout
-{
-public:
-    VulkanBindingLayout() = delete;
-    VulkanBindingLayout(VulkanDevice* device, const BindingLayoutDescriptor& descriptor);
-    ~VulkanBindingLayout() override;
-
-    VkDescriptorSetLayout getVkDescriptorSetLayout() const;
-
-private:
-    VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
-};
-DOWN_CAST(VulkanBindingLayout, BindingLayout);
-
 class VulkanPipelineLayout : public PipelineLayout
 {
 public:

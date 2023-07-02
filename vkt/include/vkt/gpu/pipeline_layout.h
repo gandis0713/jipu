@@ -1,7 +1,6 @@
 #pragma once
 
 #include "export.h"
-
 #include <stdint.h>
 #include <vector>
 
@@ -9,49 +8,10 @@ namespace vkt
 {
 
 class Device;
-
-enum class BindingType
-{
-    kUndefined = 0,
-    kUniformBuffer,
-    kStorageBuffer
-};
-
-enum BindingStageBits : uint32_t
-{
-    // 0x00000000 is undefined,
-    kVertexStage = 0x00000001,
-    kFragmentStage = 0x00000002,
-    kComputeStage = 0x00000004,
-};
-using BindingStages = uint32_t;
-
-struct BindingResource
-{
-    uint32_t index = 0;
-    BindingType type = BindingType::kUndefined;
-    BindingStages stages = 0u;
-};
-
-struct BindingLayoutDescriptor
-{
-    std::vector<BindingResource> bindings = {};
-};
-
-class VKT_EXPORT BindingLayout
-{
-public:
-    BindingLayout() = delete;
-    BindingLayout(Device* device, const BindingLayoutDescriptor& descriptor);
-    virtual ~BindingLayout() = default;
-
-protected:
-    Device* m_device = nullptr;
-};
-
+class BindingGroupLayout;
 struct PipelineLayoutDescriptor
 {
-    std::vector<BindingLayout*> layouts = {};
+    std::vector<BindingGroupLayout*> layouts = {};
 };
 
 class VKT_EXPORT PipelineLayout

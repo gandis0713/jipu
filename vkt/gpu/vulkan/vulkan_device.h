@@ -29,9 +29,9 @@ public:
 
 public:
     std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) override;
-    std::unique_ptr<BindingLayout> createBindingLayout(const BindingLayoutDescriptor& descriptor) override;    // TODO: get from cache or create.
-    std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) override; // TODO: get from cache or create.
-    std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override; // TODO: get from cache or create.
+    std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) override; // TODO: get from cache or create.
+    std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) override;             // TODO: get from cache or create.
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) override;             // TODO: get from cache or create.
     std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) override;
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
     std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) override;

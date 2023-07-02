@@ -84,9 +84,14 @@ std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescript
     return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
-std::unique_ptr<BindingLayout> VulkanDevice::createBindingLayout(const BindingLayoutDescriptor& descriptor)
+std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGroupDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingLayout>(this, descriptor);
+    return std::make_unique<VulkanBindingGroup>(this, descriptor);
+}
+
+std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
 }
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
