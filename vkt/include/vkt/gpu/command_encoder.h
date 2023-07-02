@@ -53,6 +53,7 @@ struct DepthStencilAttachment
 class Pipeline;
 class Buffer;
 class CommandBuffer;
+class BindingGroup;
 class VKT_EXPORT CommandEncoder
 {
 public:
@@ -63,12 +64,14 @@ public:
     virtual void begin() = 0;
     virtual void end() = 0;
 
-    virtual void setPipeline(Pipeline* pipeline) = 0;
+    virtual void setPipeline(Pipeline* pipeline);
+    virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
     CommandBuffer* getCommandBuffer() const;
 
 protected:
     CommandBuffer* m_commandBuffer = nullptr;
+    Pipeline* m_pipeline = nullptr;
 };
 
 struct RenderCommandEncoderDescriptor

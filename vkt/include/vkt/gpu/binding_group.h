@@ -20,9 +20,19 @@ struct BufferBinding
     uint64_t size = 0;
 };
 
+struct TextureBinding
+{
+    // TODO: texture binding
+};
+
 struct BufferBindingGroupEntry : BindingGroupEntry
 {
     BufferBinding binding;
+};
+
+struct TextureBindingGroupEntry : BindingGroupEntry
+{
+    TextureBinding binding;
 };
 
 class BindingGroupLayout;
@@ -30,6 +40,7 @@ struct BindingGroupDescriptor
 {
     BindingGroupLayout* layout = nullptr;
     std::vector<BufferBindingGroupEntry> buffers = {};
+    std::vector<TextureBindingGroupEntry> textures = {};
 };
 
 class Device;

@@ -1,8 +1,10 @@
 #include "vulkan_command_encoder.h"
+#include "vulkan_binding_group.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
+#include "vulkan_pipeline_layout.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -80,11 +82,32 @@ void VulkanRenderCommandEncoder::end()
 
 void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
 {
+    RenderCommandEncoder::setPipeline(pipeline);
+
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     auto vulkanPipeline = downcast(pipeline);
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
+}
+
+void VulkanRenderCommandEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto vulkanBindingGroup = downcast(bindingGroup);
+    VkDescriptorSet set = vulkanBindingGroup->getVkDescriptorSet();
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                0,
+                                1,
+                                &set,
+                                0,
+                                nullptr);
 }
 
 void VulkanRenderCommandEncoder::setVertexBuffer(Buffer* buffer)

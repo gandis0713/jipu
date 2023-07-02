@@ -74,6 +74,7 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DeviceWaitIdle(m_device);
 
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
+    vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
@@ -179,6 +180,36 @@ VkCommandPool VulkanDevice::getCommandPool()
     }
 
     return m_commandPool;
+}
+
+VkDescriptorPool VulkanDevice::getDescriptorPool()
+{
+    if (m_descriptorPool == VK_NULL_HANDLE)
+    {
+        // TODO: check descriptor pool size.
+        const uint64_t descriptorPoolCount = 3;
+        const uint64_t maxDescriptorSetSize = descriptorPoolCount;
+        std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
+        VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+                                                   .pNext = nullptr,
+                                                   .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+                                                   .maxSets = maxDescriptorSetSize,
+                                                   .poolSizeCount = descriptorPoolCount,
+                                                   .pPoolSizes = poolSizes.data() };
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        poolSizes[2].descriptorCount = poolCreateInfo.maxSets * 10;
+
+        if (vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create descriptor pool.");
+        }
+    }
+
+    return m_descriptorPool;
 }
 
 void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices)

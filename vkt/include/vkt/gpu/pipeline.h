@@ -22,8 +22,11 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
+    PipelineLayout* getPipelineLayout() const;
+
 protected:
     Device* m_device = nullptr;
+    PipelineLayout* m_pipelineLayout = nullptr;
 };
 
 struct ProgrammableStage
@@ -110,11 +113,14 @@ struct FragmentStage : ProgrammableStage
     std::vector<FragmentStage::Target> targets{};
 };
 
-struct RenderPipelineDescriptor
+struct PipelineDescriptor
 {
     /// @brief pipeline layout
     PipelineLayout* layout = nullptr;
+};
 
+struct RenderPipelineDescriptor : PipelineDescriptor
+{
     InputAssemblyStage inputAssembly{};
     VertexStage vertex{};
     RasterizationStage rasterization{};

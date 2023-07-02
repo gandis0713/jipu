@@ -347,7 +347,7 @@ void TriangleSample::createRenderPipeline()
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
     }
 
-    RenderPipelineDescriptor descriptor{ .layout = m_pipelineLayout.get(),
+    RenderPipelineDescriptor descriptor{ { .layout = m_pipelineLayout.get() },
                                          .inputAssembly = inputAssembly,
                                          .vertex = vertexStage,
                                          .rasterization = rasterization,

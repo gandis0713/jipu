@@ -51,6 +51,7 @@ public:
     VkQueue getVkQueue(uint32_t index = 0) const;
 
     VkCommandPool getCommandPool();
+    VkDescriptorPool getDescriptorPool();
 
 public:
     VulkanAPI vkAPI{};
@@ -61,6 +62,7 @@ private:
 private:
     VkDevice m_device = VK_NULL_HANDLE;
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
+    VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
 
     std::vector<VkQueue> m_queues{};
 

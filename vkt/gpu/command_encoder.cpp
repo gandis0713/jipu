@@ -1,5 +1,7 @@
 #include "vkt/gpu/command_encoder.h"
 #include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
 
 namespace vkt
 {
@@ -7,6 +9,11 @@ namespace vkt
 CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
     : m_commandBuffer(commandBuffer)
 {
+}
+
+void CommandEncoder::setPipeline(Pipeline* pipeline)
+{
+    m_pipeline = pipeline;
 }
 
 CommandBuffer* CommandEncoder::getCommandBuffer() const
