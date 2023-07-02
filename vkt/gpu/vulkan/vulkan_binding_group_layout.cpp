@@ -1,6 +1,8 @@
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_device.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 

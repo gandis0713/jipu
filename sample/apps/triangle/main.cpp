@@ -42,6 +42,10 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
+
+    void createBindingGroupLayout();
+    void createBindingGroup();
+
     void createPipelineLayout();
     void createRenderPipeline();
     void createCommandBuffers();
@@ -185,6 +189,9 @@ void TriangleSample::init()
     createIndexBuffer();
     createUniformBuffer();
 
+    createBindingGroupLayout();
+    createBindingGroup();
+
     createPipelineLayout();
     createRenderPipeline();
     createCommandBuffers();
@@ -246,7 +253,7 @@ void TriangleSample::createUniformBuffer()
     }
 }
 
-void TriangleSample::createPipelineLayout()
+void TriangleSample::createBindingGroupLayout()
 {
     BufferBindingLayout bufferBindingLayout{ .type = BufferBindingType::kUniform };
     BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{ { .index = 0,
@@ -256,7 +263,14 @@ void TriangleSample::createPipelineLayout()
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferLayoutEntries };
 
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+}
 
+void TriangleSample::createBindingGroup()
+{
+}
+
+void TriangleSample::createPipelineLayout()
+{
     PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayout.get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
