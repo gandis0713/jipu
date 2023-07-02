@@ -36,7 +36,7 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
     VkResult result = vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &surfaceInfo.capabilities);
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceCapabilitiesKHR Error: {}", result));
+        throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceCapabilitiesKHR Error: {}", static_cast<int32_t>(result)));
     }
 
     // Surface formats.
@@ -45,14 +45,14 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
         result = vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceFormatsKHR to get count. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceFormatsKHR to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
         surfaceInfo.formats.resize(surfaceFormatCount);
         result = vkAPI.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &surfaceFormatCount, surfaceInfo.formats.data());
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceFormatsKHR. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceFormatsKHR. Error: {}", static_cast<int32_t>(result)));
         }
     }
 
@@ -62,14 +62,14 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
         result = vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfacePresentModesKHR to get count. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfacePresentModesKHR to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
         surfaceInfo.presentModes.resize(presentModeCount);
         result = vkAPI.GetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, surfaceInfo.presentModes.data());
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfacePresentModesKHR. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfacePresentModesKHR. Error: {}", static_cast<int32_t>(result)));
         }
     }
 

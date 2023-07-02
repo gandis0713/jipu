@@ -83,7 +83,7 @@ private:
     std::vector<std::unique_ptr<Buffer>> m_uniformBuffers{};
     std::vector<void*> m_uniformBufferMappedPointers{};
 
-    std::unique_ptr<BindingLayout> m_bindingLayout = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_bindingLayout = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 

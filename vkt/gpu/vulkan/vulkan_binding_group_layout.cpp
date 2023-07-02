@@ -41,4 +41,5 @@ VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const
 {
     return m_descriptorSetLayout;
 }
+
 } // namespace vkt

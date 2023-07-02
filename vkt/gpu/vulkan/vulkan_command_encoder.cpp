@@ -188,7 +188,7 @@ LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp)
         return LoadOp::kDontCare;
 
     default:
-        spdlog::error("{} Load Op type is not supported.", loadOp);
+        spdlog::error("{} Load Op type is not supported.", static_cast<int32_t>(loadOp));
         return LoadOp::kDontCare;
     }
 }
@@ -220,7 +220,7 @@ StoreOp ToStoreOp(VkAttachmentStoreOp storeOp)
         return StoreOp::kDontCare;
 
     default:
-        spdlog::error("{} Store Op type is not supported.", storeOp);
+        spdlog::error("{} Store Op type is not supported.", static_cast<uint8_t>(storeOp));
         return StoreOp::kDontCare;
     }
 }
