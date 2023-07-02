@@ -5,6 +5,7 @@ namespace vkt
 {
 
 BindingGroup::BindingGroup(Device* device, const BindingGroupDescriptor& descriptor)
+    : m_device(device)
 {
 }
 

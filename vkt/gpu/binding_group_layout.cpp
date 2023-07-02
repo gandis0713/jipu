@@ -6,6 +6,7 @@ namespace vkt
 {
 
 BindingGroupLayout::BindingGroupLayout(Device* device, const BindingGroupLayoutDescriptor& descriptor)
+    : m_device(device)
 {
 }
 
