@@ -50,7 +50,7 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
-    void updateUniformBuffer(uint32_t swapImageIndex);
+    void updateUniformBuffer();
     void draw() override;
 
 private:
@@ -84,8 +84,8 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
-    std::vector<std::unique_ptr<Buffer>> m_uniformBuffers{};
-    std::vector<void*> m_uniformBufferMappedPointers{};
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    void* m_uniformBufferMappedPointer = nullptr;
 
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
@@ -121,8 +121,8 @@ TriangleSample::~TriangleSample()
     m_bindingGroupLayout.reset();
     m_bindingGroup.reset();
 
-    m_uniformBufferMappedPointers.clear();
-    m_uniformBuffers.clear();
+    // unmap m_uniformBufferMappedPointer;
+    m_uniformBuffer.reset();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
@@ -202,11 +202,13 @@ void TriangleSample::init()
 void TriangleSample::createVertexBuffer()
 {
     // vertex buffer
+    const float xSize = 0.5f;
+    const float ySize = 0.5f;
     m_vertices = {
-        { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-        { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
-        { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-        { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
+        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f } },
+        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f } },
+        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f } },
+        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f } }
     };
 
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
@@ -239,26 +241,15 @@ void TriangleSample::createIndexBuffer()
 
 void TriangleSample::createUniformBuffer()
 {
-    const uint32_t swapImageCount = m_swapchain->getTextureViews().size();
-    m_uniformBuffers.resize(swapImageCount);
-    m_uniformBufferMappedPointers.resize(swapImageCount);
-    for (uint32_t i = 0; i < swapImageCount; ++i)
-    {
-        BufferDescriptor descriptor{ .size = sizeof(UniformBufferObject),
-                                     .usage = BufferUsageFlagBits::kUniform };
-        auto buffer = m_device->createBuffer(descriptor);
-
-        m_uniformBufferMappedPointers[i] = buffer->map();
-        m_uniformBuffers[i] = std::move(buffer);
-    }
+    BufferDescriptor descriptor{ .size = sizeof(UniformBufferObject),
+                                 .usage = BufferUsageFlagBits::kUniform };
+    m_uniformBuffer = m_device->createBuffer(descriptor);
+    m_uniformBufferMappedPointer = m_uniformBuffer->map();
 }
 
 void TriangleSample::createBindingGroupLayout()
 {
     BufferBindingLayout bufferBindingLayout{ .type = BufferBindingType::kUniform };
-    // BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{ { .index = 0,
-    //                                                                .stages = BindingStageFlagBits::kVertexStage },
-    //                                                              .layout = bufferBindingLayout };
     BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{};
     bufferBindingGroupLayoutEntry.index = 0;
     bufferBindingGroupLayoutEntry.stages = BindingStageFlagBits::kVertexStage;
@@ -272,6 +263,20 @@ void TriangleSample::createBindingGroupLayout()
 
 void TriangleSample::createBindingGroup()
 {
+    BufferBinding bufferBinding{ .buffer = m_uniformBuffer.get(),
+                                 .offset = 0,
+                                 .size = sizeof(UniformBufferObject) };
+
+    BufferBindingGroupEntry bufferBindingGroupEntry{};
+    bufferBindingGroupEntry.index = 0;
+    bufferBindingGroupEntry.binding = bufferBinding;
+
+    BindingGroupDescriptor descriptor{};
+    descriptor.layout = m_bindingGroupLayout.get();
+    descriptor.buffers = { bufferBindingGroupEntry };
+    descriptor.textures = {};
+
+    m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
 
 void TriangleSample::createPipelineLayout()
@@ -347,11 +352,12 @@ void TriangleSample::createRenderPipeline()
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
     }
 
-    RenderPipelineDescriptor descriptor{ { .layout = m_pipelineLayout.get() },
-                                         .inputAssembly = inputAssembly,
-                                         .vertex = vertexStage,
-                                         .rasterization = rasterization,
-                                         .fragment = fragmentStage };
+    RenderPipelineDescriptor descriptor;
+    descriptor.layout = m_pipelineLayout.get();
+    descriptor.inputAssembly = inputAssembly;
+    descriptor.vertex = vertexStage;
+    descriptor.rasterization = rasterization;
+    descriptor.fragment = fragmentStage;
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
@@ -387,7 +393,7 @@ void TriangleSample::createCommandBuffers()
     }
 }
 
-void TriangleSample::updateUniformBuffer(uint32_t swapImageIndex)
+void TriangleSample::updateUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -401,19 +407,20 @@ void TriangleSample::updateUniformBuffer(uint32_t swapImageIndex)
 
     ubo.proj[1][1] *= -1;
 
-    memcpy(m_uniformBufferMappedPointers[swapImageIndex], &ubo, sizeof(ubo));
+    memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
 }
 
 void TriangleSample::draw()
 {
+    updateUniformBuffer();
 
     int nextImageIndex = m_swapchain->acquireNextTexture();
-    updateUniformBuffer(nextImageIndex);
 
     auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
 
     renderCommandEncoder->begin();
     renderCommandEncoder->setPipeline(m_renderPipeline.get());
+    renderCommandEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
     renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
     renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
