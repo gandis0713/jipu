@@ -50,8 +50,8 @@ public:
 
     VkQueue getVkQueue(uint32_t index = 0) const;
 
-    VkCommandPool getCommandPool();
-    VkDescriptorPool getDescriptorPool();
+    VkCommandPool getVkCommandPool();
+    VkDescriptorPool getVkDescriptorPool();
 
 public:
     VulkanAPI vkAPI{};

@@ -17,7 +17,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.descriptorPool = downcast(device)->getDescriptorPool();
+    descriptorSetAllocateInfo.descriptorPool = downcast(device)->getVkDescriptorPool();
     descriptorSetAllocateInfo.descriptorSetCount = 1;
     descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
 
@@ -55,7 +55,7 @@ VulkanBindingGroup::~VulkanBindingGroup()
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    vkAPI.FreeDescriptorSets(vulkanDevice->getVkDevice(), vulkanDevice->getDescriptorPool(), 1, &m_descriptorSet);
+    vkAPI.FreeDescriptorSets(vulkanDevice->getVkDevice(), vulkanDevice->getVkDescriptorPool(), 1, &m_descriptorSet);
 }
 
 VkDescriptorSet VulkanBindingGroup::getVkDescriptorSet() const

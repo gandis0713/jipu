@@ -40,12 +40,12 @@ struct BindingGroupLayoutEntry
 
 struct BufferBindingGroupLayoutEntry : BindingGroupLayoutEntry
 {
-    BufferBindingLayout layout{};
+    BufferBindingLayout layout = {};
 };
 
 struct TextureBindingGroupLayoutEntry : BindingGroupLayoutEntry
 {
-    TextureBindingLayout layout;
+    TextureBindingLayout layout = {};
 };
 
 struct BindingGroupLayoutDescriptor

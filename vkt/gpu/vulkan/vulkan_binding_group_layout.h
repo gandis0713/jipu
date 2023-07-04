@@ -22,4 +22,7 @@ private:
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
+// Convert Helper
+VkDescriptorType ToVkDescriptorType(BufferBindingType type);
+BufferBindingType ToBufferBindingType(VkDescriptorType type);
 } // namespace vkt

@@ -162,7 +162,7 @@ VkQueue VulkanDevice::getVkQueue(uint32_t index) const
     return m_queues[index];
 }
 
-VkCommandPool VulkanDevice::getCommandPool()
+VkCommandPool VulkanDevice::getVkCommandPool()
 {
     // TODO: get or create by command pool create information (not VkCommandPoolCreateInfo).
     // for instance, use queue index.
@@ -182,7 +182,7 @@ VkCommandPool VulkanDevice::getCommandPool()
     return m_commandPool;
 }
 
-VkDescriptorPool VulkanDevice::getDescriptorPool()
+VkDescriptorPool VulkanDevice::getVkDescriptorPool()
 {
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
