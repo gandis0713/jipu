@@ -29,17 +29,18 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
 
     for (const auto buffer : descriptor.buffers)
     {
+        const BufferBindingLayout bufferLayout = descriptor.layout->getBufferBindingLayout(buffer.index);
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = downcast(buffer.binding.buffer)->getVkBuffer();
-        bufferInfo.offset = buffer.binding.offset;
-        bufferInfo.range = buffer.binding.size;
+        bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
+        bufferInfo.offset = buffer.offset;
+        bufferInfo.range = buffer.size;
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = buffer.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // TODO: use from descriptor.
+        descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type);
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = &bufferInfo;

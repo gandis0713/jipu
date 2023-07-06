@@ -13,15 +13,6 @@ enum class BufferBindingType
     kStorage
 };
 
-struct BufferBindingLayout
-{
-    BufferBindingType type = BufferBindingType::kUndefined;
-};
-
-struct TextureBindingLayout
-{
-};
-
 enum BindingStageFlagBits : uint32_t
 {
     // 0x00000000 is undefined,
@@ -31,27 +22,26 @@ enum BindingStageFlagBits : uint32_t
 };
 using BindingStageFlags = uint32_t;
 
-struct BindingGroupLayoutEntry
+struct BindingLayout
 {
     /// @brief The index of binding.
     uint32_t index = 0;
     BindingStageFlags stages = 0u;
 };
 
-struct BufferBindingGroupLayoutEntry : BindingGroupLayoutEntry
+struct BufferBindingLayout : BindingLayout
 {
-    BufferBindingLayout layout = {};
+    BufferBindingType type = BufferBindingType::kUndefined;
 };
 
-struct TextureBindingGroupLayoutEntry : BindingGroupLayoutEntry
+struct TextureBindingLayout : BindingLayout
 {
-    TextureBindingLayout layout = {};
 };
 
 struct BindingGroupLayoutDescriptor
 {
-    std::vector<BufferBindingGroupLayoutEntry> buffers = {};
-    std::vector<TextureBindingGroupLayoutEntry> textures = {};
+    std::vector<BufferBindingLayout> buffers = {};
+    std::vector<TextureBindingLayout> textures = {};
 };
 
 class Device;
@@ -62,8 +52,13 @@ public:
     BindingGroupLayout(Device* device, const BindingGroupLayoutDescriptor& descriptor);
     virtual ~BindingGroupLayout() = default;
 
+    const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
+    BufferBindingLayout getBufferBindingLayout(uint32_t index) const;
+    const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
+
 protected:
     Device* m_device = nullptr;
+    BindingGroupLayoutDescriptor m_descriptor{};
 };
 
 } // namespace vkt

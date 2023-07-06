@@ -19,7 +19,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     {
         const auto& buffer = descriptor.buffers[i];
         layoutBindings[i] = { .binding = buffer.index,
-                              .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, // TODO: need from descriptor
+                              .descriptorType = ToVkDescriptorType(buffer.type),
                               .descriptorCount = 1,
                               .stageFlags = VK_SHADER_STAGE_VERTEX_BIT, // TODO: need from descriptor
                               .pImmutableSamplers = nullptr };

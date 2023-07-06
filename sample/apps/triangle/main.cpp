@@ -249,32 +249,38 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createBindingGroupLayout()
 {
-    BufferBindingLayout bufferBindingLayout{ .type = BufferBindingType::kUniform };
-    BufferBindingGroupLayoutEntry bufferBindingGroupLayoutEntry{};
-    bufferBindingGroupLayoutEntry.index = 0;
-    bufferBindingGroupLayoutEntry.stages = BindingStageFlagBits::kVertexStage;
-    bufferBindingGroupLayoutEntry.layout = bufferBindingLayout;
+    BufferBindingLayout bufferBindingLayout{};
+    bufferBindingLayout.type = BufferBindingType::kUniform;
+    bufferBindingLayout.index = 0;
+    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-    std::vector<BufferBindingGroupLayoutEntry> bufferLayoutEntries{ bufferBindingGroupLayoutEntry };
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferLayoutEntries };
+    std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
 
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
 
 void TriangleSample::createBindingGroup()
 {
-    BufferBinding bufferBinding{ .buffer = m_uniformBuffer.get(),
-                                 .offset = 0,
-                                 .size = sizeof(UniformBufferObject) };
+    const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
+    std::vector<BufferBinding> bufferBindings{};
+    bufferBindings.resize(bufferBindingLayouts.size());
+    for (auto i = 0; i < bufferBindingLayouts.size(); ++i)
+    {
+        BufferBinding bufferBinding{};
+        bufferBinding.index = bufferBindingLayouts[i].index;
+        bufferBinding.buffer = m_uniformBuffer.get();
+        bufferBinding.offset = 0;
+        bufferBinding.size = sizeof(UniformBufferObject);
 
-    BufferBindingGroupEntry bufferBindingGroupEntry{};
-    bufferBindingGroupEntry.index = 0;
-    bufferBindingGroupEntry.binding = bufferBinding;
+        bufferBindings[i] = bufferBinding;
+    }
 
+    std::vector<TextureBinding> textureBindings{};
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
-    descriptor.buffers = { bufferBindingGroupEntry };
-    descriptor.textures = {};
+    descriptor.buffers = bufferBindings;
+    descriptor.textures = textureBindings;
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
