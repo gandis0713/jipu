@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
 
-find_package(spdlog CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-
 if(APPLE)
     # Scheme Environment should be set to Xcode project.
     set(CMAKE_XCODE_SCHEME_ENVIRONMENT

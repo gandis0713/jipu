@@ -21,6 +21,9 @@ else()
     )
 endif()
 
+find_package(spdlog CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+
 target_link_libraries(triangle
     PRIVATE
     glm::glm
@@ -45,16 +48,22 @@ if(EXISTS ${GLSLC_EXE})
 endif()
 
 # copy spirv to output
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+else()
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+endif()
+
 if(NOT ANDROID)
-    if(CMAKE_GENERATOR STREQUAL "Ninja")
-        set(SHADER_OUTPUT ${CMAKE_CURRENT_BINARY_DIR})
-    else()
-        set(SHADER_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-    endif()
+    set(SHADER_OUTPUT ${BINARY_OUT})
 
     file(COPY ${SHADERS_INPUT}/triangle.vert.spv DESTINATION ${SHADER_OUTPUT})
     file(COPY ${SHADERS_INPUT}/triangle.frag.spv DESTINATION ${SHADER_OUTPUT})
 endif()
+
+set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+set(RESOURCE_OUT ${BINARY_OUT})
+file(COPY ${RESOURCE_DIR}/texture.jpg DESTINATION ${RESOURCE_OUT})
 
 if(MSVC)
 # TODO

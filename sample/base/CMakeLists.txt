@@ -8,6 +8,7 @@ project(
 )
 
 find_package(spdlog CONFIG REQUIRED)
+find_package(Stb REQUIRED)
 
 if(NOT ANDROID)
     find_package(SDL2 CONFIG REQUIRED)
@@ -20,6 +21,8 @@ list(APPEND SRC_FILES
     window.h
     file.cpp
     file.h
+    jpeg.cpp
+    jpeg.h
 )
 
 if(ANDROID)
@@ -44,6 +47,11 @@ endif()
 
 add_library(vkt_sample_base STATIC ${SRC_FILES})
 add_library(vkt::sample_base ALIAS vkt_sample_base)
+
+target_include_directories(vkt_sample_base
+    PRIVATE
+    ${Stb_INCLUDE_DIR}
+)
 
 target_link_libraries(vkt_sample_base
     PRIVATE

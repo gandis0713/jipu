@@ -1,6 +1,7 @@
 
 
 #include "file.h"
+#include "jpeg.h"
 #include "sample.h"
 #include "vkt_headers.h"
 
@@ -42,6 +43,7 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
+    void createTextureImage();
 
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -70,6 +72,7 @@ private:
     // data
     std::vector<Vertex> m_vertices{};
     std::vector<uint16_t> m_indices{};
+    std::unique_ptr<JPEGImage> m_jpegImage = nullptr;
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -188,6 +191,7 @@ void TriangleSample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
+    createTextureImage();
 
     createBindingGroupLayout();
     createBindingGroup();
@@ -245,6 +249,11 @@ void TriangleSample::createUniformBuffer()
                                  .usage = BufferUsageFlagBits::kUniform };
     m_uniformBuffer = m_device->createBuffer(descriptor);
     m_uniformBufferMappedPointer = m_uniformBuffer->map();
+}
+
+void TriangleSample::createTextureImage()
+{
+    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "texture.jpg");
 }
 
 void TriangleSample::createBindingGroupLayout()
