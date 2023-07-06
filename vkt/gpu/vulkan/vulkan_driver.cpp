@@ -134,7 +134,7 @@ void VulkanDriver::createInstance() noexcept(false)
     VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, nullptr, &m_instance);
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", result));
+        throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", static_cast<int32_t>(result)));
     }
 }
 
@@ -165,7 +165,7 @@ void VulkanDriver::gatherDriverInfo()
         VkResult result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            spdlog::error("Failed to get instance layer properties count. {}", result);
+            spdlog::error("Failed to get instance layer properties count. {}", static_cast<int32_t>(result));
             return;
         }
 
@@ -173,7 +173,7 @@ void VulkanDriver::gatherDriverInfo()
         result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
         if (result != VK_SUCCESS)
         {
-            spdlog::error("Failed to enumerate instance layer properties. {}", result);
+            spdlog::error("Failed to enumerate instance layer properties. {}", static_cast<int32_t>(result));
             return;
         }
 

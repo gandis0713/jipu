@@ -1,15 +1,19 @@
 #pragma once
 
 #include "export.h"
+#include <stdint.h>
+#include <vector>
 
 namespace vkt
 {
 
+class Device;
+class BindingGroupLayout;
 struct PipelineLayoutDescriptor
 {
+    std::vector<BindingGroupLayout*> layouts = {};
 };
 
-class Device;
 class VKT_EXPORT PipelineLayout
 {
 public:

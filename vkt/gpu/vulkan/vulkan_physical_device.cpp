@@ -75,14 +75,14 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
         VkResult result = vkAPI.EnumerateDeviceLayerProperties(m_physicalDevice, &deviceLayerCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties to get count. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
         m_Info.layerProperties.resize(deviceLayerCount);
         result = vkAPI.EnumerateDeviceLayerProperties(m_physicalDevice, &deviceLayerCount, m_Info.layerProperties.data());
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties. Error: {}", static_cast<int32_t>(result)));
         }
 
         for (const auto& layerProperty : m_Info.layerProperties)
@@ -97,14 +97,14 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
         VkResult result = vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE)
         {
-            throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties to get count. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
         m_Info.extensionProperties.resize(deviceExtensionCount);
         result = vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, m_Info.extensionProperties.data());
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties. Error: {}", result));
+            throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties. Error: {}", static_cast<int32_t>(result)));
         }
 
         for (const auto& extensionProperty : m_Info.extensionProperties)

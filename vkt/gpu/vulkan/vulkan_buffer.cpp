@@ -22,7 +22,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &bufferCreateInfo, nullptr, &m_buffer);
     if (result != VK_SUCCESS)
     {
-        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", result));
+        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
     }
 
     VkMemoryRequirements memoryRequirements{};
@@ -56,7 +56,7 @@ void* VulkanBuffer::map()
     VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &mappedPointer);
     if (result != VK_SUCCESS)
     {
-        spdlog::error("Failed to map to pointer. error: {}", result);
+        spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
     }
 
     return mappedPointer;

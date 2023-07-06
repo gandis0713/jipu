@@ -10,11 +10,17 @@ Pipeline::Pipeline(Device* device)
 {
 }
 
+PipelineLayout* Pipeline::getPipelineLayout() const
+{
+    return m_pipelineLayout;
+}
+
 // RenderPipeline
 RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor)
     : Pipeline(device)
     , m_descriptor(descriptor)
 {
+    m_pipelineLayout = m_descriptor.layout;
 }
 
 } // namespace vkt

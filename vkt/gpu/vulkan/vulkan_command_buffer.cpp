@@ -9,7 +9,7 @@ namespace vkt
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor)
     : CommandBuffer(device, descriptor)
-    , m_commandPool(device->getCommandPool())
+    , m_commandPool(device->getVkCommandPool())
 {
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

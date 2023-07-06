@@ -1,9 +1,12 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/binding_group.h"
+#include "vkt/gpu/binding_group_layout.h"
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/swapchain.h"
@@ -31,6 +34,9 @@ public:
 
 public:
     virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<BindingGroup> createBindingGroup(const BindingGroupDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;

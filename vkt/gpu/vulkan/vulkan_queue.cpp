@@ -107,7 +107,7 @@ VkQueue VulkanQueue::getVkQueue() const
 // Convert Helper
 VkQueueFlags ToVkQueueFlags(QueueFlags flags)
 {
-    VkQueueFlags vkflags = 0x00000000; // 0x00000000
+    VkQueueFlags vkflags = 0u;
 
     if (flags & QueueFlagBits::kGraphics)
     {
@@ -127,7 +127,7 @@ VkQueueFlags ToVkQueueFlags(QueueFlags flags)
 
 QueueFlags ToQueueFlags(VkQueueFlags vkflags)
 {
-    QueueFlags flags = QueueFlagBits::kUndefined; // 0x00000000
+    QueueFlags flags = 0u;
 
     if (vkflags & VK_QUEUE_GRAPHICS_BIT)
     {

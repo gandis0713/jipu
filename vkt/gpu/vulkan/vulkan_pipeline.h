@@ -30,8 +30,6 @@ private:
     void initialize();
 
 private:
-    // pipeline
-    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
     VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
 };
 

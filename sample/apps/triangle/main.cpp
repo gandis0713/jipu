@@ -4,7 +4,11 @@
 #include "sample.h"
 #include "vkt_headers.h"
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 #include <spdlog/spdlog.h>
 #include <stddef.h>
 
@@ -35,12 +39,28 @@ public:
     void init() override;
 
 private:
+    void createVertexBuffer();
+    void createIndexBuffer();
+    void createUniformBuffer();
+
+    void createBindingGroupLayout();
+    void createBindingGroup();
+
+    void createPipelineLayout();
     void createRenderPipeline();
     void createCommandBuffers();
 
+    void updateUniformBuffer();
     void draw() override;
 
 private:
+    struct UniformBufferObject
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     struct Vertex
     {
         glm::vec2 pos;
@@ -64,6 +84,13 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    void* m_uniformBufferMappedPointer = nullptr;
+
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+
+    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
@@ -80,17 +107,26 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
+    // clear swapchain first.
+    m_swapchain.reset();
+
     m_commandBuffers.clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
     m_renderPipeline.reset();
+    m_pipelineLayout.reset();
+
+    m_bindingGroupLayout.reset();
+    m_bindingGroup.reset();
+
+    // unmap m_uniformBufferMappedPointer;
+    m_uniformBuffer.reset();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_swapchain.reset();
     m_renderQueue.reset();
 
     m_physicalDevice.reset();
@@ -149,44 +185,110 @@ void TriangleSample::init()
     }
 
     // create buffer
-    {
-        // vertex buffer
-        m_vertices = {
-            { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
-            { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } },
-            { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
-            { { -0.5f, 0.5f }, { 1.0f, 1.0f, 1.0f } }
-        };
+    createVertexBuffer();
+    createIndexBuffer();
+    createUniformBuffer();
 
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
-                                                 .usage = BufferUsageFlagBits::kVertex };
-        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+    createBindingGroupLayout();
+    createBindingGroup();
 
-        void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, m_vertices.data(), vertexSize);
-        m_vertexBuffer->unmap();
-
-        // index buffer
-        m_indices = {
-            0, 1, 2, 2, 3, 0
-        };
-
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
-        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
-                                                .usage = BufferUsageFlagBits::kIndex };
-
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
-
-        mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_indices.data(), indexSize);
-        m_indexBuffer->unmap();
-    }
-
+    createPipelineLayout();
     createRenderPipeline();
     createCommandBuffers();
 
     m_initialized = true;
+}
+
+void TriangleSample::createVertexBuffer()
+{
+    // vertex buffer
+    const float xSize = 0.5f;
+    const float ySize = 0.5f;
+    m_vertices = {
+        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f } },
+        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f } },
+        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f } },
+        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f } }
+    };
+
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+    BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                             .usage = BufferUsageFlagBits::kVertex };
+    m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+
+    void* mappedPointer = m_vertexBuffer->map();
+    memcpy(mappedPointer, m_vertices.data(), vertexSize);
+    m_vertexBuffer->unmap();
+}
+
+void TriangleSample::createIndexBuffer()
+{
+    // index buffer
+    m_indices = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
+    BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                            .usage = BufferUsageFlagBits::kIndex };
+
+    m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+    void* mappedPointer = m_indexBuffer->map();
+    memcpy(mappedPointer, m_indices.data(), indexSize);
+    m_indexBuffer->unmap();
+}
+
+void TriangleSample::createUniformBuffer()
+{
+    BufferDescriptor descriptor{ .size = sizeof(UniformBufferObject),
+                                 .usage = BufferUsageFlagBits::kUniform };
+    m_uniformBuffer = m_device->createBuffer(descriptor);
+    m_uniformBufferMappedPointer = m_uniformBuffer->map();
+}
+
+void TriangleSample::createBindingGroupLayout()
+{
+    BufferBindingLayout bufferBindingLayout{};
+    bufferBindingLayout.type = BufferBindingType::kUniform;
+    bufferBindingLayout.index = 0;
+    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+
+    std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
+
+    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+}
+
+void TriangleSample::createBindingGroup()
+{
+    const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
+    std::vector<BufferBinding> bufferBindings{};
+    bufferBindings.resize(bufferBindingLayouts.size());
+    for (auto i = 0; i < bufferBindingLayouts.size(); ++i)
+    {
+        BufferBinding bufferBinding{};
+        bufferBinding.index = bufferBindingLayouts[i].index;
+        bufferBinding.buffer = m_uniformBuffer.get();
+        bufferBinding.offset = 0;
+        bufferBinding.size = sizeof(UniformBufferObject);
+
+        bufferBindings[i] = bufferBinding;
+    }
+
+    std::vector<TextureBinding> textureBindings{};
+    BindingGroupDescriptor descriptor{};
+    descriptor.layout = m_bindingGroupLayout.get();
+    descriptor.buffers = bufferBindings;
+    descriptor.textures = textureBindings;
+
+    m_bindingGroup = m_device->createBindingGroup(descriptor);
+}
+
+void TriangleSample::createPipelineLayout()
+{
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayout.get() } };
+    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
 void TriangleSample::createRenderPipeline()
@@ -256,10 +358,12 @@ void TriangleSample::createRenderPipeline()
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
     }
 
-    RenderPipelineDescriptor descriptor{ .inputAssembly = inputAssembly,
-                                         .vertex = vertexStage,
-                                         .rasterization = rasterization,
-                                         .fragment = fragmentStage };
+    RenderPipelineDescriptor descriptor;
+    descriptor.layout = m_pipelineLayout.get();
+    descriptor.inputAssembly = inputAssembly;
+    descriptor.vertex = vertexStage;
+    descriptor.rasterization = rasterization;
+    descriptor.fragment = fragmentStage;
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
@@ -295,14 +399,34 @@ void TriangleSample::createCommandBuffers()
     }
 }
 
+void TriangleSample::updateUniformBuffer()
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    UniformBufferObject ubo{};
+    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 10.0f);
+
+    ubo.proj[1][1] *= -1;
+
+    memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
+}
+
 void TriangleSample::draw()
 {
+    updateUniformBuffer();
+
     int nextImageIndex = m_swapchain->acquireNextTexture();
 
     auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
 
     renderCommandEncoder->begin();
     renderCommandEncoder->setPipeline(m_renderPipeline.get());
+    renderCommandEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
     renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
     renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.

@@ -2,6 +2,7 @@
 
 #include "utils/cast.h"
 #include "vkt/gpu/pipeline_layout.h"
+#include "vulkan_api.h"
 
 namespace vkt
 {
@@ -12,7 +13,12 @@ class VulkanPipelineLayout : public PipelineLayout
 public:
     VulkanPipelineLayout() = delete;
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
-    ~VulkanPipelineLayout() override = default;
+    ~VulkanPipelineLayout() override;
+
+    VkPipelineLayout getVkPipelineLayout() const;
+
+private:
+    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanPipelineLayout, PipelineLayout);
