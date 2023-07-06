@@ -27,13 +27,24 @@ BufferBindingLayout BindingGroupLayout::getBufferBindingLayout(uint32_t index) c
     }
 
     throw std::runtime_error(fmt::format("Failed to find buffer binding layout. {}", index));
-
     return {};
 }
 
 const std::vector<TextureBindingLayout>& BindingGroupLayout::getTextureBindingLayouts() const
 {
     return m_descriptor.textures;
+}
+
+TextureBindingLayout BindingGroupLayout::getTextureBindingLayout(uint32_t index) const
+{
+    for (const auto& texture : m_descriptor.textures)
+    {
+        if (texture.index == index)
+            return texture;
+    }
+
+    throw std::runtime_error(fmt::format("Failed to find texture binding layout. {}", index));
+    return {};
 }
 
 } // namespace vkt
