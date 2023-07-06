@@ -25,4 +25,6 @@ DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 // Convert Helper
 VkDescriptorType ToVkDescriptorType(BufferBindingType type);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
+VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);
+BindingStageFlags ToBindingStageFlags(VkShaderStageFlags flags);
 } // namespace vkt

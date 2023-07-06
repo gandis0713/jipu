@@ -21,7 +21,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
         layoutBindings[i] = { .binding = buffer.index,
                               .descriptorType = ToVkDescriptorType(buffer.type),
                               .descriptorCount = 1,
-                              .stageFlags = VK_SHADER_STAGE_VERTEX_BIT, // TODO: need from descriptor
+                              .stageFlags = ToVkShaderStageFlags(buffer.stages),
                               .pImmutableSamplers = nullptr };
     }
 
@@ -80,6 +80,46 @@ BufferBindingType ToBufferBindingType(VkDescriptorType type)
         throw std::runtime_error(fmt::format("Failed to support type [{}] for BufferBindingType.", static_cast<int32_t>(type)));
         return BufferBindingType::kUndefined;
     }
+}
+
+VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags)
+{
+    VkShaderStageFlags vkFlags = 0x00000000; // 0x00000000
+
+    if (flags & BindingStageFlagBits::kVertexStage)
+    {
+        vkFlags |= VK_SHADER_STAGE_VERTEX_BIT;
+    }
+    else if (flags & BindingStageFlagBits::kFragmentStage)
+    {
+        vkFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
+    else if (flags & BindingStageFlagBits::kComputeStage)
+    {
+        vkFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
+    }
+
+    return vkFlags;
+}
+
+BindingStageFlags ToBindingStageFlags(VkShaderStageFlags vkFlags)
+{
+    BindingStageFlags flags = 0u;
+
+    if (flags & VK_SHADER_STAGE_VERTEX_BIT)
+    {
+        vkFlags |= BindingStageFlagBits::kVertexStage;
+    }
+    else if (flags & VK_SHADER_STAGE_FRAGMENT_BIT)
+    {
+        vkFlags |= BindingStageFlagBits::kFragmentStage;
+    }
+    else if (flags & VK_SHADER_STAGE_COMPUTE_BIT)
+    {
+        vkFlags |= BindingStageFlagBits::kComputeStage;
+    }
+
+    return flags;
 }
 
 } // namespace vkt
