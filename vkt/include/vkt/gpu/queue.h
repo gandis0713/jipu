@@ -6,6 +6,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include <stdint.h>
+#include <vector>
 
 namespace vkt
 {
@@ -32,7 +33,7 @@ public:
     Queue(Device* device, const QueueDescriptor& descriptor);
     virtual ~Queue() = default;
 
-    virtual void submit(CommandBuffer* commandBuffer) = 0;
+    virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
 
 public:
     QueueFlags getFlags() const;

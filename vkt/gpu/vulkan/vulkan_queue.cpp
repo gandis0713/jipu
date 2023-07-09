@@ -61,7 +61,7 @@ VulkanQueue::~VulkanQueue()
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderingFinishSemaphore, nullptr);
 }
 
-void VulkanQueue::submit(CommandBuffer* commandBuffer)
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
@@ -82,9 +82,15 @@ void VulkanQueue::submit(CommandBuffer* commandBuffer)
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 
-    submitInfo.commandBufferCount = 1;
-    VkCommandBuffer commandBuf = downcast(commandBuffer)->getVkCommandBuffer();
-    submitInfo.pCommandBuffers = &commandBuf;
+    uint32_t commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    submitInfo.commandBufferCount = commandBufferCount;
+    std::vector<VkCommandBuffer> vKCommandBuffers{};
+    vKCommandBuffers.resize(commandBufferCount);
+    for (auto i = 0; i < commandBufferCount; ++i)
+    {
+        vKCommandBuffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
+    }
+    submitInfo.pCommandBuffers = vKCommandBuffers.data();
 
     VkSemaphore signalSemaphores[] = { m_renderingFinishSemaphore };
     submitInfo.signalSemaphoreCount = 1;

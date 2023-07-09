@@ -87,6 +87,9 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
+    std::unique_ptr<Buffer> m_imageStagingBuffer = nullptr;
+    std::unique_ptr<Texture> m_imageTexture = nullptr;
+
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
 
@@ -126,6 +129,9 @@ TriangleSample::~TriangleSample()
 
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
+
+    m_imageTexture.reset();
+    m_imageStagingBuffer.reset();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
@@ -253,7 +259,30 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createTextureImage()
 {
+    // load jpeg image.
     m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "texture.jpg");
+
+    unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
+    uint32_t width = m_jpegImage->getWidth();
+    uint32_t height = m_jpegImage->getHeight();
+    uint64_t imageSize = sizeof(unsigned char) * width * height;
+
+    // create image staging buffer.
+    BufferDescriptor descriptor{ .size = imageSize, .usage = BufferUsageFlagBits::kCopySrc };
+    m_imageStagingBuffer = m_device->createBuffer(descriptor);
+
+    void* mappedPointer = m_imageStagingBuffer->map();
+    memcpy(mappedPointer, pixels, imageSize);
+    // m_imageStagingBuffer->unmap();
+
+    // create image.
+    TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
+                                         .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .width = width,
+                                         .height = height };
+    m_imageTexture = m_device->createTexture(textureDescriptor);
+
+    // copy buffer to image
 }
 
 void TriangleSample::createBindingGroupLayout()
@@ -443,7 +472,7 @@ void TriangleSample::draw()
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
     renderCommandEncoder->end();
 
-    m_renderQueue->submit(renderCommandEncoder->getCommandBuffer());
+    m_renderQueue->submit({ renderCommandEncoder->getCommandBuffer() });
     m_swapchain->present(m_renderQueue.get());
 }
 
