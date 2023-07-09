@@ -109,4 +109,19 @@ public:
 protected:
     RenderCommandEncoderDescriptor m_descriptor{};
 };
+
+struct BlitCommandEncoderDescriptor
+{
+};
+
+class BlitCommandEncoder : CommandEncoder
+{
+public:
+    BlitCommandEncoder() = delete;
+    BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
+    virtual ~BlitCommandEncoder() = default;
+
+    virtual void copyBufferToTexture() = 0;
+};
+
 } // namespace vkt

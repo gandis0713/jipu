@@ -84,13 +84,13 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     uint32_t commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
     submitInfo.commandBufferCount = commandBufferCount;
-    std::vector<VkCommandBuffer> vKCommandBuffers{};
-    vKCommandBuffers.resize(commandBufferCount);
+    std::vector<VkCommandBuffer> vulkanCommandBuffers{};
+    vulkanCommandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        vKCommandBuffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
+        vulkanCommandBuffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
     }
-    submitInfo.pCommandBuffers = vKCommandBuffers.data();
+    submitInfo.pCommandBuffers = vulkanCommandBuffers.data();
 
     VkSemaphore signalSemaphores[] = { m_renderingFinishSemaphore };
     submitInfo.signalSemaphoreCount = 1;

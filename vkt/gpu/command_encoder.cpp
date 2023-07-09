@@ -27,4 +27,9 @@ RenderCommandEncoder::RenderCommandEncoder(CommandBuffer* commandBuffer, const R
 {
 }
 
+BlitCommandEncoder::BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
+    : CommandEncoder(commandBuffer)
+{
+}
+
 } // namespace vkt

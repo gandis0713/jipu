@@ -177,6 +177,15 @@ void VulkanRenderCommandEncoder::setScissor(float x,
     vulkanDevice->vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
 }
 
+VulkanBlitCommandEncoder::VulkanBlitCommandEncoder(VulkanCommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
+    : BlitCommandEncoder(commandBuffer, descriptor)
+{
+}
+
+void VulkanBlitCommandEncoder::copyBufferToTexture()
+{
+}
+
 // Convert Helper
 VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp)
 {
