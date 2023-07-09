@@ -11,6 +11,7 @@
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_swapchain.h"
+#include "vulkan_texture.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -125,6 +126,11 @@ std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBu
 std::unique_ptr<ShaderModule> VulkanDevice::createShaderModule(const ShaderModuleDescriptor& descriptor)
 {
     return std::make_unique<VulkanShaderModule>(this, descriptor);
+}
+
+std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)
+{
+    return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)

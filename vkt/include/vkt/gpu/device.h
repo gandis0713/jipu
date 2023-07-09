@@ -10,6 +10,7 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/texture.h"
 
 #include <memory>
 
@@ -42,6 +43,7 @@ public:
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) = 0;
 
 public:
     PhysicalDevice* getPhysicalDevice() const;

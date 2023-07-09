@@ -37,6 +37,7 @@ public:
     std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) override;
     std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) override;
     std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) override; // TODO: get from cache or create.
+    std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
 
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);

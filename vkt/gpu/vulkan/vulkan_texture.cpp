@@ -1,6 +1,9 @@
 #include "vulkan_texture.h"
 #include "vulkan_device.h"
 
+#include <fmt/format.h>
+#include <stdexcept>
+
 namespace vkt
 {
 
@@ -10,7 +13,28 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::Internal)
 {
-    // TODO: create VkImage
+    VkImageCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    createInfo.imageType = ToVkImageType(descriptor.type);
+    createInfo.extent.width = static_cast<uint32_t>(descriptor.width);
+    createInfo.extent.height = static_cast<uint32_t>(descriptor.height);
+    createInfo.extent.depth = 1;
+    createInfo.mipLevels = 1;
+    createInfo.arrayLayers = 1;
+    createInfo.format = ToVkFormat(descriptor.format);
+    createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    createInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    createInfo.flags = 0; // Optional
+
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkResult result = vkAPI.CreateImage(device->getVkDevice(), &createInfo, nullptr, &m_image);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create image. {}", static_cast<uint32_t>(result)));
+    }
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
