@@ -35,6 +35,23 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     {
         throw std::runtime_error(fmt::format("Failed to create image. {}", static_cast<uint32_t>(result)));
     }
+
+    VkMemoryRequirements memoryRequirements{};
+    vkAPI.GetImageMemoryRequirements(device->getVkDevice(), m_image, &memoryRequirements);
+
+    VulkanMemoryDescriptor memoryDescriptor{};
+    memoryDescriptor.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    memoryDescriptor.requirements = memoryRequirements;
+
+    m_memory = std::make_unique<VulkanMemory>(device, memoryDescriptor);
+
+    result = vkAPI.BindImageMemory(device->getVkDevice(), m_image, m_memory->getVkDeviceMemory(), 0);
+    if (result != VK_SUCCESS)
+    {
+        // TODO: delete VkImage resource automatically.
+        device->vkAPI.DestroyImage(device->getVkDevice(), m_image, nullptr);
+        throw std::runtime_error(fmt::format("Failed to bind memory. {}", static_cast<int32_t>(result)));
+    }
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
@@ -50,6 +67,8 @@ VulkanTexture::~VulkanTexture()
 {
     if (m_owner == TextureOwner::Internal)
     {
+        m_memory.reset();
+
         VulkanDevice* vulkanDevice = downcast(m_device);
         vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getVkDevice(), m_image, nullptr);
     }
@@ -128,6 +147,70 @@ TextureFormat ToTextureFormat(VkFormat format)
         assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
         return TextureFormat::kUndefined;
     }
+}
+
+TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
+{
+    TextureUsageFlags flags = 0u;
+
+    if (usages & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+    {
+        flags |= TextureUsageFlagBits::kCopySrc;
+    }
+    else if (usages & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+    {
+        flags |= TextureUsageFlagBits::kCopyDst;
+    }
+    else if (usages & VK_IMAGE_USAGE_SAMPLED_BIT)
+    {
+        flags |= TextureUsageFlagBits::kTextureBinding;
+    }
+    else if (usages & VK_IMAGE_USAGE_STORAGE_BIT)
+    {
+        flags |= TextureUsageFlagBits::kStorageBinding;
+    }
+    else if (usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    {
+        flags |= TextureUsageFlagBits::kDepthStencil;
+    }
+    else if (usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+    {
+        flags |= TextureUsageFlagBits::kColorAttachment;
+    }
+
+    return flags;
+}
+
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
+{
+    VkImageUsageFlags flags = 0u;
+
+    if (usages & TextureUsageFlagBits::kCopySrc)
+    {
+        flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    }
+    else if (usages & TextureUsageFlagBits::kCopyDst)
+    {
+        flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    }
+    else if (usages & TextureUsageFlagBits::kTextureBinding)
+    {
+        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+    }
+    else if (usages & TextureUsageFlagBits::kStorageBinding)
+    {
+        flags |= VK_IMAGE_USAGE_STORAGE_BIT;
+    }
+    else if (usages & TextureUsageFlagBits::kDepthStencil)
+    {
+        flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    }
+    else if (usages & TextureUsageFlagBits::kColorAttachment)
+    {
+        flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    }
+
+    return flags;
 }
 
 } // namespace vkt

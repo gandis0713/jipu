@@ -23,6 +23,18 @@ enum class TextureFormat
     kRGBA_8888_UInt_Norm_SRGB
 };
 
+enum TextureUsageFlagBits
+{
+    // 0x00000000 is kUndefined.
+    kCopySrc,
+    kCopyDst,
+    kTextureBinding,
+    kStorageBinding,
+    kDepthStencil,
+    kColorAttachment,
+};
+using TextureUsageFlags = uint32_t;
+
 struct TextureDescriptor
 {
     TextureType type;

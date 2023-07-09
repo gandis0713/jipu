@@ -4,6 +4,7 @@
 #include "utils/cast.h"
 #include "vkt/gpu/texture.h"
 #include "vulkan_api.h"
+#include "vulkan_memory.h"
 
 #include <fmt/format.h>
 
@@ -34,6 +35,7 @@ public:
 
 private:
     VkImage m_image = VK_NULL_HANDLE;
+    std::unique_ptr<VulkanMemory> m_memory = nullptr;
     VkImageType m_type{};
     VkFormat m_format{ VK_FORMAT_UNDEFINED };
 
@@ -47,5 +49,7 @@ VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkFormat ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
+TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 
 } // namespace vkt
