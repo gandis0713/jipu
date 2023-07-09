@@ -151,6 +151,7 @@ elseif(APPLE)
     PUBLIC
     -Wall
     -Werror
+    -Wshorten-64-to-32
     -Wno-unused-parameter
     -Wno-unused-function
     -Wno-unused-but-set-variable

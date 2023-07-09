@@ -17,18 +17,18 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
     const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getInfo();
 
-    const uint32_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
+    const uint64_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
     if (queueFamilyPropertiesSize <= 0)
     {
         throw std::runtime_error("There is no queue family properties.");
     }
 
-    for (uint32_t index = 0; index < queueFamilyPropertiesSize; ++index)
+    for (uint64_t index = 0; index < queueFamilyPropertiesSize; ++index)
     {
         const auto& properties = deviceInfo.queueFamilyProperties[index];
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            m_index = index;
+            m_index = static_cast<uint32_t>(index);
             m_properties = properties;
             break;
         }
@@ -78,7 +78,7 @@ void VulkanQueue::submit(CommandBuffer* commandBuffer)
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 

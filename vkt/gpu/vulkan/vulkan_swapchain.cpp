@@ -169,7 +169,7 @@ void VulkanSwapchain::present(Queue* queue)
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = semaphore.size();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(semaphore.size());
     presentInfo.pWaitSemaphores = semaphore.data();
 
     VkSwapchainKHR swapChains[] = { m_swapchain };

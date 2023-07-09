@@ -53,17 +53,17 @@ void VulkanRenderPipeline::initialize()
         for (uint64_t attrIndex = 0; attrIndex < attributes.size(); ++attrIndex)
         {
             VkVertexInputAttributeDescription attributeDescription{};
-            attributeDescription.binding = bindingIndex;
-            attributeDescription.location = attrIndex;
+            attributeDescription.binding = static_cast<uint32_t>(bindingIndex);
+            attributeDescription.location = static_cast<uint32_t>(attrIndex);
             attributeDescription.format = ToVkVertexFormat(attributes[attrIndex].format);
-            attributeDescription.offset = attributes[attrIndex].offset;
+            attributeDescription.offset = static_cast<uint32_t>(attributes[attrIndex].offset);
 
             vertexAttributeDescriptions.push_back(attributeDescription);
         }
 
         VkVertexInputBindingDescription bindingDescription{};
-        bindingDescription.binding = bindingIndex;
-        bindingDescription.stride = m_descriptor.vertex.layouts[bindingIndex].stride;
+        bindingDescription.binding = static_cast<uint32_t>(bindingIndex);
+        bindingDescription.stride = static_cast<uint32_t>(m_descriptor.vertex.layouts[bindingIndex].stride);
         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         bindingDescriptions.push_back(bindingDescription);
     }

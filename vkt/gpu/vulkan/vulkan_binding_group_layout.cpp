@@ -25,7 +25,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
                               .pImmutableSamplers = nullptr };
     }
 
-    for (uint32_t i = bufferSize; i < bufferSize + textureSize; ++i)
+    for (uint64_t i = bufferSize; i < bufferSize + textureSize; ++i)
     {
         // TODO: for texture
     }
