@@ -23,15 +23,15 @@ enum class TextureFormat
     kRGBA_8888_UInt_Norm_SRGB
 };
 
-enum TextureUsageFlagBits
+struct TextureUsageFlagBits
 {
-    // 0x00000000 is kUndefined.
-    kCopySrc,
-    kCopyDst,
-    kTextureBinding,
-    kStorageBinding,
-    kDepthStencil,
-    kColorAttachment,
+    static constexpr uint32_t kUndefined = 0x00000000;
+    static constexpr uint32_t kCopySrc = 0x00000001;
+    static constexpr uint32_t kCopyDst = 0x00000002;
+    static constexpr uint32_t kTextureBinding = 0x00000004;
+    static constexpr uint32_t kStorageBinding = 0x00000008;
+    static constexpr uint32_t kDepthStencil = 0x00000010;
+    static constexpr uint32_t kColorAttachment = 0x00000020;
 };
 using TextureUsageFlags = uint32_t;
 
