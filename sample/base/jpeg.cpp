@@ -10,7 +10,7 @@ namespace vkt
 
 JPEGImage::JPEGImage(const std::filesystem::path& path)
 {
-    const char* filename = static_cast<const char*>(path.c_str());
+    const char* filename = reinterpret_cast<const char*>(path.c_str());
     stbi_uc* pixels = stbi_load(filename, &m_width, &m_height, &m_channels, STBI_rgb_alpha);
 
     if (pixels == nullptr)
