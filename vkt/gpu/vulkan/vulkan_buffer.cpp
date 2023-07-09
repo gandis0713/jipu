@@ -50,19 +50,22 @@ VulkanBuffer::~VulkanBuffer()
 
 void* VulkanBuffer::map()
 {
-    void* mappedPointer = nullptr;
-
-    auto device = downcast(m_device);
-    VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &mappedPointer);
-    if (result != VK_SUCCESS)
+    if (m_mappedPtr == nullptr)
     {
-        spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+        auto device = downcast(m_device);
+        VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &m_mappedPtr);
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+        }
     }
 
-    return mappedPointer;
+    return m_mappedPtr;
 }
 void VulkanBuffer::unmap()
 {
+    m_mappedPtr = nullptr;
+
     auto device = downcast(m_device);
     device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 }
