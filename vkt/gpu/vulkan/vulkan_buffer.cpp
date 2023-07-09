@@ -44,6 +44,8 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
 
 VulkanBuffer::~VulkanBuffer()
 {
+    m_memory.reset();
+
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
 }
