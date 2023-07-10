@@ -6,6 +6,17 @@
 namespace vkt
 {
 
+struct Extent2D
+{
+    uint32_t width = 0;
+    uint32_t height = 0;
+};
+
+struct Extent3D : Extent2D
+{
+    uint32_t depth = 0;
+};
+
 enum class TextureType
 {
     kUndefined = 0,
