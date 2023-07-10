@@ -28,6 +28,7 @@ public:
     virtual ~CommandBuffer() = default;
 
     virtual std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<BlitCommandEncoder> createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor) = 0;
 
 public:
     CommandBufferUsage getUsage() const;

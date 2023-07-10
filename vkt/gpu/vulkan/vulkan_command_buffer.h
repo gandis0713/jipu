@@ -16,6 +16,7 @@ public:
     ~VulkanCommandBuffer() override;
 
     std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) override;
+    std::unique_ptr<BlitCommandEncoder> createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor) override;
 
     VkCommandBuffer getVkCommandBuffer() const;
 

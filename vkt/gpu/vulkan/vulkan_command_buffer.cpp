@@ -36,6 +36,11 @@ std::unique_ptr<RenderCommandEncoder> VulkanCommandBuffer::createRenderCommandEn
     return std::make_unique<VulkanRenderCommandEncoder>(this, descriptor);
 }
 
+std::unique_ptr<BlitCommandEncoder> VulkanCommandBuffer::createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBlitCommandEncoder>(this, descriptor);
+}
+
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
 {
     return m_commandBuffer;
