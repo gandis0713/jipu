@@ -11,11 +11,6 @@ CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
 {
 }
 
-void CommandEncoder::setPipeline(Pipeline* pipeline)
-{
-    m_pipeline = pipeline;
-}
-
 CommandBuffer* CommandEncoder::getCommandBuffer() const
 {
     return m_commandBuffer;

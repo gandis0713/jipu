@@ -52,6 +52,8 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
+    void copyBufferToTexture();
+
     void updateUniformBuffer();
     void draw() override;
 
@@ -102,7 +104,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
+    std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
     std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
 };
 
@@ -116,7 +118,7 @@ TriangleSample::~TriangleSample()
     // clear swapchain first.
     m_swapchain.reset();
 
-    m_commandBuffers.clear();
+    m_renderCommandBuffers.clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
@@ -283,6 +285,7 @@ void TriangleSample::createTextureImage()
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy buffer to image
+    copyBufferToTexture();
 }
 
 void TriangleSample::createBindingGroupLayout()
@@ -411,17 +414,17 @@ void TriangleSample::createCommandBuffers()
     std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
     auto commandBufferCount = swapchainTextureViews.size();
-    m_commandBuffers.resize(commandBufferCount);
+    m_renderCommandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        CommandBufferDescriptor descriptor{};
+        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kUndefined };
         auto commandBuffer = m_device->createCommandBuffer(descriptor);
-        m_commandBuffers[i] = std::move(commandBuffer);
+        m_renderCommandBuffers[i] = std::move(commandBuffer);
     }
 
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        auto commandBuffer = m_commandBuffers[i].get();
+        auto commandBuffer = m_renderCommandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
         colorAttachments[0] = { .textureView = swapchainTextureViews[i],
@@ -435,6 +438,12 @@ void TriangleSample::createCommandBuffers()
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
     }
+}
+
+void TriangleSample::copyBufferToTexture()
+{
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 }
 
 void TriangleSample::updateUniformBuffer()

@@ -25,7 +25,7 @@ void VulkanRenderCommandEncoder::begin()
 
     VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.flags = 0;                  // Optional
+    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -82,7 +82,7 @@ void VulkanRenderCommandEncoder::end()
 
 void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
 {
-    RenderCommandEncoder::setPipeline(pipeline);
+    m_pipeline = pipeline;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -182,8 +182,57 @@ VulkanBlitCommandEncoder::VulkanBlitCommandEncoder(VulkanCommandBuffer* commandB
 {
 }
 
-void VulkanBlitCommandEncoder::copyBufferToTexture()
+void VulkanBlitCommandEncoder::begin()
 {
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo{};
+    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
+    commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+
+    vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &commandBufferBeginInfo);
+}
+
+void VulkanBlitCommandEncoder::end()
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+    vkAPI.EndCommandBuffer(commandBuffer);
+
+    // VkSubmitInfo submitInfo{};
+    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    // submitInfo.commandBufferCount = 1;
+    // submitInfo.pCommandBuffers = &commandBuffer;
+
+    // vkAPI.QueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    // vkAPI.QueueWaitIdle(graphicsQueue);
+
+    // vkAPI.FreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+void VulkanBlitCommandEncoder::copyBufferToBuffer()
+{
+    // TODO: not yet implemented
+}
+
+void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
+{
+}
+
+void VulkanBlitCommandEncoder::copyTextureToBuffer()
+{
+    // TODO: not yet implemented
+}
+
+void VulkanBlitCommandEncoder::copyTextureToTexture()
+{
+    // TODO: not yet implemented
 }
 
 // Convert Helper

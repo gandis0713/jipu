@@ -39,14 +39,21 @@ public:
                     float height) override;
 };
 
-class VulkanBlitCommandEncoder : BlitCommandEncoder
+class VulkanBlitCommandEncoder : public BlitCommandEncoder
 {
 public:
     VulkanBlitCommandEncoder() = delete;
     VulkanBlitCommandEncoder(VulkanCommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
     ~VulkanBlitCommandEncoder() override = default;
 
-    void copyBufferToTexture() override;
+    void begin() override;
+    void end() override;
+
+    void copyBufferToBuffer() override;
+    void copyBufferToTexture(const BlitBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
+
+    void copyTextureToBuffer() override;
+    void copyTextureToTexture() override;
 };
 
 // Convert Helper
