@@ -52,6 +52,7 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
+    void copyBufferToBuffer();
     void copyBufferToTexture();
 
     void updateUniformBuffer();
@@ -284,6 +285,9 @@ void TriangleSample::createTextureImage()
                                          .height = height };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
+    // copy buffer to buffer
+    copyBufferToBuffer();
+
     // copy buffer to image
     copyBufferToTexture();
 }
@@ -440,10 +444,34 @@ void TriangleSample::createCommandBuffers()
     }
 }
 
+void TriangleSample::copyBufferToBuffer()
+{
+    // TODO
+}
+
 void TriangleSample::copyBufferToTexture()
 {
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+    BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
+    std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
+
+    BlitTextureBuffer blitTextureBuffer{};
+    blitTextureBuffer.buffer = m_imageStagingBuffer.get();
+    blitTextureBuffer.offset = 0;
+    blitTextureBuffer.bytesPerRow = sizeof(unsigned char) * m_imageTexture->getWidth();
+    blitTextureBuffer.rowsPerTexture = m_imageTexture->getHeight();
+
+    BlitTexture blitTexture{ .texture = m_imageTexture.get() };
+    Extent3D extent{};
+    extent.width = m_imageTexture->getWidth();
+    extent.height = m_imageTexture->getHeight();
+    extent.depth = 1;
+
+    blitCommandEncoder->begin();
+    blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    blitCommandEncoder->end();
 }
 
 void TriangleSample::updateUniformBuffer()

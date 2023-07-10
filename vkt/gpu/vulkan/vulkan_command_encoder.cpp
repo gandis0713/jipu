@@ -216,13 +216,18 @@ void VulkanBlitCommandEncoder::end()
     // vkAPI.FreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 
-void VulkanBlitCommandEncoder::copyBufferToBuffer()
+void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
 {
-    // TODO: not yet implemented
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 }
 
-void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
+void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
 {
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 }
 
 void VulkanBlitCommandEncoder::copyTextureToBuffer()

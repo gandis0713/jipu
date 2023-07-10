@@ -49,8 +49,8 @@ public:
     void begin() override;
     void end() override;
 
-    void copyBufferToBuffer() override;
-    void copyBufferToTexture(const BlitBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
+    void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) override;
+    void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
 
     void copyTextureToBuffer() override;
     void copyTextureToTexture() override;

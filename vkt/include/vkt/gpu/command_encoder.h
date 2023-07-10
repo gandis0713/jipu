@@ -119,6 +119,12 @@ struct BlitBuffer
     uint32_t offset = 0;
 };
 
+struct BlitTextureBuffer : BlitBuffer
+{
+    uint32_t bytesPerRow = 0;
+    uint32_t rowsPerTexture = 0;
+};
+
 struct BlitTexture
 {
     Texture* texture = nullptr;
@@ -135,8 +141,8 @@ public:
     BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
     virtual ~BlitCommandEncoder() = default;
 
-    virtual void copyBufferToBuffer() = 0; // TODO: not yet implemented
-    virtual void copyBufferToTexture(const BlitBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
+    virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
+    virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
 
     virtual void copyTextureToBuffer() = 0;  // TODO: not yet implemented
     virtual void copyTextureToTexture() = 0; // TODO: not yet implemented
