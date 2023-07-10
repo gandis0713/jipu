@@ -41,4 +41,26 @@ VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
     return m_commandBuffer;
 }
 
+CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag)
+{
+    switch (flag)
+    {
+    case VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT:
+        return CommandBufferUsage::kOneTime;
+    default:
+        return CommandBufferUsage::kUndefined;
+    }
+}
+
+VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage usage)
+{
+    switch (usage)
+    {
+    case CommandBufferUsage::kOneTime:
+        return VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    default:
+        return static_cast<VkCommandBufferUsageFlagBits>(0x00000000);
+    }
+}
+
 } // namespace vkt

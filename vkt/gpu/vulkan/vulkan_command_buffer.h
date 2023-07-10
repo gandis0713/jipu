@@ -26,4 +26,8 @@ private:
 
 DOWN_CAST(VulkanCommandBuffer, CommandBuffer);
 
+// Convert Helper
+CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag);
+VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage usage);
+
 } // namespace vkt

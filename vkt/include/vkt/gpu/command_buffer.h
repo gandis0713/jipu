@@ -8,8 +8,15 @@
 namespace vkt
 {
 
+enum class CommandBufferUsage
+{
+    kUndefined = 1 << 0, // 0x00000000
+    kOneTime = 1 << 1,   // 0x00000001
+};
+
 struct CommandBufferDescriptor
 {
+    CommandBufferUsage usage = CommandBufferUsage::kUndefined;
 };
 
 class Device;
@@ -23,9 +30,13 @@ public:
     virtual std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) = 0;
 
 public:
+    CommandBufferUsage getUsage() const;
+
+public:
     Device* getDevice() const;
 
 protected:
     Device* m_device = nullptr;
+    CommandBufferDescriptor m_descriptor = {};
 };
 } // namespace vkt
