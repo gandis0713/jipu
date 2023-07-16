@@ -1,7 +1,9 @@
 #include "vulkan_texture.h"
+#include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace vkt
@@ -77,6 +79,108 @@ VulkanTexture::~VulkanTexture()
 VkImage VulkanTexture::getVkImage() const
 {
     return m_image;
+}
+
+void VulkanTexture::setLayout(VkImageLayout layout)
+{
+    VkImageLayout oldLayout = m_layout;
+    VkImageLayout newLayout = layout;
+
+    if (oldLayout == newLayout)
+    {
+        spdlog::debug("old layout and new layout are same.");
+        return;
+    }
+
+    auto vulkanDevice = downcast(m_device);
+    CommandBufferDescriptor commandBufferDecscriptor{};
+    commandBufferDecscriptor.usage = CommandBufferUsage::kOneTime;
+    std::unique_ptr<CommandBuffer> commandBuffer = vulkanDevice->createCommandBuffer(commandBufferDecscriptor);
+    auto vulkanCommandBuffer = downcast(commandBuffer.get());
+
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    // begin command buffer
+    {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
+
+        vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &beginInfo);
+    }
+
+    // set Image Memory Barrier
+    {
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = m_image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        VkPipelineStageFlags srcStage = 0u;
+        VkPipelineStageFlags dstStage = 0u;
+
+        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        }
+        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        }
+        else
+        {
+            throw std::invalid_argument("Unsupported layout transition.");
+        }
+        vkAPI.CmdPipelineBarrier(
+            vulkanCommandBuffer->getVkCommandBuffer(),
+            srcStage, dstStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier);
+    }
+
+    // end command buffer
+    {
+        vkAPI.EndCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer());
+    }
+
+    // submit command buffer to a queue
+    {
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        VkCommandBuffer buffer = vulkanCommandBuffer->getVkCommandBuffer();
+        submitInfo.pCommandBuffers = &buffer;
+
+        vkAPI.QueueSubmit(vulkanDevice->getVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
+
+        vkAPI.FreeCommandBuffers(vulkanDevice->getVkDevice(), vulkanDevice->getVkCommandPool(), 1, &buffer);
+    }
+
+    // set current layout.
+    m_layout = layout;
+}
+VkImageLayout VulkanTexture::getLayout() const
+{
+    return m_layout;
 }
 
 // Convert Helper

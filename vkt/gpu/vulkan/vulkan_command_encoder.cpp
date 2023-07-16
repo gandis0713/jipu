@@ -223,11 +223,42 @@ void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const B
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 }
 
-void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
+void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
 {
+    // layout transition to old layout
+    auto vulkanTexture = downcast(texture.texture);
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    // copy buffer to texture
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanBuffer = downcast(textureBuffer.buffer);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset = { 0, 0, 0 };
+    region.imageExtent = { .width = textureBuffer.bytesPerRow, // TODO: bytesPerRow to width
+                           .height = textureBuffer.rowsPerTexture,
+                           .depth = 1 };
+
+    vkAPI.CmdCopyBufferToImage(vulkanCommandBuffer->getVkCommandBuffer(),
+                               vulkanBuffer->getVkBuffer(),
+                               vulkanTexture->getVkImage(),
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               1,
+                               &region);
+
+    // layout transition to new layout
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void VulkanBlitCommandEncoder::copyTextureToBuffer()
