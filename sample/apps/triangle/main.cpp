@@ -53,7 +53,7 @@ private:
     void createCommandBuffers();
 
     void copyBufferToBuffer();
-    void copyBufferToTexture();
+    void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
 
     void updateUniformBuffer();
     void draw() override;
@@ -90,7 +90,6 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
-    std::unique_ptr<Buffer> m_imageStagingBuffer = nullptr;
     std::unique_ptr<Texture> m_imageTexture = nullptr;
 
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
@@ -134,7 +133,6 @@ TriangleSample::~TriangleSample()
     m_uniformBuffer.reset();
 
     m_imageTexture.reset();
-    m_imageStagingBuffer.reset();
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
@@ -268,28 +266,26 @@ void TriangleSample::createTextureImage()
     unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
     uint32_t width = m_jpegImage->getWidth();
     uint32_t height = m_jpegImage->getHeight();
-    uint64_t imageSize = sizeof(unsigned char) * width * height;
+    uint32_t channel = m_jpegImage->getChannel();
+    uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
 
     // create image staging buffer.
     BufferDescriptor descriptor{ .size = imageSize, .usage = BufferUsageFlagBits::kCopySrc };
-    m_imageStagingBuffer = m_device->createBuffer(descriptor);
+    std::unique_ptr<Buffer> imageTextureStagingBuffer = m_device->createBuffer(descriptor);
 
-    void* mappedPointer = m_imageStagingBuffer->map();
+    void* mappedPointer = imageTextureStagingBuffer->map();
     memcpy(mappedPointer, pixels, imageSize);
     // m_imageStagingBuffer->unmap();
 
-    // create image.
+    // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
                                          .width = width,
                                          .height = height };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
-    // copy buffer to buffer
-    copyBufferToBuffer();
-
-    // copy buffer to image
-    copyBufferToTexture();
+    // copy image staging buffer to texture
+    copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
 }
 
 void TriangleSample::createBindingGroupLayout()
@@ -449,7 +445,7 @@ void TriangleSample::copyBufferToBuffer()
     // TODO
 }
 
-void TriangleSample::copyBufferToTexture()
+void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
 {
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
@@ -458,15 +454,17 @@ void TriangleSample::copyBufferToTexture()
     std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
 
     BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = m_imageStagingBuffer.get();
+    blitTextureBuffer.buffer = imageTextureStagingBuffer;
     blitTextureBuffer.offset = 0;
-    blitTextureBuffer.bytesPerRow = sizeof(unsigned char) * m_imageTexture->getWidth();
-    blitTextureBuffer.rowsPerTexture = m_imageTexture->getHeight();
+    uint32_t channel = 4;                          // TODO: from texture.
+    uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
+    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
+    blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
 
-    BlitTexture blitTexture{ .texture = m_imageTexture.get() };
+    BlitTexture blitTexture{ .texture = imageTexture };
     Extent3D extent{};
-    extent.width = m_imageTexture->getWidth();
-    extent.height = m_imageTexture->getHeight();
+    extent.width = imageTexture->getWidth();
+    extent.height = imageTexture->getHeight();
     extent.depth = 1;
 
     blitCommandEncoder->begin();

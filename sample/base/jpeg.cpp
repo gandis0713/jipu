@@ -10,7 +10,8 @@ namespace vkt
 
 JPEGImage::JPEGImage(const std::filesystem::path& path)
 {
-    stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &m_channels, STBI_rgb_alpha);
+    int components = 0;
+    stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &components, STBI_rgb_alpha);
 
     if (pixels == nullptr)
     {
@@ -41,4 +42,8 @@ int JPEGImage::getHeight() const
     return m_height;
 }
 
+int JPEGImage::getChannel() const
+{
+    return 4; // RGBA
+}
 } // namespace vkt

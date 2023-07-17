@@ -246,9 +246,9 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
     region.imageSubresource.layerCount = 1;
 
     region.imageOffset = { 0, 0, 0 };
-    region.imageExtent = { .width = textureBuffer.bytesPerRow, // TODO: bytesPerRow to width
-                           .height = textureBuffer.rowsPerTexture,
-                           .depth = 1 };
+    region.imageExtent = { .width = extent.width,
+                           .height = extent.height,
+                           .depth = extent.depth };
 
     vkAPI.CmdCopyBufferToImage(vulkanCommandBuffer->getVkCommandBuffer(),
                                vulkanBuffer->getVkBuffer(),

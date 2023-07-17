@@ -62,11 +62,12 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     vkAPI.loadDeviceProcs(m_device, deviceKnobs);
 
     // get queues.
+    m_queues.resize(queueFamilyIndices.size());
     for (const uint32_t& index : queueFamilyIndices)
     {
         VkQueue queue{};
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
-        m_queues.push_back(queue);
+        m_queues[index] = queue;
     }
 }
 
