@@ -5,6 +5,7 @@
 #include "vkt/gpu/texture.h"
 #include "vulkan_api.h"
 #include "vulkan_memory.h"
+#include "vulkan_texture_view.h"
 
 #include <fmt/format.h>
 
@@ -31,6 +32,9 @@ public:
     VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor);
     ~VulkanTexture() override;
 
+    std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
+
+public:
     VkImage getVkImage() const;
 
     void setLayout(VkImageLayout layout);
@@ -51,8 +55,6 @@ DOWN_CAST(VulkanTexture, Texture);
 // Convert Helper
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
-VkFormat ToVkFormat(TextureFormat format);
-TextureFormat ToTextureFormat(VkFormat format);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 

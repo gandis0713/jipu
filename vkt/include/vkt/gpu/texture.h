@@ -1,6 +1,8 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/texture_view.h"
+#include <memory>
 #include <stdint.h>
 
 namespace vkt
@@ -23,17 +25,6 @@ enum class TextureType
     k1D,
     k2D,
     k3D,
-};
-
-enum class TextureFormat
-{
-    kUndefined = 0,
-    kBGRA_8888_UInt_Norm,
-    kBGRA_8888_UInt_Norm_SRGB,
-    kRGB_888_UInt_Norm,
-    kRGB_888_UInt_Norm_SRGB,
-    kRGBA_8888_UInt_Norm,
-    kRGBA_8888_UInt_Norm_SRGB
 };
 
 struct TextureUsageFlagBits
@@ -67,6 +58,9 @@ public:
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
+    virtual std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) = 0;
+
+public:
     TextureType getType() const;
     TextureFormat getFormat() const;
     uint32_t getWidth() const;

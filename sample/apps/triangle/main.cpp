@@ -43,7 +43,8 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
-    void createTextureImage();
+    void createImageTexture();
+    void createImageTextureView();
 
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -91,6 +92,7 @@ private:
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     std::unique_ptr<Texture> m_imageTexture = nullptr;
+    std::unique_ptr<TextureView> m_imageTextureView = nullptr;
 
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
@@ -132,6 +134,7 @@ TriangleSample::~TriangleSample()
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
 
+    m_imageTextureView.reset();
     m_imageTexture.reset();
 
     m_indexBuffer.reset();
@@ -198,7 +201,8 @@ void TriangleSample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
-    createTextureImage();
+    createImageTexture();
+    createImageTextureView();
 
     createBindingGroupLayout();
     createBindingGroup();
@@ -258,7 +262,7 @@ void TriangleSample::createUniformBuffer()
     m_uniformBufferMappedPointer = m_uniformBuffer->map();
 }
 
-void TriangleSample::createTextureImage()
+void TriangleSample::createImageTexture()
 {
     // load jpeg image.
     m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "texture.jpg");
@@ -286,6 +290,14 @@ void TriangleSample::createTextureImage()
 
     // copy image staging buffer to texture
     copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+}
+
+void TriangleSample::createImageTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+
+    m_imageTextureView = m_imageTexture->createTextureView(descriptor);
 }
 
 void TriangleSample::createBindingGroupLayout()
