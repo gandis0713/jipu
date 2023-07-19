@@ -1,5 +1,6 @@
 #include "vulkan_sampler.h"
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 
 #include <fmt/format.h>
 #include <stdexcept>
@@ -10,10 +11,40 @@ namespace vkt
 VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor)
     : Sampler(device, descriptor)
 {
+    VkSamplerCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    createInfo.magFilter = ToVkFilter(descriptor.magFilter);
+    createInfo.minFilter = ToVkFilter(descriptor.minFilter);
+    createInfo.mipmapMode = ToVkSamplerMipmapMode(descriptor.mipmapFilter);
+    createInfo.addressModeU = ToVkSamplerAddressMode(descriptor.addressModeU);
+    createInfo.addressModeV = ToVkSamplerAddressMode(descriptor.addressModeV);
+    createInfo.addressModeW = ToVkSamplerAddressMode(descriptor.addressModeW);
+    // createInfo.anisotropyEnable = VK_TRUE;
+    createInfo.anisotropyEnable = VK_FALSE; // check it from physical device features.
+    // createInfo.maxAnisotropy = downcast(m_device->getPhysicalDevice())->getInfo().physicalDeviceProperties.limits.maxSamplerAnisotropy;
+    createInfo.maxAnisotropy = 1.0f;
+    createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    createInfo.unnormalizedCoordinates = VK_FALSE;
+    createInfo.compareEnable = VK_FALSE;
+    createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    createInfo.mipLodBias = 0.0f;
+    createInfo.minLod = 0.0f;
+    createInfo.maxLod = 0.0f;
+
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkResult result = vkAPI.CreateSampler(device->getVkDevice(), &createInfo, nullptr, &m_sampler);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create sampler. {}", static_cast<int32_t>(result)));
+    }
 }
 
 VulkanSampler::~VulkanSampler()
 {
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    vkAPI.DestroySampler(vulkanDevice->getVkDevice(), m_sampler, nullptr);
 }
 
 // Convert Helper

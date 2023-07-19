@@ -14,6 +14,9 @@ public:
     VulkanSampler() = delete;
     VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor);
     ~VulkanSampler() override;
+
+private:
+    VkSampler m_sampler = VK_NULL_HANDLE;
 };
 
 DOWN_CAST(VulkanSampler, Sampler);

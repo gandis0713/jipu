@@ -10,6 +10,7 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
+#include "vulkan_sampler.h"
 #include "vulkan_swapchain.h"
 #include "vulkan_texture.h"
 
@@ -84,9 +85,9 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DestroyDevice(m_device, nullptr);
 }
 
-std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
+std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapchain>(this, descriptor);
+    return std::make_unique<VulkanBuffer>(this, descriptor);
 }
 
 std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGroupDescriptor& descriptor)
@@ -97,6 +98,11 @@ std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGrou
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
 {
     return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
+}
+
+std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
+{
+    return std::make_unique<VulkanCommandBuffer>(this, descriptor);
 }
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
@@ -114,19 +120,19 @@ std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descript
     return std::make_unique<VulkanQueue>(this, descriptor);
 }
 
-std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
+std::unique_ptr<Sampler> VulkanDevice::createSampler(const SamplerDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBuffer>(this, descriptor);
-}
-
-std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
-{
-    return std::make_unique<VulkanCommandBuffer>(this, descriptor);
+    return std::make_unique<VulkanSampler>(this, descriptor);
 }
 
 std::unique_ptr<ShaderModule> VulkanDevice::createShaderModule(const ShaderModuleDescriptor& descriptor)
 {
     return std::make_unique<VulkanShaderModule>(this, descriptor);
+}
+
+std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
+{
+    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)

@@ -3,7 +3,22 @@
 #include "file.h"
 #include "jpeg.h"
 #include "sample.h"
-#include "vkt_headers.h"
+
+#include "vkt/gpu/binding_group.h"
+#include "vkt/gpu/binding_group_layout.h"
+#include "vkt/gpu/buffer.h"
+#include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/driver.h"
+#include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
+#include "vkt/gpu/queue.h"
+#include "vkt/gpu/sampler.h"
+#include "vkt/gpu/shader_module.h"
+#include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/texture_view.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -45,6 +60,7 @@ private:
     void createUniformBuffer();
     void createImageTexture();
     void createImageTextureView();
+    void createImageSampler();
 
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -93,6 +109,7 @@ private:
 
     std::unique_ptr<Texture> m_imageTexture = nullptr;
     std::unique_ptr<TextureView> m_imageTextureView = nullptr;
+    std::unique_ptr<Sampler> m_imageSampler = nullptr;
 
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
@@ -134,6 +151,7 @@ TriangleSample::~TriangleSample()
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
 
+    m_imageSampler.reset();
     m_imageTextureView.reset();
     m_imageTexture.reset();
 
@@ -203,6 +221,7 @@ void TriangleSample::init()
     createUniformBuffer();
     createImageTexture();
     createImageTextureView();
+    createImageSampler();
 
     createBindingGroupLayout();
     createBindingGroup();
@@ -298,6 +317,19 @@ void TriangleSample::createImageTextureView()
     descriptor.type = TextureViewType::k2D;
 
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
+}
+
+void TriangleSample::createImageSampler()
+{
+    SamplerDescriptor descriptor{};
+    descriptor.magFilter = FilterMode::kLinear;
+    descriptor.minFilter = FilterMode::kLinear;
+    descriptor.mipmapFilter = MipmapFilterMode::kLinear;
+    descriptor.addressModeU = AddressMode::kRepeat;
+    descriptor.addressModeV = AddressMode::kRepeat;
+    descriptor.addressModeW = AddressMode::kRepeat;
+
+    m_imageSampler = m_device->createSampler(descriptor);
 }
 
 void TriangleSample::createBindingGroupLayout()
