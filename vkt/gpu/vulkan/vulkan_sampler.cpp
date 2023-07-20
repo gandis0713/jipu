@@ -57,12 +57,13 @@ VkSamplerAddressMode ToVkSamplerAddressMode(AddressMode mode)
 {
     switch (mode)
     {
-    case AddressMode::kClampToEdge:
-        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     case AddressMode::kRepeat:
         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     case AddressMode::kMirrorRepeat:
         return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+    case AddressMode::kClampToEdge:
+    default:
+        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     }
 }
 
@@ -77,7 +78,7 @@ AddressMode ToAddressMode(VkSamplerAddressMode mode)
     case VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT:
         return AddressMode::kMirrorRepeat;
     default:
-        throw std::runtime_error(fmt::format("{} mode does not support.", static_cast<int32_t>(mode)));
+        throw std::runtime_error(fmt::format("{} address mode does not support.", static_cast<int32_t>(mode)));
         return AddressMode::kClampToEdge;
     }
 }
@@ -86,10 +87,11 @@ VkFilter ToVkFilter(FilterMode mode)
 {
     switch (mode)
     {
-    case FilterMode::kNearest:
-        return VK_FILTER_NEAREST;
     case FilterMode::kLinear:
         return VK_FILTER_LINEAR;
+    case FilterMode::kNearest:
+    default:
+        return VK_FILTER_NEAREST;
     }
 }
 
@@ -111,10 +113,11 @@ VkSamplerMipmapMode ToVkSamplerMipmapMode(MipmapFilterMode mode)
 {
     switch (mode)
     {
-    case MipmapFilterMode::kNearest:
-        return VK_SAMPLER_MIPMAP_MODE_NEAREST;
     case MipmapFilterMode::kLinear:
         return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    case MipmapFilterMode::kNearest:
+    default:
+        return VK_SAMPLER_MIPMAP_MODE_NEAREST;
     }
 }
 
