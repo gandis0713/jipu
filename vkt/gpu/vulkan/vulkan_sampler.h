@@ -15,6 +15,8 @@ public:
     VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor);
     ~VulkanSampler() override;
 
+    VkSampler getVkSampler() const;
+
 private:
     VkSampler m_sampler = VK_NULL_HANDLE;
 };

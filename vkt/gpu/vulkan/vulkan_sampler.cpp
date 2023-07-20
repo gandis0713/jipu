@@ -47,6 +47,11 @@ VulkanSampler::~VulkanSampler()
     vkAPI.DestroySampler(vulkanDevice->getVkDevice(), m_sampler, nullptr);
 }
 
+VkSampler VulkanSampler::getVkSampler() const
+{
+    return m_sampler;
+}
+
 // Convert Helper
 VkSamplerAddressMode ToVkSamplerAddressMode(AddressMode mode)
 {

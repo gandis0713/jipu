@@ -34,6 +34,10 @@ struct BufferBindingLayout : BindingLayout
     BufferBindingType type = BufferBindingType::kUndefined;
 };
 
+struct SamplerBindingLayout : BindingLayout
+{
+};
+
 struct TextureBindingLayout : BindingLayout
 {
 };
@@ -41,6 +45,7 @@ struct TextureBindingLayout : BindingLayout
 struct BindingGroupLayoutDescriptor
 {
     std::vector<BufferBindingLayout> buffers = {};
+    std::vector<SamplerBindingLayout> samplers = {};
     std::vector<TextureBindingLayout> textures = {};
 };
 
@@ -54,6 +59,9 @@ public:
 
     const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
     BufferBindingLayout getBufferBindingLayout(uint32_t index) const;
+
+    const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
+    SamplerBindingLayout getSamplerBindingLayout(uint32_t index) const;
 
     const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
     TextureBindingLayout getTextureBindingLayout(uint32_t index) const;

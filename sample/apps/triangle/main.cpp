@@ -87,6 +87,7 @@ private:
     {
         glm::vec2 pos;
         glm::vec3 color;
+        glm::vec2 texCoord;
     };
 
     // data
@@ -239,10 +240,10 @@ void TriangleSample::createVertexBuffer()
     const float xSize = 0.5f;
     const float ySize = 0.5f;
     m_vertices = {
-        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f } },
-        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f } },
-        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f } },
-        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f } }
+        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
     };
 
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
@@ -334,13 +335,21 @@ void TriangleSample::createImageSampler()
 
 void TriangleSample::createBindingGroupLayout()
 {
+    // Uniform Buffer
     BufferBindingLayout bufferBindingLayout{};
     bufferBindingLayout.type = BufferBindingType::kUniform;
     bufferBindingLayout.index = 0;
     bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
-
     std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
+
+    // Sampler
+    SamplerBindingLayout samplerBindingLayout{};
+    samplerBindingLayout.index = 1;
+    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
+
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,
+                                                               .samplers = samplerBindingLayouts };
 
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -350,7 +359,7 @@ void TriangleSample::createBindingGroup()
     const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
     std::vector<BufferBinding> bufferBindings{};
     bufferBindings.resize(bufferBindingLayouts.size());
-    for (auto i = 0; i < bufferBindingLayouts.size(); ++i)
+    for (auto i = 0; i < bufferBindings.size(); ++i)
     {
         BufferBinding bufferBinding{};
         bufferBinding.index = bufferBindingLayouts[i].index;
@@ -361,10 +370,24 @@ void TriangleSample::createBindingGroup()
         bufferBindings[i] = bufferBinding;
     }
 
+    const std::vector<SamplerBindingLayout>& samplerBindingLayouts = m_bindingGroupLayout->getSamplerBindingLayouts();
+    std::vector<SamplerBinding> samplerBindings{};
+    samplerBindings.resize(samplerBindingLayouts.size());
+    for (auto i = 0; i < samplerBindings.size(); ++i)
+    {
+        SamplerBinding samplerBinding{};
+        samplerBinding.index = samplerBindingLayouts[i].index;
+        samplerBinding.sampler = m_imageSampler.get();
+        samplerBinding.textureView = m_imageTextureView.get();
+
+        samplerBindings[i] = samplerBinding;
+    }
+
     std::vector<TextureBinding> textureBindings{};
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
     descriptor.buffers = bufferBindings;
+    descriptor.samplers = samplerBindings;
     descriptor.textures = textureBindings;
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
@@ -402,7 +425,7 @@ void TriangleSample::createRenderPipeline()
         {
             // attributes
             std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
+            vertexAttributes.resize(3);
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx2,
@@ -411,6 +434,10 @@ void TriangleSample::createRenderPipeline()
                 // color
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx3,
                                         .offset = offsetof(Vertex, color) };
+
+                // texture coodinate
+                vertexAttributes[2] = { .format = VertexFormat::kSFLOATx2,
+                                        .offset = offsetof(Vertex, texCoord) };
             }
 
             VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
