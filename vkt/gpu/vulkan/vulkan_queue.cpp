@@ -101,7 +101,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         spdlog::error("failed to submit draw command buffer!");
     }
 
-    // TODO: check really need below?
+    // TODO: check really need?
     vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
 }
 
