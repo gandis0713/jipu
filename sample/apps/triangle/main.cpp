@@ -541,6 +541,9 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitCommandEncoder->begin();
     blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
     blitCommandEncoder->end();
+
+    // TODO: change below to submit function.
+    m_renderQueue->submitTest(blitCommandEncoder->getCommandBuffer());
 }
 
 void TriangleSample::updateUniformBuffer()

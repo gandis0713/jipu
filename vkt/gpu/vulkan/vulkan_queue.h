@@ -15,6 +15,8 @@ public:
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
+    // TODO: remove below
+    void submitTest(CommandBuffer* commandBuffer) override;
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
 
 public:

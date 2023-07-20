@@ -86,7 +86,7 @@ VkImage VulkanTexture::getVkImage() const
     return m_image;
 }
 
-void VulkanTexture::setLayout(VkImageLayout layout)
+void VulkanTexture::setLayout(VkImageLayout layout, VkCommandBuffer commandBuffer)
 {
     VkImageLayout oldLayout = m_layout;
     VkImageLayout newLayout = layout;
@@ -98,19 +98,7 @@ void VulkanTexture::setLayout(VkImageLayout layout)
     }
 
     auto vulkanDevice = downcast(m_device);
-    CommandBufferDescriptor commandBufferDecscriptor{};
-    commandBufferDecscriptor.usage = CommandBufferUsage::kOneTime;
-    std::unique_ptr<CommandBuffer> commandBuffer = vulkanDevice->createCommandBuffer(commandBufferDecscriptor);
-    auto vulkanCommandBuffer = downcast(commandBuffer.get());
-
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    // begin command buffer
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
-
-    vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &beginInfo);
 
     // set Image Memory Barrier
     VkImageMemoryBarrier barrier{};
@@ -151,27 +139,12 @@ void VulkanTexture::setLayout(VkImageLayout layout)
         throw std::invalid_argument("Unsupported layout transition.");
     }
     vkAPI.CmdPipelineBarrier(
-        vulkanCommandBuffer->getVkCommandBuffer(),
+        commandBuffer,
         srcStage, dstStage,
         0,
         0, nullptr,
         0, nullptr,
         1, &barrier);
-
-    // end command buffer
-    vkAPI.EndCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer());
-
-    // submit command buffer to a queue
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    VkCommandBuffer buffer = vulkanCommandBuffer->getVkCommandBuffer();
-    submitInfo.pCommandBuffers = &buffer;
-
-    vkAPI.QueueSubmit(vulkanDevice->getVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-
-    // TODO: check really need?
-    vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
 
     // set current layout.
     m_layout = layout;

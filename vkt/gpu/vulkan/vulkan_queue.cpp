@@ -61,6 +61,29 @@ VulkanQueue::~VulkanQueue()
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderingFinishSemaphore, nullptr);
 }
 
+void VulkanQueue::submitTest(CommandBuffer* commandBuffer)
+{
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    auto vulkanCommandBuffer = downcast(commandBuffer);
+
+    // submit command buffer to a queue
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    VkCommandBuffer buffer = vulkanCommandBuffer->getVkCommandBuffer();
+    submitInfo.pCommandBuffers = &buffer;
+
+    if (vkAPI.QueueSubmit(vulkanDevice->getVkQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        spdlog::error("failed to submit test command buffer");
+    }
+
+    // TODO: check really need?
+    vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
+}
+
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);

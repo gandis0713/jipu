@@ -198,22 +198,12 @@ void VulkanBlitCommandEncoder::begin()
 
 void VulkanBlitCommandEncoder::end()
 {
-    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    // auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    // const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    // VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
-    // vkAPI.EndCommandBuffer(commandBuffer);
-
-    // VkSubmitInfo submitInfo{};
-    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    // submitInfo.commandBufferCount = 1;
-    // submitInfo.pCommandBuffers = &commandBuffer;
-
-    // vkAPI.QueueSubmit(vulkanDevice->getVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    // vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
-
-    // vkAPI.FreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+    vkAPI.EndCommandBuffer(commandBuffer);
 }
 
 void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
@@ -225,12 +215,14 @@ void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const B
 
 void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
 {
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+
     // layout transition to old layout
     auto vulkanTexture = downcast(texture.texture);
-    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
 
     // copy buffer to texture
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanBuffer = downcast(textureBuffer.buffer);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
@@ -250,30 +242,15 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
                            .height = extent.height,
                            .depth = extent.depth };
 
-    vkAPI.CmdCopyBufferToImage(vulkanCommandBuffer->getVkCommandBuffer(),
+    vkAPI.CmdCopyBufferToImage(commandBuffer,
                                vulkanBuffer->getVkBuffer(),
                                vulkanTexture->getVkImage(),
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                1,
                                &region);
 
-    // end command buffer
-    vkAPI.EndCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer());
-
-    // submit command buffer to a queue
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    VkCommandBuffer buffer = vulkanCommandBuffer->getVkCommandBuffer();
-    submitInfo.pCommandBuffers = &buffer;
-
-    vkAPI.QueueSubmit(vulkanDevice->getVkQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-
-    // TODO: check really need?
-    vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
-
     // layout transition to new layout
-    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
 }
 
 void VulkanBlitCommandEncoder::copyTextureToBuffer()
