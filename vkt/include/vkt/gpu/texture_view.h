@@ -31,9 +31,19 @@ enum class TextureFormat
     kD_24_UInt_Norm_S_8_UInt,
 };
 
+struct TextureAspectFlagBits
+{
+    static constexpr uint32_t kUndefined = 0x00000000;
+    static constexpr uint32_t kColor = 0x00000001;
+    static constexpr uint32_t kDepth = 0x00000002;
+    static constexpr uint32_t kStencil = 0x00000004;
+};
+using TextureAspectFlags = uint32_t;
+
 struct TextureViewDescriptor
 {
-    TextureViewType type;
+    TextureViewType type = TextureViewType::kUndefined;
+    TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 
 class Texture;

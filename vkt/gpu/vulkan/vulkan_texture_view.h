@@ -28,5 +28,7 @@ VkFormat ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageViewType ToVkImageViewType(TextureViewType type);
 TextureViewType ToTextureViewType(VkImageViewType type);
+VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags);
+TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags flags);
 
 } // namespace vkt
