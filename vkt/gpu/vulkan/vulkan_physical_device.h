@@ -32,7 +32,9 @@ public:
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
 
     const VulkanPhysicalDeviceInfo& getInfo() const;
-    int fineMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
+
+    int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
+    bool isDepthStencilSupported(VkFormat format) const;
 
 public:
     VkInstance getVkInstance() const;
