@@ -543,8 +543,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
     blitCommandEncoder->end();
 
-    // TODO: change below to submit function.
-    m_queue->submitTest(blitCommandEncoder->getCommandBuffer());
+    m_queue->submit({ blitCommandEncoder->getCommandBuffer() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -582,8 +581,7 @@ void TriangleSample::draw()
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
     renderCommandEncoder->end();
 
-    m_queue->submit({ renderCommandEncoder->getCommandBuffer() });
-    m_swapchain->present(m_queue.get());
+    m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
 }
 
 #if defined(__ANDROID__) || defined(ANDROID)

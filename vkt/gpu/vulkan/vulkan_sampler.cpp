@@ -19,10 +19,13 @@ VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& desc
     createInfo.addressModeU = ToVkSamplerAddressMode(descriptor.addressModeU);
     createInfo.addressModeV = ToVkSamplerAddressMode(descriptor.addressModeV);
     createInfo.addressModeW = ToVkSamplerAddressMode(descriptor.addressModeW);
-    // createInfo.anisotropyEnable = VK_TRUE;
-    createInfo.anisotropyEnable = VK_FALSE; // check it from physical device features.
-    // createInfo.maxAnisotropy = downcast(m_device->getPhysicalDevice())->getInfo().physicalDeviceProperties.limits.maxSamplerAnisotropy;
+    createInfo.anisotropyEnable = VK_FALSE;
     createInfo.maxAnisotropy = 1.0f;
+    // check it from physical device features.
+    {
+        // createInfo.anisotropyEnable = VK_TRUE;
+        // createInfo.maxAnisotropy = downcast(m_device->getPhysicalDevice())->getInfo().physicalDeviceProperties.limits.maxSamplerAnisotropy;
+    }
     createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     createInfo.unnormalizedCoordinates = VK_FALSE;
     createInfo.compareEnable = VK_FALSE;

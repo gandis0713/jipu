@@ -33,9 +33,8 @@ public:
     Queue(Device* device, const QueueDescriptor& descriptor);
     virtual ~Queue() = default;
 
-    // TODO: remove below
-    virtual void submitTest(CommandBuffer* commandBuffer) = 0;
     virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
+    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) = 0;
 
 public:
     QueueFlags getFlags() const;
