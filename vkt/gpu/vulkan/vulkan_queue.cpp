@@ -26,7 +26,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
     for (uint64_t index = 0; index < queueFamilyPropertiesSize; ++index)
     {
         const auto& properties = deviceInfo.queueFamilyProperties[index];
-        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if (properties.queueFlags & ToVkQueueFlags(descriptor.flags))
         {
             m_index = static_cast<uint32_t>(index);
             m_properties = properties;
@@ -91,9 +91,9 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 
     VulkanSynchronization& sync = vulkanDevice->getSynchronization();
 
-    SemaphoreDescriptor waitDescriptor{ .type = SemephoreType::kHostToQueue };
+    SemaphoreDescriptor waitDescriptor{ .type = SemephoreType::kQueueToQueue };
     std::vector<VkSemaphore> waitSemaphores = sync.takeoutSemaphore(waitDescriptor);
-    SemaphoreDescriptor signalDescriptor{ .type = SemephoreType::kQueueToHost };
+    SemaphoreDescriptor signalDescriptor{ .type = SemephoreType::kQueueToQueue };
     sync.injectSemaphore(signalDescriptor, m_renderingFinishSemaphore);
 
     // submit command buffer

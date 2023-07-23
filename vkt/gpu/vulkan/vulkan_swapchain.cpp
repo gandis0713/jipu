@@ -163,7 +163,7 @@ void VulkanSwapchain::present(Queue* queue)
 
     // takeout dependency.
     VulkanSynchronization& sync = vulkanDevice->getSynchronization();
-    SemaphoreDescriptor descriptor{ .type = SemephoreType::kQueueToHost };
+    SemaphoreDescriptor descriptor{ .type = SemephoreType::kQueueToQueue };
     std::vector<VkSemaphore> semaphore = sync.takeoutSemaphore(descriptor);
 
     // present

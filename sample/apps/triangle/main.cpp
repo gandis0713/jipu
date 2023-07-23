@@ -103,6 +103,8 @@ private:
     std::unique_ptr<Device> m_device = nullptr;
 
     std::unique_ptr<Queue> m_renderQueue = nullptr;
+    std::unique_ptr<Queue> m_blitQueue = nullptr;
+
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
@@ -159,6 +161,7 @@ TriangleSample::~TriangleSample()
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
+    m_blitQueue.reset();
     m_renderQueue.reset();
 
     m_physicalDevice.reset();
@@ -196,8 +199,11 @@ void TriangleSample::init()
 
     // create queue
     {
-        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
-        m_renderQueue = m_device->createQueue(descriptor);
+        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics };
+        m_renderQueue = m_device->createQueue(rednerQueueDescriptor);
+
+        QueueDescriptor blitQueueDescriptor{ .flags = QueueFlagBits::kTransfer };
+        m_blitQueue = m_device->createQueue(blitQueueDescriptor);
     }
 
     // create swapchain
@@ -543,7 +549,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitCommandEncoder->end();
 
     // TODO: change below to submit function.
-    m_renderQueue->submitTest(blitCommandEncoder->getCommandBuffer());
+    m_blitQueue->submitTest(blitCommandEncoder->getCommandBuffer());
 }
 
 void TriangleSample::updateUniformBuffer()
