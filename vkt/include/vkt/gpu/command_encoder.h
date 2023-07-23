@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/texture.h"
 #include "vkt/gpu/texture_view.h"
 
 #include <vector>
@@ -54,6 +55,8 @@ class Pipeline;
 class Buffer;
 class CommandBuffer;
 class BindingGroup;
+class Buffer;
+class Texture;
 class VKT_EXPORT CommandEncoder
 {
 public:
@@ -63,9 +66,6 @@ public:
 
     virtual void begin() = 0;
     virtual void end() = 0;
-
-    virtual void setPipeline(Pipeline* pipeline);
-    virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
     CommandBuffer* getCommandBuffer() const;
 
@@ -86,6 +86,9 @@ public:
     RenderCommandEncoder() = delete;
     RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor);
     virtual ~RenderCommandEncoder() = default;
+
+    virtual void setPipeline(Pipeline* pipeline) = 0;
+    virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
     virtual void setVertexBuffer(Buffer* buffer) = 0;
     virtual void setIndexBuffer(Buffer* buffer) = 0;
@@ -109,4 +112,40 @@ public:
 protected:
     RenderCommandEncoderDescriptor m_descriptor{};
 };
+
+struct BlitBuffer
+{
+    Buffer* buffer = nullptr;
+    uint32_t offset = 0;
+};
+
+struct BlitTextureBuffer : BlitBuffer
+{
+    uint32_t bytesPerRow = 0;
+    uint32_t rowsPerTexture = 0;
+};
+
+struct BlitTexture
+{
+    Texture* texture = nullptr;
+};
+
+struct BlitCommandEncoderDescriptor
+{
+};
+
+class VKT_EXPORT BlitCommandEncoder : public CommandEncoder
+{
+public:
+    BlitCommandEncoder() = delete;
+    BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
+    virtual ~BlitCommandEncoder() = default;
+
+    virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
+    virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
+
+    virtual void copyTextureToBuffer() = 0;  // TODO: not yet implemented
+    virtual void copyTextureToTexture() = 0; // TODO: not yet implemented
+};
+
 } // namespace vkt

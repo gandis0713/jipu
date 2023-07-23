@@ -6,6 +6,7 @@
     "glm",
     "spdlog",
     "sdl2",
+    "stb",
     {
       "name": "vcpkg-cmake",
       "host": true

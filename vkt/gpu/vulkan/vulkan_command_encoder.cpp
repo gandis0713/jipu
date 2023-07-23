@@ -25,7 +25,7 @@ void VulkanRenderCommandEncoder::begin()
 
     VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.flags = 0;                  // Optional
+    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -82,7 +82,7 @@ void VulkanRenderCommandEncoder::end()
 
 void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
 {
-    RenderCommandEncoder::setPipeline(pipeline);
+    m_pipeline = pipeline;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -175,6 +175,92 @@ void VulkanRenderCommandEncoder::setScissor(float x,
     scissorRect.extent.height = height;
 
     vulkanDevice->vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
+}
+
+VulkanBlitCommandEncoder::VulkanBlitCommandEncoder(VulkanCommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
+    : BlitCommandEncoder(commandBuffer, descriptor)
+{
+}
+
+void VulkanBlitCommandEncoder::begin()
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo{};
+    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
+    commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
+
+    vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &commandBufferBeginInfo);
+}
+
+void VulkanBlitCommandEncoder::end()
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+    vkAPI.EndCommandBuffer(commandBuffer);
+}
+
+void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+}
+
+void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+
+    // layout transition to old layout
+    auto vulkanTexture = downcast(texture.texture);
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
+
+    // copy buffer to texture
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanBuffer = downcast(textureBuffer.buffer);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset = { 0, 0, 0 };
+    region.imageExtent = { .width = extent.width,
+                           .height = extent.height,
+                           .depth = extent.depth };
+
+    vkAPI.CmdCopyBufferToImage(commandBuffer,
+                               vulkanBuffer->getVkBuffer(),
+                               vulkanTexture->getVkImage(),
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               1,
+                               &region);
+
+    // layout transition to new layout
+    vulkanTexture->setLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, commandBuffer);
+}
+
+void VulkanBlitCommandEncoder::copyTextureToBuffer()
+{
+    // TODO: not yet implemented
+}
+
+void VulkanBlitCommandEncoder::copyTextureToTexture()
+{
+    // TODO: not yet implemented
 }
 
 // Convert Helper

@@ -15,7 +15,8 @@ public:
     VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
-    void submit(CommandBuffer* commandBuffer) override;
+    void submit(std::vector<CommandBuffer*> commandBuffers) override;
+    void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) override;
 
 public:
     VkQueue getVkQueue() const;

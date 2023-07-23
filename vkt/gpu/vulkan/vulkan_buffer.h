@@ -24,6 +24,8 @@ public:
 private:
     VkBuffer m_buffer = VK_NULL_HANDLE;
     std::unique_ptr<VulkanMemory> m_memory = nullptr;
+
+    void* m_mappedPtr = nullptr;
 };
 
 DOWN_CAST(VulkanBuffer, Buffer);

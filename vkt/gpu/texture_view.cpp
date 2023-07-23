@@ -1,4 +1,5 @@
 #include "vkt/gpu/texture_view.h"
+#include "vkt/gpu/texture.h"
 
 namespace vkt
 {

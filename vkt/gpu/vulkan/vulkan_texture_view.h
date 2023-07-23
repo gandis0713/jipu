@@ -23,4 +23,10 @@ private:
 
 DOWN_CAST(VulkanTextureView, TextureView);
 
+// Convert Helper
+VkFormat ToVkFormat(TextureFormat format);
+TextureFormat ToTextureFormat(VkFormat format);
+VkImageViewType ToVkImageViewType(TextureViewType type);
+TextureViewType ToTextureViewType(VkImageViewType type);
+
 } // namespace vkt

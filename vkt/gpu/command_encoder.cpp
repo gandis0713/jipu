@@ -11,11 +11,6 @@ CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
 {
 }
 
-void CommandEncoder::setPipeline(Pipeline* pipeline)
-{
-    m_pipeline = pipeline;
-}
-
 CommandBuffer* CommandEncoder::getCommandBuffer() const
 {
     return m_commandBuffer;
@@ -24,6 +19,11 @@ CommandBuffer* CommandEncoder::getCommandBuffer() const
 RenderCommandEncoder::RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
     : CommandEncoder(commandBuffer)
     , m_descriptor(descriptor)
+{
+}
+
+BlitCommandEncoder::BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
+    : CommandEncoder(commandBuffer)
 {
 }
 

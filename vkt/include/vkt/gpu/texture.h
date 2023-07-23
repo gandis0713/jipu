@@ -1,10 +1,23 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/texture_view.h"
+#include <memory>
 #include <stdint.h>
 
 namespace vkt
 {
+
+struct Extent2D
+{
+    uint32_t width = 0;
+    uint32_t height = 0;
+};
+
+struct Extent3D : Extent2D
+{
+    uint32_t depth = 0;
+};
 
 enum class TextureType
 {
@@ -14,14 +27,17 @@ enum class TextureType
     k3D,
 };
 
-enum class TextureFormat
+struct TextureUsageFlagBits
 {
-    kUndefined = 0,
-    kBGRA_8888_UInt_Norm,
-    kBGRA_8888_UInt_Norm_SRGB,
-    kRGBA_8888_UInt_Norm,
-    kRGBA_8888_UInt_Norm_SRGB
+    static constexpr uint32_t kUndefined = 0x00000000;
+    static constexpr uint32_t kCopySrc = 0x00000001;
+    static constexpr uint32_t kCopyDst = 0x00000002;
+    static constexpr uint32_t kTextureBinding = 0x00000004;
+    static constexpr uint32_t kStorageBinding = 0x00000008;
+    static constexpr uint32_t kDepthStencil = 0x00000010;
+    static constexpr uint32_t kColorAttachment = 0x00000020;
 };
+using TextureUsageFlags = uint32_t;
 
 struct TextureDescriptor
 {
@@ -42,6 +58,9 @@ public:
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
+    virtual std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) = 0;
+
+public:
     TextureType getType() const;
     TextureFormat getFormat() const;
     uint32_t getWidth() const;

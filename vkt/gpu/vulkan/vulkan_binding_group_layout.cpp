@@ -12,10 +12,12 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
 {
 
     const uint64_t& bufferSize = descriptor.buffers.size();
+    const uint64_t& samplerSize = descriptor.samplers.size();
     const uint64_t& textureSize = descriptor.textures.size();
     std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
-    layoutBindings.resize(bufferSize + textureSize);
-    for (uint32_t i = 0; i < bufferSize; ++i)
+    layoutBindings.resize(bufferSize + samplerSize + textureSize);
+
+    for (uint64_t i = 0; i < bufferSize; ++i)
     {
         const auto& buffer = descriptor.buffers[i];
         layoutBindings[i] = { .binding = buffer.index,
@@ -25,7 +27,17 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
                               .pImmutableSamplers = nullptr };
     }
 
-    for (uint32_t i = bufferSize; i < bufferSize + textureSize; ++i)
+    for (uint64_t i = 0; i < samplerSize; ++i)
+    {
+        const auto& sampler = descriptor.samplers[i];
+        layoutBindings[bufferSize + i] = { .binding = sampler.index,
+                                           .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, // TODO: use from descriptor
+                                           .descriptorCount = 1,
+                                           .stageFlags = ToVkShaderStageFlags(sampler.stages),
+                                           .pImmutableSamplers = nullptr };
+    }
+
+    for (uint64_t i = 0; i < textureSize; ++i)
     {
         // TODO: for texture
     }

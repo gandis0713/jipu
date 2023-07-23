@@ -44,25 +44,30 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
 
 VulkanBuffer::~VulkanBuffer()
 {
+    m_memory.reset();
+
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
 }
 
 void* VulkanBuffer::map()
 {
-    void* mappedPointer = nullptr;
-
-    auto device = downcast(m_device);
-    VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &mappedPointer);
-    if (result != VK_SUCCESS)
+    if (m_mappedPtr == nullptr)
     {
-        spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+        auto device = downcast(m_device);
+        VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &m_mappedPtr);
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+        }
     }
 
-    return mappedPointer;
+    return m_mappedPtr;
 }
 void VulkanBuffer::unmap()
 {
+    m_mappedPtr = nullptr;
+
     auto device = downcast(m_device);
     device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 }
@@ -73,7 +78,7 @@ VkBuffer VulkanBuffer::getVkBuffer() const
 }
 
 // Convert Helper
-VkAccessFlags ToVkAccessFlags(BufferUsageFlagBits usages)
+VkAccessFlags ToVkAccessFlags(BufferUsageFlags usages)
 {
     VkAccessFlags vkFlags = 0x00000000; // 0x00000000
 

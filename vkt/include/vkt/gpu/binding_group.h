@@ -21,6 +21,14 @@ struct BufferBinding : Binding
     uint64_t size = 0;
 };
 
+class Sampler;
+class TextureView;
+struct SamplerBinding : Binding
+{
+    Sampler* sampler = nullptr;
+    TextureView* textureView = nullptr;
+};
+
 struct TextureBinding : Binding
 {
     // TODO: texture binding
@@ -31,6 +39,7 @@ struct BindingGroupDescriptor
 {
     BindingGroupLayout* layout = nullptr;
     std::vector<BufferBinding> buffers = {};
+    std::vector<SamplerBinding> samplers = {};
     std::vector<TextureBinding> textures = {};
 };
 

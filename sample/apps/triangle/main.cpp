@@ -1,8 +1,24 @@
 
 
 #include "file.h"
+#include "jpeg.h"
 #include "sample.h"
-#include "vkt_headers.h"
+
+#include "vkt/gpu/binding_group.h"
+#include "vkt/gpu/binding_group_layout.h"
+#include "vkt/gpu/buffer.h"
+#include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/device.h"
+#include "vkt/gpu/driver.h"
+#include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
+#include "vkt/gpu/queue.h"
+#include "vkt/gpu/sampler.h"
+#include "vkt/gpu/shader_module.h"
+#include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
+#include "vkt/gpu/texture_view.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -42,6 +58,9 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
+    void createImageTexture();
+    void createImageTextureView();
+    void createImageSampler();
 
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -49,6 +68,9 @@ private:
     void createPipelineLayout();
     void createRenderPipeline();
     void createCommandBuffers();
+
+    void copyBufferToBuffer();
+    void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
 
     void updateUniformBuffer();
     void draw() override;
@@ -65,11 +87,13 @@ private:
     {
         glm::vec2 pos;
         glm::vec3 color;
+        glm::vec2 texCoord;
     };
 
     // data
     std::vector<Vertex> m_vertices{};
     std::vector<uint16_t> m_indices{};
+    std::unique_ptr<JPEGImage> m_jpegImage = nullptr;
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -78,11 +102,16 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
 
-    std::unique_ptr<Queue> m_renderQueue = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
+
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
+
+    std::unique_ptr<Texture> m_imageTexture = nullptr;
+    std::unique_ptr<TextureView> m_imageTextureView = nullptr;
+    std::unique_ptr<Sampler> m_imageSampler = nullptr;
 
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
@@ -96,7 +125,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::vector<std::unique_ptr<CommandBuffer>> m_commandBuffers{};
+    std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
     std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
 };
 
@@ -110,7 +139,7 @@ TriangleSample::~TriangleSample()
     // clear swapchain first.
     m_swapchain.reset();
 
-    m_commandBuffers.clear();
+    m_renderCommandBuffers.clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
@@ -124,10 +153,14 @@ TriangleSample::~TriangleSample()
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
 
+    m_imageSampler.reset();
+    m_imageTextureView.reset();
+    m_imageTexture.reset();
+
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_renderQueue.reset();
+    m_queue.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -164,8 +197,8 @@ void TriangleSample::init()
 
     // create queue
     {
-        QueueDescriptor descriptor{ .flags = QueueFlagBits::kGraphics };
-        m_renderQueue = m_device->createQueue(descriptor);
+        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
+        m_queue = m_device->createQueue(rednerQueueDescriptor);
     }
 
     // create swapchain
@@ -188,6 +221,9 @@ void TriangleSample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
+    createImageTexture();
+    createImageTextureView();
+    createImageSampler();
 
     createBindingGroupLayout();
     createBindingGroup();
@@ -205,10 +241,10 @@ void TriangleSample::createVertexBuffer()
     const float xSize = 0.5f;
     const float ySize = 0.5f;
     m_vertices = {
-        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f } },
-        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f } },
-        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f } },
-        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f } }
+        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
     };
 
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
@@ -247,15 +283,74 @@ void TriangleSample::createUniformBuffer()
     m_uniformBufferMappedPointer = m_uniformBuffer->map();
 }
 
+void TriangleSample::createImageTexture()
+{
+    // load jpeg image.
+    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "texture.jpg");
+
+    unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
+    uint32_t width = m_jpegImage->getWidth();
+    uint32_t height = m_jpegImage->getHeight();
+    uint32_t channel = m_jpegImage->getChannel();
+    uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
+
+    // create image staging buffer.
+    BufferDescriptor descriptor{ .size = imageSize, .usage = BufferUsageFlagBits::kCopySrc };
+    std::unique_ptr<Buffer> imageTextureStagingBuffer = m_device->createBuffer(descriptor);
+
+    void* mappedPointer = imageTextureStagingBuffer->map();
+    memcpy(mappedPointer, pixels, imageSize);
+    // m_imageStagingBuffer->unmap();
+
+    // create texture.
+    TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
+                                         .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .width = width,
+                                         .height = height };
+    m_imageTexture = m_device->createTexture(textureDescriptor);
+
+    // copy image staging buffer to texture
+    copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+}
+
+void TriangleSample::createImageTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+
+    m_imageTextureView = m_imageTexture->createTextureView(descriptor);
+}
+
+void TriangleSample::createImageSampler()
+{
+    SamplerDescriptor descriptor{};
+    descriptor.magFilter = FilterMode::kLinear;
+    descriptor.minFilter = FilterMode::kLinear;
+    descriptor.mipmapFilter = MipmapFilterMode::kLinear;
+    descriptor.addressModeU = AddressMode::kRepeat;
+    descriptor.addressModeV = AddressMode::kRepeat;
+    descriptor.addressModeW = AddressMode::kRepeat;
+
+    m_imageSampler = m_device->createSampler(descriptor);
+}
+
 void TriangleSample::createBindingGroupLayout()
 {
+    // Uniform Buffer
     BufferBindingLayout bufferBindingLayout{};
     bufferBindingLayout.type = BufferBindingType::kUniform;
     bufferBindingLayout.index = 0;
     bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
-
     std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
+
+    // Sampler
+    SamplerBindingLayout samplerBindingLayout{};
+    samplerBindingLayout.index = 1;
+    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
+
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,
+                                                               .samplers = samplerBindingLayouts };
 
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -265,7 +360,7 @@ void TriangleSample::createBindingGroup()
     const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
     std::vector<BufferBinding> bufferBindings{};
     bufferBindings.resize(bufferBindingLayouts.size());
-    for (auto i = 0; i < bufferBindingLayouts.size(); ++i)
+    for (auto i = 0; i < bufferBindings.size(); ++i)
     {
         BufferBinding bufferBinding{};
         bufferBinding.index = bufferBindingLayouts[i].index;
@@ -276,10 +371,24 @@ void TriangleSample::createBindingGroup()
         bufferBindings[i] = bufferBinding;
     }
 
+    const std::vector<SamplerBindingLayout>& samplerBindingLayouts = m_bindingGroupLayout->getSamplerBindingLayouts();
+    std::vector<SamplerBinding> samplerBindings{};
+    samplerBindings.resize(samplerBindingLayouts.size());
+    for (auto i = 0; i < samplerBindings.size(); ++i)
+    {
+        SamplerBinding samplerBinding{};
+        samplerBinding.index = samplerBindingLayouts[i].index;
+        samplerBinding.sampler = m_imageSampler.get();
+        samplerBinding.textureView = m_imageTextureView.get();
+
+        samplerBindings[i] = samplerBinding;
+    }
+
     std::vector<TextureBinding> textureBindings{};
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
     descriptor.buffers = bufferBindings;
+    descriptor.samplers = samplerBindings;
     descriptor.textures = textureBindings;
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
@@ -317,7 +426,7 @@ void TriangleSample::createRenderPipeline()
         {
             // attributes
             std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
+            vertexAttributes.resize(3);
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx2,
@@ -326,6 +435,10 @@ void TriangleSample::createRenderPipeline()
                 // color
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx3,
                                         .offset = offsetof(Vertex, color) };
+
+                // texture coodinate
+                vertexAttributes[2] = { .format = VertexFormat::kSFLOATx2,
+                                        .offset = offsetof(Vertex, texCoord) };
             }
 
             VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
@@ -373,17 +486,17 @@ void TriangleSample::createCommandBuffers()
     std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
 
     auto commandBufferCount = swapchainTextureViews.size();
-    m_commandBuffers.resize(commandBufferCount);
+    m_renderCommandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        CommandBufferDescriptor descriptor{};
+        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kUndefined };
         auto commandBuffer = m_device->createCommandBuffer(descriptor);
-        m_commandBuffers[i] = std::move(commandBuffer);
+        m_renderCommandBuffers[i] = std::move(commandBuffer);
     }
 
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        auto commandBuffer = m_commandBuffers[i].get();
+        auto commandBuffer = m_renderCommandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
         colorAttachments[0] = { .textureView = swapchainTextureViews[i],
@@ -397,6 +510,40 @@ void TriangleSample::createCommandBuffers()
         auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
         m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
     }
+}
+
+void TriangleSample::copyBufferToBuffer()
+{
+    // TODO
+}
+
+void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
+{
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+    BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
+    std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
+
+    BlitTextureBuffer blitTextureBuffer{};
+    blitTextureBuffer.buffer = imageTextureStagingBuffer;
+    blitTextureBuffer.offset = 0;
+    uint32_t channel = 4;                          // TODO: from texture.
+    uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
+    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
+    blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
+
+    BlitTexture blitTexture{ .texture = imageTexture };
+    Extent3D extent{};
+    extent.width = imageTexture->getWidth();
+    extent.height = imageTexture->getHeight();
+    extent.depth = 1;
+
+    blitCommandEncoder->begin();
+    blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+    blitCommandEncoder->end();
+
+    m_queue->submit({ blitCommandEncoder->getCommandBuffer() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -434,8 +581,7 @@ void TriangleSample::draw()
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
     renderCommandEncoder->end();
 
-    m_renderQueue->submit(renderCommandEncoder->getCommandBuffer());
-    m_swapchain->present(m_renderQueue.get());
+    m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
 }
 
 #if defined(__ANDROID__) || defined(ANDROID)

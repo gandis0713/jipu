@@ -2,7 +2,6 @@
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_swapchain.h"
-#include "vulkan_synchronization.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -17,18 +16,18 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
     const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getInfo();
 
-    const uint32_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
+    const uint64_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
     if (queueFamilyPropertiesSize <= 0)
     {
         throw std::runtime_error("There is no queue family properties.");
     }
 
-    for (uint32_t index = 0; index < queueFamilyPropertiesSize; ++index)
+    for (uint64_t index = 0; index < queueFamilyPropertiesSize; ++index)
     {
         const auto& properties = deviceInfo.queueFamilyProperties[index];
-        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        if (properties.queueFlags & ToVkQueueFlags(descriptor.flags))
         {
-            m_index = index;
+            m_index = static_cast<uint32_t>(index);
             m_properties = properties;
             break;
         }
@@ -61,30 +60,59 @@ VulkanQueue::~VulkanQueue()
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderingFinishSemaphore, nullptr);
 }
 
-void VulkanQueue::submit(CommandBuffer* commandBuffer)
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
+    // submit command buffer to a queue
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 
-    SemaphoreDescriptor waitDescriptor{ .type = SemephoreType::kHostToQueue };
-    std::vector<VkSemaphore> waitSemaphores = sync.takeoutSemaphore(waitDescriptor);
-    SemaphoreDescriptor signalDescriptor{ .type = SemephoreType::kQueueToHost };
-    sync.injectSemaphore(signalDescriptor, m_renderingFinishSemaphore);
+    std::vector<VkCommandBuffer> vulkanCommandBuffers{};
+    vulkanCommandBuffers.resize(submitInfo.commandBufferCount);
+    for (auto i = 0; i < vulkanCommandBuffers.size(); ++i)
+    {
+        vulkanCommandBuffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
+    }
+    submitInfo.pCommandBuffers = vulkanCommandBuffers.data();
+
+    if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        spdlog::error("failed to submit command buffer.");
+    }
+
+    // TODO: check really need?
+    vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
+}
+
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
+{
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    std::vector<VkSemaphore> waitSemaphores{ downcast(swapchain)->getAcquireImageSemaphore() };
+    downcast(swapchain)->injectSemaphore(m_renderingFinishSemaphore);
 
     // submit command buffer
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
     VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitPipelineStages;
 
-    submitInfo.commandBufferCount = 1;
-    VkCommandBuffer commandBuf = downcast(commandBuffer)->getVkCommandBuffer();
-    submitInfo.pCommandBuffers = &commandBuf;
+    uint32_t commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    submitInfo.commandBufferCount = commandBufferCount;
+    std::vector<VkCommandBuffer> vulkanCommandBuffers{};
+    vulkanCommandBuffers.resize(commandBufferCount);
+    for (auto i = 0; i < commandBufferCount; ++i)
+    {
+        vulkanCommandBuffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
+    }
+    submitInfo.pCommandBuffers = vulkanCommandBuffers.data();
 
     VkSemaphore signalSemaphores[] = { m_renderingFinishSemaphore };
     submitInfo.signalSemaphoreCount = 1;
@@ -95,8 +123,10 @@ void VulkanQueue::submit(CommandBuffer* commandBuffer)
         spdlog::error("failed to submit draw command buffer!");
     }
 
-    // TODO: check really need below?
+    // TODO: check really need?
     vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
+
+    swapchain->present(this);
 }
 
 VkQueue VulkanQueue::getVkQueue() const

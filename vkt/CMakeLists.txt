@@ -5,51 +5,51 @@ find_package(Vulkan REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_binding_group_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_binding_group.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_sampler.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.cpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_binding_group_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_binding_group.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_api.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_memory_allocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_pipeline_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_sampler.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/binding_group_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/binding_group.cpp
@@ -65,6 +65,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture_view.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/shader_module.cpp
 
@@ -81,6 +82,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/surface.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/shader_module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/export.h
@@ -151,6 +153,7 @@ elseif(APPLE)
     PUBLIC
     -Wall
     -Werror
+    -Wshorten-64-to-32
     -Wno-unused-parameter
     -Wno-unused-function
     -Wno-unused-but-set-variable

@@ -30,6 +30,23 @@ BufferBindingLayout BindingGroupLayout::getBufferBindingLayout(uint32_t index) c
     return {};
 }
 
+const std::vector<SamplerBindingLayout>& BindingGroupLayout::getSamplerBindingLayouts() const
+{
+    return m_descriptor.samplers;
+}
+
+SamplerBindingLayout BindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
+{
+    for (const auto& sampler : m_descriptor.samplers)
+    {
+        if (sampler.index == index)
+            return sampler;
+    }
+
+    throw std::runtime_error(fmt::format("Failed to find sampler binding layout. {}", index));
+    return {};
+}
+
 const std::vector<TextureBindingLayout>& BindingGroupLayout::getTextureBindingLayouts() const
 {
     return m_descriptor.textures;
