@@ -18,8 +18,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.imageType = ToVkImageType(descriptor.type);
-    createInfo.extent.width = static_cast<uint32_t>(descriptor.width);
-    createInfo.extent.height = static_cast<uint32_t>(descriptor.height);
+    createInfo.extent.width = descriptor.width;
+    createInfo.extent.height = descriptor.height;
     createInfo.extent.depth = 1;
     createInfo.mipLevels = 1;
     createInfo.arrayLayers = 1;
@@ -42,7 +42,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     vkAPI.GetImageMemoryRequirements(device->getVkDevice(), m_image, &memoryRequirements);
 
     VulkanMemoryDescriptor memoryDescriptor{};
-    memoryDescriptor.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    memoryDescriptor.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: for only staging buffer.
     memoryDescriptor.requirements = memoryRequirements;
 
     m_memory = std::make_unique<VulkanMemory>(device, memoryDescriptor);

@@ -26,7 +26,9 @@ enum class TextureFormat
     kRGB_888_UInt_Norm,
     kRGB_888_UInt_Norm_SRGB,
     kRGBA_8888_UInt_Norm,
-    kRGBA_8888_UInt_Norm_SRGB
+    kRGBA_8888_UInt_Norm_SRGB,
+    kD_32_SFloat,
+    kD_24_UInt_Norm_S_8_UInt,
 };
 
 struct TextureViewDescriptor

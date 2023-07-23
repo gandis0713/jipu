@@ -349,12 +349,20 @@ void TriangleSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+
+    m_depthStencilTexture = m_device->createTexture(descriptor);
 }
 
 void TriangleSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
+
+    m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
 void TriangleSample::createImageSampler()

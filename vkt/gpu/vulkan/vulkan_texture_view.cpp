@@ -63,6 +63,10 @@ VkFormat ToVkFormat(TextureFormat format)
         return VK_FORMAT_R8G8B8A8_UNORM;
     case TextureFormat::kRGBA_8888_UInt_Norm_SRGB:
         return VK_FORMAT_R8G8B8A8_SRGB;
+    case TextureFormat::kD_32_SFloat:
+        return VK_FORMAT_D32_SFLOAT;
+    case TextureFormat::kD_24_UInt_Norm_S_8_UInt:
+        return VK_FORMAT_D24_UNORM_S8_UINT;
     default:
         assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
         return VK_FORMAT_UNDEFINED;
