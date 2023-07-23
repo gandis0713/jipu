@@ -25,7 +25,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.cpp
 
@@ -49,7 +48,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_synchronization.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_texture_view.h
 

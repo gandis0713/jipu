@@ -6,7 +6,6 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"
-#include "vulkan_synchronization.h"
 
 #include <memory>
 #include <unordered_set>
@@ -44,8 +43,6 @@ public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
-    VulkanSynchronization& getSynchronization();
-
 public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
@@ -73,7 +70,6 @@ private:
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
-    VulkanSynchronization m_synchronization;
 };
 
 DOWN_CAST(VulkanDevice, Device);

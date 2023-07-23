@@ -41,7 +41,6 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     , vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
     , m_renderPassCache(this)
     , m_frameBufferCache(this)
-    , m_synchronization(this)
 {
     const VulkanPhysicalDeviceInfo& info = physicalDevice->getInfo();
 
@@ -148,11 +147,6 @@ VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& 
 VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
-}
-
-VulkanSynchronization& VulkanDevice::getSynchronization()
-{
-    return m_synchronization;
 }
 
 VkDevice VulkanDevice::getVkDevice() const

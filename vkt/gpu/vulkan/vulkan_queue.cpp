@@ -2,7 +2,6 @@
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_swapchain.h"
-#include "vulkan_synchronization.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -93,12 +92,8 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
-
-    SemaphoreDescriptor waitDescriptor{ .type = SemephoreType::kQueueToQueue };
-    std::vector<VkSemaphore> waitSemaphores = sync.takeoutSemaphore(waitDescriptor);
-    SemaphoreDescriptor signalDescriptor{ .type = SemephoreType::kQueueToQueue };
-    sync.injectSemaphore(signalDescriptor, m_renderingFinishSemaphore);
+    std::vector<VkSemaphore> waitSemaphores{ downcast(swapchain)->getAcquireImageSemaphore() };
+    downcast(swapchain)->injectSemaphore(m_renderingFinishSemaphore);
 
     // submit command buffer
     VkSubmitInfo submitInfo{};

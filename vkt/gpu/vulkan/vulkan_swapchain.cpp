@@ -2,7 +2,6 @@
 #include "vulkan_device.h"
 #include "vulkan_queue.h"
 #include "vulkan_surface.h"
-#include "vulkan_synchronization.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -161,17 +160,12 @@ void VulkanSwapchain::present(Queue* queue)
     VulkanQueue* vulkanQueue = downcast(queue);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    // takeout dependency.
-    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
-    SemaphoreDescriptor descriptor{ .type = SemephoreType::kQueueToQueue };
-    std::vector<VkSemaphore> semaphore = sync.takeoutSemaphore(descriptor);
-
     // present
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(semaphore.size());
-    presentInfo.pWaitSemaphores = semaphore.data();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(m_waitSemaphores.size());
+    presentInfo.pWaitSemaphores = m_waitSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { m_swapchain };
     presentInfo.swapchainCount = 1;
@@ -181,7 +175,11 @@ void VulkanSwapchain::present(Queue* queue)
 
     vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
 
-    vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
+    // TODO: wait queue to finish all job and clear wait semaphore. use fence.
+    {
+        vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
+        m_waitSemaphores.clear();
+    }
 }
 
 int VulkanSwapchain::acquireNextTexture()
@@ -195,11 +193,6 @@ int VulkanSwapchain::acquireNextTexture()
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
         return -1;
     }
-
-    // inject dependency.
-    VulkanSynchronization& sync = vulkanDevice->getSynchronization();
-    SemaphoreDescriptor descriptor{ .type = SemephoreType::kHostToQueue };
-    sync.injectSemaphore(descriptor, m_acquireNextImageSemaphore);
 
     return m_acquiredImageIndex;
 }
@@ -215,6 +208,16 @@ TextureView* VulkanSwapchain::getTextureView(uint32_t index)
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 {
     return m_swapchain;
+}
+
+void VulkanSwapchain::injectSemaphore(VkSemaphore semaphore)
+{
+    m_waitSemaphores.push_back(semaphore);
+}
+
+VkSemaphore VulkanSwapchain::getAcquireImageSemaphore() const
+{
+    return m_acquireNextImageSemaphore;
 }
 
 VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)

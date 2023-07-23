@@ -29,6 +29,9 @@ public:
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
+    void injectSemaphore(VkSemaphore semaphore);
+    VkSemaphore getAcquireImageSemaphore() const;
+
 private:
     VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha);
 
@@ -36,6 +39,8 @@ private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_acquireNextImageSemaphore = VK_NULL_HANDLE;
     uint32_t m_acquiredImageIndex = 0u;
+
+    std::vector<VkSemaphore> m_waitSemaphores = {};
 };
 
 DOWN_CAST(VulkanSwapchain, Swapchain);
