@@ -102,8 +102,7 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
 
-    std::unique_ptr<Queue> m_renderQueue = nullptr;
-    std::unique_ptr<Queue> m_blitQueue = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
 
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
@@ -161,8 +160,7 @@ TriangleSample::~TriangleSample()
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_blitQueue.reset();
-    m_renderQueue.reset();
+    m_queue.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -199,11 +197,8 @@ void TriangleSample::init()
 
     // create queue
     {
-        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics };
-        m_renderQueue = m_device->createQueue(rednerQueueDescriptor);
-
-        QueueDescriptor blitQueueDescriptor{ .flags = QueueFlagBits::kTransfer };
-        m_blitQueue = m_device->createQueue(blitQueueDescriptor);
+        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
+        m_queue = m_device->createQueue(rednerQueueDescriptor);
     }
 
     // create swapchain
@@ -549,7 +544,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitCommandEncoder->end();
 
     // TODO: change below to submit function.
-    m_blitQueue->submitTest(blitCommandEncoder->getCommandBuffer());
+    m_queue->submitTest(blitCommandEncoder->getCommandBuffer());
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -587,8 +582,8 @@ void TriangleSample::draw()
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
     renderCommandEncoder->end();
 
-    m_renderQueue->submit({ renderCommandEncoder->getCommandBuffer() });
-    m_swapchain->present(m_renderQueue.get());
+    m_queue->submit({ renderCommandEncoder->getCommandBuffer() });
+    m_swapchain->present(m_queue.get());
 }
 
 #if defined(__ANDROID__) || defined(ANDROID)
