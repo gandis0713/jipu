@@ -59,8 +59,8 @@ target_include_directories(vkt_sample_base
 
 target_link_libraries(vkt_sample_base
     PRIVATE
-    spdlog::spdlog_header_only
     tinyobjloader::tinyobjloader
+    spdlog::spdlog_header_only
     glm::glm
 )
 

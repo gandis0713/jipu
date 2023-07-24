@@ -1,6 +1,5 @@
 #include "model.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
 namespace vkt
@@ -34,11 +33,12 @@ Polygon loadOBJ(const std::filesystem::path& path)
 
             vertex.texCoord = {
                 attrib.texcoords[2 * index.texcoord_index + 0],
-                attrib.texcoords[2 * index.texcoord_index + 1]
+                1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                // attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
             polygon.vertices.push_back(vertex);
-            polygon.indices.push_back(polygon.vertices.size());
+            polygon.indices.push_back(polygon.indices.size());
         }
     }
 
