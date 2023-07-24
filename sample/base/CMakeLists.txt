@@ -9,6 +9,8 @@ project(
 
 find_package(spdlog CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(tinyobjloader CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 if(NOT ANDROID)
     find_package(SDL2 CONFIG REQUIRED)
@@ -19,6 +21,8 @@ list(APPEND SRC_FILES
     sample.h
     window.cpp
     window.h
+    model.cpp
+    model.h
     file.cpp
     file.h
     jpeg.cpp
@@ -56,6 +60,8 @@ target_include_directories(vkt_sample_base
 target_link_libraries(vkt_sample_base
     PRIVATE
     spdlog::spdlog_header_only
+    tinyobjloader::tinyobjloader
+    glm::glm
 )
 
 if(NOT ANDROID)
