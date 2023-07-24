@@ -35,18 +35,22 @@ void VulkanRenderCommandEncoder::begin()
     }
 
     // TODO: support multiple color sample.
+    // TODO: add depth, stencil into RenderPassDescriptor.
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
+    const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
     VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(colorAttachment.textureView->getFormat()),
                                                      .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
                                                      .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
                                                      .samples = VK_SAMPLE_COUNT_1_BIT /* TODO: use not vulkan defines */ };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    auto vulkanTextureView = downcast(colorAttachment.textureView);
+    auto vulkanSwapchainTextureView = downcast(colorAttachment.textureView);
+    auto vulkanDepthStencilTextureView = downcast(depthStencilAttachment.textureView);
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
-                                                       .imageViews = { vulkanTextureView->getVkImageView() },
-                                                       .width = vulkanTextureView->getWidth(),
-                                                       .height = vulkanTextureView->getHeight() };
+                                                       .imageViews = { vulkanSwapchainTextureView->getVkImageView(),
+                                                                       vulkanDepthStencilTextureView->getVkImageView() },
+                                                       .width = vulkanSwapchainTextureView->getWidth(),
+                                                       .height = vulkanSwapchainTextureView->getHeight() };
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
 
     VkRenderPassBeginInfo renderPassInfo{};
@@ -56,14 +60,18 @@ void VulkanRenderCommandEncoder::begin()
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = { vulkanFrameBuffer->getWidth(), vulkanFrameBuffer->getHeight() };
 
-    ColorClearValue value = colorAttachment.clearValue;
-    VkClearValue clearValue{};
+    VkClearValue colorClearValue{};
     for (uint32_t i = 0; i < 4; ++i)
     {
-        clearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+        colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
     }
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearValue;
+
+    VkClearValue depthStencilValue;
+    depthStencilValue.depthStencil = { depthStencilAttachment.clearValue.depth, depthStencilAttachment.clearValue.stencil };
+
+    std::array<VkClearValue, 2> clearValues{ colorClearValue, depthStencilValue };
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }

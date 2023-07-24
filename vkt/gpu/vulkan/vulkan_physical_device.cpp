@@ -120,7 +120,7 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
     }
 }
 
-int VulkanPhysicalDevice::fineMemoryTypeIndex(VkMemoryPropertyFlags flags) const
+int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 {
     int memoryTypeIndex = -1;
     for (int i = 0u; i < m_Info.memoryTypes.size(); ++i)
@@ -134,6 +134,16 @@ int VulkanPhysicalDevice::fineMemoryTypeIndex(VkMemoryPropertyFlags flags) const
     }
 
     return memoryTypeIndex;
+}
+
+bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
+{
+    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
+
+    VkFormatProperties formatProperties{};
+    vkAPI.GetPhysicalDeviceFormatProperties(m_physicalDevice, format, &formatProperties);
+
+    return formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 }
 
 } // namespace vkt

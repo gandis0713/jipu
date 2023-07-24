@@ -11,7 +11,7 @@ namespace vkt
 VulkanMemory::VulkanMemory(VulkanDevice* device, const VulkanMemoryDescriptor& descriptor) noexcept(false)
     : m_device(device)
 {
-    int memoryTypeIndex = downcast(device->getPhysicalDevice())->fineMemoryTypeIndex(descriptor.flags);
+    int memoryTypeIndex = downcast(device->getPhysicalDevice())->findMemoryTypeIndex(descriptor.flags);
     if (memoryTypeIndex == -1)
     {
         throw std::runtime_error("Failed to find memory type index");

@@ -21,7 +21,7 @@ VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescript
     imageViewCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
     imageViewCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-    imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageViewCreateInfo.subresourceRange.aspectMask = ToVkImageAspectFlags(descriptor.aspect);
     imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
     imageViewCreateInfo.subresourceRange.levelCount = 1;
     imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
@@ -63,6 +63,10 @@ VkFormat ToVkFormat(TextureFormat format)
         return VK_FORMAT_R8G8B8A8_UNORM;
     case TextureFormat::kRGBA_8888_UInt_Norm_SRGB:
         return VK_FORMAT_R8G8B8A8_SRGB;
+    case TextureFormat::kD_32_SFloat:
+        return VK_FORMAT_D32_SFLOAT;
+    case TextureFormat::kD_24_UInt_Norm_S_8_UInt:
+        return VK_FORMAT_D24_UNORM_S8_UINT;
     default:
         assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
         return VK_FORMAT_UNDEFINED;
@@ -137,6 +141,46 @@ TextureViewType ToTextureViewType(VkImageViewType type)
         assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
         return TextureViewType::kUndefined;
     }
+}
+
+VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags)
+{
+    VkImageAspectFlags vkflags = 0u;
+
+    if (flags & TextureAspectFlagBits::kColor)
+    {
+        vkflags |= VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+    else if (flags & TextureAspectFlagBits::kDepth)
+    {
+        vkflags |= VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+    else if (flags & TextureAspectFlagBits::kStencil)
+    {
+        vkflags |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+
+    return vkflags;
+}
+
+TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags vkflags)
+{
+    TextureAspectFlags flags = TextureAspectFlagBits::kUndefined;
+
+    if (vkflags & VK_IMAGE_ASPECT_COLOR_BIT)
+    {
+        flags |= TextureAspectFlagBits::kColor;
+    }
+    else if (vkflags & VK_IMAGE_ASPECT_DEPTH_BIT)
+    {
+        flags |= TextureAspectFlagBits::kDepth;
+    }
+    else if (vkflags & VK_IMAGE_ASPECT_STENCIL_BIT)
+    {
+        flags |= TextureAspectFlagBits::kStencil;
+    }
+
+    return flags;
 }
 
 } // namespace vkt

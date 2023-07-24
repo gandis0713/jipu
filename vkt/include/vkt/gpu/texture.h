@@ -41,10 +41,11 @@ using TextureUsageFlags = uint32_t;
 
 struct TextureDescriptor
 {
-    TextureType type;
-    TextureFormat format;
-    uint32_t width;
-    uint32_t height;
+    TextureType type = TextureType::kUndefined;
+    TextureFormat format = TextureFormat::kUndefined;
+    TextureUsageFlags usages = TextureUsageFlagBits::kUndefined;
+    uint32_t width = 0;
+    uint32_t height = 0;
 };
 
 class Device;
