@@ -58,9 +58,13 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
+
     void createImageTexture();
     void createImageTextureView();
     void createImageSampler();
+
+    void createDepthStencilTexture();
+    void createDepthStencilTextureView();
 
     void createBindingGroupLayout();
     void createBindingGroup();
@@ -85,7 +89,7 @@ private:
 
     struct Vertex
     {
-        glm::vec2 pos;
+        glm::vec3 pos;
         glm::vec3 color;
         glm::vec2 texCoord;
     };
@@ -115,6 +119,9 @@ private:
 
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
+
+    std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
+    std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
@@ -149,6 +156,9 @@ TriangleSample::~TriangleSample()
 
     m_bindingGroupLayout.reset();
     m_bindingGroup.reset();
+
+    m_depthStencilTextureView.reset();
+    m_depthStencilTexture.reset();
 
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
@@ -221,9 +231,13 @@ void TriangleSample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
+
     createImageTexture();
     createImageTextureView();
     createImageSampler();
+
+    createDepthStencilTexture();
+    createDepthStencilTextureView();
 
     createBindingGroupLayout();
     createBindingGroup();
@@ -240,11 +254,20 @@ void TriangleSample::createVertexBuffer()
     // vertex buffer
     const float xSize = 0.5f;
     const float ySize = 0.5f;
+
+    const float zSize1 = 0.0f;
+    const float zSize2 = -0.5f;
+
     m_vertices = {
-        { { -xSize, -ySize }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
-        { { xSize, -ySize }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
-        { { xSize, ySize }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
-        { { -xSize, ySize }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
+        { { -xSize, -ySize, zSize1 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { xSize, -ySize, zSize1 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+        { { xSize, ySize, zSize1 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { -xSize, ySize, zSize1 }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+
+        { { -xSize, -ySize, zSize2 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
+        { { xSize, -ySize, zSize2 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
+        { { xSize, ySize, zSize2 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { -xSize, ySize, zSize2 }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
     };
 
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
@@ -261,7 +284,8 @@ void TriangleSample::createIndexBuffer()
 {
     // index buffer
     m_indices = {
-        0, 1, 2, 2, 3, 0
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
     };
 
     uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
@@ -305,6 +329,7 @@ void TriangleSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .usages = TextureUsageFlagBits::kCopyDst | TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height };
     m_imageTexture = m_device->createTexture(textureDescriptor);
@@ -317,8 +342,30 @@ void TriangleSample::createImageTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
+}
+
+void TriangleSample::createDepthStencilTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+
+    m_depthStencilTexture = m_device->createTexture(descriptor);
+}
+
+void TriangleSample::createDepthStencilTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kDepth;
+
+    m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
 void TriangleSample::createImageSampler()
@@ -429,7 +476,7 @@ void TriangleSample::createRenderPipeline()
             vertexAttributes.resize(3);
             {
                 // position
-                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx2,
+                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
                                         .offset = offsetof(Vertex, pos) };
 
                 // color
@@ -503,7 +550,10 @@ void TriangleSample::createCommandBuffers()
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        DepthStencilAttachment depthStencilAttachment{};
+        DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+                                                       .loadOp = LoadOp::kClear,
+                                                       .storeOp = StoreOp::kStore,
+                                                       .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
         RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
                                                    .depthStencilAttachment = depthStencilAttachment };

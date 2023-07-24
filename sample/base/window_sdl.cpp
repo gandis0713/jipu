@@ -21,7 +21,7 @@ Window::Window(const WindowDescriptor& descriptor)
                                           SDL_WINDOWPOS_UNDEFINED,
                                           descriptor.width,
                                           descriptor.height,
-                                          SDL_WINDOW_SHOWN);
+                                          SDL_WINDOW_SHOWN); // | SDL_WINDOW_RESIZABLE
     if (!window)
     {
         SDL_Quit();
