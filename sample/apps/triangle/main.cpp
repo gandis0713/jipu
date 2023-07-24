@@ -263,6 +263,7 @@ void TriangleSample::createVertexBuffer()
         { { xSize, -ySize, zSize1 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
         { { xSize, ySize, zSize1 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
         { { -xSize, ySize, zSize1 }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+
         { { -xSize, -ySize, zSize2 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
         { { xSize, -ySize, zSize2 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
         { { xSize, ySize, zSize2 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
@@ -549,7 +550,10 @@ void TriangleSample::createCommandBuffers()
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        DepthStencilAttachment depthStencilAttachment{};
+        DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+                                                       .loadOp = LoadOp::kClear,
+                                                       .storeOp = StoreOp::kStore,
+                                                       .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
         RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
                                                    .depthStencilAttachment = depthStencilAttachment };

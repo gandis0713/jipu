@@ -196,23 +196,23 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
     {
         flags |= TextureUsageFlagBits::kCopySrc;
     }
-    else if (usages & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+    if (usages & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
     {
         flags |= TextureUsageFlagBits::kCopyDst;
     }
-    else if (usages & VK_IMAGE_USAGE_SAMPLED_BIT)
+    if (usages & VK_IMAGE_USAGE_SAMPLED_BIT)
     {
         flags |= TextureUsageFlagBits::kTextureBinding;
     }
-    else if (usages & VK_IMAGE_USAGE_STORAGE_BIT)
+    if (usages & VK_IMAGE_USAGE_STORAGE_BIT)
     {
         flags |= TextureUsageFlagBits::kStorageBinding;
     }
-    else if (usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    if (usages & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
     {
         flags |= TextureUsageFlagBits::kDepthStencil;
     }
-    else if (usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+    if (usages & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
     {
         flags |= TextureUsageFlagBits::kColorAttachment;
     }
@@ -228,23 +228,23 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     {
         flags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     }
-    else if (usages & TextureUsageFlagBits::kCopyDst)
+    if (usages & TextureUsageFlagBits::kCopyDst)
     {
         flags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     }
-    else if (usages & TextureUsageFlagBits::kTextureBinding)
+    if (usages & TextureUsageFlagBits::kTextureBinding)
     {
         flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
     }
-    else if (usages & TextureUsageFlagBits::kStorageBinding)
+    if (usages & TextureUsageFlagBits::kStorageBinding)
     {
         flags |= VK_IMAGE_USAGE_STORAGE_BIT;
     }
-    else if (usages & TextureUsageFlagBits::kDepthStencil)
+    if (usages & TextureUsageFlagBits::kDepthStencil)
     {
         flags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
     }
-    else if (usages & TextureUsageFlagBits::kColorAttachment)
+    if (usages & TextureUsageFlagBits::kColorAttachment)
     {
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
