@@ -21,6 +21,8 @@ list(APPEND SRC_FILES
     sample.h
     window.cpp
     window.h
+    vertex.cpp
+    vertex.h
     model.cpp
     model.h
     file.cpp
