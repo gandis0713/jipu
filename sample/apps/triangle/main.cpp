@@ -44,7 +44,8 @@ extern "C"
 
 #endif
 
-using namespace vkt;
+namespace vkt
+{
 
 class TriangleSample : public Sample
 {
@@ -259,7 +260,7 @@ void TriangleSample::createVertexBuffer()
 
     // index buffer
     {
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_polygon.indices.size());
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
         BufferDescriptor indexBufferDescriptor{ .size = indexSize,
                                                 .usage = BufferUsageFlagBits::kIndex };
 
@@ -602,16 +603,18 @@ void TriangleSample::draw()
     m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
 }
 
+} // namespace vkt
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
 void android_main(struct android_app* app)
 {
-    SampleDescriptor descriptor{
+    vkt::SampleDescriptor descriptor{
         { 1000, 2000, "Triangle", app },
         ""
     };
 
-    TriangleSample triangleSample(descriptor);
+    vkt::TriangleSample triangleSample(descriptor);
 
     triangleSample.exec();
 }
@@ -622,12 +625,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    SampleDescriptor descriptor{
+    vkt::SampleDescriptor descriptor{
         { 800, 600, "Triangle", nullptr },
         argv[0]
     };
 
-    TriangleSample triangleSample(descriptor);
+    vkt::TriangleSample triangleSample(descriptor);
 
     return triangleSample.exec();
 }

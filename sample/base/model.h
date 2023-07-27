@@ -19,7 +19,7 @@ struct Vertex
 struct Polygon
 {
     std::vector<Vertex> vertices{};
-    std::vector<uint32_t> indices{};
+    std::vector<uint16_t> indices{};
 };
 
 Polygon loadOBJ(const std::filesystem::path& path);
