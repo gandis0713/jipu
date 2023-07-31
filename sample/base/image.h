@@ -9,8 +9,8 @@ class Image
 {
 
 public:
-    Image() = default;
-    virtual ~Image() = default;
+    Image(const std::filesystem::path& path);
+    ~Image();
 
     void* getPixels() const;
     int getWidth() const;

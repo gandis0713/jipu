@@ -1,7 +1,7 @@
 
 
 #include "file.h"
-#include "jpeg.h"
+#include "image.h"
 #include "model.h"
 #include "sample.h"
 
@@ -90,7 +90,7 @@ private:
 
     // data
     Polygon m_polygon{};
-    std::unique_ptr<JPEGImage> m_jpegImage = nullptr;
+    std::unique_ptr<Image> m_image = nullptr;
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -283,12 +283,12 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createImageTexture()
 {
     // load jpeg image.
-    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "viking_room.png");
+    m_image = std::make_unique<Image>(m_path.parent_path() / "viking_room.png");
 
-    unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
-    uint32_t width = m_jpegImage->getWidth();
-    uint32_t height = m_jpegImage->getHeight();
-    uint32_t channel = m_jpegImage->getChannel();
+    unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
+    uint32_t width = m_image->getWidth();
+    uint32_t height = m_image->getHeight();
+    uint32_t channel = m_image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
 
     // create image staging buffer.

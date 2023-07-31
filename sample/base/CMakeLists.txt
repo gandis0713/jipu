@@ -29,8 +29,6 @@ list(APPEND SRC_FILES
     file.h
     image.cpp
     image.h
-    jpeg.cpp
-    jpeg.h
 )
 
 if(ANDROID)
