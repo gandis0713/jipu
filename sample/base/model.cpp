@@ -19,7 +19,6 @@ Polygon loadOBJ(const std::filesystem::path& path)
     }
 
     Polygon polygon{};
-    std::unordered_map<Vertex, uint16_t> uniqueVertices{};
 
     for (const auto& shape : shapes)
     {
@@ -38,13 +37,8 @@ Polygon loadOBJ(const std::filesystem::path& path)
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
-            if (uniqueVertices.count(vertex) == 0)
-            {
-                uniqueVertices[vertex] = static_cast<uint16_t>(polygon.vertices.size());
-                polygon.vertices.push_back(vertex);
-            }
-
-            polygon.indices.push_back(uniqueVertices[vertex]);
+            polygon.vertices.push_back(vertex);
+            polygon.indices.push_back(polygon.indices.size());
         }
     }
 
