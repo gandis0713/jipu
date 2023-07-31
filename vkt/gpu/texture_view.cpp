@@ -24,4 +24,9 @@ uint32_t TextureView::getHeight() const
     return m_texture->getHeight();
 }
 
+uint32_t TextureView::getMipLevels() const
+{
+    return m_texture->getMipLevels();
+}
+
 } // namespace vkt

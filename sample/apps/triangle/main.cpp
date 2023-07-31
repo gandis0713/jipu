@@ -291,6 +291,8 @@ void TriangleSample::createImageTexture()
     uint32_t channel = m_image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
 
+    uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+
     // create image staging buffer.
     BufferDescriptor descriptor{ .size = imageSize, .usage = BufferUsageFlagBits::kCopySrc };
     std::unique_ptr<Buffer> imageTextureStagingBuffer = m_device->createBuffer(descriptor);
@@ -304,7 +306,8 @@ void TriangleSample::createImageTexture()
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
                                          .usages = TextureUsageFlagBits::kCopyDst | TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
-                                         .height = height };
+                                         .height = height,
+                                         .mipLevels = mipLevels };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
@@ -326,6 +329,7 @@ void TriangleSample::createDepthStencilTexture()
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kD_32_SFloat;
     descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
 

@@ -10,6 +10,7 @@ Texture::Texture(Device* device, TextureDescriptor descriptor)
     , m_format(descriptor.format)
     , m_width(descriptor.width)
     , m_height(descriptor.height)
+    , m_mipLevels(descriptor.mipLevels)
 {
 }
 
@@ -35,6 +36,11 @@ uint32_t Texture::getWidth() const
 uint32_t Texture::getHeight() const
 {
     return m_height;
+}
+
+uint32_t Texture::getMipLevels() const
+{
+    return m_mipLevels;
 }
 
 } // namespace vkt

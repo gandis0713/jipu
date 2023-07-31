@@ -21,7 +21,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.extent.width = descriptor.width;
     createInfo.extent.height = descriptor.height;
     createInfo.extent.depth = 1;
-    createInfo.mipLevels = 1;
+    createInfo.mipLevels = descriptor.mipLevels;
     createInfo.arrayLayers = 1;
     createInfo.format = ToVkFormat(descriptor.format);
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -110,7 +110,7 @@ void VulkanTexture::setLayout(VkImageLayout layout, VkCommandBuffer commandBuffe
     barrier.image = m_image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = m_mipLevels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
