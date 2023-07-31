@@ -1,25 +1,15 @@
 #pragma once
 
-#include <filesystem>
+#include "image.h"
 
 namespace vkt
 {
 
-class JPEGImage final
+class JPEGImage : public Image
 {
 public:
     JPEGImage(const std::filesystem::path& path);
-    ~JPEGImage();
-
-    void* getPixels() const;
-    int getWidth() const;
-    int getHeight() const;
-    int getChannel() const;
-
-private:
-    void* m_pixels = nullptr;
-    int m_width = 0;
-    int m_height = 0;
+    ~JPEGImage() override;
 };
 
 } // namespace vkt

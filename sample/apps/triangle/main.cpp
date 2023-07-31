@@ -2,6 +2,7 @@
 
 #include "file.h"
 #include "jpeg.h"
+#include "model.h"
 #include "sample.h"
 
 #include "vkt/gpu/binding_group.h"
@@ -43,7 +44,8 @@ extern "C"
 
 #endif
 
-using namespace vkt;
+namespace vkt
+{
 
 class TriangleSample : public Sample
 {
@@ -56,7 +58,6 @@ public:
 
 private:
     void createVertexBuffer();
-    void createIndexBuffer();
     void createUniformBuffer();
 
     void createImageTexture();
@@ -87,16 +88,8 @@ private:
         glm::mat4 proj;
     };
 
-    struct Vertex
-    {
-        glm::vec3 pos;
-        glm::vec3 color;
-        glm::vec2 texCoord;
-    };
-
     // data
-    std::vector<Vertex> m_vertices{};
-    std::vector<uint16_t> m_indices{};
+    Polygon m_polygon{};
     std::unique_ptr<JPEGImage> m_jpegImage = nullptr;
 
     // wrapper
@@ -229,7 +222,6 @@ void TriangleSample::init()
 
     // create buffer
     createVertexBuffer();
-    createIndexBuffer();
     createUniformBuffer();
 
     createImageTexture();
@@ -251,52 +243,33 @@ void TriangleSample::init()
 
 void TriangleSample::createVertexBuffer()
 {
+    std::filesystem::path objPath = m_path.parent_path() / "viking_room.obj";
+    m_polygon = loadOBJ(objPath);
+
     // vertex buffer
-    const float xSize = 0.5f;
-    const float ySize = 0.5f;
+    {
+        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
+        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                                 .usage = BufferUsageFlagBits::kVertex };
+        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
-    const float zSize1 = 0.0f;
-    const float zSize2 = -0.5f;
+        void* mappedPointer = m_vertexBuffer->map();
+        memcpy(mappedPointer, m_polygon.vertices.data(), vertexSize);
+        m_vertexBuffer->unmap();
+    }
 
-    m_vertices = {
-        { { -xSize, -ySize, zSize1 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
-        { { xSize, -ySize, zSize1 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
-        { { xSize, ySize, zSize1 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
-        { { -xSize, ySize, zSize1 }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } },
-
-        { { -xSize, -ySize, zSize2 }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
-        { { xSize, -ySize, zSize2 }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
-        { { xSize, ySize, zSize2 }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f } },
-        { { -xSize, ySize, zSize2 }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f } }
-    };
-
-    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-    BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
-                                             .usage = BufferUsageFlagBits::kVertex };
-    m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
-
-    void* mappedPointer = m_vertexBuffer->map();
-    memcpy(mappedPointer, m_vertices.data(), vertexSize);
-    m_vertexBuffer->unmap();
-}
-
-void TriangleSample::createIndexBuffer()
-{
     // index buffer
-    m_indices = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-    };
+    {
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
+        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                                .usage = BufferUsageFlagBits::kIndex };
 
-    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint64_t) * m_indices.size());
-    BufferDescriptor indexBufferDescriptor{ .size = indexSize,
-                                            .usage = BufferUsageFlagBits::kIndex };
+        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
 
-    m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
-
-    void* mappedPointer = m_indexBuffer->map();
-    memcpy(mappedPointer, m_indices.data(), indexSize);
-    m_indexBuffer->unmap();
+        void* mappedPointer = m_indexBuffer->map();
+        memcpy(mappedPointer, m_polygon.indices.data(), indexSize);
+        m_indexBuffer->unmap();
+    }
 }
 
 void TriangleSample::createUniformBuffer()
@@ -310,7 +283,7 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createImageTexture()
 {
     // load jpeg image.
-    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "texture.jpg");
+    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "viking_room.png");
 
     unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
     uint32_t width = m_jpegImage->getWidth();
@@ -473,18 +446,14 @@ void TriangleSample::createRenderPipeline()
         {
             // attributes
             std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(3);
+            vertexAttributes.resize(2);
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
                                         .offset = offsetof(Vertex, pos) };
 
-                // color
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Vertex, color) };
-
                 // texture coodinate
-                vertexAttributes[2] = { .format = VertexFormat::kSFLOATx2,
+                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
                                         .offset = offsetof(Vertex, texCoord) };
             }
 
@@ -628,22 +597,24 @@ void TriangleSample::draw()
     renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
     renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()));
+    renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
     renderCommandEncoder->end();
 
     m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
 }
 
+} // namespace vkt
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
 void android_main(struct android_app* app)
 {
-    SampleDescriptor descriptor{
+    vkt::SampleDescriptor descriptor{
         { 1000, 2000, "Triangle", app },
         ""
     };
 
-    TriangleSample triangleSample(descriptor);
+    vkt::TriangleSample triangleSample(descriptor);
 
     triangleSample.exec();
 }
@@ -654,12 +625,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    SampleDescriptor descriptor{
+    vkt::SampleDescriptor descriptor{
         { 800, 600, "Triangle", nullptr },
         argv[0]
     };
 
-    TriangleSample triangleSample(descriptor);
+    vkt::TriangleSample triangleSample(descriptor);
 
     return triangleSample.exec();
 }
