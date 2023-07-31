@@ -27,6 +27,8 @@ list(APPEND SRC_FILES
     model.h
     file.cpp
     file.h
+    image.cpp
+    image.h
     jpeg.cpp
     jpeg.h
 )
