@@ -38,9 +38,7 @@ public:
     VkImage getVkImage() const;
 
     /// @brief record pipeline barrier command, but not submitted.
-    /// @param layout
-    /// @param commandBuffer
-    void setLayout(VkImageLayout layout, VkCommandBuffer commandBuffer);
+    void setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
     VkImageLayout getLayout() const;
 
 private:

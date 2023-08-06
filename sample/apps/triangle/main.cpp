@@ -312,6 +312,19 @@ void TriangleSample::createImageTexture()
 
     // copy image staging buffer to texture
     copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+
+    // IMPL: generate mipmaps
+    if (false)
+    {
+        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+        std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+        BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
+        std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
+
+        blitCommandEncoder->begin();
+        blitCommandEncoder->end();
+    }
 }
 
 void TriangleSample::createImageTextureView()
