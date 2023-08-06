@@ -8,6 +8,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
+#include <algorithm>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -282,6 +283,11 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
             srcSubresourceRange.layerCount = 1;
 
             VkImageLayout srcNewLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            VkImageLayout srcOldLayout = vulkanTexture->getLayout();
+            if (srcOldLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            {
+                throw std::runtime_error("The src image layout must be TRANSFER_DST_OPTIMAL before transitioning to TRANSFER_SRC_OPTIMAL.");
+            }
 
             // layout transition for src image.
             vulkanTexture->setLayout(commandBuffer, srcNewLayout, srcSubresourceRange);
@@ -302,18 +308,15 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
 
             vkAPI.CmdBlitImage(commandBuffer,
                                image, srcNewLayout,
-                               image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               image, srcOldLayout,
                                1, &blit,
                                VK_FILTER_LINEAR);
 
             // layout transition for src image.
-            // vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, srcSubresourceRange);
-            vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
+            vulkanTexture->setLayout(commandBuffer, srcOldLayout, srcSubresourceRange);
 
-            if (width > 1)
-                width /= 2;
-            if (height > 1)
-                height /= 2;
+            width = std::max(width >> 1, 1);
+            height = std::max(height >> 1, 1);
         }
     }
 
