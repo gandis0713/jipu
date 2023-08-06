@@ -274,7 +274,7 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
 
             int32_t width = static_cast<int32_t>(texture.texture->getWidth());
             int32_t height = static_cast<int32_t>(texture.texture->getHeight());
-            for (uint32_t i = 1; i < mipLevels; i++)
+            for (uint32_t i = 1; i < mipLevels; ++i)
             {
 
                 VkImageSubresourceRange range{};
@@ -284,24 +284,9 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
                 range.baseArrayLayer = 0;
                 range.layerCount = 1;
 
-                VkImageMemoryBarrier barrier{};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.image = image;
-                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.subresourceRange = range;
-                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-                barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-                vkAPI.CmdPipelineBarrier(commandBuffer,
-                                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         0,
-                                         0, nullptr,
-                                         0, nullptr,
-                                         1, &barrier);
+                VkImageLayout oldLayout = vulkanTexture->getLayout();
+                VkImageLayout newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                vulkanTexture->setLayout(commandBuffer, newLayout, range);
 
                 VkImageBlit blit{};
                 blit.srcOffsets[0] = { 0, 0, 0 };
@@ -318,23 +303,12 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
                 blit.dstSubresource.layerCount = 1;
 
                 vkAPI.CmdBlitImage(commandBuffer,
-                                   image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                   image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                   image, newLayout, // TODO: check why srcLayout sets as newLayout.
+                                   image, oldLayout, // TODO: check why dstLayout sets as oldLayout.
                                    1, &blit,
                                    VK_FILTER_LINEAR);
 
-                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-                vkAPI.CmdPipelineBarrier(commandBuffer,
-                                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                         0,
-                                         0, nullptr,
-                                         0, nullptr,
-                                         1, &barrier);
+                vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
 
                 if (width > 1)
                     width /= 2;
