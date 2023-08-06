@@ -31,8 +31,8 @@ VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& desc
     createInfo.compareEnable = VK_FALSE;
     createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     createInfo.mipLodBias = 0.0f;
-    createInfo.minLod = 0.0f;
-    createInfo.maxLod = 0.0f;
+    createInfo.minLod = descriptor.lodMin;
+    createInfo.maxLod = descriptor.lodMax;
 
     const VulkanAPI& vkAPI = device->vkAPI;
     VkResult result = vkAPI.CreateSampler(device->getVkDevice(), &createInfo, nullptr, &m_sampler);
