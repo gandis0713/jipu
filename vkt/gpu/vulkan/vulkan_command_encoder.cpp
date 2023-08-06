@@ -277,16 +277,18 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
             for (uint32_t i = 1; i < mipLevels; ++i)
             {
 
-                VkImageSubresourceRange range{};
-                range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                range.baseMipLevel = i - 1;
-                range.levelCount = 1;
-                range.baseArrayLayer = 0;
-                range.layerCount = 1;
+                VkImageSubresourceRange srcSubresourceRange{};
+                srcSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                srcSubresourceRange.baseMipLevel = i - 1;
+                srcSubresourceRange.levelCount = 1;
+                srcSubresourceRange.baseArrayLayer = 0;
+                srcSubresourceRange.layerCount = 1;
 
-                VkImageLayout oldLayout = vulkanTexture->getLayout();
-                VkImageLayout newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                vulkanTexture->setLayout(commandBuffer, newLayout, range);
+                VkImageLayout srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                VkImageLayout dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+                // layout transition for src image.
+                vulkanTexture->setLayout(commandBuffer, srcLayout, srcSubresourceRange);
 
                 VkImageBlit blit{};
                 blit.srcOffsets[0] = { 0, 0, 0 };
@@ -303,12 +305,13 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
                 blit.dstSubresource.layerCount = 1;
 
                 vkAPI.CmdBlitImage(commandBuffer,
-                                   image, newLayout, // TODO: check why srcLayout sets as newLayout.
-                                   image, oldLayout, // TODO: check why dstLayout sets as oldLayout.
+                                   image, srcLayout,
+                                   image, dstLayout,
                                    1, &blit,
                                    VK_FILTER_LINEAR);
 
-                vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
+                // layout transition for src image.
+                vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, srcSubresourceRange);
 
                 if (width > 1)
                     width /= 2;
