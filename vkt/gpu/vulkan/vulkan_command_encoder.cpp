@@ -265,59 +265,55 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
                                1,
                                &region);
 
-    // IMPL: generate mipmap.
-    if (false)
+    if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
     {
-        if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
+        VkImage image = vulkanTexture->getVkImage();
+
+        int32_t width = static_cast<int32_t>(texture.texture->getWidth());
+        int32_t height = static_cast<int32_t>(texture.texture->getHeight());
+        for (uint32_t i = 1; i < mipLevels; ++i)
         {
-            VkImage image = vulkanTexture->getVkImage();
 
-            int32_t width = static_cast<int32_t>(texture.texture->getWidth());
-            int32_t height = static_cast<int32_t>(texture.texture->getHeight());
-            for (uint32_t i = 1; i < mipLevels; ++i)
-            {
+            VkImageSubresourceRange srcSubresourceRange{};
+            srcSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            srcSubresourceRange.baseMipLevel = i - 1;
+            srcSubresourceRange.levelCount = 1;
+            srcSubresourceRange.baseArrayLayer = 0;
+            srcSubresourceRange.layerCount = 1;
 
-                VkImageSubresourceRange srcSubresourceRange{};
-                srcSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                srcSubresourceRange.baseMipLevel = i - 1;
-                srcSubresourceRange.levelCount = 1;
-                srcSubresourceRange.baseArrayLayer = 0;
-                srcSubresourceRange.layerCount = 1;
+            VkImageLayout srcNewLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-                VkImageLayout srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                VkImageLayout dstLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            // layout transition for src image.
+            vulkanTexture->setLayout(commandBuffer, srcNewLayout, srcSubresourceRange);
 
-                // layout transition for src image.
-                vulkanTexture->setLayout(commandBuffer, srcLayout, srcSubresourceRange);
+            VkImageBlit blit{};
+            blit.srcOffsets[0] = { 0, 0, 0 };
+            blit.srcOffsets[1] = { width, height, 1 };
+            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel = i - 1;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount = 1;
+            blit.dstOffsets[0] = { 0, 0, 0 };
+            blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
+            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel = i;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount = 1;
 
-                VkImageBlit blit{};
-                blit.srcOffsets[0] = { 0, 0, 0 };
-                blit.srcOffsets[1] = { width, height, 1 };
-                blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                blit.srcSubresource.mipLevel = i - 1;
-                blit.srcSubresource.baseArrayLayer = 0;
-                blit.srcSubresource.layerCount = 1;
-                blit.dstOffsets[0] = { 0, 0, 0 };
-                blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
-                blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                blit.dstSubresource.mipLevel = i;
-                blit.dstSubresource.baseArrayLayer = 0;
-                blit.dstSubresource.layerCount = 1;
+            vkAPI.CmdBlitImage(commandBuffer,
+                               image, srcNewLayout,
+                               image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               1, &blit,
+                               VK_FILTER_LINEAR);
 
-                vkAPI.CmdBlitImage(commandBuffer,
-                                   image, srcLayout,
-                                   image, dstLayout,
-                                   1, &blit,
-                                   VK_FILTER_LINEAR);
+            // layout transition for src image.
+            // vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, srcSubresourceRange);
+            vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
 
-                // layout transition for src image.
-                vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, srcSubresourceRange);
-
-                if (width > 1)
-                    width /= 2;
-                if (height > 1)
-                    height /= 2;
-            }
+            if (width > 1)
+                width /= 2;
+            if (height > 1)
+                height /= 2;
         }
     }
 

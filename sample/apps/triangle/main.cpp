@@ -304,7 +304,9 @@ void TriangleSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
-                                         .usages = TextureUsageFlagBits::kCopyDst | TextureUsageFlagBits::kTextureBinding,
+                                         .usages = TextureUsageFlagBits::kCopySrc |
+                                                   TextureUsageFlagBits::kCopyDst |
+                                                   TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
                                          .mipLevels = mipLevels };
@@ -312,19 +314,6 @@ void TriangleSample::createImageTexture()
 
     // copy image staging buffer to texture
     copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
-
-    // IMPL: generate mipmaps
-    if (false)
-    {
-        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-        std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
-        BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
-        std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
-
-        blitCommandEncoder->begin();
-        blitCommandEncoder->end();
-    }
 }
 
 void TriangleSample::createImageTextureView()
@@ -367,6 +356,9 @@ void TriangleSample::createImageSampler()
     descriptor.addressModeU = AddressMode::kRepeat;
     descriptor.addressModeV = AddressMode::kRepeat;
     descriptor.addressModeW = AddressMode::kRepeat;
+    descriptor.lodMin = 0.0f;
+    // descriptor.lodMin = static_cast<float>(m_imageTexture->getMipLevels() / 2);
+    descriptor.lodMax = static_cast<float>(m_imageTexture->getMipLevels());
 
     m_imageSampler = m_device->createSampler(descriptor);
 }
