@@ -180,6 +180,13 @@ if(BUILD_SHARED_LIBS)
   )
 endif()
 
+if(MSVC)
+  target_compile_definitions(vkt
+    PRIVATE
+    "NOMINMAX" # to undefine max, min macro
+  )
+endif()
+
 # install
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${CMAKE_INSTALL_PREFIX})
 
