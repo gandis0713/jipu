@@ -268,8 +268,7 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
     // IMPL: generate mipmap.
     if (false)
     {
-        uint32_t mipLevels = texture.texture->getMipLevels();
-        if (mipLevels > 1)
+        if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
         {
             VkImage image = vulkanTexture->getVkImage();
 
