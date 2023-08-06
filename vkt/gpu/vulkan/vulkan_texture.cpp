@@ -113,7 +113,7 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
     VkPipelineStageFlags srcStage = 0u;
     VkPipelineStageFlags dstStage = 0u;
 
-    // TODO: generate barrier and stages.
+    // TODO: generate barrier and stages. please refer or check https://harrylovescode.gitbooks.io/vulkan-api/content/chap07/chap07.html
     if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
