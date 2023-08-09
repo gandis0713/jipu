@@ -46,6 +46,7 @@ struct TextureDescriptor
     TextureUsageFlags usages = TextureUsageFlagBits::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
+    uint32_t mipLevels = 0;
 };
 
 class Device;
@@ -66,16 +67,18 @@ public:
     TextureFormat getFormat() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
+    uint32_t getMipLevels() const;
 
     Device* getDevice() const;
 
 protected:
     Device* m_device = nullptr;
 
-    TextureType m_type;
-    TextureFormat m_format;
-    uint32_t m_width;
-    uint32_t m_height;
+    TextureType m_type = TextureType::kUndefined;
+    TextureFormat m_format = TextureFormat::kUndefined;
+    uint32_t m_width = 0;
+    uint32_t m_height = 0;
+    uint32_t m_mipLevels = 0;
 };
 
 } // namespace vkt

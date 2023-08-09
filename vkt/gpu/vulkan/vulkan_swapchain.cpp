@@ -116,7 +116,8 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
         TextureDescriptor descriptor{ .type = TextureType::k2D,
                                       .format = m_textureFormat,
                                       .width = m_width,
-                                      .height = m_height };
+                                      .height = m_height,
+                                      .mipLevels = 1 };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
         m_textures.push_back(std::move(texture));
     }

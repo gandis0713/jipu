@@ -30,6 +30,8 @@ struct SamplerDescriptor
     FilterMode magFilter = FilterMode::kNearest;
     FilterMode minFilter = FilterMode::kNearest;
     MipmapFilterMode mipmapFilter = MipmapFilterMode::kNearest;
+    float lodMin = 0;
+    float lodMax = 32;
 };
 
 class Device;

@@ -21,7 +21,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.extent.width = descriptor.width;
     createInfo.extent.height = descriptor.height;
     createInfo.extent.depth = 1;
-    createInfo.mipLevels = 1;
+    createInfo.mipLevels = descriptor.mipLevels;
     createInfo.arrayLayers = 1;
     createInfo.format = ToVkFormat(descriptor.format);
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -86,7 +86,7 @@ VkImage VulkanTexture::getVkImage() const
     return m_image;
 }
 
-void VulkanTexture::setLayout(VkImageLayout layout, VkCommandBuffer commandBuffer)
+void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
 {
     VkImageLayout oldLayout = m_layout;
     VkImageLayout newLayout = layout;
@@ -108,16 +108,12 @@ void VulkanTexture::setLayout(VkImageLayout layout, VkCommandBuffer commandBuffe
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = m_image;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
+    barrier.subresourceRange = range;
 
     VkPipelineStageFlags srcStage = 0u;
     VkPipelineStageFlags dstStage = 0u;
 
-    // TODO: generate barrier and stages.
+    // TODO: generate barrier and stages. please refer or check https://harrylovescode.gitbooks.io/vulkan-api/content/chap07/chap07.html
     if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     {
         barrier.srcAccessMask = 0;
@@ -134,10 +130,35 @@ void VulkanTexture::setLayout(VkImageLayout layout, VkCommandBuffer commandBuffe
         srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+    {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    }
     else
     {
         throw std::invalid_argument("Unsupported layout transition.");
     }
+
     vkAPI.CmdPipelineBarrier(
         commandBuffer,
         srcStage, dstStage,

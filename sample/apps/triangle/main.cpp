@@ -1,7 +1,7 @@
 
 
 #include "file.h"
-#include "jpeg.h"
+#include "image.h"
 #include "model.h"
 #include "sample.h"
 
@@ -90,7 +90,7 @@ private:
 
     // data
     Polygon m_polygon{};
-    std::unique_ptr<JPEGImage> m_jpegImage = nullptr;
+    std::unique_ptr<Image> m_image = nullptr;
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -283,13 +283,15 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createImageTexture()
 {
     // load jpeg image.
-    m_jpegImage = std::make_unique<JPEGImage>(m_path.parent_path() / "viking_room.png");
+    m_image = std::make_unique<Image>(m_path.parent_path() / "viking_room.png");
 
-    unsigned char* pixels = static_cast<unsigned char*>(m_jpegImage->getPixels());
-    uint32_t width = m_jpegImage->getWidth();
-    uint32_t height = m_jpegImage->getHeight();
-    uint32_t channel = m_jpegImage->getChannel();
+    unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
+    uint32_t width = m_image->getWidth();
+    uint32_t height = m_image->getHeight();
+    uint32_t channel = m_image->getChannel();
     uint64_t imageSize = sizeof(unsigned char) * width * height * channel;
+
+    uint32_t mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
     // create image staging buffer.
     BufferDescriptor descriptor{ .size = imageSize, .usage = BufferUsageFlagBits::kCopySrc };
@@ -302,9 +304,12 @@ void TriangleSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
-                                         .usages = TextureUsageFlagBits::kCopyDst | TextureUsageFlagBits::kTextureBinding,
+                                         .usages = TextureUsageFlagBits::kCopySrc |
+                                                   TextureUsageFlagBits::kCopyDst |
+                                                   TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
-                                         .height = height };
+                                         .height = height,
+                                         .mipLevels = mipLevels };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
@@ -326,6 +331,7 @@ void TriangleSample::createDepthStencilTexture()
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kD_32_SFloat;
     descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
 
@@ -350,6 +356,9 @@ void TriangleSample::createImageSampler()
     descriptor.addressModeU = AddressMode::kRepeat;
     descriptor.addressModeV = AddressMode::kRepeat;
     descriptor.addressModeW = AddressMode::kRepeat;
+    descriptor.lodMin = 0.0f;
+    // descriptor.lodMin = static_cast<float>(m_imageTexture->getMipLevels() / 2);
+    descriptor.lodMax = static_cast<float>(m_imageTexture->getMipLevels());
 
     m_imageSampler = m_device->createSampler(descriptor);
 }
