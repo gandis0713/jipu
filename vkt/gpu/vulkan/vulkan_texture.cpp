@@ -28,7 +28,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     createInfo.usage = ToVkImageUsageFlags(descriptor.usages);
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     createInfo.flags = 0; // Optional
 
     const VulkanAPI& vkAPI = device->vkAPI;
@@ -271,6 +271,11 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     }
 
     return flags;
+}
+
+VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
+{
+    return count <= 1 ? VK_SAMPLE_COUNT_1_BIT : VK_SAMPLE_COUNT_4_BIT;
 }
 
 } // namespace vkt

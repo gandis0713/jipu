@@ -309,7 +309,8 @@ void TriangleSample::createImageTexture()
                                                    TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
-                                         .mipLevels = mipLevels };
+                                         .mipLevels = mipLevels,
+                                         .sampleCount = 1 };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
@@ -334,6 +335,7 @@ void TriangleSample::createDepthStencilTexture()
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.sampleCount = 1;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
