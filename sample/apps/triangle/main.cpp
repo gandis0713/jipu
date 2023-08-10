@@ -127,6 +127,9 @@ private:
 
     std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
     std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
+
+    uint32_t m_colorSampleCount = 1;
+    uint32_t m_depthStencilSampleCount = 1;
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -310,7 +313,7 @@ void TriangleSample::createImageTexture()
                                          .width = width,
                                          .height = height,
                                          .mipLevels = mipLevels,
-                                         .sampleCount = 1 };
+                                         .sampleCount = m_colorSampleCount };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
@@ -335,7 +338,7 @@ void TriangleSample::createDepthStencilTexture()
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
-    descriptor.sampleCount = 1;
+    descriptor.sampleCount = m_depthStencilSampleCount;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
