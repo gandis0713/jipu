@@ -29,4 +29,9 @@ uint32_t TextureView::getMipLevels() const
     return m_texture->getMipLevels();
 }
 
+uint32_t TextureView::getSampleCount() const
+{
+    return m_texture->getSampleCount();
+}
+
 } // namespace vkt

@@ -58,6 +58,7 @@ public:
     uint32_t getWidth() const;
     uint32_t getHeight() const;
     uint32_t getMipLevels() const;
+    uint32_t getSampleCount() const;
 
 protected:
     Texture* m_texture = nullptr;
