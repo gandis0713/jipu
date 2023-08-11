@@ -353,6 +353,7 @@ void TriangleSample::createColorTexture()
                                          .sampleCount = m_sampleCount };
     m_colorTexture = m_device->createTexture(textureDescriptor);
 }
+
 void TriangleSample::createColorTextureView()
 {
     TextureViewDescriptor descriptor{};
@@ -563,8 +564,8 @@ void TriangleSample::createCommandBuffers()
         auto commandBuffer = m_renderCommandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .renderView = m_colorTextureView.get(),
-                                .resolveView = swapchainTextureViews[i],
+        colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[i],
+                                .resolveView = m_sampleCount > 1 ? swapchainTextureViews[i] : nullptr,
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
