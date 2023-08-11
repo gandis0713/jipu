@@ -31,7 +31,8 @@ union ColorClearValue
 
 struct ColorAttachment
 {
-    TextureView* textureView = nullptr;
+    TextureView* renderView = nullptr;
+    TextureView* resolveView = nullptr;
     LoadOp loadOp = LoadOp::kDontCare;
     StoreOp storeOp = StoreOp::kDontCare;
     ColorClearValue clearValue{};
