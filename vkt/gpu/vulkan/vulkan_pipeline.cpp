@@ -108,7 +108,7 @@ void VulkanRenderPipeline::initialize()
     VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
-    multisampleStateCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    multisampleStateCreateInfo.rasterizationSamples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount);
     multisampleStateCreateInfo.minSampleShading = 1.0f;          // Optional
     multisampleStateCreateInfo.pSampleMask = nullptr;            // Optional
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
