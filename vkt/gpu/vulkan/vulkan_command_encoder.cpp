@@ -39,17 +39,19 @@ void VulkanRenderCommandEncoder::begin()
     // TODO: add depth, stencil into RenderPassDescriptor.
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
     const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(colorAttachment.textureView->getFormat()),
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(colorAttachment.renderView->getFormat()),
                                                      .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
                                                      .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
-                                                     .samples = VK_SAMPLE_COUNT_1_BIT /* TODO: use not vulkan defines */ };
+                                                     .samples = ToVkSampleCountFlagBits(colorAttachment.renderView->getSampleCount()) };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    auto vulkanSwapchainTextureView = downcast(colorAttachment.textureView);
+    auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
+    auto vulkanSwapchainTextureView = downcast(colorAttachment.resolveView);
     auto vulkanDepthStencilTextureView = downcast(depthStencilAttachment.textureView);
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
-                                                       .imageViews = { vulkanSwapchainTextureView->getVkImageView(),
-                                                                       vulkanDepthStencilTextureView->getVkImageView() },
+                                                       .imageViews = { vulkanRenderTextureView->getVkImageView(),
+                                                                       vulkanDepthStencilTextureView->getVkImageView(),
+                                                                       vulkanSwapchainTextureView->getVkImageView() },
                                                        .width = vulkanSwapchainTextureView->getWidth(),
                                                        .height = vulkanSwapchainTextureView->getHeight() };
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
