@@ -57,6 +57,8 @@ public:
     void init() override;
 
 private:
+    void createSwapchain();
+
     void createVertexBuffer();
     void createUniformBuffer();
 
@@ -64,6 +66,8 @@ private:
     void createImageTextureView();
     void createImageSampler();
 
+    void createColorTexture();
+    void createColorTextureView();
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
@@ -113,6 +117,8 @@ private:
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
 
+    std::unique_ptr<Texture> m_colorTexture = nullptr;
+    std::unique_ptr<TextureView> m_colorTextureView = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
@@ -127,6 +133,8 @@ private:
 
     std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
     std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
+
+    uint32_t m_sampleCount = 4;
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -152,6 +160,8 @@ TriangleSample::~TriangleSample()
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
+    m_colorTextureView.reset();
+    m_colorTexture.reset();
 
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
@@ -205,20 +215,7 @@ void TriangleSample::init()
     }
 
     // create swapchain
-    {
-#if defined(__ANDROID__) || defined(ANDROID)
-        TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-        TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-        SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
-                                        .presentMode = PresentMode::kFifo,
-                                        .colorSpace = ColorSpace::kSRGBNonLinear,
-                                        .width = m_width,
-                                        .height = m_height,
-                                        .surface = m_surface.get() };
-        m_swapchain = m_device->createSwapchain(descriptor);
-    }
+    createSwapchain();
 
     // create buffer
     createVertexBuffer();
@@ -228,6 +225,8 @@ void TriangleSample::init()
     createImageTextureView();
     createImageSampler();
 
+    createColorTexture();
+    createColorTextureView();
     createDepthStencilTexture();
     createDepthStencilTextureView();
 
@@ -239,6 +238,22 @@ void TriangleSample::init()
     createCommandBuffers();
 
     m_initialized = true;
+}
+
+void TriangleSample::createSwapchain()
+{
+#if defined(__ANDROID__) || defined(ANDROID)
+    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+#else
+    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+#endif
+    SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
+                                    .presentMode = PresentMode::kFifo,
+                                    .colorSpace = ColorSpace::kSRGBNonLinear,
+                                    .width = m_width,
+                                    .height = m_height,
+                                    .surface = m_surface.get() };
+    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void TriangleSample::createVertexBuffer()
@@ -309,7 +324,8 @@ void TriangleSample::createImageTexture()
                                                    TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
-                                         .mipLevels = mipLevels };
+                                         .mipLevels = mipLevels,
+                                         .sampleCount = 1 };
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
@@ -325,6 +341,28 @@ void TriangleSample::createImageTextureView()
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
 }
 
+void TriangleSample::createColorTexture()
+{
+    // create color texture.
+    TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
+                                         .format = m_swapchain->getTextureFormat(),
+                                         .usages = TextureUsageFlagBits::kColorAttachment,
+                                         .width = m_swapchain->getWidth(),
+                                         .height = m_swapchain->getHeight(),
+                                         .mipLevels = 1,
+                                         .sampleCount = m_sampleCount };
+    m_colorTexture = m_device->createTexture(textureDescriptor);
+}
+
+void TriangleSample::createColorTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_colorTextureView = m_colorTexture->createTextureView(descriptor);
+}
+
 void TriangleSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
@@ -334,6 +372,7 @@ void TriangleSample::createDepthStencilTexture()
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.sampleCount = m_sampleCount;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
@@ -478,6 +517,7 @@ void TriangleSample::createRenderPipeline()
     // Rasterization
     RasterizationStage rasterization{};
     {
+        rasterization.sampleCount = m_sampleCount;
     }
 
     // fragment stage
@@ -524,7 +564,8 @@ void TriangleSample::createCommandBuffers()
         auto commandBuffer = m_renderCommandBuffers[i].get();
 
         std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .textureView = swapchainTextureViews[i],
+        colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[i],
+                                .resolveView = m_sampleCount > 1 ? swapchainTextureViews[i] : nullptr,
                                 .loadOp = LoadOp::kClear,
                                 .storeOp = StoreOp::kStore,
                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };

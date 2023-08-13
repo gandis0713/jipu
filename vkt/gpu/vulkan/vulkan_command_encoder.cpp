@@ -35,23 +35,31 @@ void VulkanRenderCommandEncoder::begin()
         throw std::runtime_error("failed to begin command buffer.");
     }
 
-    // TODO: support multiple color sample.
-    // TODO: add depth, stencil into RenderPassDescriptor.
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
-    const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(colorAttachment.textureView->getFormat()),
+    auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
+
+    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(vulkanRenderTextureView->getFormat()),
                                                      .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
                                                      .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
-                                                     .samples = VK_SAMPLE_COUNT_1_BIT /* TODO: use not vulkan defines */ };
+                                                     .samples = ToVkSampleCountFlagBits(vulkanRenderTextureView->getSampleCount()) };
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    auto vulkanSwapchainTextureView = downcast(colorAttachment.textureView);
+    const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
     auto vulkanDepthStencilTextureView = downcast(depthStencilAttachment.textureView);
+
+    std::vector<VkImageView> imageviews{};
+    imageviews.resize(2); // set only for color and depth texture.
+    imageviews[0] = vulkanRenderTextureView->getVkImageView();
+    imageviews[1] = vulkanDepthStencilTextureView->getVkImageView();
+
+    // If sample count is larger than 1, resolve texture is need.
+    if (vulkanRenderTextureView->getSampleCount() > 1)
+        imageviews.push_back(downcast(colorAttachment.resolveView)->getVkImageView());
+
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
-                                                       .imageViews = { vulkanSwapchainTextureView->getVkImageView(),
-                                                                       vulkanDepthStencilTextureView->getVkImageView() },
-                                                       .width = vulkanSwapchainTextureView->getWidth(),
-                                                       .height = vulkanSwapchainTextureView->getHeight() };
+                                                       .imageViews = imageviews,
+                                                       .width = vulkanRenderTextureView->getWidth(),
+                                                       .height = vulkanRenderTextureView->getHeight() };
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
 
     VkRenderPassBeginInfo renderPassInfo{};

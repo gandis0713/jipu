@@ -56,7 +56,8 @@ DOWN_CAST(VulkanTexture, Texture);
 // Convert Helper
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
-TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
+TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
+VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
 
 } // namespace vkt

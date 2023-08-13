@@ -47,6 +47,7 @@ struct TextureDescriptor
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t mipLevels = 0;
+    uint32_t sampleCount = 0;
 };
 
 class Device;
@@ -68,6 +69,7 @@ public:
     uint32_t getWidth() const;
     uint32_t getHeight() const;
     uint32_t getMipLevels() const;
+    uint32_t getSampleCount() const;
 
     Device* getDevice() const;
 
@@ -79,6 +81,7 @@ protected:
     uint32_t m_width = 0;
     uint32_t m_height = 0;
     uint32_t m_mipLevels = 0;
+    uint32_t m_sampleCount = 0;
 };
 
 } // namespace vkt

@@ -100,6 +100,7 @@ struct VertexStage : ProgrammableStage
 // Rasterization Stage
 struct RasterizationStage
 {
+    uint32_t sampleCount = 0;
 };
 
 // Fragment Shader Stage
