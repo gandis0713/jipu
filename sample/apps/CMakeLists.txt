@@ -9,3 +9,4 @@ if(APPLE)
 endif()
 
 add_subdirectory(triangle)
+add_subdirectory(compute)
