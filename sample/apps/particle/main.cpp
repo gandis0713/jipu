@@ -90,6 +90,21 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
+    m_indexBuffer.reset();
+    m_vertexBuffer.reset();
+
+    m_renderPipeline.reset();
+    m_pipelineLayout.reset();
+
+    m_fragmentShaderModule.reset();
+    m_vertexShaderModule.reset();
+
+    m_swapchain.reset();
+    m_surface.reset();
+
+    m_device.reset();
+    m_physicalDevice.reset();
+    m_driver.reset();
 }
 
 void ParticleSample::init()
