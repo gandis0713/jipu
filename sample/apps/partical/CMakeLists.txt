@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    partical
+    particle
     VERSION 0.1
-    DESCRIPTION "partical sample"
+    DESCRIPTION "particle sample"
     LANGUAGES CXX
 )
 
@@ -12,18 +12,18 @@ list(APPEND SRC_FILES
 )
 
 if(ANDROID)
-    add_library(partical SHARED
+    add_library(particle SHARED
         ${SRC_FILES}
     )
 else()
-    add_executable(partical
+    add_executable(particle
         ${SRC_FILES}
     )
 endif()
 
 find_package(spdlog CONFIG REQUIRED)
 
-target_link_libraries(partical
+target_link_libraries(particle
     PRIVATE
     vkt::vkt
     vkt::sample_base
@@ -33,7 +33,7 @@ target_link_libraries(partical
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(partical
+    target_compile_options(particle
         PUBLIC
         -Wall
         -Werror
