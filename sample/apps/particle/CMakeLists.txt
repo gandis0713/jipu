@@ -30,6 +30,36 @@ target_link_libraries(particle
     spdlog::spdlog_header_only
 )
 
+# define shader input
+set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+
+# convert shader to spirv
+find_program(GLSLC_EXE NAMES glslc)
+
+if(EXISTS ${GLSLC_EXE})
+    add_custom_command(TARGET particle PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.vert -o ${SHADERS_INPUT}/particle.vert.spv
+    )
+    add_custom_command(TARGET particle PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.frag -o ${SHADERS_INPUT}/particle.frag.spv
+    )
+endif()
+
+# copy spirv to output
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+else()
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+endif()
+
+if(NOT ANDROID)
+    set(SHADER_OUTPUT ${BINARY_OUT})
+
+    # TODO: copy after creating *spv.
+    file(COPY ${SHADERS_INPUT}/particle.vert.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/particle.frag.spv DESTINATION ${SHADER_OUTPUT})
+endif()
+
 if(MSVC)
 # TODO
 elseif(APPLE)
