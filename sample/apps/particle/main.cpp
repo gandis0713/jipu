@@ -29,12 +29,12 @@ extern "C"
 namespace vkt
 {
 
-class ComputeSample : public Sample
+class ParticleSample : public Sample
 {
 public:
-    ComputeSample() = delete;
-    ComputeSample(const SampleDescriptor& descriptor);
-    ~ComputeSample() override;
+    ParticleSample() = delete;
+    ParticleSample(const SampleDescriptor& descriptor);
+    ~ParticleSample() override;
 
 public:
     void init() override;
@@ -58,16 +58,16 @@ private:
     std::unique_ptr<Buffer> m_indexBUffer = nullptr;
 };
 
-ComputeSample::ComputeSample(const SampleDescriptor& descriptor)
+ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
 }
 
-ComputeSample::~ComputeSample()
+ParticleSample::~ParticleSample()
 {
 }
 
-void ComputeSample::init()
+void ParticleSample::init()
 {
     createDriver();
     createPhysicalDevice();
@@ -77,17 +77,17 @@ void ComputeSample::init()
     createSwapchain();
 }
 
-void ComputeSample::draw()
+void ParticleSample::draw()
 {
 }
 
-void ComputeSample::createDriver()
+void ParticleSample::createDriver()
 {
     DriverDescriptor descriptor{ .type = DriverType::VULKAN };
     m_driver = Driver::create(descriptor);
 }
 
-void ComputeSample::createPhysicalDevice()
+void ParticleSample::createPhysicalDevice()
 {
     if (!m_driver)
         throw std::runtime_error("The driver instance is null pointer for physical device.");
@@ -96,7 +96,7 @@ void ComputeSample::createPhysicalDevice()
     m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
 }
 
-void ComputeSample::createDevice()
+void ParticleSample::createDevice()
 {
     if (!m_physicalDevice)
         throw std::runtime_error("The physical device instance is null pointer.");
@@ -105,7 +105,7 @@ void ComputeSample::createDevice()
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
-void ComputeSample::createSurface()
+void ParticleSample::createSurface()
 {
     if (!m_driver)
         throw std::runtime_error("The driver instance is null pointer for surface.");
@@ -114,7 +114,7 @@ void ComputeSample::createSurface()
     m_surface = m_driver->createSurface(descriptor);
 }
 
-void ComputeSample::createSwapchain()
+void ParticleSample::createSwapchain()
 {
     if (!m_device)
         throw std::runtime_error("The device instance is null pointer for swapchain.");
@@ -141,11 +141,11 @@ void ComputeSample::createSwapchain()
 void android_main(struct android_app* app)
 {
     vkt::SampleDescriptor descriptor{
-        { 1000, 2000, "Compute Shader Sample", app },
+        { 1000, 2000, "Particle Sample", app },
         ""
     };
 
-    vkt::ComputeSample sample(descriptor);
+    vkt::ParticleSample sample(descriptor);
 
     sample.exec();
 }
@@ -157,11 +157,11 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     vkt::SampleDescriptor descriptor{
-        { 800, 600, "Compute Shader Sample", nullptr },
+        { 800, 600, "Particle Sample", nullptr },
         argv[0]
     };
 
-    vkt::ComputeSample sample(descriptor);
+    vkt::ParticleSample sample(descriptor);
 
     return sample.exec();
 }
