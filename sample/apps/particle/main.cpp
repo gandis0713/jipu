@@ -1,13 +1,16 @@
 
+#include "file.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -46,16 +49,28 @@ private:
     void createDevice();
     void createSurface();
     void createSwapchain();
+    void createRenderPipeline();
 
 private:
+    struct Vertex
+    {
+        glm::vec3 pos;
+    };
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
+    std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
+    std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
+    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
+    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBUffer = nullptr;
+
+    uint32_t m_sampleCount = 1;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -75,6 +90,8 @@ void ParticleSample::init()
 
     createSurface();
     createSwapchain();
+
+    createRenderPipeline();
 }
 
 void ParticleSample::draw()
@@ -132,6 +149,76 @@ void ParticleSample::createSwapchain()
                                     .height = m_height,
                                     .surface = m_surface.get() };
     m_swapchain = m_device->createSwapchain(descriptor);
+}
+
+void ParticleSample::createRenderPipeline()
+{
+    // pipeline layout
+    PipelineLayoutDescriptor pipelineLayoutdescriptor{};
+    pipelineLayoutdescriptor.layouts = {};
+    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutdescriptor);
+
+    // input assembly
+    InputAssemblyStage inputAssembly{};
+    inputAssembly.topology = PrimitiveTopology::kTriangleList;
+
+    // vertex shader
+    VertexStage vertexStage{};
+    {
+        // create vertex shader module.
+        {
+            const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
+            ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
+                                                           .codeSize = vertexShaderSource.size() };
+            m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+
+            vertexStage.entryPoint = "main";
+            vertexStage.shaderModule = m_vertexShaderModule.get();
+        }
+
+        // create vertex shader layouts
+        {
+            VertexAttribute vertexPositionAttribute{};
+            vertexPositionAttribute.format = VertexFormat::kSFLOATx3;
+            vertexPositionAttribute.offset = 0;
+
+            VertexInputLayout vertexInputLayout{};
+            vertexInputLayout.attributes = { vertexPositionAttribute };
+            vertexInputLayout.mode = VertexMode::kVertex;
+            vertexInputLayout.stride = sizeof(Vertex);
+            vertexStage.layouts = { vertexInputLayout };
+        }
+    }
+
+    // rasterization
+    RasterizationStage rasterizationStage{};
+    {
+        rasterizationStage.sampleCount = m_sampleCount;
+    }
+
+    // fragment shader
+    FragmentStage fragmentStage{};
+    {
+        const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
+        ShaderModuleDescriptor shaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
+        m_fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+
+        fragmentStage.entryPoint = "main";
+        fragmentStage.shaderModule = m_fragmentShaderModule.get();
+
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+
+        fragmentStage.targets = { target };
+    }
+
+    RenderPipelineDescriptor renderPipelineDescriptor{};
+    renderPipelineDescriptor.inputAssembly = inputAssembly;
+    renderPipelineDescriptor.vertex = vertexStage;
+    renderPipelineDescriptor.rasterization = rasterizationStage;
+    renderPipelineDescriptor.fragment = fragmentStage;
+    renderPipelineDescriptor.layout = m_pipelineLayout.get();
+    m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
 } // namespace vkt
