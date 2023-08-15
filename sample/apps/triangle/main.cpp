@@ -258,7 +258,7 @@ void TriangleSample::createSwapchain()
 
 void TriangleSample::createVertexBuffer()
 {
-    std::filesystem::path objPath = m_path.parent_path() / "viking_room.obj";
+    std::filesystem::path objPath = m_appDir / "viking_room.obj";
     m_polygon = loadOBJ(objPath);
 
     // vertex buffer
@@ -298,7 +298,7 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createImageTexture()
 {
     // load jpeg image.
-    m_image = std::make_unique<Image>(m_path.parent_path() / "viking_room.png");
+    m_image = std::make_unique<Image>(m_appDir / "viking_room.png");
 
     unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
     uint32_t width = m_image->getWidth();
@@ -481,12 +481,11 @@ void TriangleSample::createRenderPipeline()
     VertexStage vertexStage{};
     {
         // create vertex shader
-        auto appDir = m_path.parent_path();
-        const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle.vert.spv", m_handle);
+        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "triangle.vert.spv", m_handle);
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
-        vertexStage.shader = m_vertexShaderModule.get();
+        vertexStage.shaderModule = m_vertexShaderModule.get();
 
         // layouts
         std::vector<VertexInputLayout> layouts{};
@@ -524,13 +523,12 @@ void TriangleSample::createRenderPipeline()
     FragmentStage fragmentStage{};
     {
         // create fragment shader
-        auto appDir = m_path.parent_path();
-        const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle.frag.spv", m_handle);
+        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        fragmentStage.shader = m_fragmentShaderModule.get();
+        fragmentStage.shaderModule = m_fragmentShaderModule.get();
 
         // output targets
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };

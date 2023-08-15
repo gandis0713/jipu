@@ -37,7 +37,7 @@ void VulkanRenderPipeline::initialize()
     inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
     // Vertex Stage
-    auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
+    auto vertexShaderModule = downcast(m_descriptor.vertex.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo vertexStageInfo{};
     vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -97,7 +97,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;    // Optional
 
     // Fragment Stage
-    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
+    auto fragmentShaderModule = downcast(m_descriptor.fragment.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo fragmentStageInfo{};
     fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
