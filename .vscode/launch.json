@@ -36,6 +36,18 @@
             "targetArchitecture": "arm64",
         },
         {
+            "name": "Partical Debug for arm64 osx",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/partical/partical",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
             "name": "Triangle Release for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
