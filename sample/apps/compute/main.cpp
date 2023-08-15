@@ -9,6 +9,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -43,6 +44,8 @@ private:
     void createDriver();
     void createPhysicalDevice();
     void createDevice();
+    void createSurface();
+    void createSwapchain();
 
 private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
@@ -84,7 +87,7 @@ void ComputeSample::createDriver()
 void ComputeSample::createPhysicalDevice()
 {
     if (!m_driver)
-        throw std::runtime_error("The driver instance is null pointer.");
+        throw std::runtime_error("The driver instance is null pointer for physical device.");
 
     PhysicalDeviceDescriptor descriptor{ .index = 0 }; // TODO: use first physical device.
     m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
@@ -97,6 +100,35 @@ void ComputeSample::createDevice()
 
     DeviceDescriptor descriptor{};
     m_device = m_physicalDevice->createDevice(descriptor);
+}
+
+void ComputeSample::createSurface()
+{
+    if (!m_driver)
+        throw std::runtime_error("The driver instance is null pointer for surface.");
+
+    SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
+    m_surface = m_driver->createSurface(descriptor);
+}
+
+void ComputeSample::createSwapchain()
+{
+    if (!m_device)
+        throw std::runtime_error("The device instance is null pointer for swapchain.");
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+#else
+    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+#endif
+
+    SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
+                                    .presentMode = PresentMode::kFifo,
+                                    .colorSpace = ColorSpace::kSRGBNonLinear,
+                                    .width = m_width,
+                                    .height = m_height,
+                                    .surface = m_surface.get() };
+    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 } // namespace vkt
