@@ -552,7 +552,7 @@ void TriangleSample::createCommandBuffers()
     m_renderCommandBuffers.resize(commandBufferCount);
     for (auto i = 0; i < commandBufferCount; ++i)
     {
-        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kUndefined };
+        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
         auto commandBuffer = m_device->createCommandBuffer(descriptor);
         m_renderCommandBuffers[i] = std::move(commandBuffer);
     }

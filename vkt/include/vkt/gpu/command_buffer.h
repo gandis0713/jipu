@@ -11,12 +11,12 @@ namespace vkt
 enum class CommandBufferUsage
 {
     kUndefined = 1 << 0, // 0x00000000
-    kOneTime = 1 << 1,   // 0x00000001
+    kOneTime = 1 << 1,   // 0x00000001 // TODO: Check other graphic APi.
 };
 
 struct CommandBufferDescriptor
 {
-    CommandBufferUsage usage = CommandBufferUsage::kUndefined;
+    CommandBufferUsage usage = CommandBufferUsage::kOneTime;
 };
 
 class Device;
