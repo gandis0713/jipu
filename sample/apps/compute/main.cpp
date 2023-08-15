@@ -48,14 +48,14 @@ private:
     void createSwapchain();
 
 private:
-    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_indexBUffer = nullptr;
-
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_indexBUffer = nullptr;
 };
 
 ComputeSample::ComputeSample(const SampleDescriptor& descriptor)
@@ -72,6 +72,9 @@ void ComputeSample::init()
     createDriver();
     createPhysicalDevice();
     createDevice();
+
+    createSurface();
+    createSwapchain();
 }
 
 void ComputeSample::draw()
