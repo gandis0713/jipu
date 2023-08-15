@@ -50,12 +50,14 @@ private:
     void createSurface();
     void createSwapchain();
     void createRenderPipeline();
+    void createVertexBuffer();
 
 private:
     struct Vertex
     {
         glm::vec3 pos;
     };
+
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
@@ -68,9 +70,17 @@ private:
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_indexBUffer = nullptr;
+    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     uint32_t m_sampleCount = 1;
+    std::vector<Vertex> m_vertices = {
+        { { -0.5, 0.5, 0.0 } },  // left top
+        { { -0.5, -0.5, 0.0 } }, // left bottom
+        { { 0.5, -0.5, 0.0 } },  // right bottom
+        { { 0.5, 0.5, 0.0 } }    // right top
+    };
+
+    std::vector<uint16_t> m_indices = { 0, 1, 2, 0, 2, 3 };
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -92,6 +102,8 @@ void ParticleSample::init()
     createSwapchain();
 
     createRenderPipeline();
+
+    createVertexBuffer();
 }
 
 void ParticleSample::draw()
@@ -219,6 +231,37 @@ void ParticleSample::createRenderPipeline()
     renderPipelineDescriptor.fragment = fragmentStage;
     renderPipelineDescriptor.layout = m_pipelineLayout.get();
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+}
+
+void ParticleSample::createVertexBuffer()
+{
+    // create vertex buffer
+    {
+        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+        BufferDescriptor vertexBufferDescriptor{};
+        vertexBufferDescriptor.size = vertexSize;
+        vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex;
+        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+
+        // TODO: currently buffer can be accessed both CPU and GPU.
+        void* mappedPointer = m_vertexBuffer->map();
+        memcpy(mappedPointer, m_vertices.data(), vertexSize);
+        m_vertexBuffer->unmap();
+    }
+
+    // create index buffer
+    {
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_indices.size());
+        BufferDescriptor indexBufferDescriptor{};
+        indexBufferDescriptor.size = indexSize;
+        indexBufferDescriptor.usage = BufferUsageFlagBits::kIndex;
+        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+        // TODO: currently buffer can be accessed both CPU and GPU.
+        void* mappedPointer = m_indexBuffer->map();
+        memcpy(mappedPointer, m_indices.data(), indexSize);
+        m_indexBuffer->unmap();
+    }
 }
 
 } // namespace vkt
