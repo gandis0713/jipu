@@ -23,7 +23,8 @@ public:
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
-    VkSemaphore m_renderingFinishSemaphore = VK_NULL_HANDLE;
+    VkSemaphore m_renderSemaphore = VK_NULL_HANDLE;
+    VkFence m_fence = VK_NULL_HANDLE;
 
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice

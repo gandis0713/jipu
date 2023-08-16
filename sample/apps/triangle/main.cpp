@@ -131,8 +131,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
-    std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
+    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
 
     uint32_t m_sampleCount = 4;
 };
@@ -147,7 +146,7 @@ TriangleSample::~TriangleSample()
     // clear swapchain first.
     m_swapchain.reset();
 
-    m_renderCommandBuffers.clear();
+    m_renderCommandBuffer.reset();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
@@ -546,37 +545,8 @@ void TriangleSample::createRenderPipeline()
 
 void TriangleSample::createCommandBuffers()
 {
-    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
-
-    auto commandBufferCount = swapchainTextureViews.size();
-    m_renderCommandBuffers.resize(commandBufferCount);
-    for (auto i = 0; i < commandBufferCount; ++i)
-    {
-        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
-        auto commandBuffer = m_device->createCommandBuffer(descriptor);
-        m_renderCommandBuffers[i] = std::move(commandBuffer);
-    }
-
-    for (auto i = 0; i < commandBufferCount; ++i)
-    {
-        auto commandBuffer = m_renderCommandBuffers[i].get();
-
-        std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[i],
-                                .resolveView = m_sampleCount > 1 ? swapchainTextureViews[i] : nullptr,
-                                .loadOp = LoadOp::kClear,
-                                .storeOp = StoreOp::kStore,
-                                .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
-                                                       .loadOp = LoadOp::kClear,
-                                                       .storeOp = StoreOp::kStore,
-                                                       .clearValue = { .depth = 1.0f, .stencil = 0 } };
-
-        RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                                   .depthStencilAttachment = depthStencilAttachment };
-        auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
-        m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
-    }
+    CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
+    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void TriangleSample::copyBufferToBuffer()
@@ -634,9 +604,24 @@ void TriangleSample::draw()
 {
     updateUniformBuffer();
 
+    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
     int nextImageIndex = m_swapchain->acquireNextTexture();
 
-    auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
+    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[nextImageIndex],
+                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
+                            .loadOp = LoadOp::kClear,
+                            .storeOp = StoreOp::kStore,
+                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
+    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+                                                   .loadOp = LoadOp::kClear,
+                                                   .storeOp = StoreOp::kStore,
+                                                   .clearValue = { .depth = 1.0f, .stencil = 0 } };
+
+    RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
+                                               .depthStencilAttachment = depthStencilAttachment };
+
+    auto renderCommandEncoder = m_renderCommandBuffer->createRenderCommandEncoder(descriptor);
 
     renderCommandEncoder->begin();
     renderCommandEncoder->setPipeline(m_renderPipeline.get());

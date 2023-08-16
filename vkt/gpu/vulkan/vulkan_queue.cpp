@@ -35,13 +35,25 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
     device->vkAPI.GetDeviceQueue(device->getVkDevice(), m_index, 0, &m_queue);
 
+    // create fence.
+    VkFenceCreateInfo fenceCreateInfo{};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.pNext = nullptr;
+    fenceCreateInfo.flags = 0;
+    // fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    if (device->vkAPI.CreateFence(device->getVkDevice(), &fenceCreateInfo, nullptr, &m_fence) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create queue fence.");
+    }
+
     // create semaphore
     VkSemaphoreCreateInfo semaphoreCreateInfo{};
     semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreCreateInfo.pNext = nullptr;
     semaphoreCreateInfo.flags = 0;
 
-    if (device->vkAPI.CreateSemaphore(device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderingFinishSemaphore) != VK_SUCCESS)
+    if (device->vkAPI.CreateSemaphore(device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create rendering queue semephore.");
     }
@@ -56,8 +68,8 @@ VulkanQueue::~VulkanQueue()
     vkAPI.QueueWaitIdle(m_queue);
 
     // Doesn't need to destroy VkQueue.
-
-    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderingFinishSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderSemaphore, nullptr);
+    vkAPI.DestroyFence(vulkanDevice->getVkDevice(), m_fence, nullptr);
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
@@ -78,13 +90,13 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     }
     submitInfo.pCommandBuffers = vulkanCommandBuffers.data();
 
-    if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, m_fence) != VK_SUCCESS)
     {
         spdlog::error("failed to submit command buffer.");
     }
 
-    // TODO: check really need?
-    vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
+    vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+    vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
@@ -93,7 +105,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     std::vector<VkSemaphore> waitSemaphores{ downcast(swapchain)->getAcquireImageSemaphore() };
-    downcast(swapchain)->injectSemaphore(m_renderingFinishSemaphore);
+    downcast(swapchain)->injectSemaphore(m_renderSemaphore);
 
     // submit command buffer
     VkSubmitInfo submitInfo{};
@@ -114,17 +126,17 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
     }
     submitInfo.pCommandBuffers = vulkanCommandBuffers.data();
 
-    VkSemaphore signalSemaphores[] = { m_renderingFinishSemaphore };
+    VkSemaphore signalSemaphores[] = { m_renderSemaphore };
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkAPI.QueueSubmit(m_queue, 1, &submitInfo, m_fence) != VK_SUCCESS)
     {
         spdlog::error("failed to submit draw command buffer!");
     }
 
-    // TODO: check really need?
-    vulkanDevice->vkAPI.QueueWaitIdle(m_queue);
+    vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+    vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
 
     swapchain->present(this);
 }
