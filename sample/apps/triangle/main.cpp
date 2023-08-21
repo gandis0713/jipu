@@ -577,7 +577,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     std::unique_ptr<CommandEncoder> commandEndoer = blitCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-    m_queue->submit({ commandEndoer->end() });
+    m_queue->submit({ commandEndoer->finish() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -604,6 +604,9 @@ void TriangleSample::draw()
     std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
     int nextImageIndex = m_swapchain->acquireNextTexture();
 
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
     std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
     colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[nextImageIndex],
                             .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
@@ -618,10 +621,7 @@ void TriangleSample::draw()
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
                                                              .depthStencilAttachment = depthStencilAttachment };
 
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
@@ -631,7 +631,7 @@ void TriangleSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
     renderPassEncoder->end();
 
-    m_queue->submit({ commandEncoder->end() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
 } // namespace vkt

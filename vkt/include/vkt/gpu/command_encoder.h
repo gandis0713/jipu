@@ -50,7 +50,7 @@ public:
     virtual void copyTextureToBuffer() = 0;  // TODO: not yet implemented
     virtual void copyTextureToTexture() = 0; // TODO: not yet implemented
 
-    virtual CommandBuffer* end() = 0;
+    virtual CommandBuffer* finish() = 0;
 
 public:
     CommandBuffer* getCommandBuffer() const;

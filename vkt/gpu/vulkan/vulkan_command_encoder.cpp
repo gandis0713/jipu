@@ -157,7 +157,7 @@ void VulkanCommandEncoder::copyTextureToTexture()
     // TODO: not yet implemented
 }
 
-CommandBuffer* VulkanCommandEncoder::end()
+CommandBuffer* VulkanCommandEncoder::finish()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());

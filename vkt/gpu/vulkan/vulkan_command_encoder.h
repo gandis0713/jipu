@@ -23,7 +23,7 @@ public:
     void copyTextureToBuffer() override;
     void copyTextureToTexture() override;
 
-    CommandBuffer* end() override;
+    CommandBuffer* finish() override;
 };
 
 } // namespace vkt
