@@ -6,7 +6,7 @@
 namespace vkt
 {
 
-CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer)
+CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
 {
 }
@@ -16,14 +16,9 @@ CommandBuffer* CommandEncoder::getCommandBuffer() const
     return m_commandBuffer;
 }
 
-RenderCommandEncoder::RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
-    : CommandEncoder(commandBuffer)
+RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
+    : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
-{
-}
-
-BlitCommandEncoder::BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
-    : CommandEncoder(commandBuffer)
 {
 }
 

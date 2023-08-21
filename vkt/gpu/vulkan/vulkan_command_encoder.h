@@ -7,53 +7,50 @@ namespace vkt
 {
 
 class VulkanCommandBuffer;
-class VulkanRenderCommandEncoder : public RenderCommandEncoder
+class VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
-    VulkanRenderCommandEncoder() = delete;
-    VulkanRenderCommandEncoder(VulkanCommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor);
-    ~VulkanRenderCommandEncoder() override = default;
-
-    void begin() override;
-    void end() override;
+    VulkanRenderPassEncoder() = delete;
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(Pipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) override;
     void setVertexBuffer(Buffer* buffer) override;
     void setIndexBuffer(Buffer* buffer) override;
-
-    void draw(uint32_t vertexCount) override;
-    void drawIndexed(uint32_t indexCount) override;
-
-    // state
     void setViewport(float x,
                      float y,
                      float width,
                      float height,
                      float minDepth,
                      float maxDepth) override;
-
     void setScissor(float x,
                     float y,
                     float width,
                     float height) override;
+
+    void draw(uint32_t vertexCount) override;
+    void drawIndexed(uint32_t indexCount) override;
+
+    void end() override;
 };
 
-class VulkanBlitCommandEncoder : public BlitCommandEncoder
+class VulkanCommandEncoder : public CommandEncoder
 {
 public:
-    VulkanBlitCommandEncoder() = delete;
-    VulkanBlitCommandEncoder(VulkanCommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
-    ~VulkanBlitCommandEncoder() override = default;
+    VulkanCommandEncoder() = delete;
+    VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
+    ~VulkanCommandEncoder() override = default;
 
-    void begin() override;
-    void end() override;
+    std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) override;
 
     void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) override;
     void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
 
     void copyTextureToBuffer() override;
     void copyTextureToTexture() override;
+
+    CommandBuffer* end() override;
 };
 
 // Convert Helper

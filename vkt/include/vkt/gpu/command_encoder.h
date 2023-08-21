@@ -58,35 +58,19 @@ class CommandBuffer;
 class BindingGroup;
 class Buffer;
 class Texture;
-class VKT_EXPORT CommandEncoder
-{
-public:
-    CommandEncoder() = delete;
-    CommandEncoder(CommandBuffer* commandBuffer);
-    virtual ~CommandEncoder() = default;
 
-    virtual void begin() = 0;
-    virtual void end() = 0;
-
-    CommandBuffer* getCommandBuffer() const;
-
-protected:
-    CommandBuffer* m_commandBuffer = nullptr;
-    Pipeline* m_pipeline = nullptr;
-};
-
-struct RenderCommandEncoderDescriptor
+struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     DepthStencilAttachment depthStencilAttachment{};
 };
 
-class VKT_EXPORT RenderCommandEncoder : public CommandEncoder
+class VKT_EXPORT RenderPassEncoder
 {
 public:
-    RenderCommandEncoder() = delete;
-    RenderCommandEncoder(CommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor);
-    virtual ~RenderCommandEncoder() = default;
+    RenderPassEncoder() = delete;
+    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    virtual ~RenderPassEncoder() = default;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
@@ -94,10 +78,6 @@ public:
     virtual void setVertexBuffer(Buffer* buffer) = 0;
     virtual void setIndexBuffer(Buffer* buffer) = 0;
 
-    virtual void draw(uint32_t vertexCount) = 0;
-    virtual void drawIndexed(uint32_t indexCount) = 0;
-
-    // state
     virtual void setViewport(float x,
                              float y,
                              float width,
@@ -110,8 +90,17 @@ public:
                             float width,
                             float height) = 0;
 
+    virtual void draw(uint32_t vertexCount) = 0;
+    virtual void drawIndexed(uint32_t indexCount) = 0;
+
+    virtual void end() = 0;
+
 protected:
-    RenderCommandEncoderDescriptor m_descriptor{};
+    CommandBuffer* m_commandBuffer = nullptr;
+    RenderPassEncoderDescriptor m_descriptor{};
+
+protected:
+    Pipeline* m_pipeline = nullptr;
 };
 
 struct BlitBuffer
@@ -131,22 +120,32 @@ struct BlitTexture
     Texture* texture = nullptr;
 };
 
-struct BlitCommandEncoderDescriptor
+struct CommandEncoderDescriptor
 {
 };
 
-class VKT_EXPORT BlitCommandEncoder : public CommandEncoder
+class VKT_EXPORT CommandEncoder
 {
 public:
-    BlitCommandEncoder() = delete;
-    BlitCommandEncoder(CommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor);
-    virtual ~BlitCommandEncoder() = default;
+    CommandEncoder() = delete;
+    CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
+    virtual ~CommandEncoder() = default;
+
+    virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
 
     virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
     virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
 
     virtual void copyTextureToBuffer() = 0;  // TODO: not yet implemented
     virtual void copyTextureToTexture() = 0; // TODO: not yet implemented
+
+    virtual CommandBuffer* end() = 0;
+
+public:
+    CommandBuffer* getCommandBuffer() const;
+
+protected:
+    CommandBuffer* m_commandBuffer = nullptr;
 };
 
 } // namespace vkt

@@ -556,12 +556,6 @@ void TriangleSample::copyBufferToBuffer()
 
 void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
 {
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
-    BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
-    std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
-
     BlitTextureBuffer blitTextureBuffer{};
     blitTextureBuffer.buffer = imageTextureStagingBuffer;
     blitTextureBuffer.offset = 0;
@@ -576,11 +570,14 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     extent.height = imageTexture->getHeight();
     extent.depth = 1;
 
-    blitCommandEncoder->begin();
-    blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-    blitCommandEncoder->end();
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
-    m_queue->submit({ blitCommandBuffer.get() });
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEndoer = blitCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+
+    m_queue->submit({ commandEndoer->end() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -618,22 +615,23 @@ void TriangleSample::draw()
                                                    .storeOp = StoreOp::kStore,
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
-    RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                               .depthStencilAttachment = depthStencilAttachment };
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
+                                                             .depthStencilAttachment = depthStencilAttachment };
 
-    auto renderCommandEncoder = m_renderCommandBuffer->createRenderCommandEncoder(descriptor);
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    renderCommandEncoder->begin();
-    renderCommandEncoder->setPipeline(m_renderPipeline.get());
-    renderCommandEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
-    renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
-    renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-    renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
-    renderCommandEncoder->end();
+    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
+    renderPassEncoder->end();
 
-    m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->end() }, m_swapchain.get());
 }
 
 } // namespace vkt

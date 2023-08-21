@@ -15,9 +15,9 @@ public:
     VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor);
     ~VulkanCommandBuffer() override;
 
-    std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) override;
-    std::unique_ptr<BlitCommandEncoder> createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor) override;
+    std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
 
+public:
     VkCommandBuffer getVkCommandBuffer() const;
 
 private:

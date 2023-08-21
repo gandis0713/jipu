@@ -31,14 +31,9 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
     vulkanDevice->vkAPI.FreeCommandBuffers(vulkanDevice->getVkDevice(), m_commandPool, 1, &m_commandBuffer);
 }
 
-std::unique_ptr<RenderCommandEncoder> VulkanCommandBuffer::createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor)
+std::unique_ptr<CommandEncoder> VulkanCommandBuffer::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderCommandEncoder>(this, descriptor);
-}
-
-std::unique_ptr<BlitCommandEncoder> VulkanCommandBuffer::createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor)
-{
-    return std::make_unique<VulkanBlitCommandEncoder>(this, descriptor);
+    return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const

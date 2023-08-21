@@ -52,7 +52,6 @@ private:
     void createRenderPipeline();
     void createVertexBuffer();
     void createCommandBuffer();
-    void createRenderCommandEncoder();
 
 private:
     struct Vertex
@@ -75,7 +74,6 @@ private:
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-    std::unique_ptr<RenderCommandEncoder> m_renderCommandEncoder = nullptr;
 
     uint32_t m_sampleCount = 1;
     std::vector<Vertex> m_vertices = {
@@ -95,7 +93,6 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    m_renderCommandEncoder.reset();
     m_commandBuffer.reset();
 
     m_indexBuffer.reset();
@@ -129,7 +126,6 @@ void ParticleSample::init()
     createVertexBuffer();
 
     createCommandBuffer();
-    createRenderCommandEncoder();
 }
 
 void ParticleSample::draw()
@@ -294,14 +290,6 @@ void ParticleSample::createCommandBuffer()
 {
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     m_commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-}
-
-void ParticleSample::createRenderCommandEncoder()
-{
-    ColorAttachment colorAttachment{};
-    RenderCommandEncoderDescriptor renderCommandEncoderDescriptor{};
-    renderCommandEncoderDescriptor.colorAttachments = {};
-    m_renderCommandEncoder = m_commandBuffer->createRenderCommandEncoder(renderCommandEncoderDescriptor);
 }
 
 } // namespace vkt

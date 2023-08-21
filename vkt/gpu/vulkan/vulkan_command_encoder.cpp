@@ -15,26 +15,9 @@
 namespace vkt
 {
 
-VulkanRenderCommandEncoder::VulkanRenderCommandEncoder(VulkanCommandBuffer* commandBuffer, const RenderCommandEncoderDescriptor& descriptor)
-    : RenderCommandEncoder(commandBuffer, descriptor)
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
+    : RenderPassEncoder(commandBuffer, descriptor)
 {
-}
-
-void VulkanRenderCommandEncoder::begin()
-{
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-
-    VkCommandBufferBeginInfo commandBufferBeginInfo{};
-    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
-    commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
-
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    if (vulkanDevice->vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &commandBufferBeginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to begin command buffer.");
-    }
-
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
     auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
 
@@ -42,6 +25,9 @@ void VulkanRenderCommandEncoder::begin()
                                                      .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
                                                      .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
                                                      .samples = ToVkSampleCountFlagBits(vulkanRenderTextureView->getSampleCount()) };
+
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
     const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
@@ -87,19 +73,15 @@ void VulkanRenderCommandEncoder::begin()
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VulkanRenderCommandEncoder::end()
+void VulkanRenderPassEncoder::end()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice->vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
-    if (vulkanDevice->vkAPI.EndCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer()) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to end command buffer.");
-    }
 }
 
-void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
+void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
 {
     m_pipeline = pipeline;
 
@@ -110,7 +92,7 @@ void VulkanRenderCommandEncoder::setPipeline(Pipeline* pipeline)
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->getVkPipeline());
 }
 
-void VulkanRenderCommandEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
+void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -129,7 +111,7 @@ void VulkanRenderCommandEncoder::setBindingGroup(uint32_t index, BindingGroup* b
                                 nullptr);
 }
 
-void VulkanRenderCommandEncoder::setVertexBuffer(Buffer* buffer)
+void VulkanRenderPassEncoder::setVertexBuffer(Buffer* buffer)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -140,7 +122,7 @@ void VulkanRenderCommandEncoder::setVertexBuffer(Buffer* buffer)
     vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, vertexBuffers, offsets);
 }
 
-void VulkanRenderCommandEncoder::setIndexBuffer(Buffer* buffer)
+void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -149,7 +131,7 @@ void VulkanRenderCommandEncoder::setIndexBuffer(Buffer* buffer)
     vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 }
 
-void VulkanRenderCommandEncoder::draw(uint32_t vertexCount)
+void VulkanRenderPassEncoder::draw(uint32_t vertexCount)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -157,7 +139,7 @@ void VulkanRenderCommandEncoder::draw(uint32_t vertexCount)
     vulkanDevice->vkAPI.CmdDraw(vulkanCommandBuffer->getVkCommandBuffer(), vertexCount, 1, 0, 0);
 }
 
-void VulkanRenderCommandEncoder::drawIndexed(uint32_t indexCount)
+void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -165,12 +147,12 @@ void VulkanRenderCommandEncoder::drawIndexed(uint32_t indexCount)
     vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
 }
 
-void VulkanRenderCommandEncoder::setViewport(float x,
-                                             float y,
-                                             float width,
-                                             float height,
-                                             float minDepth,
-                                             float maxDepth)
+void VulkanRenderPassEncoder::setViewport(float x,
+                                          float y,
+                                          float width,
+                                          float height,
+                                          float minDepth,
+                                          float maxDepth)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -179,10 +161,10 @@ void VulkanRenderCommandEncoder::setViewport(float x,
     vulkanDevice->vkAPI.CmdSetViewport(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &viewport);
 }
 
-void VulkanRenderCommandEncoder::setScissor(float x,
-                                            float y,
-                                            float width,
-                                            float height)
+void VulkanRenderPassEncoder::setScissor(float x,
+                                         float y,
+                                         float width,
+                                         float height)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -196,43 +178,36 @@ void VulkanRenderCommandEncoder::setScissor(float x,
     vulkanDevice->vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
 }
 
-VulkanBlitCommandEncoder::VulkanBlitCommandEncoder(VulkanCommandBuffer* commandBuffer, const BlitCommandEncoderDescriptor& descriptor)
-    : BlitCommandEncoder(commandBuffer, descriptor)
-{
-}
-
-void VulkanBlitCommandEncoder::begin()
+VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
+    : CommandEncoder(commandBuffer, descriptor)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer->getUsage());
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
-    vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &commandBufferBeginInfo);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    if (vulkanDevice->vkAPI.BeginCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer(), &commandBufferBeginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin command buffer.");
+    }
 }
 
-void VulkanBlitCommandEncoder::end()
+std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassEncoderDescriptor& descriptor)
+{
+    return std::make_unique<VulkanRenderPassEncoder>(downcast(m_commandBuffer), descriptor);
+}
+
+void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
-    vkAPI.EndCommandBuffer(commandBuffer);
 }
 
-void VulkanBlitCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
-{
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-}
-
-void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
+void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
@@ -334,14 +309,27 @@ void VulkanBlitCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& text
     vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
 }
 
-void VulkanBlitCommandEncoder::copyTextureToBuffer()
+void VulkanCommandEncoder::copyTextureToBuffer()
 {
     // TODO: not yet implemented
 }
 
-void VulkanBlitCommandEncoder::copyTextureToTexture()
+void VulkanCommandEncoder::copyTextureToTexture()
 {
     // TODO: not yet implemented
+}
+
+CommandBuffer* VulkanCommandEncoder::end()
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+
+    if (vulkanDevice->vkAPI.EndCommandBuffer(vulkanCommandBuffer->getVkCommandBuffer()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to end command buffer.");
+    }
+
+    return m_commandBuffer;
 }
 
 // Convert Helper
