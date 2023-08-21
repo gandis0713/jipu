@@ -580,7 +580,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
     blitCommandEncoder->end();
 
-    m_queue->submit({ blitCommandEncoder->getCommandBuffer() });
+    m_queue->submit({ blitCommandBuffer.get() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -633,7 +633,7 @@ void TriangleSample::draw()
     renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
     renderCommandEncoder->end();
 
-    m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
+    m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
 }
 
 } // namespace vkt

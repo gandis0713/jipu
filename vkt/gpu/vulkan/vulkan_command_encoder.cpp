@@ -48,13 +48,15 @@ void VulkanRenderCommandEncoder::begin()
     auto vulkanDepthStencilTextureView = downcast(depthStencilAttachment.textureView);
 
     std::vector<VkImageView> imageviews{};
-    imageviews.resize(2); // set only for color and depth texture.
-    imageviews[0] = vulkanRenderTextureView->getVkImageView();
-    imageviews[1] = vulkanDepthStencilTextureView->getVkImageView();
+    {
+        imageviews.resize(2); // set only for color and depth texture.
+        imageviews[0] = vulkanRenderTextureView->getVkImageView();
+        imageviews[1] = vulkanDepthStencilTextureView->getVkImageView();
 
-    // If sample count is larger than 1, resolve texture is need.
-    if (vulkanRenderTextureView->getSampleCount() > 1)
-        imageviews.push_back(downcast(colorAttachment.resolveView)->getVkImageView());
+        // If sample count is larger than 1, resolve texture is need.
+        if (vulkanRenderTextureView->getSampleCount() > 1)
+            imageviews.push_back(downcast(colorAttachment.resolveView)->getVkImageView());
+    }
 
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
                                                        .imageViews = imageviews,
