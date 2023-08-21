@@ -21,6 +21,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.cpp
@@ -44,6 +45,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_shader_module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_surface.h
@@ -63,6 +65,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/driver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture_view.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/physical_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/sampler.cpp
@@ -80,6 +83,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/driver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/sampler.h
