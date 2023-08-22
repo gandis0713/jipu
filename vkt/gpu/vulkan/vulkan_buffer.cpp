@@ -138,6 +138,10 @@ VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
     {
         vkUsages |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     }
+    if (usages & BufferUsageFlagBits::kStorage)
+    {
+        vkUsages |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    }
 
     return vkUsages;
 }

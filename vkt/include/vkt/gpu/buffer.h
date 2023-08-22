@@ -14,8 +14,9 @@ struct BufferUsageFlagBits
     static constexpr uint32_t kIndex = 1 << 3;     // 0x00000004
     static constexpr uint32_t kVertex = 1 << 4;    // 0x00000008
     static constexpr uint32_t kUniform = 1 << 5;   // 0x00000010
-    static constexpr uint32_t kCopySrc = 1 << 6;   // 0x00000020
-    static constexpr uint32_t kCopyDst = 1 << 7;   // 0x00000040
+    static constexpr uint32_t kStorage = 1 << 6;   // 0x00000010
+    static constexpr uint32_t kCopySrc = 1 << 7;   // 0x00000020
+    static constexpr uint32_t kCopyDst = 1 << 8;   // 0x00000040
 };
 using BufferUsageFlags = uint32_t;
 
