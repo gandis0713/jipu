@@ -50,8 +50,10 @@ private:
     void createSurface();
     void createSwapchain();
     void createRenderPipeline();
-    void createVertexBuffer();
     void createCommandBuffer();
+    void createColorAttachmentTexture();
+    void createColorAttachmentTextureView();
+    void createVertexBuffer();
 
 private:
     struct Vertex
@@ -69,6 +71,9 @@ private:
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
+    std::unique_ptr<TextureView> m_colorAttachmentTextureView = nullptr;
 
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
@@ -93,10 +98,13 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    m_commandBuffer.reset();
-
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
+
+    m_colorAttachmentTextureView.reset();
+    m_colorAttachmentTexture.reset();
+
+    m_commandBuffer.reset();
 
     m_renderPipeline.reset();
     m_pipelineLayout.reset();
@@ -123,13 +131,27 @@ void ParticleSample::init()
 
     createRenderPipeline();
 
-    createVertexBuffer();
-
     createCommandBuffer();
+
+    createColorAttachmentTexture();
+    createColorAttachmentTextureView();
+
+    createVertexBuffer();
 }
 
 void ParticleSample::draw()
 {
+    if (false)
+    {
+        auto swapchainImageIndex = m_swapchain->acquireNextTexture();
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    }
+
+    // TODO: render pass encoder
+
+    // TODO: submit command buffer to queue with swapchain.
 }
 
 void ParticleSample::createDriver()
@@ -255,6 +277,35 @@ void ParticleSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
+void ParticleSample::createCommandBuffer()
+{
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    m_commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+}
+
+void ParticleSample::createColorAttachmentTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.type = TextureType::k2D;
+    descriptor.usages = TextureUsageFlagBits::kColorAttachment;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+
+    m_colorAttachmentTexture = m_device->createTexture(descriptor);
+}
+
+void ParticleSample::createColorAttachmentTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
+}
+
 void ParticleSample::createVertexBuffer()
 {
     // create vertex buffer
@@ -284,12 +335,6 @@ void ParticleSample::createVertexBuffer()
         memcpy(mappedPointer, m_indices.data(), indexSize);
         m_indexBuffer->unmap();
     }
-}
-
-void ParticleSample::createCommandBuffer()
-{
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-    m_commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 }
 
 } // namespace vkt
