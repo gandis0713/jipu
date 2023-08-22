@@ -60,6 +60,7 @@ private:
     void createSwapchain();
 
     void createVertexBuffer();
+    void createIndexBuffer();
     void createUniformBuffer();
 
     void createImageTexture();
@@ -78,7 +79,7 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
-    void copyBufferToBuffer();
+    void copyBufferToBuffer(Buffer* src, Buffer* dst);
     void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
 
     void updateUniformBuffer();
@@ -218,6 +219,7 @@ void TriangleSample::init()
 
     // create buffer
     createVertexBuffer();
+    createIndexBuffer();
     createUniformBuffer();
 
     createImageTexture();
@@ -260,30 +262,36 @@ void TriangleSample::createVertexBuffer()
     std::filesystem::path objPath = m_appDir / "viking_room.obj";
     m_polygon = loadOBJ(objPath);
 
-    // vertex buffer
-    {
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
-        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
-                                                 .usage = BufferUsageFlagBits::kVertex };
-        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
+    BufferDescriptor vertexStagingBufferDescriptor{ .size = vertexSize,
+                                                    .usage = BufferUsageFlagBits::kCopySrc };
+    std::unique_ptr<Buffer> vertexStagingBuffer = m_device->createBuffer(vertexStagingBufferDescriptor);
 
-        void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, m_polygon.vertices.data(), vertexSize);
-        m_vertexBuffer->unmap();
-    }
+    void* mappedPointer = vertexStagingBuffer->map();
+    memcpy(mappedPointer, m_polygon.vertices.data(), vertexSize);
 
-    // index buffer
-    {
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
-        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
-                                                .usage = BufferUsageFlagBits::kIndex };
+    BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                             .usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kCopyDst };
+    m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+    // copy staging buffer to target buffer
+    copyBufferToBuffer(vertexStagingBuffer.get(), m_vertexBuffer.get());
 
-        void* mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_polygon.indices.data(), indexSize);
-        m_indexBuffer->unmap();
-    }
+    // unmap staging buffer.
+    // vertexStagingBuffer->unmap(); // TODO: need unmap before destroy it?
+}
+
+void TriangleSample::createIndexBuffer()
+{
+    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
+    BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                            .usage = BufferUsageFlagBits::kIndex };
+
+    m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+    void* mappedPointer = m_indexBuffer->map();
+    memcpy(mappedPointer, m_polygon.indices.data(), indexSize);
+    m_indexBuffer->unmap();
 }
 
 void TriangleSample::createUniformBuffer()
@@ -313,7 +321,6 @@ void TriangleSample::createImageTexture()
 
     void* mappedPointer = imageTextureStagingBuffer->map();
     memcpy(mappedPointer, pixels, imageSize);
-    // m_imageStagingBuffer->unmap();
 
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
@@ -329,6 +336,9 @@ void TriangleSample::createImageTexture()
 
     // copy image staging buffer to texture
     copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+
+    // unmap staging buffer
+    // imageTextureStagingBuffer->unmap(); // TODO: need unmap before destroy it?
 }
 
 void TriangleSample::createImageTextureView()
@@ -549,9 +559,25 @@ void TriangleSample::createCommandBuffers()
     m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void TriangleSample::copyBufferToBuffer()
+void TriangleSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
 {
-    // TODO
+    BlitBuffer srcBuffer{};
+    srcBuffer.buffer = src;
+    srcBuffer.offset = 0;
+
+    BlitBuffer dstBuffer{};
+    dstBuffer.buffer = dst;
+    dstBuffer.offset = 0;
+
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src->getSize());
+
+    m_queue->submit({ commandEncoder->finish() });
 }
 
 void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
@@ -571,10 +597,10 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     extent.depth = 1;
 
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEndoer = blitCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
     m_queue->submit({ commandEndoer->finish() });
