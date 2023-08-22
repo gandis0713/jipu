@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include <optional>
 #include <vector>
 
 namespace vkt
@@ -58,7 +59,7 @@ struct DepthStencilAttachment
 struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
-    DepthStencilAttachment depthStencilAttachment{};
+    std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
 };
 
 class VKT_EXPORT RenderPassEncoder

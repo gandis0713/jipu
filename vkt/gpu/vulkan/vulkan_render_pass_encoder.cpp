@@ -19,6 +19,7 @@ namespace vkt
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
+    // TODO: multiple color attachments.
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
     auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
 
@@ -31,18 +32,25 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    const DepthStencilAttachment& depthStencilAttachment = m_descriptor.depthStencilAttachment;
-    auto vulkanDepthStencilTextureView = downcast(depthStencilAttachment.textureView);
+    uint64_t imageViewCount = m_descriptor.colorAttachments.size();
+    imageViewCount += m_descriptor.depthStencilAttachment.has_value() ? 1 : 0;
+    imageViewCount += vulkanRenderTextureView->getSampleCount() > 1 ? 1 : 0;
+
+    uint64_t imageViewIndex = 0;
 
     std::vector<VkImageView> imageviews{};
     {
-        imageviews.resize(2); // set only for color and depth texture.
-        imageviews[0] = vulkanRenderTextureView->getVkImageView();
-        imageviews[1] = vulkanDepthStencilTextureView->getVkImageView();
+        imageviews.resize(imageViewCount); // set only for color and depth texture.
+        imageviews[imageViewIndex++] = vulkanRenderTextureView->getVkImageView();
+        if (m_descriptor.depthStencilAttachment.has_value())
+        {
+            auto vulkanDepthStencilTextureView = downcast(m_descriptor.depthStencilAttachment.value().textureView);
+            imageviews[imageViewIndex++] = vulkanDepthStencilTextureView->getVkImageView();
+        }
 
         // If sample count is larger than 1, resolve texture is need.
         if (vulkanRenderTextureView->getSampleCount() > 1)
-            imageviews.push_back(downcast(colorAttachment.resolveView)->getVkImageView());
+            imageviews[imageViewIndex++] = downcast(colorAttachment.resolveView)->getVkImageView();
     }
 
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
@@ -58,16 +66,30 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = { vulkanFrameBuffer->getWidth(), vulkanFrameBuffer->getHeight() };
 
+    uint64_t clearValueCount = m_descriptor.colorAttachments.size();
+    clearValueCount += m_descriptor.depthStencilAttachment.has_value() ? 1 : 0;
+
+    std::vector<VkClearValue> clearValues{};
+    clearValues.resize(clearValueCount);
+
+    uint64_t clearValueIndex = 0;
+
     VkClearValue colorClearValue{};
     for (uint32_t i = 0; i < 4; ++i)
     {
         colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
     }
 
-    VkClearValue depthStencilValue;
-    depthStencilValue.depthStencil = { depthStencilAttachment.clearValue.depth, depthStencilAttachment.clearValue.stencil };
+    clearValues[clearValueIndex++] = colorClearValue;
+    if (m_descriptor.depthStencilAttachment.has_value())
+    {
+        auto depthStencilClearValue = m_descriptor.depthStencilAttachment.value();
+        VkClearValue depthStencilValue;
+        depthStencilValue.depthStencil = { depthStencilClearValue.clearValue.depth, depthStencilClearValue.clearValue.stencil };
 
-    std::array<VkClearValue, 2> clearValues{ colorClearValue, depthStencilValue };
+        clearValues[clearValueIndex++] = depthStencilValue;
+    }
+
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
