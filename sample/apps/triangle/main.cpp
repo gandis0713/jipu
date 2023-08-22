@@ -67,8 +67,8 @@ private:
     void createImageTextureView();
     void createImageSampler();
 
-    void createColorTexture();
-    void createColorTextureView();
+    void createColorAttachmentTexture();
+    void createColorAttachmentTextureView();
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
@@ -118,8 +118,8 @@ private:
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
 
-    std::unique_ptr<Texture> m_colorTexture = nullptr;
-    std::unique_ptr<TextureView> m_colorTextureView = nullptr;
+    std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
+    std::unique_ptr<TextureView> m_colorAttachmentTextureView = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
@@ -160,8 +160,8 @@ TriangleSample::~TriangleSample()
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
-    m_colorTextureView.reset();
-    m_colorTexture.reset();
+    m_colorAttachmentTextureView.reset();
+    m_colorAttachmentTexture.reset();
 
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
@@ -226,8 +226,8 @@ void TriangleSample::init()
     createImageTextureView();
     createImageSampler();
 
-    createColorTexture();
-    createColorTextureView();
+    createColorAttachmentTexture();
+    createColorAttachmentTextureView();
     createDepthStencilTexture();
     createDepthStencilTextureView();
 
@@ -350,7 +350,7 @@ void TriangleSample::createImageTextureView()
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
 }
 
-void TriangleSample::createColorTexture()
+void TriangleSample::createColorAttachmentTexture()
 {
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
@@ -360,16 +360,16 @@ void TriangleSample::createColorTexture()
                                          .height = m_swapchain->getHeight(),
                                          .mipLevels = 1,
                                          .sampleCount = m_sampleCount };
-    m_colorTexture = m_device->createTexture(textureDescriptor);
+    m_colorAttachmentTexture = m_device->createTexture(textureDescriptor);
 }
 
-void TriangleSample::createColorTextureView()
+void TriangleSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
-    m_colorTextureView = m_colorTexture->createTextureView(descriptor);
+    m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
 }
 
 void TriangleSample::createDepthStencilTexture()
@@ -634,7 +634,7 @@ void TriangleSample::draw()
     std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[nextImageIndex],
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
                             .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
                             .loadOp = LoadOp::kClear,
                             .storeOp = StoreOp::kStore,
