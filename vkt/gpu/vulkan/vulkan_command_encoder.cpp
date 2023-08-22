@@ -43,6 +43,16 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = size;
+
+    VkBuffer srcBuffer = downcast(src.buffer)->getVkBuffer();
+    VkBuffer dstBuffer = downcast(dst.buffer)->getVkBuffer();
+
+    vkAPI.CmdCopyBuffer(vulkanCommandBuffer->getVkCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
 }
 
 void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
