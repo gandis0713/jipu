@@ -1,5 +1,6 @@
 #include "model.h"
 
+#include <sstream>
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 
@@ -57,7 +58,20 @@ Polygon loadOBJ(const std::filesystem::path& path)
 
 Polygon loadOBJ(void* buf, uint64_t len)
 {
-    return {};
+    std::stringstream ss;
+    ss.write(static_cast<const char*>(buf), len);
+
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &ss))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    return generatePolygon(attrib, shapes);
 }
 
 } // namespace vkt
