@@ -305,7 +305,8 @@ void TriangleSample::createUniformBuffer()
 void TriangleSample::createImageTexture()
 {
     // load jpeg image.
-    m_image = std::make_unique<Image>(m_appDir / "viking_room.png");
+    std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.png", m_handle);
+    m_image = std::make_unique<Image>(buffer.data(), buffer.size());
 
     unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
     uint32_t width = m_image->getWidth();
