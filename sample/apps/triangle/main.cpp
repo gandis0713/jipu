@@ -259,8 +259,9 @@ void TriangleSample::createSwapchain()
 
 void TriangleSample::createVertexBuffer()
 {
-    std::filesystem::path objPath = m_appDir / "viking_room.obj";
-    m_polygon = loadOBJ(objPath);
+    // load obj as buffer for android.
+    std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.obj", m_handle);
+    m_polygon = loadOBJ(buffer.data(), buffer.size());
 
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
     BufferDescriptor vertexStagingBufferDescriptor{ .size = vertexSize,
@@ -304,7 +305,7 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createImageTexture()
 {
-    // load jpeg image.
+    // load as buffer for android.
     std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.png", m_handle);
     m_image = std::make_unique<Image>(buffer.data(), buffer.size());
 
