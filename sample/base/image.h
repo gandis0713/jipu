@@ -10,6 +10,7 @@ class Image
 
 public:
     Image(const std::filesystem::path& path);
+    Image(void* buf, uint64_t len);
     ~Image();
 
     void* getPixels() const;
