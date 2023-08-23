@@ -20,8 +20,6 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const C
 
 VulkanComputePipeline::~VulkanComputePipeline()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
