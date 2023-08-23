@@ -109,6 +109,11 @@ std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const Pipelin
     return std::make_unique<VulkanPipelineLayout>(this, descriptor);
 }
 
+std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const ComputePipelineDescriptor& descriptor)
+{
+    return std::make_unique<VulkanComputePipeline>(this, descriptor);
+}
+
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
     return std::make_unique<VulkanRenderPipeline>(this, descriptor);

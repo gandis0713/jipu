@@ -142,4 +142,28 @@ protected:
     const RenderPipelineDescriptor m_descriptor{};
 };
 
+// Compute Shader Stage
+struct ComputeStage : ProgrammableStage
+{
+};
+
+struct ComputePipelineDescriptor : PipelineDescriptor
+{
+    ComputeStage compute{};
+};
+
+class VKT_EXPORT ComputePipeline : public Pipeline
+{
+public:
+    ComputePipeline() = delete;
+    ComputePipeline(Device* device, const ComputePipelineDescriptor& descriptor);
+    virtual ~ComputePipeline() = default;
+
+    ComputePipeline(const ComputePipeline&) = delete;
+    ComputePipeline& operator=(const ComputePipeline&) = delete;
+
+protected:
+    const ComputePipelineDescriptor m_descriptor{};
+};
+
 } // namespace vkt

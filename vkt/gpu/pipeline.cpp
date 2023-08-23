@@ -23,4 +23,12 @@ RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor& d
     m_pipelineLayout = m_descriptor.layout;
 }
 
+// ComputePipeline
+ComputePipeline::ComputePipeline(Device* device, const ComputePipelineDescriptor& descriptor)
+    : Pipeline(device)
+    , m_descriptor(descriptor)
+{
+    m_pipelineLayout = m_descriptor.layout;
+}
+
 } // namespace vkt

@@ -11,6 +11,29 @@
 namespace vkt
 {
 
+// Vulkan Compute Pipeline
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const ComputePipelineDescriptor& descriptor)
+    : ComputePipeline(vulkanDevice, descriptor)
+{
+    initialize();
+}
+
+VulkanComputePipeline::~VulkanComputePipeline()
+{
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+}
+
+VkPipeline VulkanComputePipeline::getVkPipeline() const
+{
+    return m_pipeline;
+}
+
+void VulkanComputePipeline::initialize()
+{
+}
+
+// Vulkan Render Pipeline
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
     : RenderPipeline(vulkanDevice, descriptor)
 {
@@ -20,12 +43,12 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const Ren
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
     auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 VkPipeline VulkanRenderPipeline::getVkPipeline() const
 {
-    return m_graphicsPipeline;
+    return m_pipeline;
 }
 
 void VulkanRenderPipeline::initialize()
@@ -189,7 +212,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
 
-    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
