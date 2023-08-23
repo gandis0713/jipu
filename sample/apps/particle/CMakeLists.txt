@@ -43,6 +43,9 @@ if(EXISTS ${GLSLC_EXE})
     add_custom_command(TARGET particle PRE_BUILD
         COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.frag -o ${SHADERS_INPUT}/particle.frag.spv
     )
+    add_custom_command(TARGET particle PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.comp -o ${SHADERS_INPUT}/particle.comp.spv
+    )
 endif()
 
 # copy spirv to output
@@ -58,6 +61,7 @@ if(NOT ANDROID)
     # TODO: copy after creating *spv.
     file(COPY ${SHADERS_INPUT}/particle.vert.spv DESTINATION ${SHADER_OUTPUT})
     file(COPY ${SHADERS_INPUT}/particle.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/particle.comp.spv DESTINATION ${SHADER_OUTPUT})
 endif()
 
 if(MSVC)
