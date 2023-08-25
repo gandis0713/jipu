@@ -49,6 +49,9 @@ private:
     void createDevice();
     void createSurface();
     void createSwapchain();
+    void createBindingGroupLayout();
+    void createBindingGroup();
+    void createComputePipeline();
     void createRenderPipeline();
     void createCommandBuffer();
     void createColorAttachmentTexture();
@@ -67,9 +70,13 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
+    std::unique_ptr<ComputePipeline> m_computePipeline = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
@@ -129,6 +136,10 @@ void ParticleSample::init()
     createSurface();
     createSwapchain();
 
+    createBindingGroupLayout();
+    createBindingGroup();
+
+    createComputePipeline();
     createRenderPipeline();
 
     createCommandBuffer();
@@ -205,6 +216,32 @@ void ParticleSample::createSwapchain()
                                     .height = m_height,
                                     .surface = m_surface.get() };
     m_swapchain = m_device->createSwapchain(descriptor);
+}
+
+void ParticleSample::createBindingGroupLayout()
+{
+}
+
+void ParticleSample::createBindingGroup()
+{
+}
+
+void ParticleSample::createComputePipeline()
+{
+    // compute shader
+    ComputeStage computeStage{};
+    const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
+    ShaderModuleDescriptor shaderModuleDescriptor{ .code = computeShaderSource.data(),
+                                                   .codeSize = computeShaderSource.size() };
+    auto computeShader = m_device->createShaderModule(shaderModuleDescriptor);
+    computeStage.entryPoint = "main";
+    computeStage.shaderModule = computeShader.get();
+
+    ComputePipelineDescriptor computePipelineDescriptor{};
+    computePipelineDescriptor.compute = computeStage;
+    computePipelineDescriptor.layout = nullptr; // TODO: check.
+
+    m_computePipeline = m_device->createComputePipeline(computePipelineDescriptor);
 }
 
 void ParticleSample::createRenderPipeline()
