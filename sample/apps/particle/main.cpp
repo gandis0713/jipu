@@ -59,9 +59,10 @@ private:
     void createCommandBuffer();
 
 private:
-    struct Vertex
+    struct Particle
     {
         glm::vec3 pos;
+        glm::vec4 color;
     };
 
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -92,11 +93,11 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
 
     uint32_t m_sampleCount = 1;
-    std::vector<Vertex> m_vertices = {
-        { { -0.5, 0.5, 0.0 } },  // left top
-        { { -0.5, -0.5, 0.0 } }, // left bottom
-        { { 0.5, -0.5, 0.0 } },  // right bottom
-        { { 0.5, 0.5, 0.0 } }    // right top
+    std::vector<Particle> m_vertices = {
+        { { -0.5, 0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } },  // left top
+        { { -0.5, -0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } }, // left bottom
+        { { 0.5, -0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } },  // right bottom
+        { { 0.5, 0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } }    // right top
     };
 
     void* m_uniformBufferMappedPointer = nullptr;
@@ -227,7 +228,7 @@ void ParticleSample::createSwapchain()
 void ParticleSample::createVertexBuffer()
 {
     // create vertex buffer
-    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Particle) * m_vertices.size());
     BufferDescriptor vertexBufferDescriptor{};
     vertexBufferDescriptor.size = vertexSize;
     vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kStorage;
@@ -394,14 +395,23 @@ void ParticleSample::createRenderPipeline()
 
         // create vertex shader layouts
         {
-            VertexAttribute vertexPositionAttribute{};
-            vertexPositionAttribute.format = VertexFormat::kSFLOATx3;
-            vertexPositionAttribute.offset = 0;
+            std::vector<VertexAttribute> vertexAttributes{};
+            vertexAttributes.resize(2);
+            {
+                // position
+                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+                                        .offset = offsetof(Particle, pos) };
+
+                // texture coodinate
+                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+                                        .offset = offsetof(Particle, color) };
+            }
 
             VertexInputLayout vertexInputLayout{};
-            vertexInputLayout.attributes = { vertexPositionAttribute };
+            vertexInputLayout.attributes = vertexAttributes;
             vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(Vertex);
+            vertexInputLayout.stride = sizeof(Particle);
+
             vertexStage.layouts = { vertexInputLayout };
         }
     }
