@@ -87,7 +87,6 @@ private:
 
     std::unique_ptr<Buffer> m_vertexInBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexOutBuffer = nullptr;
-    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
@@ -99,8 +98,6 @@ private:
         { { 0.5, -0.5, 0.0 } },  // right bottom
         { { 0.5, 0.5, 0.0 } }    // right top
     };
-
-    std::vector<uint16_t> m_indices = { 0, 1, 2, 0, 2, 3 };
 
     void* m_uniformBufferMappedPointer = nullptr;
 };
@@ -126,7 +123,6 @@ ParticleSample::~ParticleSample()
     m_colorAttachmentTextureView.reset();
     m_colorAttachmentTexture.reset();
     m_uniformBuffer.reset();
-    m_indexBuffer.reset();
     m_vertexOutBuffer.reset();
     m_vertexInBuffer.reset();
 
@@ -235,8 +231,7 @@ void ParticleSample::createVertexBuffer()
         uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
         BufferDescriptor vertexBufferDescriptor{};
         vertexBufferDescriptor.size = vertexSize;
-        vertexBufferDescriptor.usage =
-            BufferUsageFlagBits::kStorage;
+        vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kStorage;
         m_vertexInBuffer = m_device->createBuffer(vertexBufferDescriptor);
         m_vertexOutBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
@@ -244,20 +239,6 @@ void ParticleSample::createVertexBuffer()
         void* mappedPointer = m_vertexInBuffer->map();
         memcpy(mappedPointer, m_vertices.data(), vertexSize);
         m_vertexInBuffer->unmap();
-    }
-
-    // create index buffer
-    {
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_indices.size());
-        BufferDescriptor indexBufferDescriptor{};
-        indexBufferDescriptor.size = indexSize;
-        indexBufferDescriptor.usage = BufferUsageFlagBits::kIndex | BufferUsageFlagBits::kStorage;
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
-
-        // TODO: currently buffer can be accessed both CPU and GPU.
-        void* mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_indices.data(), indexSize);
-        m_indexBuffer->unmap();
     }
 }
 
