@@ -59,8 +59,8 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = &bufferInfos[i];
-        descriptorWrite.pImageInfo = nullptr;       // Optional
-        descriptorWrite.pTexelBufferView = nullptr; // Optional
+        descriptorWrite.pImageInfo = nullptr;
+        descriptorWrite.pTexelBufferView = nullptr;
 
         descriptorWrites[i] = descriptorWrite;
     }
@@ -88,8 +88,8 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
-        descriptorWrite.pImageInfo = &imageInfo;    // Optional
-        descriptorWrite.pTexelBufferView = nullptr; // Optional
+        descriptorWrite.pImageInfo = &imageInfos[i];
+        descriptorWrite.pTexelBufferView = nullptr;
 
         descriptorWrites[bufferSize + i] = descriptorWrite;
     }
