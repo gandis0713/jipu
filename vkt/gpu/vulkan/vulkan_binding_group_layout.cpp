@@ -11,9 +11,9 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     : BindingGroupLayout(device, descriptor)
 {
 
-    const uint64_t& bufferSize = descriptor.buffers.size();
-    const uint64_t& samplerSize = descriptor.samplers.size();
-    const uint64_t& textureSize = descriptor.textures.size();
+    const uint64_t bufferSize = descriptor.buffers.size();
+    const uint64_t samplerSize = descriptor.samplers.size();
+    const uint64_t textureSize = descriptor.textures.size();
     std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
     layoutBindings.resize(bufferSize + samplerSize + textureSize);
 
