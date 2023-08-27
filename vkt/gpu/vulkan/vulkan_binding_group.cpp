@@ -29,14 +29,26 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         throw std::runtime_error("Failed to allocate descriptor sets.");
     }
 
+    const uint64_t bufferSize = descriptor.buffers.size();
+    const uint64_t samplerSize = descriptor.samplers.size();
+    const uint64_t textureSize = descriptor.textures.size();
+
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
-    for (const auto& buffer : descriptor.buffers)
+    descriptorWrites.resize(bufferSize + samplerSize + textureSize);
+
+    std::vector<VkDescriptorBufferInfo> bufferInfos{};
+    bufferInfos.resize(bufferSize);
+    for (auto i = 0; i < bufferSize; ++i)
     {
+        const BufferBinding& buffer = descriptor.buffers[i];
         const BufferBindingLayout bufferLayout = descriptor.layout->getBufferBindingLayout(buffer.index);
+
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
         bufferInfo.offset = buffer.offset;
         bufferInfo.range = buffer.size;
+
+        bufferInfos[i] = bufferInfo;
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -46,20 +58,26 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type);
         descriptorWrite.descriptorCount = 1;
 
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        descriptorWrite.pBufferInfo = &bufferInfos[i];
         descriptorWrite.pImageInfo = nullptr;       // Optional
         descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-        descriptorWrites.push_back(descriptorWrite);
+        descriptorWrites[i] = descriptorWrite;
     }
 
-    for (const auto& sampler : descriptor.samplers)
+    std::vector<VkDescriptorImageInfo> imageInfos{};
+    imageInfos.resize(samplerSize);
+    for (auto i = 0; i < samplerSize; ++i)
     {
+        const SamplerBinding& sampler = descriptor.samplers[i];
         const SamplerBindingLayout samplerLayout = descriptor.layout->getSamplerBindingLayout(sampler.index);
+
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = downcast(sampler.textureView)->getVkImageView();
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
+
+        imageInfos[i] = imageInfo;
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -73,8 +91,10 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.pImageInfo = &imageInfo;    // Optional
         descriptorWrite.pTexelBufferView = nullptr; // Optional
 
-        descriptorWrites.push_back(descriptorWrite);
+        descriptorWrites[bufferSize + i] = descriptorWrite;
     }
+
+    // TODO: textures
 
     vkAPI.UpdateDescriptorSets(vulkanDevice->getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
