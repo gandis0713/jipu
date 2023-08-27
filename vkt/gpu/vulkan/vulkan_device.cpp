@@ -199,7 +199,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
         // TODO: check descriptor pool size.
-        const uint64_t descriptorPoolCount = 3;
+        const uint64_t descriptorPoolCount = 4;
         const uint64_t maxDescriptorSetSize = descriptorPoolCount;
         std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
         VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -214,6 +214,8 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         poolSizes[1].descriptorCount = poolCreateInfo.maxSets * 10;
         poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
         poolSizes[2].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        poolSizes[3].descriptorCount = poolCreateInfo.maxSets * 10;
 
         if (vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
         {
