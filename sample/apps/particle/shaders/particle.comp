@@ -7,6 +7,12 @@ struct Particle
     vec4 color;
 };
 
+layout(binding = 0) uniform ParameterUBO
+{
+    float deltaTime;
+}
+ubo;
+
 layout(std140, binding = 1) readonly buffer ParticleSSBOIn
 {
     Particle particlesIn[];
