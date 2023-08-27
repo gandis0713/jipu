@@ -227,18 +227,22 @@ void ParticleSample::createSwapchain()
 void ParticleSample::createVertexBuffer()
 {
     // create vertex buffer
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+    BufferDescriptor vertexBufferDescriptor{};
+    vertexBufferDescriptor.size = vertexSize;
+    vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kStorage;
     {
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor vertexBufferDescriptor{};
-        vertexBufferDescriptor.size = vertexSize;
-        vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kStorage;
         m_vertexInBuffer = m_device->createBuffer(vertexBufferDescriptor);
-        m_vertexOutBuffer = m_device->createBuffer(vertexBufferDescriptor);
-
-        // TODO: currently buffer can be accessed both CPU and GPU.
         void* mappedPointer = m_vertexInBuffer->map();
         memcpy(mappedPointer, m_vertices.data(), vertexSize);
         m_vertexInBuffer->unmap();
+    }
+
+    {
+        m_vertexOutBuffer = m_device->createBuffer(vertexBufferDescriptor);
+        void* mappedPointer = m_vertexOutBuffer->map();
+        memcpy(mappedPointer, m_vertices.data(), vertexSize);
+        m_vertexOutBuffer->unmap();
     }
 }
 
@@ -285,46 +289,47 @@ void ParticleSample::createComputeBindingGroup()
     uint32_t bindingIndex = 0;
 
     BufferBindingLayout bufferUBOBindingLayout{};
-    bufferUBOBindingLayout.index = 0;
+    bufferUBOBindingLayout.index = bindingIndex;
     bufferUBOBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
     bufferUBOBindingLayout.type = BufferBindingType::kUniform;
 
     BufferBinding bufferUBOBinding{};
     bufferUBOBinding.buffer = m_uniformBuffer.get();
-    bufferUBOBinding.index = 0;
+    bufferUBOBinding.index = bindingIndex;
     bufferUBOBinding.offset = 0;
     bufferUBOBinding.size = m_uniformBuffer->getSize();
 
     ++bindingIndex;
 
     BufferBindingLayout bufferInBindingLayout{};
-    bufferInBindingLayout.index = 1;
+    bufferInBindingLayout.index = bindingIndex;
     bufferInBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
     bufferInBindingLayout.type = BufferBindingType::kStorage;
 
     BufferBinding bufferInBinding{};
     bufferInBinding.buffer = m_vertexInBuffer.get();
-    bufferInBinding.index = 1;
+    bufferInBinding.index = bindingIndex;
     bufferInBinding.offset = 0;
     bufferInBinding.size = m_vertexInBuffer->getSize();
 
-    // ++bindingIndex;
+    ++bindingIndex;
 
-    // BufferBindingLayout bufferOutBindingLayout{};
-    // bufferOutBindingLayout.index = bindingIndex;
-    // bufferOutBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
-    // bufferOutBindingLayout.type = BufferBindingType::kStorage;
+    BufferBindingLayout bufferOutBindingLayout{};
+    bufferOutBindingLayout.index = bindingIndex;
+    bufferOutBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
+    bufferOutBindingLayout.type = BufferBindingType::kStorage;
 
-    // BufferBinding bufferOutBinding{};
-    // bufferOutBinding.buffer = m_vertexOutBuffer.get();
-    // bufferOutBinding.index = bindingIndex;
-    // bufferOutBinding.offset = 0;
+    BufferBinding bufferOutBinding{};
+    bufferOutBinding.buffer = m_vertexOutBuffer.get();
+    bufferOutBinding.index = bindingIndex;
+    bufferOutBinding.offset = 0;
+    bufferOutBinding.size = m_vertexOutBuffer->getSize();
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = {
         bufferUBOBindingLayout,
         bufferInBindingLayout,
-        // bufferOutBindingLayout
+        bufferOutBindingLayout
     };
     m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 
@@ -335,7 +340,7 @@ void ParticleSample::createComputeBindingGroup()
     bindingGroupDescriptor.buffers = {
         bufferUBOBinding,
         bufferInBinding,
-        // bufferOutBinding
+        bufferOutBinding
     };
 
     m_computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -371,7 +376,7 @@ void ParticleSample::createRenderPipeline()
 
     // input assembly
     InputAssemblyStage inputAssembly{};
-    inputAssembly.topology = PrimitiveTopology::kTriangleList;
+    inputAssembly.topology = PrimitiveTopology::kPointList;
 
     // vertex shader
     VertexStage vertexStage{};
