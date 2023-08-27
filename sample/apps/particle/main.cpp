@@ -49,14 +49,14 @@ private:
     void createDevice();
     void createSurface();
     void createSwapchain();
-    void createBindingGroupLayout();
-    void createBindingGroup();
+    void createUniformBuffer();
+    void createVertexBuffer();
+    void createColorAttachmentTexture();
+    void createColorAttachmentTextureView();
+    void createComputeBindingGroup();
     void createComputePipeline();
     void createRenderPipeline();
     void createCommandBuffer();
-    void createColorAttachmentTexture();
-    void createColorAttachmentTextureView();
-    void createVertexBuffer();
 
 private:
     struct Vertex
@@ -70,20 +70,25 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_computeBindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_computeBindingGroup = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_renderBindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_renderBindingGroup = nullptr;
 
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
-    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
+    std::unique_ptr<PipelineLayout> m_computePipelineLayout = nullptr;
     std::unique_ptr<ComputePipeline> m_computePipeline = nullptr;
+    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
     std::unique_ptr<TextureView> m_colorAttachmentTextureView = nullptr;
 
-    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_vertexInBuffer = nullptr;
+    std::unique_ptr<Buffer> m_vertexOutBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
 
@@ -96,6 +101,8 @@ private:
     };
 
     std::vector<uint16_t> m_indices = { 0, 1, 2, 0, 2, 3 };
+
+    void* m_uniformBufferMappedPointer = nullptr;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -105,19 +112,23 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    m_indexBuffer.reset();
-    m_vertexBuffer.reset();
-
-    m_colorAttachmentTextureView.reset();
-    m_colorAttachmentTexture.reset();
-
     m_commandBuffer.reset();
 
     m_renderPipeline.reset();
-    m_pipelineLayout.reset();
+    m_renderPipelineLayout.reset();
 
     m_fragmentShaderModule.reset();
     m_vertexShaderModule.reset();
+
+    m_computeBindingGroup.reset();
+    m_computeBindingGroupLayout.reset();
+
+    m_colorAttachmentTextureView.reset();
+    m_colorAttachmentTexture.reset();
+    m_uniformBuffer.reset();
+    m_indexBuffer.reset();
+    m_vertexOutBuffer.reset();
+    m_vertexInBuffer.reset();
 
     m_swapchain.reset();
     m_surface.reset();
@@ -136,18 +147,17 @@ void ParticleSample::init()
     createSurface();
     createSwapchain();
 
-    createBindingGroupLayout();
-    createBindingGroup();
+    createVertexBuffer();
+    createUniformBuffer();
+    createColorAttachmentTexture();
+    createColorAttachmentTextureView();
+
+    createComputeBindingGroup();
 
     createComputePipeline();
     createRenderPipeline();
 
     createCommandBuffer();
-
-    createColorAttachmentTexture();
-    createColorAttachmentTextureView();
-
-    createVertexBuffer();
 }
 
 void ParticleSample::draw()
@@ -218,16 +228,143 @@ void ParticleSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void ParticleSample::createBindingGroupLayout()
+void ParticleSample::createVertexBuffer()
 {
+    // create vertex buffer
+    {
+        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
+        BufferDescriptor vertexBufferDescriptor{};
+        vertexBufferDescriptor.size = vertexSize;
+        vertexBufferDescriptor.usage =
+            BufferUsageFlagBits::kStorage;
+        m_vertexInBuffer = m_device->createBuffer(vertexBufferDescriptor);
+        m_vertexOutBuffer = m_device->createBuffer(vertexBufferDescriptor);
+
+        // TODO: currently buffer can be accessed both CPU and GPU.
+        void* mappedPointer = m_vertexInBuffer->map();
+        memcpy(mappedPointer, m_vertices.data(), vertexSize);
+        m_vertexInBuffer->unmap();
+    }
+
+    // create index buffer
+    {
+        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_indices.size());
+        BufferDescriptor indexBufferDescriptor{};
+        indexBufferDescriptor.size = indexSize;
+        indexBufferDescriptor.usage = BufferUsageFlagBits::kIndex | BufferUsageFlagBits::kStorage;
+        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+        // TODO: currently buffer can be accessed both CPU and GPU.
+        void* mappedPointer = m_indexBuffer->map();
+        memcpy(mappedPointer, m_indices.data(), indexSize);
+        m_indexBuffer->unmap();
+    }
 }
 
-void ParticleSample::createBindingGroup()
+void ParticleSample::createUniformBuffer()
 {
+    const uint64_t uniforBufferSize = sizeof(float);
+
+    BufferDescriptor descriptor{};
+    descriptor.size = uniforBufferSize;
+    descriptor.usage = BufferUsageFlagBits::kUniform;
+    m_uniformBuffer = m_device->createBuffer(descriptor);
+
+    m_uniformBufferMappedPointer = m_uniformBuffer->map();
+    float value = 0.0f;
+    memcpy(m_uniformBufferMappedPointer, &value, uniforBufferSize);
+    // m_vertexInBuffer->unmap();
+}
+
+void ParticleSample::createColorAttachmentTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.type = TextureType::k2D;
+    descriptor.usages = TextureUsageFlagBits::kColorAttachment;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+
+    m_colorAttachmentTexture = m_device->createTexture(descriptor);
+}
+
+void ParticleSample::createColorAttachmentTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
+}
+
+void ParticleSample::createComputeBindingGroup()
+{
+    uint32_t bindingIndex = 0;
+
+    BufferBindingLayout bufferUBOBindingLayout{};
+    bufferUBOBindingLayout.index = 0;
+    bufferUBOBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
+    bufferUBOBindingLayout.type = BufferBindingType::kUniform;
+
+    BufferBinding bufferUBOBinding{};
+    bufferUBOBinding.buffer = m_uniformBuffer.get();
+    bufferUBOBinding.index = 0;
+    bufferUBOBinding.offset = 0;
+    bufferUBOBinding.size = m_uniformBuffer->getSize();
+
+    ++bindingIndex;
+
+    BufferBindingLayout bufferInBindingLayout{};
+    bufferInBindingLayout.index = 1;
+    bufferInBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
+    bufferInBindingLayout.type = BufferBindingType::kStorage;
+
+    BufferBinding bufferInBinding{};
+    bufferInBinding.buffer = m_vertexInBuffer.get();
+    bufferInBinding.index = 1;
+    bufferInBinding.offset = 0;
+    bufferInBinding.size = m_vertexInBuffer->getSize();
+
+    // ++bindingIndex;
+
+    // BufferBindingLayout bufferOutBindingLayout{};
+    // bufferOutBindingLayout.index = bindingIndex;
+    // bufferOutBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
+    // bufferOutBindingLayout.type = BufferBindingType::kStorage;
+
+    // BufferBinding bufferOutBinding{};
+    // bufferOutBinding.buffer = m_vertexOutBuffer.get();
+    // bufferOutBinding.index = bindingIndex;
+    // bufferOutBinding.offset = 0;
+
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+    bindingGroupLayoutDescriptor.buffers = {
+        bufferUBOBindingLayout,
+        bufferInBindingLayout,
+        // bufferOutBindingLayout
+    };
+    m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+
+    BindingGroupDescriptor bindingGroupDescriptor{};
+    bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
+    bindingGroupDescriptor.samplers = {};
+    bindingGroupDescriptor.textures = {};
+    bindingGroupDescriptor.buffers = {
+        bufferUBOBinding,
+        bufferInBinding,
+        // bufferOutBinding
+    };
+
+    m_computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
 }
 
 void ParticleSample::createComputePipeline()
 {
+    // pipeline layout
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{};
+    pipelineLayoutDescriptor.layouts = { m_computeBindingGroupLayout.get() };
     // compute shader
     ComputeStage computeStage{};
     const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
@@ -249,7 +386,7 @@ void ParticleSample::createRenderPipeline()
     // pipeline layout
     PipelineLayoutDescriptor pipelineLayoutdescriptor{};
     pipelineLayoutdescriptor.layouts = {};
-    m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutdescriptor);
+    m_renderPipelineLayout = m_device->createPipelineLayout(pipelineLayoutdescriptor);
 
     // input assembly
     InputAssemblyStage inputAssembly{};
@@ -310,7 +447,7 @@ void ParticleSample::createRenderPipeline()
     renderPipelineDescriptor.vertex = vertexStage;
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.layout = m_pipelineLayout.get();
+    renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
@@ -318,60 +455,6 @@ void ParticleSample::createCommandBuffer()
 {
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     m_commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-}
-
-void ParticleSample::createColorAttachmentTexture()
-{
-    TextureDescriptor descriptor{};
-    descriptor.format = m_swapchain->getTextureFormat();
-    descriptor.type = TextureType::k2D;
-    descriptor.usages = TextureUsageFlagBits::kColorAttachment;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-
-    m_colorAttachmentTexture = m_device->createTexture(descriptor);
-}
-
-void ParticleSample::createColorAttachmentTextureView()
-{
-    TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
-    descriptor.aspect = TextureAspectFlagBits::kColor;
-
-    m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
-}
-
-void ParticleSample::createVertexBuffer()
-{
-    // create vertex buffer
-    {
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_vertices.size());
-        BufferDescriptor vertexBufferDescriptor{};
-        vertexBufferDescriptor.size = vertexSize;
-        vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
-
-        // TODO: currently buffer can be accessed both CPU and GPU.
-        void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, m_vertices.data(), vertexSize);
-        m_vertexBuffer->unmap();
-    }
-
-    // create index buffer
-    {
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_indices.size());
-        BufferDescriptor indexBufferDescriptor{};
-        indexBufferDescriptor.size = indexSize;
-        indexBufferDescriptor.usage = BufferUsageFlagBits::kIndex;
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
-
-        // TODO: currently buffer can be accessed both CPU and GPU.
-        void* mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_indices.data(), indexSize);
-        m_indexBuffer->unmap();
-    }
 }
 
 } // namespace vkt
