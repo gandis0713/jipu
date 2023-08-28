@@ -96,9 +96,9 @@ private:
 
     std::vector<Particle> m_vertices = {
         { { -0.5, 0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } },  // left top
-        { { -0.5, -0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } }, // left bottom
-        { { 0.5, -0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } },  // right bottom
-        { { 0.5, 0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } }    // right top
+        { { -0.5, -0.5, 0.0 }, { 1.0, 1.0, 0.0, 1.0 } }, // left bottom
+        { { 0.5, -0.5, 0.0 }, { 0.0, 0.0, 1.0, 1.0 } },  // right bottom
+        { { 0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0, 1.0 } }    // right top
     };
 
     void* m_uniformBufferMappedPointer = nullptr;
@@ -163,31 +163,28 @@ void ParticleSample::init()
 
 void ParticleSample::draw()
 {
-    if (true)
-    {
-        auto swapchainImageIndex = m_swapchain->acquireNextTexture();
+    auto swapchainImageIndex = m_swapchain->acquireNextTexture();
 
-        CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
 
-        ColorAttachment colorAttachment{};
-        colorAttachment.renderView = m_swapchain->getTextureView(swapchainImageIndex);
-        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
-        colorAttachment.loadOp = LoadOp::kClear;
-        colorAttachment.storeOp = StoreOp::kStore;
-        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-        std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(m_vertexInBuffer.get());
-        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-        renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-        renderPassEncoder->draw(4);
-        renderPassEncoder->end();
+    ColorAttachment colorAttachment{};
+    colorAttachment.renderView = m_swapchain->getTextureView(swapchainImageIndex);
+    colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+    colorAttachment.loadOp = LoadOp::kClear;
+    colorAttachment.storeOp = StoreOp::kStore;
+    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setVertexBuffer(m_vertexInBuffer.get());
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+    renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+    renderPassEncoder->end();
 
-        m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
-    }
+    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 
     // TODO: render pass encoder
 
@@ -425,7 +422,7 @@ void ParticleSample::createRenderPipeline()
                                         .offset = offsetof(Particle, pos) };
 
                 // texture coodinate
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
                                         .offset = offsetof(Particle, color) };
             }
 
