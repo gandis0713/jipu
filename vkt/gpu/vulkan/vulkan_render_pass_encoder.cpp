@@ -10,7 +10,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
-// #include <algorithm>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 namespace vkt
@@ -23,7 +23,8 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
     auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
 
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(vulkanRenderTextureView->getFormat()),
+    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(vulkanRenderTextureView->getFormat()),
+                                                     .depthStencilFormat = m_descriptor.depthStencilAttachment.has_value() ? std::optional<VkFormat>{ ToVkFormat(descriptor.depthStencilAttachment.value().textureView->getFormat()) } : std::nullopt,
                                                      .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
                                                      .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
                                                      .samples = ToVkSampleCountFlagBits(vulkanRenderTextureView->getSampleCount()) };
@@ -32,26 +33,26 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
+    bool hasDepthStencil = m_descriptor.depthStencilAttachment.has_value();
+    bool hasMultiSample = vulkanRenderTextureView->getSampleCount() > 1 && colorAttachment.resolveView;
+
     uint64_t imageViewCount = m_descriptor.colorAttachments.size();
-    imageViewCount += m_descriptor.depthStencilAttachment.has_value() ? 1 : 0;
-    imageViewCount += vulkanRenderTextureView->getSampleCount() > 1 ? 1 : 0;
+    imageViewCount += hasDepthStencil ? 1 : 0;
+    imageViewCount += hasMultiSample ? 1 : 0;
 
     uint64_t imageViewIndex = 0;
 
     std::vector<VkImageView> imageviews{};
+    imageviews.resize(imageViewCount); // set only for color and depth texture.
+    imageviews[imageViewIndex++] = vulkanRenderTextureView->getVkImageView();
+    if (hasDepthStencil)
     {
-        imageviews.resize(imageViewCount); // set only for color and depth texture.
-        imageviews[imageViewIndex++] = vulkanRenderTextureView->getVkImageView();
-        if (m_descriptor.depthStencilAttachment.has_value())
-        {
-            auto vulkanDepthStencilTextureView = downcast(m_descriptor.depthStencilAttachment.value().textureView);
-            imageviews[imageViewIndex++] = vulkanDepthStencilTextureView->getVkImageView();
-        }
-
-        // If sample count is larger than 1, resolve texture is need.
-        if (vulkanRenderTextureView->getSampleCount() > 1)
-            imageviews[imageViewIndex++] = downcast(colorAttachment.resolveView)->getVkImageView();
+        auto vulkanDepthStencilTextureView = downcast(m_descriptor.depthStencilAttachment.value().textureView);
+        imageviews[imageViewIndex++] = vulkanDepthStencilTextureView->getVkImageView();
     }
+
+    if (hasMultiSample)
+        imageviews[imageViewIndex++] = downcast(colorAttachment.resolveView)->getVkImageView();
 
     VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
                                                        .imageViews = imageviews,
@@ -79,9 +80,9 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     {
         colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
     }
-
     clearValues[clearValueIndex++] = colorClearValue;
-    if (m_descriptor.depthStencilAttachment.has_value())
+
+    if (hasDepthStencil)
     {
         auto depthStencilClearValue = m_descriptor.depthStencilAttachment.value();
         VkClearValue depthStencilValue;

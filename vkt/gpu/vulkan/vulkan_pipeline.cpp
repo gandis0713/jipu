@@ -185,7 +185,7 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(m_descriptor.fragment.targets[0].format),
+    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(m_descriptor.fragment.targets[0].format),
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount) };

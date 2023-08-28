@@ -3,7 +3,9 @@
 #include "vulkan_api.h"
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
+#include <vector>
 
 namespace vkt
 {
@@ -11,9 +13,10 @@ namespace vkt
 struct VulkanRenderPassDescriptor
 {
     /// @brief Color attachment format. It should be same with the image in swapchain.
-    VkFormat format = VK_FORMAT_UNDEFINED;
+    VkFormat colorFormat = VK_FORMAT_UNDEFINED; // TODO: multiple color attachments
+    std::optional<VkFormat> depthStencilFormat = std::nullopt;
     VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
 };
 
