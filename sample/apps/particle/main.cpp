@@ -10,6 +10,9 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#include <chrono>
+#include <cstdint>
+#include <ctime>
 #include <glm/glm.hpp>
 #include <random>
 #include <spdlog/spdlog.h>
@@ -32,6 +35,16 @@ extern "C"
 
 namespace vkt
 {
+
+namespace
+{
+
+uint64_t getCurrentTime()
+{
+    return duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+} // namespace
 
 class ParticleSample : public Sample
 {
@@ -59,6 +72,8 @@ private:
     void createRenderPipeline();
     void createQueue();
     void createCommandBuffer();
+
+    void updateUniformBuffer();
 
 private:
     struct Particle
@@ -101,6 +116,7 @@ private:
     void* m_uniformBufferMappedPointer = nullptr;
     uint32_t m_sampleCount = 1;
     uint32_t m_particleCount = 8092;
+    uint64_t m_previousTime = 0;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -161,6 +177,8 @@ void ParticleSample::init()
 
 void ParticleSample::draw()
 {
+    updateUniformBuffer();
+
     auto swapchainImageIndex = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
@@ -487,6 +505,21 @@ void ParticleSample::createQueue()
 {
     QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer | QueueFlagBits::kCompute };
     m_queue = m_device->createQueue(rednerQueueDescriptor);
+}
+
+void ParticleSample::updateUniformBuffer()
+{
+    if (m_previousTime == 0)
+    {
+        m_previousTime = getCurrentTime();
+    }
+
+    uint64_t currentTime = getCurrentTime();
+
+    float deltaTime = currentTime - m_previousTime;
+    memcpy(m_uniformBufferMappedPointer, &deltaTime, sizeof(deltaTime));
+
+    m_previousTime = currentTime;
 }
 
 } // namespace vkt
