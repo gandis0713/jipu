@@ -16,6 +16,8 @@ public:
 public:
     void setPipeline(Pipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) override;
+
+    void end() override;
 };
 
 } // namespace vkt

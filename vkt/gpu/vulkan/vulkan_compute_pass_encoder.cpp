@@ -17,4 +17,8 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bin
 {
 }
 
+void VulkanComputePassEncoder::end()
+{
+}
+
 } // namespace vkt

@@ -516,6 +516,11 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
+    ComputePassEncoderDescriptor computePassEncoderDescriptor{};
+    std::unique_ptr<ComputePassEncoder> computePassEncoder = commandEncoder->beginComputePass(computePassEncoderDescriptor);
+
+    computePassEncoder->end();
+
     return commandEncoder;
 }
 

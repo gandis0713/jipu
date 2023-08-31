@@ -22,6 +22,8 @@ public:
     virtual void setPipeline(Pipeline* pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
+    virtual void end() = 0;
+
 protected:
     CommandBuffer* m_commandBuffer = nullptr;
     ComputePassEncoderDescriptor m_descriptor{};
