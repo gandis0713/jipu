@@ -58,6 +58,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/pipeline.cpp
@@ -76,6 +77,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/vkt/gpu/pipeline.h
