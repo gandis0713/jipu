@@ -182,6 +182,12 @@ void ParticleSample::draw()
 {
     updateUniformBuffer();
 
+    if (false)
+    {
+        std::unique_ptr<CommandEncoder> computeCommandEncoder = recodeComputeCommandBuffer();
+        m_queue->submit({ computeCommandEncoder->finish() }, m_swapchain.get());
+    }
+
     std::unique_ptr<CommandEncoder> renderCommandEncoder = recodeRenderCommandBuffer();
     m_queue->submit({ renderCommandEncoder->finish() }, m_swapchain.get());
 }
@@ -505,6 +511,14 @@ void ParticleSample::updateUniformBuffer()
     m_previousTime = currentTime;
 }
 
+std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
+{
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+    return commandEncoder;
+}
+
 std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
 {
     auto swapchainImageIndex = m_swapchain->acquireNextTexture();
@@ -530,12 +544,6 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
 
     return commandEncoder;
 }
-
-std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
-{
-    return nullptr;
-}
-
 } // namespace vkt
 
 #if defined(__ANDROID__) || defined(ANDROID)
