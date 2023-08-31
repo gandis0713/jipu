@@ -11,6 +11,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.cpp
@@ -35,6 +36,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_driver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/gpu/vulkan/vulkan_framebuffer.h
