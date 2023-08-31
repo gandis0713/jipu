@@ -11,6 +11,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include <glm/glm.hpp>
+#include <random>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -50,7 +51,7 @@ private:
     void createSurface();
     void createSwapchain();
     void createUniformBuffer();
-    void createVertexBuffer();
+    void createShaderStorageBuffer();
     void createColorAttachmentTexture();
     void createColorAttachmentTextureView();
     void createComputeBindingGroup();
@@ -62,7 +63,8 @@ private:
 private:
     struct Particle
     {
-        glm::vec3 pos;
+        glm::vec2 position;
+        glm::vec2 velocity;
         glm::vec4 color;
     };
 
@@ -94,15 +96,11 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
 
-    std::vector<Particle> m_vertices = {
-        { { -0.5, 0.5, 0.0 }, { 1.0, 0.0, 0.0, 1.0 } },  // left top
-        { { -0.5, -0.5, 0.0 }, { 1.0, 1.0, 0.0, 1.0 } }, // left bottom
-        { { 0.5, -0.5, 0.0 }, { 0.0, 0.0, 1.0, 1.0 } },  // right bottom
-        { { 0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0, 1.0 } }    // right top
-    };
+    std::vector<Particle> m_vertices{};
 
     void* m_uniformBufferMappedPointer = nullptr;
     uint32_t m_sampleCount = 1;
+    uint32_t m_particleCount = 8092;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -147,7 +145,7 @@ void ParticleSample::init()
     createSurface();
     createSwapchain();
 
-    createVertexBuffer();
+    createShaderStorageBuffer();
     createUniformBuffer();
     createColorAttachmentTexture();
     createColorAttachmentTextureView();
@@ -185,10 +183,6 @@ void ParticleSample::draw()
     renderPassEncoder->end();
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
-
-    // TODO: render pass encoder
-
-    // TODO: submit command buffer to queue with swapchain.
 }
 
 void ParticleSample::createDriver()
@@ -244,8 +238,25 @@ void ParticleSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void ParticleSample::createVertexBuffer()
+void ParticleSample::createShaderStorageBuffer()
 {
+    // Initialize particles
+    std::default_random_engine rndEngine((unsigned)time(nullptr));
+    std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
+
+    // Initial particle positions on a circle
+    m_vertices.resize(m_particleCount);
+    for (auto& particle : m_vertices)
+    {
+        float r = 0.25f * sqrt(rndDist(rndEngine));
+        float theta = rndDist(rndEngine) * 2.0f * 3.14159265358979323846f;
+        float x = r * cos(theta) * m_height / m_height;
+        float y = r * sin(theta);
+        particle.position = glm::vec2(x, y);
+        particle.velocity = glm::normalize(glm::vec2(x, y)) * 0.00025f;
+        particle.color = glm::vec4(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine), 1.0f);
+    }
+
     // create vertex buffer
     uint64_t vertexSize = static_cast<uint64_t>(sizeof(Particle) * m_vertices.size());
     BufferDescriptor vertexBufferDescriptor{};
@@ -419,7 +430,7 @@ void ParticleSample::createRenderPipeline()
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Particle, pos) };
+                                        .offset = offsetof(Particle, position) };
 
                 // texture coodinate
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
