@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "vkt/gpu/compute_pass_encoder.h"
 #include "vkt/gpu/render_pass_encoder.h"
 #include "vkt/gpu/texture.h"
 #include <vector>
@@ -42,6 +43,7 @@ public:
     CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     virtual ~CommandEncoder() = default;
 
+    virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
 
     virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;

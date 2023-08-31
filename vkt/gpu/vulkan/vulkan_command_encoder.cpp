@@ -2,6 +2,7 @@
 #include "vulkan_binding_group.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
+#include "vulkan_compute_pass_encoder.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
@@ -31,6 +32,11 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, c
     {
         throw std::runtime_error("failed to begin command buffer.");
     }
+}
+
+std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const ComputePassEncoderDescriptor& descriptor)
+{
+    return std::make_unique<VulkanComputePassEncoder>(downcast(m_commandBuffer), descriptor);
 }
 
 std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassEncoderDescriptor& descriptor)
