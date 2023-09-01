@@ -16,6 +16,7 @@ public:
 public:
     void setPipeline(Pipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) override;
+    void dispatch(uint32_t x, uint32_t y = 1, uint32_t z = 1) override;
 
     void end() override;
 };
