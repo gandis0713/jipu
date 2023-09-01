@@ -20,14 +20,14 @@ public:
     void* map() override;
     void unmap() override;
 
-    void setTransition(CommandBuffer* commandBuffer, BufferUsageFlags usage);
+    void setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags);
 
     VkBuffer getVkBuffer() const;
 
 private:
     VkBuffer m_buffer = VK_NULL_HANDLE;
     std::unique_ptr<VulkanMemory> m_memory = nullptr;
-    BufferUsageFlags m_usage = BufferUsageFlagBits::kUndefined;
+    VkPipelineStageFlags m_stageFlags = 0u;
 
     void* m_mappedPtr = nullptr;
 };

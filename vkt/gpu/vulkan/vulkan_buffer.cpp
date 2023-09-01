@@ -56,7 +56,7 @@ void* VulkanBuffer::map()
     if (m_mappedPtr == nullptr)
     {
         auto device = downcast(m_device);
-        VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_size, 0, &m_mappedPtr);
+        VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_descriptor.size, 0, &m_mappedPtr);
         if (result != VK_SUCCESS)
         {
             spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
@@ -73,7 +73,7 @@ void VulkanBuffer::unmap()
     device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 }
 
-void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, BufferUsageFlags usage)
+void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags)
 {
     auto vulkanDevice = downcast(m_device);
     auto vulkanCommandBuffer = downcast(commandBuffer);
@@ -82,25 +82,22 @@ void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, BufferUsageFlags 
     VkBufferMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    barrier.srcAccessMask = ToVkAccessFlags(m_usage);
-    barrier.dstAccessMask = ToVkAccessFlags(usage);
+    barrier.srcAccessMask = ToVkAccessFlags(m_descriptor.usage);
+    barrier.dstAccessMask = ToVkAccessFlags(m_descriptor.usage);
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = m_buffer;
     barrier.size = getSize();
     barrier.offset = 0;
 
-    VkPipelineStageFlags srcStageFlags = ToVkPipelineStageFlags(m_usage);
-    VkPipelineStageFlags dstStageFlags = ToVkPipelineStageFlags(usage);
-
     vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
-                             srcStageFlags, dstStageFlags,
+                             m_stageFlags, flags,
                              0,
                              0, nullptr,
                              1, &barrier,
                              0, nullptr);
 
-    m_usage = usage;
+    m_stageFlags = flags;
 }
 
 VkBuffer VulkanBuffer::getVkBuffer() const
