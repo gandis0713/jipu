@@ -44,7 +44,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
     if (device->vkAPI.CreateFence(device->getVkDevice(), &fenceCreateInfo, nullptr, &m_fence) != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create queue fence.");
+        throw std::runtime_error("Failed to create render queue fence.");
     }
 
     // create semaphore
@@ -55,7 +55,12 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
     if (device->vkAPI.CreateSemaphore(device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create rendering queue semephore.");
+        throw std::runtime_error("Failed to create render queue semephore.");
+    }
+
+    if (device->vkAPI.CreateSemaphore(device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_computeSemaphore) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create compute queue semephore.");
     }
 }
 
@@ -69,6 +74,7 @@ VulkanQueue::~VulkanQueue()
 
     // Doesn't need to destroy VkQueue.
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_computeSemaphore, nullptr);
     vkAPI.DestroyFence(vulkanDevice->getVkDevice(), m_fence, nullptr);
 }
 
@@ -81,6 +87,8 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &m_computeSemaphore;
 
     std::vector<VkCommandBuffer> vulkanCommandBuffers{};
     vulkanCommandBuffers.resize(submitInfo.commandBufferCount);
@@ -104,14 +112,14 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    std::vector<VkSemaphore> waitSemaphores{ downcast(swapchain)->getAcquireImageSemaphore() };
+    std::vector<VkSemaphore> waitSemaphores{ m_computeSemaphore, downcast(swapchain)->getAcquireImageSemaphore() };
     downcast(swapchain)->injectSemaphore(m_renderSemaphore);
 
     // submit command buffer
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    VkPipelineStageFlags waitPipelineStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
     submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitPipelineStages;
