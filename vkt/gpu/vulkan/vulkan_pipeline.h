@@ -32,6 +32,7 @@ private:
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
+DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 
 class VulkanRenderPass;
 
@@ -54,8 +55,7 @@ private:
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
-
-DOWN_CAST(VulkanRenderPipeline, Pipeline);
+DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);
