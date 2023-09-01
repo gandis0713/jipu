@@ -94,10 +94,9 @@ public:
 
 protected:
     CommandBuffer* m_commandBuffer = nullptr;
-    RenderPassEncoderDescriptor m_descriptor{};
-
-protected:
     Pipeline* m_pipeline = nullptr;
+
+    RenderPassEncoderDescriptor m_descriptor{};
 };
 
 } // namespace vkt

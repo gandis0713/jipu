@@ -1,7 +1,9 @@
 #include "vulkan_compute_pass_encoder.h"
+#include "vulkan_binding_group.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
+#include "vulkan_pipeline_layout.h"
 
 #include "vulkan_api.h"
 
@@ -16,21 +18,35 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandB
 
 void VulkanComputePassEncoder::setPipeline(Pipeline* pipeline)
 {
+    m_pipeline = pipeline;
+
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    VulkanComputePipeline* vulkanComputePipeline = downcast(static_cast<ComputePipeline*>(pipeline)); // TODO: downcasting to RenderPipeline.
+    VulkanComputePipeline* vulkanComputePipeline = downcast(static_cast<ComputePipeline*>(m_pipeline)); // TODO: downcasting to RenderPipeline.
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
 
-    // TODO: set pipeline.
+    vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(),
+                          VK_PIPELINE_BIND_POINT_COMPUTE,
+                          vulkanComputePipeline->getVkPipeline());
 }
 
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto vulkanBindingGroup = downcast(bindingGroup);
     const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
 
-    // TODO: set binding group.
+    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+                                VK_PIPELINE_BIND_POINT_COMPUTE, vulkanPipelineLayout->getVkPipelineLayout(),
+                                0,
+                                1,
+                                &descriptorSet,
+                                0,
+                                nullptr);
 }
 
 void VulkanComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z)

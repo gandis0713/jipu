@@ -27,6 +27,8 @@ public:
 
 protected:
     CommandBuffer* m_commandBuffer = nullptr;
+    Pipeline* m_pipeline = nullptr;
+
     ComputePassEncoderDescriptor m_descriptor{};
 };
 
