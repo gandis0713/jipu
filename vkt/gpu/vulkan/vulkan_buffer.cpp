@@ -1,4 +1,5 @@
 #include "vulkan_buffer.h"
+#include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
 
@@ -72,46 +73,102 @@ void VulkanBuffer::unmap()
     device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 }
 
+void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, BufferUsageFlags usage)
+{
+    auto vulkanDevice = downcast(m_device);
+    auto vulkanCommandBuffer = downcast(commandBuffer);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkBufferMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.pNext = nullptr;
+    barrier.srcAccessMask = ToVkAccessFlags(m_usage);
+    barrier.dstAccessMask = ToVkAccessFlags(usage);
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.buffer = m_buffer;
+    barrier.size = getSize();
+    barrier.offset = 0;
+
+    VkPipelineStageFlags srcStageFlags = ToVkPipelineStageFlags(m_usage);
+    VkPipelineStageFlags dstStageFlags = ToVkPipelineStageFlags(usage);
+
+    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
+                             srcStageFlags, dstStageFlags,
+                             0,
+                             0, nullptr,
+                             1, &barrier,
+                             0, nullptr);
+
+    m_usage = usage;
+}
+
 VkBuffer VulkanBuffer::getVkBuffer() const
 {
     return m_buffer;
 }
 
 // Convert Helper
-VkAccessFlags ToVkAccessFlags(BufferUsageFlags usages)
+VkAccessFlags ToVkAccessFlags(BufferUsageFlags usage)
 {
     VkAccessFlags vkFlags = 0x00000000; // 0x00000000
 
-    if (usages & BufferUsageFlagBits::kMapRead)
+    if (usage & BufferUsageFlagBits::kMapRead)
     {
         vkFlags |= VK_ACCESS_HOST_READ_BIT;
     }
-    if (usages & BufferUsageFlagBits::kMapWrite)
+    if (usage & BufferUsageFlagBits::kMapWrite)
     {
         vkFlags |= VK_ACCESS_HOST_WRITE_BIT;
     }
-    if (usages & BufferUsageFlagBits::kCopySrc)
+    if (usage & BufferUsageFlagBits::kCopySrc)
     {
         vkFlags |= VK_ACCESS_TRANSFER_READ_BIT;
     }
-    if (usages & BufferUsageFlagBits::kCopyDst)
+    if (usage & BufferUsageFlagBits::kCopyDst)
     {
         vkFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
     }
-    if (usages & BufferUsageFlagBits::kIndex)
+    if (usage & BufferUsageFlagBits::kIndex)
     {
         vkFlags |= VK_ACCESS_INDEX_READ_BIT;
     }
-    if (usages & BufferUsageFlagBits::kVertex)
+    if (usage & BufferUsageFlagBits::kVertex)
     {
         vkFlags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
     }
-    if (usages & BufferUsageFlagBits::kUniform)
+    if (usage & BufferUsageFlagBits::kUniform)
     {
         vkFlags |= VK_ACCESS_UNIFORM_READ_BIT;
     }
 
     return vkFlags;
+}
+
+VkPipelineStageFlags ToVkPipelineStageFlags(BufferUsageFlags usage)
+{
+    VkPipelineStageFlags flags = 0;
+
+    if (usage & (BufferUsageFlagBits::kMapRead | BufferUsageFlagBits::kMapWrite))
+    {
+        flags |= VK_PIPELINE_STAGE_HOST_BIT;
+    }
+    if (usage & (BufferUsageFlagBits::kCopySrc | BufferUsageFlagBits::kCopyDst))
+    {
+        flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+    }
+    if (usage & (BufferUsageFlagBits::kIndex | BufferUsageFlagBits::kVertex))
+    {
+        flags |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+    }
+    if (usage & (BufferUsageFlagBits::kUniform | BufferUsageFlagBits::kStorage))
+    {
+        // TODO: set by shader stage.
+        flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
+                 VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+    }
+
+    return flags;
 }
 
 VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)

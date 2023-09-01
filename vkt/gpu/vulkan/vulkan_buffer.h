@@ -9,6 +9,7 @@ namespace vkt
 {
 
 class VulkanDevice;
+class CommandBuffer;
 class VulkanBuffer : public Buffer
 {
 public:
@@ -19,11 +20,14 @@ public:
     void* map() override;
     void unmap() override;
 
+    void setTransition(CommandBuffer* commandBuffer, BufferUsageFlags usage);
+
     VkBuffer getVkBuffer() const;
 
 private:
     VkBuffer m_buffer = VK_NULL_HANDLE;
     std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    BufferUsageFlags m_usage = BufferUsageFlagBits::kUndefined;
 
     void* m_mappedPtr = nullptr;
 };
@@ -32,7 +36,8 @@ DOWN_CAST(VulkanBuffer, Buffer);
 
 // Convert Helper
 VkAccessFlags ToVkAccessFlags(BufferUsageFlags flags);
-VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages);
+VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usage);
+VkPipelineStageFlags ToVkPipelineStageFlags(BufferUsageFlags usage);
 
 // TODO: remove or remain.
 // BufferUsageFlags ToBufferUsageFlags(VkAccessFlags vkflags);
