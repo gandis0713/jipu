@@ -18,6 +18,8 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
+uint64_t count = 0;
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
     // GameActivity's C/C++ code
@@ -93,7 +95,7 @@ private:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
     std::unique_ptr<BindingGroupLayout> m_computeBindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_computeBindingGroup = nullptr;
+    std::vector<std::unique_ptr<BindingGroup>> m_computeBindingGroups{};
     std::unique_ptr<BindingGroupLayout> m_renderBindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_renderBindingGroup = nullptr;
 
@@ -107,11 +109,11 @@ private:
     std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
     std::unique_ptr<TextureView> m_colorAttachmentTextureView = nullptr;
 
-    std::unique_ptr<Buffer> m_vertexInBuffer = nullptr;
-    std::unique_ptr<Buffer> m_vertexOutBuffer = nullptr;
+    std::vector<std::unique_ptr<Buffer>> m_vertexBuffers{};
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
+    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
+    std::unique_ptr<CommandBuffer> m_computeCommandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
 
     std::vector<Particle> m_vertices{};
@@ -129,7 +131,8 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    m_commandBuffer.reset();
+    m_renderCommandBuffer.reset();
+    m_computeCommandBuffer.reset();
     m_queue.reset();
 
     m_renderPipeline.reset();
@@ -141,14 +144,13 @@ ParticleSample::~ParticleSample()
     m_fragmentShaderModule.reset();
     m_vertexShaderModule.reset();
 
-    m_computeBindingGroup.reset();
+    m_computeBindingGroups.clear();
     m_computeBindingGroupLayout.reset();
 
     m_colorAttachmentTextureView.reset();
     m_colorAttachmentTexture.reset();
     m_uniformBuffer.reset();
-    m_vertexOutBuffer.reset();
-    m_vertexInBuffer.reset();
+    m_vertexBuffers.clear();
 
     m_swapchain.reset();
     m_surface.reset();
@@ -185,14 +187,13 @@ void ParticleSample::draw()
 {
     updateUniformBuffer();
 
-    if (false)
-    {
-        std::unique_ptr<CommandEncoder> computeCommandEncoder = recodeComputeCommandBuffer();
-        m_queue->submit({ computeCommandEncoder->finish() }, m_swapchain.get());
-    }
+    std::unique_ptr<CommandEncoder> computeCommandEncoder = recodeComputeCommandBuffer();
+    m_queue->submit({ computeCommandEncoder->finish() });
 
     std::unique_ptr<CommandEncoder> renderCommandEncoder = recodeRenderCommandBuffer();
     m_queue->submit({ renderCommandEncoder->finish() }, m_swapchain.get());
+
+    count++;
 }
 
 void ParticleSample::createDriver()
@@ -273,17 +274,21 @@ void ParticleSample::createShaderStorageBuffer()
     vertexBufferDescriptor.size = vertexSize;
     vertexBufferDescriptor.usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kStorage;
     {
-        m_vertexInBuffer = m_device->createBuffer(vertexBufferDescriptor);
-        void* mappedPointer = m_vertexInBuffer->map();
+        auto vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+        void* mappedPointer = vertexBuffer->map();
         memcpy(mappedPointer, m_vertices.data(), vertexSize);
-        m_vertexInBuffer->unmap();
+        vertexBuffer->unmap();
+
+        m_vertexBuffers.push_back(std::move(vertexBuffer));
     }
 
     {
-        m_vertexOutBuffer = m_device->createBuffer(vertexBufferDescriptor);
-        void* mappedPointer = m_vertexOutBuffer->map();
+        auto vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+        void* mappedPointer = vertexBuffer->map();
         memcpy(mappedPointer, m_vertices.data(), vertexSize);
-        m_vertexOutBuffer->unmap();
+        vertexBuffer->unmap();
+
+        m_vertexBuffers.push_back(std::move(vertexBuffer));
     }
 }
 
@@ -297,9 +302,6 @@ void ParticleSample::createUniformBuffer()
     m_uniformBuffer = m_device->createBuffer(descriptor);
 
     m_uniformBufferMappedPointer = m_uniformBuffer->map();
-    float value = 0.0f;
-    memcpy(m_uniformBufferMappedPointer, &value, uniforBufferSize);
-    // m_vertexInBuffer->unmap();
 }
 
 void ParticleSample::createColorAttachmentTexture()
@@ -327,44 +329,20 @@ void ParticleSample::createColorAttachmentTextureView()
 
 void ParticleSample::createComputeBindingGroup()
 {
-    uint32_t bindingIndex = 0;
-
     BufferBindingLayout bufferUBOBindingLayout{};
-    bufferUBOBindingLayout.index = bindingIndex;
-    bufferUBOBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
+    bufferUBOBindingLayout.index = 0;
+    bufferUBOBindingLayout.stages = BindingStageFlagBits::kComputeStage;
     bufferUBOBindingLayout.type = BufferBindingType::kUniform;
 
-    BufferBinding bufferUBOBinding{};
-    bufferUBOBinding.buffer = m_uniformBuffer.get();
-    bufferUBOBinding.index = bindingIndex;
-    bufferUBOBinding.offset = 0;
-    bufferUBOBinding.size = m_uniformBuffer->getSize();
-
-    ++bindingIndex;
-
     BufferBindingLayout bufferInBindingLayout{};
-    bufferInBindingLayout.index = bindingIndex;
+    bufferInBindingLayout.index = 1;
     bufferInBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
     bufferInBindingLayout.type = BufferBindingType::kStorage;
 
-    BufferBinding bufferInBinding{};
-    bufferInBinding.buffer = m_vertexInBuffer.get();
-    bufferInBinding.index = bindingIndex;
-    bufferInBinding.offset = 0;
-    bufferInBinding.size = m_vertexInBuffer->getSize();
-
-    ++bindingIndex;
-
     BufferBindingLayout bufferOutBindingLayout{};
-    bufferOutBindingLayout.index = bindingIndex;
+    bufferOutBindingLayout.index = 2;
     bufferOutBindingLayout.stages = BindingStageFlagBits::kVertexStage | BindingStageFlagBits::kComputeStage;
     bufferOutBindingLayout.type = BufferBindingType::kStorage;
-
-    BufferBinding bufferOutBinding{};
-    bufferOutBinding.buffer = m_vertexOutBuffer.get();
-    bufferOutBinding.index = bindingIndex;
-    bufferOutBinding.offset = 0;
-    bufferOutBinding.size = m_vertexOutBuffer->getSize();
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = {
@@ -374,17 +352,71 @@ void ParticleSample::createComputeBindingGroup()
     };
     m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 
-    BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
-    bindingGroupDescriptor.samplers = {};
-    bindingGroupDescriptor.textures = {};
-    bindingGroupDescriptor.buffers = {
-        bufferUBOBinding,
-        bufferInBinding,
-        bufferOutBinding
-    };
+    {
+        BufferBinding bufferUBOBinding{};
+        bufferUBOBinding.buffer = m_uniformBuffer.get();
+        bufferUBOBinding.index = 0;
+        bufferUBOBinding.offset = 0;
+        bufferUBOBinding.size = m_uniformBuffer->getSize();
 
-    m_computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+        BufferBinding bufferInBinding{};
+        bufferInBinding.buffer = m_vertexBuffers[0].get();
+        bufferInBinding.index = 1;
+        bufferInBinding.offset = 0;
+        bufferInBinding.size = m_vertexBuffers[0]->getSize();
+
+        BufferBinding bufferOutBinding{};
+        bufferOutBinding.buffer = m_vertexBuffers[1].get();
+        bufferOutBinding.index = 2;
+        bufferOutBinding.offset = 0;
+        bufferOutBinding.size = m_vertexBuffers[1]->getSize();
+
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
+        bindingGroupDescriptor.samplers = {};
+        bindingGroupDescriptor.textures = {};
+        bindingGroupDescriptor.buffers = {
+            bufferUBOBinding,
+            bufferInBinding,
+            bufferOutBinding
+        };
+
+        auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+        m_computeBindingGroups.push_back(std::move(computeBindingGroup));
+    }
+
+    {
+        BufferBinding bufferUBOBinding{};
+        bufferUBOBinding.buffer = m_uniformBuffer.get();
+        bufferUBOBinding.index = 0;
+        bufferUBOBinding.offset = 0;
+        bufferUBOBinding.size = m_uniformBuffer->getSize();
+
+        BufferBinding bufferInBinding{};
+        bufferInBinding.buffer = m_vertexBuffers[1].get();
+        bufferInBinding.index = 1;
+        bufferInBinding.offset = 0;
+        bufferInBinding.size = m_vertexBuffers[1]->getSize();
+
+        BufferBinding bufferOutBinding{};
+        bufferOutBinding.buffer = m_vertexBuffers[0].get();
+        bufferOutBinding.index = 2;
+        bufferOutBinding.offset = 0;
+        bufferOutBinding.size = m_vertexBuffers[0]->getSize();
+
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
+        bindingGroupDescriptor.samplers = {};
+        bindingGroupDescriptor.textures = {};
+        bindingGroupDescriptor.buffers = {
+            bufferUBOBinding,
+            bufferOutBinding,
+            bufferInBinding,
+        };
+
+        auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+        m_computeBindingGroups.push_back(std::move(computeBindingGroup));
+    }
 }
 
 void ParticleSample::createComputePipeline()
@@ -492,7 +524,8 @@ void ParticleSample::createRenderPipeline()
 void ParticleSample::createCommandBuffer()
 {
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-    m_commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    m_renderCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    m_computeCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 }
 
 void ParticleSample::createQueue()
@@ -510,7 +543,7 @@ void ParticleSample::updateUniformBuffer()
 
     uint64_t currentTime = getCurrentTime();
 
-    float deltaTime = currentTime - m_previousTime;
+    float deltaTime = (currentTime - m_previousTime) * 10.0f;
     memcpy(m_uniformBufferMappedPointer, &deltaTime, sizeof(deltaTime));
 
     m_previousTime = currentTime;
@@ -519,42 +552,47 @@ void ParticleSample::updateUniformBuffer()
 std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     ComputePassEncoderDescriptor computePassEncoderDescriptor{};
-    std::unique_ptr<ComputePassEncoder> computePassEncoder = commandEncoder->beginComputePass(computePassEncoderDescriptor);
+    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
     computePassEncoder->setPipeline(m_computePipeline.get());
-    computePassEncoder->setBindingGroup(0, m_computeBindingGroup.get());
-
+    computePassEncoder->setBindingGroup(0, m_computeBindingGroups[count % 2].get());
+    computePassEncoder->dispatch(256, 1, 1);
     computePassEncoder->end();
 
-    return commandEncoder;
+    return computeCommandEncoder;
 }
 
 std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
 {
     auto swapchainImageIndex = m_swapchain->acquireNextTexture();
 
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    if (swapchainImageIndex < 0)
+        spdlog::error("swap chain: {}", swapchainImageIndex);
 
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     ColorAttachment colorAttachment{};
     colorAttachment.renderView = m_swapchain->getTextureView(swapchainImageIndex);
     colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
     colorAttachment.loadOp = LoadOp::kClear;
     colorAttachment.storeOp = StoreOp::kStore;
+
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
     renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(m_vertexInBuffer.get());
+    renderPassEncoder->setVertexBuffer(m_vertexBuffers[count % 2].get());
+    // renderPassEncoder->setVertexBuffer(m_vertexBuffers[0].get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
     renderPassEncoder->end();
 
-    return commandEncoder;
+    return renderCommandEncoder;
 }
 } // namespace vkt
 
