@@ -102,11 +102,11 @@ VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags)
     {
         vkFlags |= VK_SHADER_STAGE_VERTEX_BIT;
     }
-    else if (flags & BindingStageFlagBits::kFragmentStage)
+    if (flags & BindingStageFlagBits::kFragmentStage)
     {
         vkFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
     }
-    else if (flags & BindingStageFlagBits::kComputeStage)
+    if (flags & BindingStageFlagBits::kComputeStage)
     {
         vkFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
     }
@@ -122,11 +122,11 @@ BindingStageFlags ToBindingStageFlags(VkShaderStageFlags vkFlags)
     {
         vkFlags |= BindingStageFlagBits::kVertexStage;
     }
-    else if (flags & VK_SHADER_STAGE_FRAGMENT_BIT)
+    if (flags & VK_SHADER_STAGE_FRAGMENT_BIT)
     {
         vkFlags |= BindingStageFlagBits::kFragmentStage;
     }
-    else if (flags & VK_SHADER_STAGE_COMPUTE_BIT)
+    if (flags & VK_SHADER_STAGE_COMPUTE_BIT)
     {
         vkFlags |= BindingStageFlagBits::kComputeStage;
     }
