@@ -135,6 +135,9 @@ ParticleSample::~ParticleSample()
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
 
+    m_computePipeline.reset();
+    m_computePipelineLayout.reset();
+
     m_fragmentShaderModule.reset();
     m_vertexShaderModule.reset();
 
@@ -389,6 +392,8 @@ void ParticleSample::createComputePipeline()
     // pipeline layout
     PipelineLayoutDescriptor pipelineLayoutDescriptor{};
     pipelineLayoutDescriptor.layouts = { m_computeBindingGroupLayout.get() };
+    m_computePipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
+
     // compute shader
     ComputeStage computeStage{};
     const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
@@ -400,7 +405,7 @@ void ParticleSample::createComputePipeline()
 
     ComputePipelineDescriptor computePipelineDescriptor{};
     computePipelineDescriptor.compute = computeStage;
-    computePipelineDescriptor.layout = nullptr; // TODO: check.
+    computePipelineDescriptor.layout = m_computePipelineLayout.get();
 
     m_computePipeline = m_device->createComputePipeline(computePipelineDescriptor);
 }
@@ -518,6 +523,8 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
 
     ComputePassEncoderDescriptor computePassEncoderDescriptor{};
     std::unique_ptr<ComputePassEncoder> computePassEncoder = commandEncoder->beginComputePass(computePassEncoderDescriptor);
+    computePassEncoder->setPipeline(m_computePipeline.get());
+    computePassEncoder->setBindingGroup(0, m_computeBindingGroup.get());
 
     computePassEncoder->end();
 
