@@ -20,6 +20,8 @@ VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const C
 
 VulkanComputePipeline::~VulkanComputePipeline()
 {
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -29,6 +31,29 @@ VkPipeline VulkanComputePipeline::getVkPipeline() const
 
 void VulkanComputePipeline::initialize()
 {
+    auto computeShaderModule = downcast(m_descriptor.compute.shaderModule)->getVkShaderModule();
+
+    VkPipelineShaderStageCreateInfo computeStageInfo{};
+    computeStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    computeStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    computeStageInfo.module = computeShaderModule;
+    computeStageInfo.pName = m_descriptor.compute.entryPoint.c_str();
+
+    VkComputePipelineCreateInfo pipelineCreateInfo{};
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineCreateInfo.pNext = nullptr;
+    pipelineCreateInfo.stage = computeStageInfo;
+    pipelineCreateInfo.layout = downcast(m_descriptor.layout)->getVkPipelineLayout();
+    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+    pipelineCreateInfo.basePipelineIndex = -1;              // Optional
+
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    if (VK_SUCCESS != vkAPI.CreateComputePipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline))
+    {
+        throw std::runtime_error("Failed to create compute pipelines.");
+    }
 }
 
 // Vulkan Render Pipeline
