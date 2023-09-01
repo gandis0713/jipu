@@ -18,8 +18,6 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-uint64_t count = 0;
-
 #if defined(__ANDROID__) || defined(ANDROID)
 
     // GameActivity's C/C++ code
@@ -122,6 +120,7 @@ private:
     uint32_t m_sampleCount = 1;
     uint32_t m_particleCount = 8092;
     uint64_t m_previousTime = 0;
+    uint64_t m_vertexIndex = 0;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -193,7 +192,7 @@ void ParticleSample::draw()
     std::unique_ptr<CommandEncoder> renderCommandEncoder = recodeRenderCommandBuffer();
     m_queue->submit({ renderCommandEncoder->finish() }, m_swapchain.get());
 
-    count++;
+    m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
 
 void ParticleSample::createDriver()
@@ -557,7 +556,7 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
     ComputePassEncoderDescriptor computePassEncoderDescriptor{};
     std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
     computePassEncoder->setPipeline(m_computePipeline.get());
-    computePassEncoder->setBindingGroup(0, m_computeBindingGroups[count % 2].get());
+    computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
     computePassEncoder->dispatch(256, 1, 1);
     computePassEncoder->end();
 
@@ -585,8 +584,7 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffers[count % 2].get());
-    // renderPassEncoder->setVertexBuffer(m_vertexBuffers[0].get());
+    renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
