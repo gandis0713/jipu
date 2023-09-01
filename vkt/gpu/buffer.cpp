@@ -6,12 +6,17 @@ namespace vkt
 
 Buffer::Buffer(Device* device, const BufferDescriptor& descriptor)
     : m_device(device)
-    , m_size(descriptor.size)
+    , m_descriptor(descriptor)
 {
+}
+
+BufferUsageFlags Buffer::getUsage() const
+{
+    return m_descriptor.usage;
 }
 
 uint64_t Buffer::getSize() const
 {
-    return m_size;
+    return m_descriptor.size;
 }
 } // namespace vkt

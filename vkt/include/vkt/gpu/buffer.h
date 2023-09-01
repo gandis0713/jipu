@@ -37,11 +37,12 @@ public:
     virtual void* map() = 0;
     virtual void unmap() = 0;
 
+    BufferUsageFlags getUsage() const;
     uint64_t getSize() const;
 
 protected:
     Device* m_device = nullptr;
-    uint64_t m_size{ 0 };
+    BufferDescriptor m_descriptor{};
 };
 
 } // namespace vkt
