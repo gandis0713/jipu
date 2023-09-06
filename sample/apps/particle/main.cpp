@@ -75,8 +75,8 @@ private:
 
     void updateUniformBuffer();
 
-    std::unique_ptr<CommandEncoder> recodeComputeCommandBuffer();
-    std::unique_ptr<CommandEncoder> recodeRenderCommandBuffer();
+    CommandBuffer* recodeComputeCommandBuffer();
+    CommandBuffer* recodeRenderCommandBuffer();
 
 private:
     struct Particle
@@ -186,11 +186,11 @@ void ParticleSample::draw()
 {
     updateUniformBuffer();
 
-    std::unique_ptr<CommandEncoder> computeCommandEncoder = recodeComputeCommandBuffer();
-    m_queue->submit({ computeCommandEncoder->finish() });
+    CommandBuffer* computeCommandBuffer = recodeComputeCommandBuffer();
+    // m_queue->submit({ computeCommandBuffer });
 
-    std::unique_ptr<CommandEncoder> renderCommandEncoder = recodeRenderCommandBuffer();
-    m_queue->submit({ renderCommandEncoder->finish() }, m_swapchain.get());
+    CommandBuffer* renderCommandBuffer = recodeRenderCommandBuffer();
+    m_queue->submit({ computeCommandBuffer, renderCommandBuffer }, m_swapchain.get());
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
@@ -548,7 +548,7 @@ void ParticleSample::updateUniformBuffer()
     m_previousTime = currentTime;
 }
 
-std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
+CommandBuffer* ParticleSample::recodeComputeCommandBuffer()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -560,10 +560,10 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeComputeCommandBuffer()
     computePassEncoder->dispatch(256, 1, 1);
     computePassEncoder->end();
 
-    return computeCommandEncoder;
+    return computeCommandEncoder->finish();
 }
 
-std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
+CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
 {
     auto swapchainImageIndex = m_swapchain->acquireNextTexture();
 
@@ -590,7 +590,7 @@ std::unique_ptr<CommandEncoder> ParticleSample::recodeRenderCommandBuffer()
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
     renderPassEncoder->end();
 
-    return renderCommandEncoder;
+    return renderCommandEncoder->finish();
 }
 } // namespace vkt
 
