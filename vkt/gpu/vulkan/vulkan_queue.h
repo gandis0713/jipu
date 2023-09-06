@@ -23,8 +23,6 @@ public:
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
-    VkSemaphore m_computeSemaphore = VK_NULL_HANDLE;
-    VkSemaphore m_renderSemaphore = VK_NULL_HANDLE;
     VkFence m_fence = VK_NULL_HANDLE;
 
     // TODO: use pair.
