@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_map>
 
 namespace vkt
 {
@@ -28,6 +29,7 @@ public:
 protected:
     CommandBuffer* m_commandBuffer = nullptr;
     Pipeline* m_pipeline = nullptr;
+    std::unordered_map<uint32_t, BindingGroup*> m_bindingGroups{};
 
     ComputePassEncoderDescriptor m_descriptor{};
 };
