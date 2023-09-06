@@ -66,9 +66,6 @@ private:
 
     std::vector<VkQueue> m_queues{};
 
-    std::vector<VkSemaphore> m_waitSemaphore{};
-    std::vector<VkSemaphore> m_signalSemaphore{};
-
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
 };
