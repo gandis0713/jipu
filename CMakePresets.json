@@ -10,6 +10,7 @@
 			"name": "base",
 			"cacheVariables": {
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+				"VCPKG_INSTALLED_DIR": "${sourceDir}/externals",
 				"VKT_TEST": "ON"
 			},
 			"debug": {
