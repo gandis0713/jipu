@@ -35,8 +35,8 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // If sample count is 1, attachment is used to present.
     else
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachments[attachmentIndex++] = colorAttachment;
 
+    attachments[attachmentIndex++] = colorAttachment;
     if (depthStencil)
     {
         VkAttachmentDescription depthAttachment{};

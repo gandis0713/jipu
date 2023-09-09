@@ -66,14 +66,17 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     std::vector<VkCommandBuffer> buffers{};
-    buffers.resize(commandBuffers.size());
     std::vector<VkSubmitInfo> submitInfos{};
-    submitInfos.resize(commandBuffers.size());
     std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> signalSemaphores{};
     std::vector<std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>>> waitSemaphores{};
-    signalSemaphores.resize(commandBuffers.size());
-    waitSemaphores.resize(commandBuffers.size());
-    for (auto i = 0; i < commandBuffers.size(); ++i)
+
+    auto commandBufferSize = commandBuffers.size();
+    buffers.resize(commandBufferSize);
+    submitInfos.resize(commandBufferSize);
+    signalSemaphores.resize(commandBufferSize);
+    waitSemaphores.resize(commandBufferSize);
+
+    for (auto i = 0; i < commandBufferSize; ++i)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -82,6 +85,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &buffers[i];
 
+        // send signal even if last command buffer.
         signalSemaphores[i] = downcast(commandBuffers[i])->getSignalSemaphore();
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = &signalSemaphores[i].first;
