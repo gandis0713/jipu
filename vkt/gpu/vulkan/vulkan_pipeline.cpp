@@ -3,6 +3,7 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include <array>
 #include <spdlog/spdlog.h>
@@ -210,7 +211,9 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
+    // TODO: get RenderPass information from descriptor.
     VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(m_descriptor.fragment.targets[0].format),
+                                                     .depthStencilFormat = m_descriptor.depthStencil.format != TextureFormat::kUndefined ? std::optional<VkFormat>{ ToVkFormat(m_descriptor.depthStencil.format) } : std::nullopt,
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount) };

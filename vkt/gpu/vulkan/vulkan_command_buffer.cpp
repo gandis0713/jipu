@@ -28,7 +28,6 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.FreeCommandBuffers(vulkanDevice->getVkDevice(), m_commandPool, 1, &m_commandBuffer);
-
     if (m_signalSemaphore)
         vulkanDevice->vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_signalSemaphore, nullptr);
 }
