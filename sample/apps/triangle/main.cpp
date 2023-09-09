@@ -147,8 +147,6 @@ TriangleSample::~TriangleSample()
     // clear swapchain first.
     m_swapchain.reset();
 
-    m_renderCommandBuffer.reset();
-
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
@@ -174,6 +172,9 @@ TriangleSample::~TriangleSample()
     m_vertexBuffer.reset();
 
     m_queue.reset();
+
+    // release command buffer after finising queue.
+    m_renderCommandBuffer.reset();
 
     m_physicalDevice.reset();
     m_device.reset();

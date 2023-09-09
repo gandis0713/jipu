@@ -130,9 +130,11 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
+    m_queue.reset();
+
+    // release command buffer after finishing queue.
     m_renderCommandBuffer.reset();
     m_computeCommandBuffer.reset();
-    m_queue.reset();
 
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
