@@ -511,11 +511,18 @@ void ParticleSample::createRenderPipeline()
         fragmentStage.targets = { target };
     }
 
+    // Depth/Stencil stage
+    DepthStencilStage depthStencilStage;
+    {
+        depthStencilStage.format = TextureFormat::kUndefined;
+    }
+
     RenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.inputAssembly = inputAssembly;
     renderPipelineDescriptor.vertex = vertexStage;
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
+    renderPipelineDescriptor.depthStencil = depthStencilStage;
     renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }

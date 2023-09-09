@@ -545,12 +545,19 @@ void TriangleSample::createRenderPipeline()
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
     }
 
+    // Depth/Stencil stage
+    DepthStencilStage depthStencilStage;
+    {
+        depthStencilStage.format = m_depthStencilTextureView->getFormat();
+    }
+
     RenderPipelineDescriptor descriptor;
     descriptor.layout = m_pipelineLayout.get();
     descriptor.inputAssembly = inputAssembly;
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterization;
     descriptor.fragment = fragmentStage;
+    descriptor.depthStencil = depthStencilStage;
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }

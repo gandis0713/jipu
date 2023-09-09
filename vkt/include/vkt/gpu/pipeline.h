@@ -114,6 +114,13 @@ struct FragmentStage : ProgrammableStage
     std::vector<FragmentStage::Target> targets{};
 };
 
+// Depth/Stencil Stage
+struct DepthStencilStage
+{
+    /// @brief depth/stencil attachment format.
+    TextureFormat format;
+};
+
 struct PipelineDescriptor
 {
     /// @brief pipeline layout
@@ -126,6 +133,7 @@ struct RenderPipelineDescriptor : PipelineDescriptor
     VertexStage vertex{};
     RasterizationStage rasterization{};
     FragmentStage fragment{};
+    DepthStencilStage depthStencil{};
 };
 
 class VKT_EXPORT RenderPipeline : public Pipeline
