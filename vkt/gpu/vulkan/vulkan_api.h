@@ -24,7 +24,7 @@ struct VulkanDriverKnobs
     uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     // TODO: use bitset instead of bool type.
-    bool debugReport = false;
+    bool debugUtils = false;
     bool surface = false;
     bool androidSurface = false;
     bool macosSurface = false;
@@ -82,10 +82,18 @@ struct VulkanAPI
     // device is created.
     PFN_vkDestroyDevice DestroyDevice = nullptr;
 
-    // VK_EXT_debug_report
-    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
-    PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
-    PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
+    // VK_EXT_debug_utils
+    PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
+    PFN_vkCmdEndDebugUtilsLabelEXT CmdEndDebugUtilsLabelEXT = nullptr;
+    PFN_vkCmdInsertDebugUtilsLabelEXT CmdInsertDebugUtilsLabelEXT = nullptr;
+    PFN_vkCreateDebugUtilsMessengerEXT CreateDebugUtilsMessengerEXT = nullptr;
+    PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
+    PFN_vkQueueBeginDebugUtilsLabelEXT QueueBeginDebugUtilsLabelEXT = nullptr;
+    PFN_vkQueueEndDebugUtilsLabelEXT QueueEndDebugUtilsLabelEXT = nullptr;
+    PFN_vkQueueInsertDebugUtilsLabelEXT QueueInsertDebugUtilsLabelEXT = nullptr;
+    PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
+    PFN_vkSetDebugUtilsObjectTagEXT SetDebugUtilsObjectTagEXT = nullptr;
+    PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT = nullptr;
 
     // VK_KHR_surface
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR = nullptr;
