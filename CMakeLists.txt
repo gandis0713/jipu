@@ -36,7 +36,10 @@ elseif(APPLE)
 endif()
 
 add_subdirectory(vkt)
-add_subdirectory(sample)
+
+if(VKT_SAMPLE)
+  add_subdirectory(sample)
+endif()
 
 if(VKT_TEST)
   enable_testing()
