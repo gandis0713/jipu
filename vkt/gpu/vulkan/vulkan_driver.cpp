@@ -24,6 +24,9 @@ const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 // layer
 const char kLayerKhronosValidation[] = "VK_LAYER_KHRONOS_validation";
 
+// debug
+const char kExtensionNameExtDebugUtils[] = "VK_EXT_debug_utils";
+
 namespace vkt
 {
 
@@ -228,6 +231,10 @@ void VulkanDriver::gatherDriverInfo()
             {
                 m_driverInfo.win32Surface = true;
             }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugUtils, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.debugUtils = true;
+            }
         }
     }
 }
@@ -305,6 +312,10 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     #elif defined(VK_USE_PLATFORM_METAL_EXT)
     requiredInstanceExtensions.push_back(kExtensionNameExtMetalSurface);
     #endif
+#endif
+
+#ifndef NDEBUG
+    requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
 #endif
 
 #if VK_HEADER_VERSION >= 216
