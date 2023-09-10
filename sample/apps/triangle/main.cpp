@@ -60,14 +60,15 @@ private:
     void createSwapchain();
 
     void createVertexBuffer();
+    void createIndexBuffer();
     void createUniformBuffer();
 
     void createImageTexture();
     void createImageTextureView();
     void createImageSampler();
 
-    void createColorTexture();
-    void createColorTextureView();
+    void createColorAttachmentTexture();
+    void createColorAttachmentTextureView();
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
@@ -78,7 +79,7 @@ private:
     void createRenderPipeline();
     void createCommandBuffers();
 
-    void copyBufferToBuffer();
+    void copyBufferToBuffer(Buffer* src, Buffer* dst);
     void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
 
     void updateUniformBuffer();
@@ -117,8 +118,8 @@ private:
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     void* m_uniformBufferMappedPointer = nullptr;
 
-    std::unique_ptr<Texture> m_colorTexture = nullptr;
-    std::unique_ptr<TextureView> m_colorTextureView = nullptr;
+    std::unique_ptr<Texture> m_colorAttachmentTexture = nullptr;
+    std::unique_ptr<TextureView> m_colorAttachmentTextureView = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
@@ -131,8 +132,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::vector<std::unique_ptr<CommandBuffer>> m_renderCommandBuffers{};
-    std::vector<std::unique_ptr<RenderCommandEncoder>> m_renderCommandEncoder{};
+    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
 
     uint32_t m_sampleCount = 4;
 };
@@ -147,8 +147,6 @@ TriangleSample::~TriangleSample()
     // clear swapchain first.
     m_swapchain.reset();
 
-    m_renderCommandBuffers.clear();
-
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
@@ -160,8 +158,8 @@ TriangleSample::~TriangleSample()
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
-    m_colorTextureView.reset();
-    m_colorTexture.reset();
+    m_colorAttachmentTextureView.reset();
+    m_colorAttachmentTexture.reset();
 
     // unmap m_uniformBufferMappedPointer;
     m_uniformBuffer.reset();
@@ -174,6 +172,9 @@ TriangleSample::~TriangleSample()
     m_vertexBuffer.reset();
 
     m_queue.reset();
+
+    // release command buffer after finising queue.
+    m_renderCommandBuffer.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
@@ -219,14 +220,15 @@ void TriangleSample::init()
 
     // create buffer
     createVertexBuffer();
+    createIndexBuffer();
     createUniformBuffer();
 
     createImageTexture();
     createImageTextureView();
     createImageSampler();
 
-    createColorTexture();
-    createColorTextureView();
+    createColorAttachmentTexture();
+    createColorAttachmentTextureView();
     createDepthStencilTexture();
     createDepthStencilTextureView();
 
@@ -258,33 +260,40 @@ void TriangleSample::createSwapchain()
 
 void TriangleSample::createVertexBuffer()
 {
-    std::filesystem::path objPath = m_path.parent_path() / "viking_room.obj";
-    m_polygon = loadOBJ(objPath);
+    // load obj as buffer for android.
+    std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.obj", m_handle);
+    m_polygon = loadOBJ(buffer.data(), buffer.size());
 
-    // vertex buffer
-    {
-        uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
-        BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
-                                                 .usage = BufferUsageFlagBits::kVertex };
-        m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
+    uint64_t vertexSize = static_cast<uint64_t>(sizeof(Vertex) * m_polygon.vertices.size());
+    BufferDescriptor vertexStagingBufferDescriptor{ .size = vertexSize,
+                                                    .usage = BufferUsageFlagBits::kCopySrc };
+    std::unique_ptr<Buffer> vertexStagingBuffer = m_device->createBuffer(vertexStagingBufferDescriptor);
 
-        void* mappedPointer = m_vertexBuffer->map();
-        memcpy(mappedPointer, m_polygon.vertices.data(), vertexSize);
-        m_vertexBuffer->unmap();
-    }
+    void* mappedPointer = vertexStagingBuffer->map();
+    memcpy(mappedPointer, m_polygon.vertices.data(), vertexSize);
 
-    // index buffer
-    {
-        uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
-        BufferDescriptor indexBufferDescriptor{ .size = indexSize,
-                                                .usage = BufferUsageFlagBits::kIndex };
+    BufferDescriptor vertexBufferDescriptor{ .size = vertexSize,
+                                             .usage = BufferUsageFlagBits::kVertex | BufferUsageFlagBits::kCopyDst };
+    m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
-        m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+    // copy staging buffer to target buffer
+    copyBufferToBuffer(vertexStagingBuffer.get(), m_vertexBuffer.get());
 
-        void* mappedPointer = m_indexBuffer->map();
-        memcpy(mappedPointer, m_polygon.indices.data(), indexSize);
-        m_indexBuffer->unmap();
-    }
+    // unmap staging buffer.
+    // vertexStagingBuffer->unmap(); // TODO: need unmap before destroy it?
+}
+
+void TriangleSample::createIndexBuffer()
+{
+    uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
+    BufferDescriptor indexBufferDescriptor{ .size = indexSize,
+                                            .usage = BufferUsageFlagBits::kIndex };
+
+    m_indexBuffer = m_device->createBuffer(indexBufferDescriptor);
+
+    void* mappedPointer = m_indexBuffer->map();
+    memcpy(mappedPointer, m_polygon.indices.data(), indexSize);
+    m_indexBuffer->unmap();
 }
 
 void TriangleSample::createUniformBuffer()
@@ -297,8 +306,9 @@ void TriangleSample::createUniformBuffer()
 
 void TriangleSample::createImageTexture()
 {
-    // load jpeg image.
-    m_image = std::make_unique<Image>(m_path.parent_path() / "viking_room.png");
+    // load as buffer for android.
+    std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.png", m_handle);
+    m_image = std::make_unique<Image>(buffer.data(), buffer.size());
 
     unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
     uint32_t width = m_image->getWidth();
@@ -314,7 +324,6 @@ void TriangleSample::createImageTexture()
 
     void* mappedPointer = imageTextureStagingBuffer->map();
     memcpy(mappedPointer, pixels, imageSize);
-    // m_imageStagingBuffer->unmap();
 
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
@@ -330,6 +339,9 @@ void TriangleSample::createImageTexture()
 
     // copy image staging buffer to texture
     copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+
+    // unmap staging buffer
+    // imageTextureStagingBuffer->unmap(); // TODO: need unmap before destroy it?
 }
 
 void TriangleSample::createImageTextureView()
@@ -341,7 +353,7 @@ void TriangleSample::createImageTextureView()
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
 }
 
-void TriangleSample::createColorTexture()
+void TriangleSample::createColorAttachmentTexture()
 {
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
@@ -351,16 +363,16 @@ void TriangleSample::createColorTexture()
                                          .height = m_swapchain->getHeight(),
                                          .mipLevels = 1,
                                          .sampleCount = m_sampleCount };
-    m_colorTexture = m_device->createTexture(textureDescriptor);
+    m_colorAttachmentTexture = m_device->createTexture(textureDescriptor);
 }
 
-void TriangleSample::createColorTextureView()
+void TriangleSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
-    m_colorTextureView = m_colorTexture->createTextureView(descriptor);
+    m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
 }
 
 void TriangleSample::createDepthStencilTexture()
@@ -481,12 +493,11 @@ void TriangleSample::createRenderPipeline()
     VertexStage vertexStage{};
     {
         // create vertex shader
-        auto appDir = m_path.parent_path();
-        const std::vector<char> vertShaderCode = utils::readFile(appDir / "triangle.vert.spv", m_handle);
+        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "triangle.vert.spv", m_handle);
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
-        vertexStage.shader = m_vertexShaderModule.get();
+        vertexStage.shaderModule = m_vertexShaderModule.get();
 
         // layouts
         std::vector<VertexInputLayout> layouts{};
@@ -524,16 +535,21 @@ void TriangleSample::createRenderPipeline()
     FragmentStage fragmentStage{};
     {
         // create fragment shader
-        auto appDir = m_path.parent_path();
-        const std::vector<char> fragShaderCode = utils::readFile(appDir / "triangle.frag.spv", m_handle);
+        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        fragmentStage.shader = m_fragmentShaderModule.get();
+        fragmentStage.shaderModule = m_fragmentShaderModule.get();
 
         // output targets
         fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
+    }
+
+    // Depth/Stencil stage
+    DepthStencilStage depthStencilStage;
+    {
+        depthStencilStage.format = m_depthStencilTextureView->getFormat();
     }
 
     RenderPipelineDescriptor descriptor;
@@ -542,58 +558,40 @@ void TriangleSample::createRenderPipeline()
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterization;
     descriptor.fragment = fragmentStage;
+    descriptor.depthStencil = depthStencilStage;
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 void TriangleSample::createCommandBuffers()
 {
-    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
-
-    auto commandBufferCount = swapchainTextureViews.size();
-    m_renderCommandBuffers.resize(commandBufferCount);
-    for (auto i = 0; i < commandBufferCount; ++i)
-    {
-        CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kUndefined };
-        auto commandBuffer = m_device->createCommandBuffer(descriptor);
-        m_renderCommandBuffers[i] = std::move(commandBuffer);
-    }
-
-    for (auto i = 0; i < commandBufferCount; ++i)
-    {
-        auto commandBuffer = m_renderCommandBuffers[i].get();
-
-        std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-        colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorTextureView.get() : swapchainTextureViews[i],
-                                .resolveView = m_sampleCount > 1 ? swapchainTextureViews[i] : nullptr,
-                                .loadOp = LoadOp::kClear,
-                                .storeOp = StoreOp::kStore,
-                                .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-        DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
-                                                       .loadOp = LoadOp::kClear,
-                                                       .storeOp = StoreOp::kStore,
-                                                       .clearValue = { .depth = 1.0f, .stencil = 0 } };
-
-        RenderCommandEncoderDescriptor descriptor{ .colorAttachments = colorAttachments,
-                                                   .depthStencilAttachment = depthStencilAttachment };
-        auto renderCommandEncoder = commandBuffer->createRenderCommandEncoder(descriptor);
-        m_renderCommandEncoder.push_back(std::move(renderCommandEncoder));
-    }
+    CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
+    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void TriangleSample::copyBufferToBuffer()
+void TriangleSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
 {
-    // TODO
+    BlitBuffer srcBuffer{};
+    srcBuffer.buffer = src;
+    srcBuffer.offset = 0;
+
+    BlitBuffer dstBuffer{};
+    dstBuffer.buffer = dst;
+    dstBuffer.offset = 0;
+
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src->getSize());
+
+    m_queue->submit({ commandEncoder->finish() });
 }
 
 void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
 {
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-    std::unique_ptr<CommandBuffer> blitCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
-    BlitCommandEncoderDescriptor blitCommandEncoderDescriptor{};
-    std::unique_ptr<BlitCommandEncoder> blitCommandEncoder = blitCommandBuffer->createBlitCommandEncoder(blitCommandEncoderDescriptor);
-
     BlitTextureBuffer blitTextureBuffer{};
     blitTextureBuffer.buffer = imageTextureStagingBuffer;
     blitTextureBuffer.offset = 0;
@@ -608,11 +606,14 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     extent.height = imageTexture->getHeight();
     extent.depth = 1;
 
-    blitCommandEncoder->begin();
-    blitCommandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-    blitCommandEncoder->end();
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
-    m_queue->submit({ blitCommandEncoder->getCommandBuffer() });
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+
+    m_queue->submit({ commandEndoer->finish() });
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -636,21 +637,37 @@ void TriangleSample::draw()
 {
     updateUniformBuffer();
 
+    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
     int nextImageIndex = m_swapchain->acquireNextTexture();
 
-    auto renderCommandEncoder = m_renderCommandEncoder[nextImageIndex].get();
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    renderCommandEncoder->begin();
-    renderCommandEncoder->setPipeline(m_renderPipeline.get());
-    renderCommandEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderCommandEncoder->setVertexBuffer(m_vertexBuffer.get());
-    renderCommandEncoder->setIndexBuffer(m_indexBuffer.get());
-    renderCommandEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-    renderCommandEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderCommandEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
-    renderCommandEncoder->end();
+    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
+                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
+                            .loadOp = LoadOp::kClear,
+                            .storeOp = StoreOp::kStore,
+                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
+    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+                                                   .loadOp = LoadOp::kClear,
+                                                   .storeOp = StoreOp::kStore,
+                                                   .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
-    m_queue->submit({ renderCommandEncoder->getCommandBuffer() }, m_swapchain.get());
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
+                                                             .depthStencilAttachment = depthStencilAttachment };
+
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
+    renderPassEncoder->end();
+
+    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
 } // namespace vkt

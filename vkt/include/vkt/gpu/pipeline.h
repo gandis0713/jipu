@@ -31,7 +31,7 @@ protected:
 
 struct ProgrammableStage
 {
-    ShaderModule* shader = nullptr;
+    ShaderModule* shaderModule = nullptr;
     std::string entryPoint = "main";
 };
 
@@ -114,6 +114,13 @@ struct FragmentStage : ProgrammableStage
     std::vector<FragmentStage::Target> targets{};
 };
 
+// Depth/Stencil Stage
+struct DepthStencilStage
+{
+    /// @brief depth/stencil attachment format.
+    TextureFormat format;
+};
+
 struct PipelineDescriptor
 {
     /// @brief pipeline layout
@@ -126,6 +133,7 @@ struct RenderPipelineDescriptor : PipelineDescriptor
     VertexStage vertex{};
     RasterizationStage rasterization{};
     FragmentStage fragment{};
+    DepthStencilStage depthStencil{};
 };
 
 class VKT_EXPORT RenderPipeline : public Pipeline
@@ -140,6 +148,30 @@ public:
 
 protected:
     const RenderPipelineDescriptor m_descriptor{};
+};
+
+// Compute Shader Stage
+struct ComputeStage : ProgrammableStage
+{
+};
+
+struct ComputePipelineDescriptor : PipelineDescriptor
+{
+    ComputeStage compute{};
+};
+
+class VKT_EXPORT ComputePipeline : public Pipeline
+{
+public:
+    ComputePipeline() = delete;
+    ComputePipeline(Device* device, const ComputePipelineDescriptor& descriptor);
+    virtual ~ComputePipeline() = default;
+
+    ComputePipeline(const ComputePipeline&) = delete;
+    ComputePipeline& operator=(const ComputePipeline&) = delete;
+
+protected:
+    const ComputePipelineDescriptor m_descriptor{};
 };
 
 } // namespace vkt

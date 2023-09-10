@@ -3,6 +3,7 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include <array>
 #include <spdlog/spdlog.h>
@@ -11,6 +12,52 @@
 namespace vkt
 {
 
+// Vulkan Compute Pipeline
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const ComputePipelineDescriptor& descriptor)
+    : ComputePipeline(vulkanDevice, descriptor)
+{
+    initialize();
+}
+
+VulkanComputePipeline::~VulkanComputePipeline()
+{
+    auto vulkanDevice = downcast(m_device);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+}
+
+VkPipeline VulkanComputePipeline::getVkPipeline() const
+{
+    return m_pipeline;
+}
+
+void VulkanComputePipeline::initialize()
+{
+    auto computeShaderModule = downcast(m_descriptor.compute.shaderModule)->getVkShaderModule();
+
+    VkPipelineShaderStageCreateInfo computeStageInfo{};
+    computeStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    computeStageInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    computeStageInfo.module = computeShaderModule;
+    computeStageInfo.pName = m_descriptor.compute.entryPoint.c_str();
+
+    VkComputePipelineCreateInfo pipelineCreateInfo{};
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineCreateInfo.pNext = nullptr;
+    pipelineCreateInfo.stage = computeStageInfo;
+    pipelineCreateInfo.layout = downcast(m_descriptor.layout)->getVkPipelineLayout();
+    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+    pipelineCreateInfo.basePipelineIndex = -1;              // Optional
+
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    if (VK_SUCCESS != vkAPI.CreateComputePipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline))
+    {
+        throw std::runtime_error("Failed to create compute pipelines.");
+    }
+}
+
+// Vulkan Render Pipeline
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
     : RenderPipeline(vulkanDevice, descriptor)
 {
@@ -20,12 +67,12 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const Ren
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
     auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_graphicsPipeline, nullptr);
+    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
 }
 
 VkPipeline VulkanRenderPipeline::getVkPipeline() const
 {
-    return m_graphicsPipeline;
+    return m_pipeline;
 }
 
 void VulkanRenderPipeline::initialize()
@@ -37,7 +84,7 @@ void VulkanRenderPipeline::initialize()
     inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
     // Vertex Stage
-    auto vertexShaderModule = downcast(m_descriptor.vertex.shader)->getVkShaderModule();
+    auto vertexShaderModule = downcast(m_descriptor.vertex.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo vertexStageInfo{};
     vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -97,7 +144,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;    // Optional
 
     // Fragment Stage
-    auto fragmentShaderModule = downcast(m_descriptor.fragment.shader)->getVkShaderModule();
+    auto fragmentShaderModule = downcast(m_descriptor.fragment.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo fragmentStageInfo{};
     fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -164,7 +211,9 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
-    VulkanRenderPassDescriptor renderPassDescriptor{ .format = ToVkFormat(m_descriptor.fragment.targets[0].format),
+    // TODO: get RenderPass information from descriptor.
+    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(m_descriptor.fragment.targets[0].format),
+                                                     .depthStencilFormat = m_descriptor.depthStencil.format != TextureFormat::kUndefined ? std::optional<VkFormat>{ ToVkFormat(m_descriptor.depthStencil.format) } : std::nullopt,
                                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                                      .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                                      .samples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount) };
@@ -189,7 +238,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
 
-    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS)
+    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }

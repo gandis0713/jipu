@@ -15,5 +15,6 @@ struct Polygon
 };
 
 Polygon loadOBJ(const std::filesystem::path& path);
+Polygon loadOBJ(void* buf, uint64_t len);
 
 } // namespace vkt

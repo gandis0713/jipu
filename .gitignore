@@ -48,3 +48,6 @@ install/
 
 # visual studio
 .vs/
+
+# vcpkg
+externals/

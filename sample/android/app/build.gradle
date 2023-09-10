@@ -8,6 +8,7 @@ plugins {
 // Paths
 def projectDir = Paths.get(project.projectDir.getParent()).getParent().getParent()
 def shaderDir = "${projectDir}/sample/apps/triangle/shaders"
+def resourceDir = "${projectDir}/sample/apps/triangle/res"
 
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
@@ -45,6 +46,7 @@ android {
 
     sourceSets {
         main.assets.srcDirs += "${shaderDir}"
+        main.assets.srcDirs += "${resourceDir}"
     }
 
     buildTypes {

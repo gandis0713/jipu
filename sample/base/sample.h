@@ -20,7 +20,8 @@ public:
     virtual ~Sample() = default;
 
 protected:
-    std::filesystem::path m_path;
+    std::filesystem::path m_appPath;
+    std::filesystem::path m_appDir;
 };
 
 } // namespace vkt

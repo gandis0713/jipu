@@ -11,39 +11,50 @@ namespace vkt
 VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassDescriptor descriptor)
     : m_device(vulkanDevice)
 {
-    std::vector<VkAttachmentDescription> attachments{};
-    attachments.resize(2); // set only for color and depth/stencil attachment.
+    auto multiSamples = descriptor.samples > 1;
+    auto depthStencil = descriptor.depthStencilFormat.has_value();
 
+    uint64_t attachmentCount = 1;
+    attachmentCount += depthStencil ? 1 : 0;
+    attachmentCount += multiSamples ? 1 : 0;
+
+    std::vector<VkAttachmentDescription> attachments{};
+    attachments.resize(attachmentCount);
+
+    auto attachmentIndex = 0u;
     // attachment descriptions
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = descriptor.format;
+    colorAttachment.format = descriptor.colorFormat;
     colorAttachment.samples = descriptor.samples;
     colorAttachment.loadOp = descriptor.loadOp;
     colorAttachment.storeOp = descriptor.storeOp;
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    if (descriptor.samples == VK_SAMPLE_COUNT_1_BIT)
+    if (!multiSamples)
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // If sample count is 1, attachment is used to present.
     else
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    attachments[0] = colorAttachment;
 
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = VK_FORMAT_D32_SFLOAT;
-    depthAttachment.samples = descriptor.samples;
-    depthAttachment.loadOp = descriptor.loadOp;
-    depthAttachment.storeOp = descriptor.storeOp;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    attachments[1] = depthAttachment;
+    attachments[attachmentIndex++] = colorAttachment;
+    if (depthStencil)
+    {
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = VK_FORMAT_D32_SFLOAT;
+        depthAttachment.samples = descriptor.samples;
+        depthAttachment.loadOp = descriptor.loadOp;
+        depthAttachment.storeOp = descriptor.storeOp;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachments[attachmentIndex++] = depthAttachment;
+    }
 
-    if (descriptor.samples != VK_SAMPLE_COUNT_1_BIT)
+    if (multiSamples)
     {
         VkAttachmentDescription presentColorAttachment{};
-        presentColorAttachment.format = descriptor.format;
+        presentColorAttachment.format = descriptor.colorFormat;
         presentColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         presentColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         presentColorAttachment.storeOp = descriptor.storeOp;
@@ -52,7 +63,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         presentColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         presentColorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        attachments.push_back(presentColorAttachment);
+        attachments[attachmentIndex++] = presentColorAttachment;
     }
 
     VkSubpassDescription subpassDescription{};
@@ -66,12 +77,15 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &colorAttachmentReference;
 
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    subpassDescription.pDepthStencilAttachment = &depthAttachmentRef;
+    if (depthStencil)
+    {
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        subpassDescription.pDepthStencilAttachment = &depthAttachmentRef;
+    }
 
-    if (descriptor.samples != VK_SAMPLE_COUNT_1_BIT)
+    if (multiSamples)
     {
         VkAttachmentReference presentcColorAttachmentReference{};
         presentcColorAttachmentReference.attachment = 2;
@@ -85,7 +99,9 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     subpassDependency.srcAccessMask = 0;
     subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    if (depthStencil)
+        subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     VkRenderPassCreateInfo renderPassCreateInfo{};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -116,7 +132,10 @@ VkRenderPass VulkanRenderPass::getVkRenderPass() const
 
 size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
 {
-    size_t hash = vkt::hash(descriptor.format);
+    size_t hash = vkt::hash(descriptor.colorFormat);
+
+    if (descriptor.depthStencilFormat.has_value())
+        combineHash(hash, descriptor.depthStencilFormat.value());
 
     combineHash(hash, descriptor.samples);
     combineHash(hash, descriptor.loadOp);
@@ -128,11 +147,15 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
 bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
                                                 const VulkanRenderPassDescriptor& rhs) const
 {
-    if (lhs.format == rhs.format &&
+    if (lhs.colorFormat == rhs.colorFormat &&
         lhs.samples == rhs.samples &&
         lhs.loadOp == rhs.loadOp &&
-        lhs.storeOp == rhs.storeOp)
+        lhs.storeOp == rhs.storeOp &&
+        lhs.depthStencilFormat.has_value() == rhs.depthStencilFormat.has_value())
     {
+        if (lhs.depthStencilFormat.has_value() && rhs.depthStencilFormat.has_value())
+            return lhs.depthStencilFormat.value() == rhs.depthStencilFormat.value();
+
         return true;
     }
 

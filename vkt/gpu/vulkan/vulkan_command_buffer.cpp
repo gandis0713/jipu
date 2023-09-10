@@ -27,23 +27,58 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* device, const CommandBuff
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
     auto vulkanDevice = downcast(m_device);
-
     vulkanDevice->vkAPI.FreeCommandBuffers(vulkanDevice->getVkDevice(), m_commandPool, 1, &m_commandBuffer);
+    if (m_signalSemaphore)
+        vulkanDevice->vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_signalSemaphore, nullptr);
 }
 
-std::unique_ptr<RenderCommandEncoder> VulkanCommandBuffer::createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor)
+std::unique_ptr<CommandEncoder> VulkanCommandBuffer::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderCommandEncoder>(this, descriptor);
-}
-
-std::unique_ptr<BlitCommandEncoder> VulkanCommandBuffer::createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor)
-{
-    return std::make_unique<VulkanBlitCommandEncoder>(this, descriptor);
+    return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
 {
     return m_commandBuffer;
+}
+
+void VulkanCommandBuffer::setSignalPipelineStage(VkPipelineStageFlags stage)
+{
+    m_signalStage = stage;
+}
+
+std::pair<VkSemaphore, VkPipelineStageFlags> VulkanCommandBuffer::getSignalSemaphore()
+{
+    if (m_signalSemaphore == VK_NULL_HANDLE)
+    {
+        // create semaphore
+        VkSemaphoreCreateInfo semaphoreCreateInfo{};
+        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        semaphoreCreateInfo.pNext = nullptr;
+        semaphoreCreateInfo.flags = 0;
+
+        auto vulkanDevice = downcast(m_device);
+        if (vulkanDevice->vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_signalSemaphore) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create render queue semephore.");
+        }
+    }
+
+    return { m_signalSemaphore, m_signalStage };
+}
+
+void VulkanCommandBuffer::injectWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags stage)
+{
+    m_waitSemaphores.emplace_back(semaphore, stage);
+}
+
+std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> VulkanCommandBuffer::ejectWaitSemaphores()
+{
+    auto waitSemaphores = m_waitSemaphores;
+
+    m_waitSemaphores.clear();
+
+    return waitSemaphores;
 }
 
 CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag)

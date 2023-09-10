@@ -1,30 +1,21 @@
 #include "model.h"
 
+#include <sstream>
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 
-namespace vkt
+namespace
 {
 
-Polygon loadOBJ(const std::filesystem::path& path)
+vkt::Polygon generatePolygon(const tinyobj::attrib_t& attrib, const std::vector<tinyobj::shape_t>& shapes)
 {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str()))
-    {
-        throw std::runtime_error(warn + err);
-    }
-
-    Polygon polygon{};
+    vkt::Polygon polygon{};
 
     for (const auto& shape : shapes)
     {
         for (const auto& index : shape.mesh.indices)
         {
-            Vertex vertex{};
+            vkt::Vertex vertex{};
 
             vertex.pos = {
                 attrib.vertices[3 * index.vertex_index + 0],
@@ -43,6 +34,44 @@ Polygon loadOBJ(const std::filesystem::path& path)
     }
 
     return polygon;
+}
+
+} // namespace
+
+namespace vkt
+{
+
+Polygon loadOBJ(const std::filesystem::path& path)
+{
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.string().c_str()))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    return generatePolygon(attrib, shapes);
+}
+
+Polygon loadOBJ(void* buf, uint64_t len)
+{
+    std::stringstream ss;
+    ss.write(static_cast<const char*>(buf), len);
+
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn, err;
+
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, &ss))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    return generatePolygon(attrib, shapes);
 }
 
 } // namespace vkt

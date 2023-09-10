@@ -12,8 +12,31 @@ namespace vkt
 {
 
 class VulkanDevice;
+
+// Vulkan Compute Pipeline
+class VulkanComputePipeline : public ComputePipeline
+{
+public:
+    VulkanComputePipeline() = delete;
+    VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor);
+    ~VulkanComputePipeline() override;
+
+    VulkanComputePipeline(const VulkanComputePipeline&) = delete;
+    VulkanComputePipeline& operator=(const VulkanComputePipeline&) = delete;
+
+    VkPipeline getVkPipeline() const;
+
+private:
+    void initialize();
+
+private:
+    VkPipeline m_pipeline = VK_NULL_HANDLE;
+};
+DOWN_CAST(VulkanComputePipeline, ComputePipeline);
+
 class VulkanRenderPass;
 
+// Vulkan Render Pipeline
 class VulkanRenderPipeline : public RenderPipeline
 {
 public:
@@ -30,10 +53,9 @@ private:
     void initialize();
 
 private:
-    VkPipeline m_graphicsPipeline = VK_NULL_HANDLE;
+    VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
-
-DOWN_CAST(VulkanRenderPipeline, Pipeline);
+DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

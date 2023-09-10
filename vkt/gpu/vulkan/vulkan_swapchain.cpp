@@ -138,7 +138,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     semaphoreCreateInfo.pNext = nullptr;
     semaphoreCreateInfo.flags = 0;
 
-    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_acquireNextImageSemaphore) != VK_SUCCESS)
+    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_presentSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create swap chain semephore.");
     }
@@ -149,7 +149,7 @@ VulkanSwapchain::~VulkanSwapchain()
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_acquireNextImageSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_presentSemaphore, nullptr);
 
     /* do not delete VkImages from swapchain. */
 
@@ -177,11 +177,7 @@ void VulkanSwapchain::present(Queue* queue)
 
     vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
 
-    // TODO: wait queue to finish all job and clear wait semaphore. use fence.
-    {
-        vkAPI.QueueWaitIdle(vulkanDevice->getVkQueue());
-        m_waitSemaphores.clear();
-    }
+    m_waitSemaphores.clear();
 }
 
 int VulkanSwapchain::acquireNextTexture()
@@ -189,7 +185,7 @@ int VulkanSwapchain::acquireNextTexture()
     VulkanDevice* vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_acquireNextImageSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
+    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_presentSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
     if (result != VK_SUCCESS)
     {
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
@@ -219,7 +215,7 @@ void VulkanSwapchain::injectSemaphore(VkSemaphore semaphore)
 
 VkSemaphore VulkanSwapchain::getAcquireImageSemaphore() const
 {
-    return m_acquireNextImageSemaphore;
+    return m_presentSemaphore;
 }
 
 VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)

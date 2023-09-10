@@ -51,8 +51,18 @@ public:
     BindingGroup(Device* device, const BindingGroupDescriptor& descriptor);
     virtual ~BindingGroup() = default;
 
+    const std::vector<BufferBinding>& getBufferBindings() const;
+    BufferBinding getBufferBinding(uint32_t index) const;
+
+    const std::vector<SamplerBinding>& getSamplerBindings() const;
+    SamplerBinding getSamplerBinding(uint32_t index) const;
+
+    const std::vector<TextureBinding>& getTextureBindings() const;
+    TextureBinding getTextureBinding(uint32_t index) const;
+
 protected:
     Device* m_device = nullptr;
+    BindingGroupDescriptor m_descriptor{};
 };
 
 } // namespace vkt

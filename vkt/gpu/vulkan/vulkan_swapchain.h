@@ -37,7 +37,7 @@ private:
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-    VkSemaphore m_acquireNextImageSemaphore = VK_NULL_HANDLE;
+    VkSemaphore m_presentSemaphore = VK_NULL_HANDLE;
     uint32_t m_acquiredImageIndex = 0u;
 
     std::vector<VkSemaphore> m_waitSemaphores = {};

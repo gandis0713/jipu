@@ -11,12 +11,12 @@ namespace vkt
 enum class CommandBufferUsage
 {
     kUndefined = 1 << 0, // 0x00000000
-    kOneTime = 1 << 1,   // 0x00000001
+    kOneTime = 1 << 1,   // 0x00000001 // TODO: Check other graphic APi.
 };
 
 struct CommandBufferDescriptor
 {
-    CommandBufferUsage usage = CommandBufferUsage::kUndefined;
+    CommandBufferUsage usage = CommandBufferUsage::kOneTime;
 };
 
 class Device;
@@ -27,8 +27,7 @@ public:
     CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor);
     virtual ~CommandBuffer() = default;
 
-    virtual std::unique_ptr<RenderCommandEncoder> createRenderCommandEncoder(const RenderCommandEncoderDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<BlitCommandEncoder> createBlitCommandEncoder(const BlitCommandEncoderDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
 
 public:
     CommandBufferUsage getUsage() const;

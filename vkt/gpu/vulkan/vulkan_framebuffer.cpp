@@ -52,6 +52,7 @@ size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescri
 {
     size_t hash = vkt::hash(descriptor.renderPass);
 
+    // TODO: Do we need to check VkImageView address for each image??
     combineHash(hash, descriptor.imageViews.size());
     combineHash(hash, descriptor.width);
     combineHash(hash, descriptor.height);
@@ -74,8 +75,6 @@ bool VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescript
                 return false;
             }
         }
-
-        return true;
     }
 
     return false;
