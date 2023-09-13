@@ -1,8 +1,4 @@
-#include "window/window_test.h"
-
-class ParticleTest : public WindowTest
-{
-};
+#include "particle_test.h"
 
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"

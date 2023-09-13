@@ -7,6 +7,7 @@ find_package(sdl2 CONFIG REQUIRED)
 
 set(PRJ_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.h
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
 )
 
