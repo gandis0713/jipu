@@ -67,11 +67,19 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
     GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties);
     GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties);
 
-    if (driverKnobs.debugReport)
+    if (driverKnobs.debugUtils)
     {
-        GET_INSTANCE_PROC(CreateDebugReportCallbackEXT);
-        GET_INSTANCE_PROC(DebugReportMessageEXT);
-        GET_INSTANCE_PROC(DestroyDebugReportCallbackEXT);
+        GET_INSTANCE_PROC(CmdBeginDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(CmdEndDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(CmdInsertDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(CreateDebugUtilsMessengerEXT);
+        GET_INSTANCE_PROC(DestroyDebugUtilsMessengerEXT);
+        GET_INSTANCE_PROC(QueueBeginDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(QueueEndDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(QueueInsertDebugUtilsLabelEXT);
+        GET_INSTANCE_PROC(SetDebugUtilsObjectNameEXT);
+        GET_INSTANCE_PROC(SetDebugUtilsObjectTagEXT);
+        GET_INSTANCE_PROC(SubmitDebugUtilsMessageEXT);
     }
 
     // // Vulkan 1.1 is not required to report promoted extensions from 1.0

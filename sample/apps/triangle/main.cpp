@@ -199,7 +199,7 @@ void TriangleSample::init()
 
     // create PhysicalDevice.
     {
-        PhysicalDeviceDescriptor descriptor{};
+        PhysicalDeviceDescriptor descriptor{ .index = 0 };
         m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
     }
 
