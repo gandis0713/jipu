@@ -1,5 +1,7 @@
 #include "sample.h"
 
+#include "vkt/gpu/driver.h"
+
 #include <spdlog/spdlog.h>
 
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -30,11 +32,18 @@ public:
 public:
     void init() override;
     void draw() override;
+
+private:
+    void createDriver();
+
+private:
+    std::unique_ptr<Driver> m_driver = nullptr;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
+    // Do not call init function.
 }
 
 DeferredSample::~DeferredSample()
@@ -43,10 +52,18 @@ DeferredSample::~DeferredSample()
 
 void DeferredSample::init()
 {
+    createDriver();
 }
 
 void DeferredSample::draw()
 {
+}
+
+void DeferredSample::createDriver()
+{
+    DriverDescriptor descriptor;
+    descriptor.type = DriverType::VULKAN;
+    m_driver = Driver::create(descriptor);
 }
 
 } // namespace vkt
