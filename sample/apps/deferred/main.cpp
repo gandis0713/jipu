@@ -17,6 +17,9 @@ extern "C"
 
 #endif
 
+namespace vkt
+{
+
 class DeferredSample : public Sample
 {
 public:
@@ -29,16 +32,35 @@ public:
     void draw() override;
 };
 
+DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
+    : Sample(descriptor)
+{
+}
+
+DeferredSample::~DeferredSample()
+{
+}
+
+void DeferredSample::init()
+{
+}
+
+void DeferredSample::draw()
+{
+}
+
+} // namespace vkt
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
 void android_main(struct android_app* app)
 {
     vkt::SampleDescriptor descriptor{
-        { 1000, 2000, "Particle Sample", app },
+        { 1000, 2000, "Deferred Sample", app },
         ""
     };
 
-    vkt::ParticleSample sample(descriptor);
+    vkt::DeferredSample sample(descriptor);
 
     sample.exec();
 }
@@ -50,11 +72,11 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     vkt::SampleDescriptor descriptor{
-        { 800, 600, "Particle Sample", nullptr },
+        { 800, 600, "Deferred Sample", nullptr },
         argv[0]
     };
 
-    vkt::ParticleSample sample(descriptor);
+    vkt::DeferredSample sample(descriptor);
 
     return sample.exec();
 }
