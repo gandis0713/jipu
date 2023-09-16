@@ -1,7 +1,9 @@
 #include "sample.h"
 
+#include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/surface.h"
 
 #include <spdlog/spdlog.h>
 
@@ -37,10 +39,14 @@ public:
 private:
     void createDriver();
     void createPhysicalDevice();
+    void createSurface();
+    void createDevice();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::unique_ptr<Surface> m_surface = nullptr;
+    std::unique_ptr<Device> m_device = nullptr;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -57,6 +63,8 @@ void DeferredSample::init()
 {
     createDriver();
     createPhysicalDevice();
+    createSurface();
+    createDevice();
 }
 
 void DeferredSample::draw()
@@ -75,6 +83,19 @@ void DeferredSample::createPhysicalDevice()
     PhysicalDeviceDescriptor descriptor;
     descriptor.index = 0; // TODO: find index from driver.
     m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+}
+
+void DeferredSample::createSurface()
+{
+    SurfaceDescriptor descriptor;
+    descriptor.windowHandle = getWindowHandle();
+    m_surface = m_driver->createSurface(descriptor);
+}
+
+void DeferredSample::createDevice()
+{
+    DeviceDescriptor descriptor;
+    m_device = m_physicalDevice->createDevice(descriptor);
 }
 
 } // namespace vkt
