@@ -1,6 +1,7 @@
 #include "sample.h"
 
 #include "vkt/gpu/driver.h"
+#include "vkt/gpu/physical_device.h"
 
 #include <spdlog/spdlog.h>
 
@@ -35,9 +36,11 @@ public:
 
 private:
     void createDriver();
+    void createPhysicalDevice();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
+    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -53,6 +56,7 @@ DeferredSample::~DeferredSample()
 void DeferredSample::init()
 {
     createDriver();
+    createPhysicalDevice();
 }
 
 void DeferredSample::draw()
@@ -64,6 +68,13 @@ void DeferredSample::createDriver()
     DriverDescriptor descriptor;
     descriptor.type = DriverType::VULKAN;
     m_driver = Driver::create(descriptor);
+}
+
+void DeferredSample::createPhysicalDevice()
+{
+    PhysicalDeviceDescriptor descriptor;
+    descriptor.index = 0; // TODO: find index from driver.
+    m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
 }
 
 } // namespace vkt
