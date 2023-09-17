@@ -1,8 +1,10 @@
+#include "file.h"
 #include "sample.h"
 
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/surface.h"
 
 #include <spdlog/spdlog.h>
@@ -41,12 +43,14 @@ private:
     void createPhysicalDevice();
     void createSurface();
     void createDevice();
+    void createPipeline();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Pipeline> m_pipeline = nullptr;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -65,6 +69,11 @@ void DeferredSample::init()
     createPhysicalDevice();
     createSurface();
     createDevice();
+
+    // create pipeline layout
+    createPipeline();
+
+    // create buffer
 }
 
 void DeferredSample::draw()
@@ -96,6 +105,75 @@ void DeferredSample::createDevice()
 {
     DeviceDescriptor descriptor;
     m_device = m_physicalDevice->createDevice(descriptor);
+}
+
+void DeferredSample::createPipeline()
+{
+    // Input Assembly
+    InputAssemblyStage inputAssembly;
+    inputAssembly.topology = PrimitiveTopology::kTriangleList;
+
+    // Vertex Shader
+    VertexStage vertexShage;
+    {
+        // entry point
+        vertexShage.entryPoint = "main";
+
+        // input layout
+        VertexInputLayout inputLayout;
+        inputLayout.mode = VertexMode::kVertex;
+        inputLayout.stride = 0;
+
+        VertexAttribute attribute;
+        attribute.format = VertexFormat::kSFLOATx3;
+        attribute.offset = 0;
+
+        inputLayout.attributes = { attribute };
+
+        vertexShage.layouts = { inputLayout };
+
+        // shader module
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        {
+            std::vector<char> vertexSource = utils::readFile(m_appDir / "deferred.vert.spv", m_handle);
+
+            ShaderModuleDescriptor shaderModuleDescriptor;
+            shaderModuleDescriptor.code = vertexSource.data();
+            shaderModuleDescriptor.codeSize = vertexSource.size();
+
+            vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        }
+        vertexShage.shaderModule = vertexShaderModule.get();
+    }
+
+    // Rasterization
+    RasterizationStage rasterizationStage;
+    rasterizationStage.sampleCount = 1;
+
+    // Fragment Shader
+    FragmentStage fragmentStage;
+    {
+        // entry point
+        fragmentStage.entryPoint = "main";
+
+        // targets
+        // TODO: from swapchain
+
+        // shader module
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+        {
+            std::vector<char> fragmentSource = utils::readFile(m_appDir / "deferred.frag.spv", m_handle);
+
+            ShaderModuleDescriptor shaderModuleDescriptor;
+            shaderModuleDescriptor.code = fragmentSource.data();
+            shaderModuleDescriptor.codeSize = fragmentSource.size();
+
+            fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        }
+        fragmentStage.shaderModule = fragmentShaderModule.get();
+    }
+
+    // TODO: Depth Stencil
 }
 
 } // namespace vkt
