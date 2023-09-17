@@ -1,6 +1,7 @@
 #include "file.h"
 #include "sample.h"
 
+#include "vkt/gpu/buffer.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
@@ -50,6 +51,7 @@ private:
     void createSwapchain();
     void createPipelineLayout();
     void createPipeline();
+    void createVertexBuffer();
 
 private:
     struct Vertex
@@ -64,6 +66,13 @@ private:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+
+    std::vector<Vertex> vertices = {
+        { { 0.0, 0.5, 0.0 } },
+        { { -0.5, -0.5, 0.0 } },
+        { { 0.5, -0.5, 0.0 } }
+    };
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -74,10 +83,13 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
+    m_vertexBuffer.reset();
+
     m_pipeline.reset();
     m_pipelineLayout.reset();
     m_swapchain.reset();
     m_device.reset();
+
     m_surface.reset();
     m_physicalDevice.reset();
     m_driver.reset();
@@ -94,7 +106,7 @@ void DeferredSample::init()
     createPipelineLayout();
     createPipeline();
 
-    // create buffer
+    createVertexBuffer();
 }
 
 void DeferredSample::draw()
@@ -236,6 +248,17 @@ void DeferredSample::createPipeline()
     renderPipelineDescriptor.layout = m_pipelineLayout.get();
 
     m_device->createRenderPipeline(renderPipelineDescriptor);
+}
+
+void DeferredSample::createVertexBuffer()
+{
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(Vertex) * vertices.size();
+    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
+
+    m_vertexBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_vertexBuffer->map();
+    memcpy(mappedPointer, vertices.data(), sizeof(Vertex) * vertices.size());
 }
 
 } // namespace vkt
