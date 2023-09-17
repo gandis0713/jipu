@@ -3,11 +3,13 @@
 
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/command_encoder.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/pipeline_layout.h"
+#include "vkt/gpu/render_pass_encoder.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
@@ -118,6 +120,30 @@ void DeferredSample::init()
 
 void DeferredSample::draw()
 {
+    int targetIndex = m_swapchain->acquireNextTexture();
+
+    ColorAttachment colorAttachment{};
+    colorAttachment.loadOp = LoadOp::kClear;
+    colorAttachment.storeOp = StoreOp::kDontCare;
+    colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
+    colorAttachment.resolveView = nullptr;
+    colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    renderPassEncoder->setPipeline(m_pipeline.get());
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->draw(static_cast<uint32_t>(vertices.size()));
+    renderPassEncoder->end();
+
+    commandEncoder->finish();
 }
 
 void DeferredSample::createDriver()
@@ -254,7 +280,7 @@ void DeferredSample::createPipeline()
     renderPipelineDescriptor.depthStencil = depthStencil;
     renderPipelineDescriptor.layout = m_pipelineLayout.get();
 
-    m_device->createRenderPipeline(renderPipelineDescriptor);
+    m_pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
 void DeferredSample::createVertexBuffer()
