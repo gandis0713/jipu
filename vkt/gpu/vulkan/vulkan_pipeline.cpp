@@ -136,7 +136,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
     rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizationStateCreateInfo.lineWidth = 1.0f;
-    rasterizationStateCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(m_descriptor.rasterization.cullMode);
     rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
     rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f; // Optional
@@ -312,6 +312,26 @@ VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
         spdlog::error("{} topology is not supported.", static_cast<uint32_t>(topology));
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
+}
+
+VkCullModeFlags ToVkCullModeFlags(CullMode mode)
+{
+    VkCullModeFlags flags = 0u;
+    switch (mode)
+    {
+    case CullMode::kFront:
+        flags = VK_CULL_MODE_FRONT_BIT;
+        break;
+    case CullMode::kBack:
+        flags = VK_CULL_MODE_BACK_BIT;
+        break;
+    case CullMode::kNone:
+    default:
+        flags = VK_CULL_MODE_NONE;
+        break;
+    }
+
+    return flags;
 }
 
 } // namespace vkt

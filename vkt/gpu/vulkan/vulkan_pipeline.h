@@ -60,5 +60,6 @@ DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);
 VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology);
+VkCullModeFlags ToVkCullModeFlags(CullMode mode);
 
 } // namespace vkt
