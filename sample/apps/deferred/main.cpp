@@ -9,6 +9,7 @@
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/pipeline_layout.h"
+#include "vkt/gpu/queue.h"
 #include "vkt/gpu/render_pass_encoder.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
@@ -56,6 +57,7 @@ private:
     void createPipeline();
     void createVertexBuffer();
     void createCommandBuffer();
+    void createQueue();
 
 private:
     struct Vertex
@@ -72,11 +74,12 @@ private:
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
 
     std::vector<Vertex> vertices = {
-        { { 0.0, 0.5, 0.0 } },
-        { { -0.5, -0.5, 0.0 } },
-        { { 0.5, -0.5, 0.0 } }
+        { { 0.0, -0.5, 0.0 } },
+        { { -0.5, 0.5, 0.0 } },
+        { { 0.5, 0.5, 0.0 } }
     };
 };
 
@@ -88,6 +91,7 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
+    m_queue.reset();
     m_commandBuffer.reset();
 
     m_vertexBuffer.reset();
@@ -116,6 +120,7 @@ void DeferredSample::init()
     createVertexBuffer();
 
     createCommandBuffer();
+    createQueue();
 }
 
 void DeferredSample::draw()
@@ -124,7 +129,7 @@ void DeferredSample::draw()
 
     ColorAttachment colorAttachment{};
     colorAttachment.loadOp = LoadOp::kClear;
-    colorAttachment.storeOp = StoreOp::kDontCare;
+    colorAttachment.storeOp = StoreOp::kStore;
     colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
     colorAttachment.resolveView = nullptr;
     colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
@@ -137,13 +142,13 @@ void DeferredSample::draw()
 
     auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_pipeline.get());
-    renderPassEncoder->setScissor(0, 0, m_width, m_height);
-    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);
     renderPassEncoder->draw(static_cast<uint32_t>(vertices.size()));
     renderPassEncoder->end();
 
-    commandEncoder->finish();
+    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
 void DeferredSample::createDriver()
@@ -292,6 +297,7 @@ void DeferredSample::createVertexBuffer()
     m_vertexBuffer = m_device->createBuffer(bufferDescriptor);
     void* mappedPointer = m_vertexBuffer->map();
     memcpy(mappedPointer, vertices.data(), sizeof(Vertex) * vertices.size());
+    m_vertexBuffer->unmap();
 }
 
 void DeferredSample::createCommandBuffer()
@@ -300,6 +306,14 @@ void DeferredSample::createCommandBuffer()
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
+}
+
+void DeferredSample::createQueue()
+{
+    QueueDescriptor descriptor{};
+    descriptor.flags = QueueFlagBits::kGraphics;
+
+    m_queue = m_device->createQueue(descriptor);
 }
 
 } // namespace vkt
