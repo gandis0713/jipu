@@ -495,6 +495,8 @@ void ParticleSample::createRenderPipeline()
     RasterizationStage rasterizationStage{};
     {
         rasterizationStage.sampleCount = m_sampleCount;
+        rasterizationStage.cullMode = CullMode::kBack;
+        rasterizationStage.frontFace = FrontFace::kCounterClockwise;
     }
 
     // fragment shader

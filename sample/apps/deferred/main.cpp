@@ -248,6 +248,8 @@ void DeferredSample::createPipeline()
     // Rasterization
     RasterizationStage rasterizationStage{};
     rasterizationStage.sampleCount = 1;
+    rasterizationStage.cullMode = CullMode::kBack;
+    rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
     // shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;

@@ -529,6 +529,8 @@ void TriangleSample::createRenderPipeline()
     RasterizationStage rasterization{};
     {
         rasterization.sampleCount = m_sampleCount;
+        rasterization.cullMode = CullMode::kBack;
+        rasterization.frontFace = FrontFace::kCounterClockwise;
     }
 
     // fragment stage
