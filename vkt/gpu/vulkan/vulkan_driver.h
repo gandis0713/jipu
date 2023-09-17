@@ -45,7 +45,7 @@ public:
 private:
     void initialize() noexcept(false);
     void createInstance() noexcept(false);
-    void createPhysicalDevices() noexcept(false);
+    void gatherPhysicalDevices() noexcept(false);
 
     void gatherDriverInfo();
 

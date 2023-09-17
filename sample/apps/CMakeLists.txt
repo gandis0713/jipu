@@ -10,3 +10,4 @@ endif()
 
 add_subdirectory(triangle)
 add_subdirectory(particle)
+add_subdirectory(deferred)

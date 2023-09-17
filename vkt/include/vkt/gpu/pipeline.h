@@ -98,9 +98,24 @@ struct VertexStage : ProgrammableStage
 };
 
 // Rasterization Stage
+enum class CullMode
+{
+    kNone,
+    kFront,
+    kBack
+};
+
+enum class FrontFace
+{
+    kCounterClockwise,
+    kClockwise
+};
+
 struct RasterizationStage
 {
     uint32_t sampleCount = 0;
+    CullMode cullMode = CullMode::kNone;
+    FrontFace frontFace = FrontFace::kCounterClockwise;
 };
 
 // Fragment Shader Stage
