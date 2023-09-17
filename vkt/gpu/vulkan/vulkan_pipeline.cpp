@@ -137,7 +137,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizationStateCreateInfo.lineWidth = 1.0f;
     rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(m_descriptor.rasterization.cullMode);
-    rasterizationStateCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizationStateCreateInfo.frontFace = ToVkFrontFace(m_descriptor.rasterization.frontFace);
     rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
     rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f; // Optional
     rasterizationStateCreateInfo.depthBiasClamp = 0.0f;          // Optional
@@ -332,6 +332,23 @@ VkCullModeFlags ToVkCullModeFlags(CullMode mode)
     }
 
     return flags;
+}
+
+VkFrontFace ToVkFrontFace(FrontFace frontFace)
+{
+    VkFrontFace face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    switch (frontFace)
+    {
+    case FrontFace::kClockwise:
+        face = VK_FRONT_FACE_CLOCKWISE;
+        break;
+    case FrontFace::kCounterClockwise:
+    default:
+        face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        break;
+    }
+
+    return face;
 }
 
 } // namespace vkt

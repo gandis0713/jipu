@@ -61,5 +61,6 @@ DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 VkFormat ToVkVertexFormat(VertexFormat format);
 VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology);
 VkCullModeFlags ToVkCullModeFlags(CullMode mode);
+VkFrontFace ToVkFrontFace(FrontFace frontFace);
 
 } // namespace vkt
