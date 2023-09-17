@@ -44,8 +44,8 @@ private:
     void createDriver();
     void createPhysicalDevice();
     void createSurface();
-    void createSwapchain();
     void createDevice();
+    void createSwapchain();
     void createPipeline();
 
 private:
@@ -65,6 +65,11 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
+    m_swapchain.reset();
+    m_device.reset();
+    m_surface.reset();
+    m_physicalDevice.reset();
+    m_driver.reset();
 }
 
 void DeferredSample::init()
