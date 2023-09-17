@@ -6,8 +6,10 @@
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
 
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -42,6 +44,7 @@ private:
     void createDriver();
     void createPhysicalDevice();
     void createSurface();
+    void createSwapchain();
     void createDevice();
     void createPipeline();
 
@@ -50,6 +53,7 @@ private:
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
 };
 
@@ -69,6 +73,7 @@ void DeferredSample::init()
     createPhysicalDevice();
     createSurface();
     createDevice();
+    createSwapchain();
 
     // create pipeline layout
     createPipeline();
@@ -101,6 +106,28 @@ void DeferredSample::createSurface()
     m_surface = m_driver->createSurface(descriptor);
 }
 
+void DeferredSample::createSwapchain()
+{
+    if (m_surface == nullptr)
+        throw std::runtime_error("Surface is null pointer.");
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+#else
+    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+#endif
+
+    SwapchainDescriptor descriptor;
+    descriptor.width = m_width;
+    descriptor.height = m_height;
+    descriptor.surface = m_surface.get();
+    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
+    descriptor.textureFormat = textureFormat;
+    descriptor.presentMode = PresentMode::kFifo;
+
+    m_swapchain = m_device->createSwapchain(descriptor);
+}
+
 void DeferredSample::createDevice()
 {
     DeviceDescriptor descriptor;
@@ -110,11 +137,11 @@ void DeferredSample::createDevice()
 void DeferredSample::createPipeline()
 {
     // Input Assembly
-    InputAssemblyStage inputAssembly;
+    InputAssemblyStage inputAssembly{};
     inputAssembly.topology = PrimitiveTopology::kTriangleList;
 
     // Vertex Shader
-    VertexStage vertexShage;
+    VertexStage vertexShage{};
     {
         // entry point
         vertexShage.entryPoint = "main";
@@ -147,20 +174,24 @@ void DeferredSample::createPipeline()
     }
 
     // Rasterization
-    RasterizationStage rasterizationStage;
+    RasterizationStage rasterizationStage{};
     rasterizationStage.sampleCount = 1;
 
     // Fragment Shader
-    FragmentStage fragmentStage;
+    FragmentStage fragmentStage{};
     {
         // entry point
         fragmentStage.entryPoint = "main";
 
         // targets
-        // TODO: from swapchain
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+
+        fragmentStage.targets = { target };
 
         // shader module
-        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+        std::unique_ptr<ShaderModule>
+            fragmentShaderModule = nullptr;
         {
             std::vector<char> fragmentSource = utils::readFile(m_appDir / "deferred.frag.spv", m_handle);
 
@@ -174,6 +205,17 @@ void DeferredSample::createPipeline()
     }
 
     // TODO: Depth Stencil
+    DepthStencilStage depthStencil{};
+
+    RenderPipelineDescriptor renderPipelineDescriptor;
+    renderPipelineDescriptor.inputAssembly = inputAssembly;
+    renderPipelineDescriptor.vertex = vertexShage;
+    renderPipelineDescriptor.rasterization = rasterizationStage;
+    renderPipelineDescriptor.fragment = fragmentStage;
+    renderPipelineDescriptor.depthStencil = depthStencil;
+    renderPipelineDescriptor.layout = nullptr;
+
+    m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
 } // namespace vkt
