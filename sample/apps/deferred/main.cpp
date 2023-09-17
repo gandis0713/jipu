@@ -5,9 +5,11 @@
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/pipeline.h"
+#include "vkt/gpu/pipeline_layout.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -46,14 +48,21 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
+    void createPipelineLayout();
     void createPipeline();
 
 private:
+    struct Vertex
+    {
+        glm::vec3 position;
+    };
+
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
+    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
 };
 
@@ -65,6 +74,8 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
+    m_pipeline.reset();
+    m_pipelineLayout.reset();
     m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
@@ -80,7 +91,7 @@ void DeferredSample::init()
     createDevice();
     createSwapchain();
 
-    // create pipeline layout
+    createPipelineLayout();
     createPipeline();
 
     // create buffer
@@ -139,12 +150,29 @@ void DeferredSample::createDevice()
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
+void DeferredSample::createPipelineLayout()
+{
+    PipelineLayoutDescriptor descriptor{};
+    m_pipelineLayout = m_device->createPipelineLayout(descriptor);
+}
+
 void DeferredSample::createPipeline()
 {
     // Input Assembly
     InputAssemblyStage inputAssembly{};
     inputAssembly.topology = PrimitiveTopology::kTriangleList;
 
+    // shader module
+    std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+    {
+        std::vector<char> vertexSource = utils::readFile(m_appDir / "deferred.vert.spv", m_handle);
+
+        ShaderModuleDescriptor shaderModuleDescriptor;
+        shaderModuleDescriptor.code = vertexSource.data();
+        shaderModuleDescriptor.codeSize = vertexSource.size();
+
+        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+    }
     // Vertex Shader
     VertexStage vertexShage{};
     {
@@ -154,33 +182,34 @@ void DeferredSample::createPipeline()
         // input layout
         VertexInputLayout inputLayout;
         inputLayout.mode = VertexMode::kVertex;
-        inputLayout.stride = 0;
+        inputLayout.stride = sizeof(Vertex);
 
         VertexAttribute attribute;
         attribute.format = VertexFormat::kSFLOATx3;
-        attribute.offset = 0;
+        attribute.offset = offsetof(Vertex, position);
 
         inputLayout.attributes = { attribute };
 
         vertexShage.layouts = { inputLayout };
 
-        // shader module
-        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-        {
-            std::vector<char> vertexSource = utils::readFile(m_appDir / "deferred.vert.spv", m_handle);
-
-            ShaderModuleDescriptor shaderModuleDescriptor;
-            shaderModuleDescriptor.code = vertexSource.data();
-            shaderModuleDescriptor.codeSize = vertexSource.size();
-
-            vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-        }
         vertexShage.shaderModule = vertexShaderModule.get();
     }
 
     // Rasterization
     RasterizationStage rasterizationStage{};
     rasterizationStage.sampleCount = 1;
+
+    // shader module
+    std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+    {
+        std::vector<char> fragmentSource = utils::readFile(m_appDir / "deferred.frag.spv", m_handle);
+
+        ShaderModuleDescriptor shaderModuleDescriptor;
+        shaderModuleDescriptor.code = fragmentSource.data();
+        shaderModuleDescriptor.codeSize = fragmentSource.size();
+
+        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+    }
 
     // Fragment Shader
     FragmentStage fragmentStage{};
@@ -191,21 +220,7 @@ void DeferredSample::createPipeline()
         // targets
         FragmentStage::Target target{};
         target.format = m_swapchain->getTextureFormat();
-
         fragmentStage.targets = { target };
-
-        // shader module
-        std::unique_ptr<ShaderModule>
-            fragmentShaderModule = nullptr;
-        {
-            std::vector<char> fragmentSource = utils::readFile(m_appDir / "deferred.frag.spv", m_handle);
-
-            ShaderModuleDescriptor shaderModuleDescriptor;
-            shaderModuleDescriptor.code = fragmentSource.data();
-            shaderModuleDescriptor.codeSize = fragmentSource.size();
-
-            fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-        }
         fragmentStage.shaderModule = fragmentShaderModule.get();
     }
 
@@ -218,7 +233,7 @@ void DeferredSample::createPipeline()
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
     renderPipelineDescriptor.depthStencil = depthStencil;
-    renderPipelineDescriptor.layout = nullptr;
+    renderPipelineDescriptor.layout = m_pipelineLayout.get();
 
     m_device->createRenderPipeline(renderPipelineDescriptor);
 }
