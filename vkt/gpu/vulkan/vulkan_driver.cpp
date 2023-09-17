@@ -83,7 +83,7 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to load instance prosc."));
     }
 
-    createPhysicalDevices();
+    gatherPhysicalDevices();
 }
 
 void VulkanDriver::createInstance() noexcept(false)
@@ -141,7 +141,7 @@ void VulkanDriver::createInstance() noexcept(false)
     }
 }
 
-void VulkanDriver::createPhysicalDevices() noexcept(false)
+void VulkanDriver::gatherPhysicalDevices() noexcept(false)
 {
     uint32_t physicalDeviceCount = 0;
     vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
