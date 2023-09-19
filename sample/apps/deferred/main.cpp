@@ -161,14 +161,14 @@ void DeferredSample::draw()
     depthStencilAttachment.depthStoreOp = StoreOp::kStore;
     depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-    RenderPassDescriptor renderPassDescriptor{};
-    renderPassDescriptor.colorAttachments = { colorAttachment };
-    renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+    renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_offscreenPipeline.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);

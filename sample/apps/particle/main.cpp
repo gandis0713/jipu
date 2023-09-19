@@ -515,18 +515,11 @@ void ParticleSample::createRenderPipeline()
         fragmentStage.targets = { target };
     }
 
-    // Depth/Stencil stage
-    DepthStencilStage depthStencilStage;
-    {
-        depthStencilStage.format = TextureFormat::kUndefined;
-    }
-
     RenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.inputAssembly = inputAssembly;
     renderPipelineDescriptor.vertex = vertexStage;
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencilStage;
     renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
@@ -564,8 +557,8 @@ CommandBuffer* ParticleSample::recodeComputeCommandBuffer()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    ComputePassDescriptor computePassDescriptor{};
-    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
+    ComputePassEncoderDescriptor computePassEncoderDescriptor{};
+    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
     computePassEncoder->setPipeline(m_computePipeline.get());
     computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
     computePassEncoder->dispatch(256, 1, 1);
@@ -590,10 +583,10 @@ CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
     colorAttachment.loadOp = LoadOp::kClear;
     colorAttachment.storeOp = StoreOp::kStore;
 
-    RenderPassDescriptor renderPassDescriptor{};
-    renderPassDescriptor.colorAttachments = { colorAttachment };
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
 
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.

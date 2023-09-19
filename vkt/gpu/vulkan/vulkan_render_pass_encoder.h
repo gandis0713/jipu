@@ -11,7 +11,7 @@ class VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(Pipeline* pipeline) override;
@@ -34,11 +34,5 @@ public:
 
     void end() override;
 };
-
-// Convert Helper
-VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp);
-LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp);
-VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp);
-StoreOp ToStoreOp(VkAttachmentStoreOp storeOp);
 
 } // namespace vkt

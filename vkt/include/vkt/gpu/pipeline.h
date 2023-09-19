@@ -5,6 +5,7 @@
 #include "shader_module.h"
 #include "texture.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -148,7 +149,7 @@ struct RenderPipelineDescriptor : PipelineDescriptor
     VertexStage vertex{};
     RasterizationStage rasterization{};
     FragmentStage fragment{};
-    DepthStencilStage depthStencil{};
+    std::optional<DepthStencilStage> depthStencil = std::nullopt;
 };
 
 class VKT_EXPORT RenderPipeline : public Pipeline

@@ -4,7 +4,7 @@
 namespace vkt
 {
 
-ComputePassEncoder::ComputePassEncoder(CommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor)
+ComputePassEncoder::ComputePassEncoder(CommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
 {

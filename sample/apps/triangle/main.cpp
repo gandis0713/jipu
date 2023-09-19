@@ -465,6 +465,7 @@ void TriangleSample::createBindingGroup()
     }
 
     std::vector<TextureBinding> textureBindings{};
+
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
     descriptor.buffers = bufferBindings;
@@ -658,10 +659,10 @@ void TriangleSample::draw()
                                                    .stencilStoreOp = StoreOp::kDontCare,
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
-    RenderPassDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
-                                               .depthStencilAttachment = depthStencilAttachment };
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
+                                                             .depthStencilAttachment = depthStencilAttachment };
 
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());

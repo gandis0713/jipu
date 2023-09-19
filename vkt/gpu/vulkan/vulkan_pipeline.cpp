@@ -211,13 +211,35 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
-    // TODO: get RenderPass information from descriptor.
-    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(m_descriptor.fragment.targets[0].format),
-                                                     .depthStencilFormat = m_descriptor.depthStencil.format != TextureFormat::kUndefined ? std::optional<VkFormat>{ ToVkFormat(m_descriptor.depthStencil.format) } : std::nullopt,
-                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                                     .samples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount) };
+    VulkanRenderPassDescriptor renderPassDescriptor{};
+
+    uint32_t targetSize = static_cast<uint32_t>(m_descriptor.fragment.targets.size());
+    renderPassDescriptor.colorAttachments.resize(targetSize);
+    for (auto i = 0; i < targetSize; ++i)
+    {
+        const auto& target = m_descriptor.fragment.targets[i];
+        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
+        vulkanColorAttachment.format = target.format;
+        vulkanColorAttachment.loadOp = LoadOp::kClear;   // TODO: from descriptor
+        vulkanColorAttachment.storeOp = StoreOp::kStore; // TODO: from descriptor
+    }
+
+    if (m_descriptor.depthStencil.has_value())
+    {
+        const DepthStencilStage depthStencilStage = m_descriptor.depthStencil.value();
+        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
+        vulkanDepthStencilAttachment.format = depthStencilStage.format;
+        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;        // TODO: from descriptor
+        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;      // TODO: from descriptor
+        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;   // TODO: from descriptor
+        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare; // TODO: from descriptor
+
+        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+    }
+
+    renderPassDescriptor.sampleCount = m_descriptor.rasterization.sampleCount;
     VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
+
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
