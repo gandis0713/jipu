@@ -53,8 +53,10 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
-    void createPipelineLayout();
-    void createPipeline();
+    void createOffscreenPipelineLayout();
+    void createOffscreenPipeline();
+    void createCompositionPipelineLayout();
+    void createCompositionPipeline();
     void createVertexBuffer();
     void createCommandBuffer();
     void createQueue();
@@ -70,8 +72,8 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
-    std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<PipelineLayout> m_offscreenPipelineLayout = nullptr;
+    std::unique_ptr<Pipeline> m_offscreenPipeline = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
@@ -96,8 +98,8 @@ DeferredSample::~DeferredSample()
 
     m_vertexBuffer.reset();
 
-    m_pipeline.reset();
-    m_pipelineLayout.reset();
+    m_offscreenPipeline.reset();
+    m_offscreenPipelineLayout.reset();
     m_swapchain.reset();
     m_device.reset();
 
@@ -114,8 +116,10 @@ void DeferredSample::init()
     createDevice();
     createSwapchain();
 
-    createPipelineLayout();
-    createPipeline();
+    createOffscreenPipelineLayout();
+    createOffscreenPipeline();
+    createCompositionPipelineLayout();
+    createCompositionPipeline();
 
     createVertexBuffer();
 
@@ -141,7 +145,7 @@ void DeferredSample::draw()
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    renderPassEncoder->setPipeline(m_pipeline.get());
+    renderPassEncoder->setPipeline(m_offscreenPipeline.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
     renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -200,13 +204,13 @@ void DeferredSample::createDevice()
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
-void DeferredSample::createPipelineLayout()
+void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    m_pipelineLayout = m_device->createPipelineLayout(descriptor);
+    m_offscreenPipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
-void DeferredSample::createPipeline()
+void DeferredSample::createOffscreenPipeline()
 {
     // Input Assembly
     InputAssemblyStage inputAssembly{};
@@ -285,9 +289,17 @@ void DeferredSample::createPipeline()
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
     renderPipelineDescriptor.depthStencil = depthStencil;
-    renderPipelineDescriptor.layout = m_pipelineLayout.get();
+    renderPipelineDescriptor.layout = m_offscreenPipelineLayout.get();
 
-    m_pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+    m_offscreenPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+}
+
+void DeferredSample::createCompositionPipelineLayout()
+{
+}
+
+void DeferredSample::createCompositionPipeline()
+{
 }
 
 void DeferredSample::createVertexBuffer()
