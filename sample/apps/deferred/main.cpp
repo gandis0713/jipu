@@ -53,6 +53,10 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
+
+    void createOffscreenDepthStencilTexture();
+    void createOffscreenDepthStencilTextureView();
+
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
     void createCompositionPipelineLayout();
@@ -72,6 +76,10 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+    std::unique_ptr<Texture> m_offscreenDepthStencilTexture = nullptr;
+    std::unique_ptr<TextureView> m_offscreenDepthStencilTextureView = nullptr;
+
     std::unique_ptr<PipelineLayout> m_offscreenPipelineLayout = nullptr;
     std::unique_ptr<Pipeline> m_offscreenPipeline = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
@@ -83,6 +91,8 @@ private:
         { { -0.5, 0.5, 0.0 } },
         { { 0.5, 0.5, 0.0 } }
     };
+
+    uint32_t m_sampleCount = 1;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -100,6 +110,10 @@ DeferredSample::~DeferredSample()
 
     m_offscreenPipeline.reset();
     m_offscreenPipelineLayout.reset();
+
+    m_offscreenDepthStencilTextureView.reset();
+    m_offscreenDepthStencilTexture.reset();
+
     m_swapchain.reset();
     m_device.reset();
 
@@ -115,6 +129,9 @@ void DeferredSample::init()
     createSurface();
     createDevice();
     createSwapchain();
+
+    createOffscreenDepthStencilTexture();
+    createOffscreenDepthStencilTextureView();
 
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
@@ -138,8 +155,15 @@ void DeferredSample::draw()
     colorAttachment.resolveView = nullptr;
     colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
+    DepthStencilAttachment depthStencilAttachment{};
+    depthStencilAttachment.textureView = m_offscreenDepthStencilTextureView.get();
+    depthStencilAttachment.loadOp = LoadOp::kClear;
+    depthStencilAttachment.storeOp = StoreOp::kStore;
+    depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
+
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
     renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+    renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -204,6 +228,29 @@ void DeferredSample::createDevice()
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
+void DeferredSample::createOffscreenDepthStencilTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+
+    m_offscreenDepthStencilTexture = m_device->createTexture(descriptor);
+}
+
+void DeferredSample::createOffscreenDepthStencilTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kDepth;
+
+    m_offscreenDepthStencilTextureView = m_offscreenDepthStencilTexture->createTextureView(descriptor);
+}
+
 void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
@@ -251,7 +298,7 @@ void DeferredSample::createOffscreenPipeline()
 
     // Rasterization
     RasterizationStage rasterizationStage{};
-    rasterizationStage.sampleCount = 1;
+    rasterizationStage.sampleCount = m_sampleCount;
     rasterizationStage.cullMode = CullMode::kBack;
     rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
@@ -280,8 +327,8 @@ void DeferredSample::createOffscreenPipeline()
         fragmentStage.shaderModule = fragmentShaderModule.get();
     }
 
-    // TODO: Depth Stencil
     DepthStencilStage depthStencil{};
+    depthStencil.format = m_offscreenDepthStencilTexture->getFormat();
 
     RenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.inputAssembly = inputAssembly;
