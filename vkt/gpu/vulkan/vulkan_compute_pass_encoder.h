@@ -10,7 +10,7 @@ class VulkanComputePassEncoder : public ComputePassEncoder
 {
 public:
     VulkanComputePassEncoder() = delete;
-    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
+    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor);
     ~VulkanComputePassEncoder() override = default;
 
 public:

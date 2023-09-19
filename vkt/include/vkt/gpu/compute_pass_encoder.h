@@ -6,7 +6,7 @@
 namespace vkt
 {
 
-struct ComputePassEncoderDescriptor
+struct ComputePassDescriptor
 {
 };
 
@@ -17,7 +17,7 @@ class ComputePassEncoder
 {
 public:
     ComputePassEncoder() = delete;
-    ComputePassEncoder(CommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
+    ComputePassEncoder(CommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor);
     virtual ~ComputePassEncoder() = default;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
@@ -31,7 +31,7 @@ protected:
     Pipeline* m_pipeline = nullptr;
     std::unordered_map<uint32_t, BindingGroup*> m_bindingGroups{};
 
-    ComputePassEncoderDescriptor m_descriptor{};
+    ComputePassDescriptor m_descriptor{};
 };
 
 } // namespace vkt

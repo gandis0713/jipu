@@ -652,14 +652,16 @@ void TriangleSample::draw()
                             .storeOp = StoreOp::kStore,
                             .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
     DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
-                                                   .loadOp = LoadOp::kClear,
-                                                   .storeOp = StoreOp::kStore,
+                                                   .depthLoadOp = LoadOp::kClear,
+                                                   .depthStoreOp = StoreOp::kStore,
+                                                   .stencilLoadOp = LoadOp::kDontCare,
+                                                   .stencilStoreOp = StoreOp::kDontCare,
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
-                                                             .depthStencilAttachment = depthStencilAttachment };
+    RenderPassDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
+                                               .depthStencilAttachment = depthStencilAttachment };
 
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());

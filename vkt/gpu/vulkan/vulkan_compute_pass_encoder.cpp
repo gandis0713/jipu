@@ -11,7 +11,7 @@
 namespace vkt
 {
 
-VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
+VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor)
     : ComputePassEncoder(commandBuffer, descriptor)
 {
     // do nothing.

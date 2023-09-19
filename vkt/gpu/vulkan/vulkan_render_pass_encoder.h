@@ -11,7 +11,7 @@ class VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(Pipeline* pipeline) override;

@@ -51,12 +51,14 @@ struct DepthStencilClearValue
 struct DepthStencilAttachment
 {
     TextureView* textureView = nullptr;
-    LoadOp loadOp = LoadOp::kDontCare;
-    StoreOp storeOp = StoreOp::kDontCare;
+    LoadOp depthLoadOp = LoadOp::kDontCare;
+    StoreOp depthStoreOp = StoreOp::kDontCare;
+    LoadOp stencilLoadOp = LoadOp::kDontCare;
+    StoreOp stencilStoreOp = StoreOp::kDontCare;
     DepthStencilClearValue clearValue{};
 };
 
-struct RenderPassEncoderDescriptor
+struct RenderPassDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
@@ -66,7 +68,7 @@ class VKT_EXPORT RenderPassEncoder
 {
 public:
     RenderPassEncoder() = delete;
-    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
     virtual ~RenderPassEncoder() = default;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
@@ -96,7 +98,7 @@ protected:
     CommandBuffer* m_commandBuffer = nullptr;
     Pipeline* m_pipeline = nullptr;
 
-    RenderPassEncoderDescriptor m_descriptor{};
+    RenderPassDescriptor m_descriptor{};
 };
 
 } // namespace vkt

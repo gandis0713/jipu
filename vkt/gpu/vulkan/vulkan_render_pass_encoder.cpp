@@ -16,7 +16,7 @@
 namespace vkt
 {
 
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
     // TODO: multiple color attachments.

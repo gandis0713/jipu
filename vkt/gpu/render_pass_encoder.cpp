@@ -8,7 +8,7 @@
 namespace vkt
 {
 
-RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
+RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
 {
