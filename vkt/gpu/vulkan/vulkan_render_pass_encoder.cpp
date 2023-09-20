@@ -91,23 +91,45 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     for (auto i = 0; i < colorAttachmentSize; ++i)
     {
         const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        VkClearValue colorClearValue{};
-        for (uint32_t i = 0; i < 4; ++i)
+        if (colorAttachment.loadOp == LoadOp::kClear)
         {
-            colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+            VkClearValue colorClearValue{};
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+            }
+            clearValues.push_back(colorClearValue);
         }
-        clearValues.push_back(colorClearValue);
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())
     {
         auto depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
+        if (depthStencilAttachment.depthLoadOp == LoadOp::kClear || depthStencilAttachment.stencilLoadOp == LoadOp::kClear)
+        {
+            VkClearValue depthStencilClearValue{};
+            depthStencilClearValue.depthStencil = { depthStencilAttachment.clearValue.depth,
+                                                    depthStencilAttachment.clearValue.stencil };
 
-        VkClearValue depthStencilClearValue{};
-        depthStencilClearValue.depthStencil = { depthStencilAttachment.clearValue.depth,
-                                                depthStencilAttachment.clearValue.stencil };
+            clearValues.push_back(depthStencilClearValue);
+        }
+    }
 
-        clearValues.push_back(depthStencilClearValue);
+    if (sampleCount > 1)
+    {
+        for (auto i = 0; i < colorAttachmentSize; ++i)
+        {
+            const auto& colorAttachment = m_descriptor.colorAttachments[i];
+            if (colorAttachment.loadOp == LoadOp::kClear)
+            {
+                VkClearValue colorClearValue{};
+                for (uint32_t i = 0; i < 4; ++i)
+                {
+                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+                }
+                clearValues.push_back(colorClearValue);
+            }
+        }
     }
 
     VkRenderPassBeginInfo renderPassInfo{};

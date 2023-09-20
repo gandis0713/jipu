@@ -53,13 +53,11 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         {
             VkAttachmentDescription attachmentDescription;
             attachmentDescription.format = ToVkFormat(colorAttachment.format);
-            // attachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
-            attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
             attachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
             attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            // attachment.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-            attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+            attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
             attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
