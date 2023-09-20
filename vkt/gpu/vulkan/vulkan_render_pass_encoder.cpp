@@ -69,12 +69,6 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         textureViews.push_back(colorAttachment.renderView);
     }
 
-    if (m_descriptor.depthStencilAttachment.has_value())
-    {
-        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
-        textureViews.push_back(depthStencilAttachment.textureView);
-    }
-
     if (sampleCount > 1)
     {
         for (auto i = 0; i < colorAttachmentSize; ++i)
@@ -84,22 +78,37 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         }
     }
 
+    if (m_descriptor.depthStencilAttachment.has_value())
+    {
+        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
+        textureViews.push_back(depthStencilAttachment.textureView);
+    }
+
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
 
     // get clear color
-    std::vector<VkClearValue> clearValues{};
-    for (auto i = 0; i < colorAttachmentSize; ++i)
+    auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments)
     {
-        const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        if (colorAttachment.loadOp == LoadOp::kClear)
+        for (auto i = 0; i < colorAttachments.size(); ++i)
         {
-            VkClearValue colorClearValue{};
-            for (uint32_t i = 0; i < 4; ++i)
+            const auto& colorAttachment = colorAttachments[i];
+            if (colorAttachment.loadOp == LoadOp::kClear)
             {
-                colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+                VkClearValue colorClearValue{};
+                for (uint32_t i = 0; i < 4; ++i)
+                {
+                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+                }
+                clearValues.push_back(colorClearValue);
             }
-            clearValues.push_back(colorClearValue);
         }
+    };
+
+    std::vector<VkClearValue> clearValues{};
+    addColorClearValue(clearValues, m_descriptor.colorAttachments);
+    if (sampleCount > 1)
+    {
+        addColorClearValue(clearValues, m_descriptor.colorAttachments);
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())
@@ -112,23 +121,6 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
                                                     depthStencilAttachment.clearValue.stencil };
 
             clearValues.push_back(depthStencilClearValue);
-        }
-    }
-
-    if (sampleCount > 1)
-    {
-        for (auto i = 0; i < colorAttachmentSize; ++i)
-        {
-            const auto& colorAttachment = m_descriptor.colorAttachments[i];
-            if (colorAttachment.loadOp == LoadOp::kClear)
-            {
-                VkClearValue colorClearValue{};
-                for (uint32_t i = 0; i < 4; ++i)
-                {
-                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
-                }
-                clearValues.push_back(colorClearValue);
-            }
         }
     }
 

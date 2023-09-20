@@ -32,21 +32,6 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         attachments.push_back(colorAttachmentDescription);
     }
 
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
-        VkAttachmentDescription depthAttachmentDescription{};
-        depthAttachmentDescription.format = ToVkFormat(depthStencilAttachment.format);
-        depthAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        depthAttachmentDescription.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
-        depthAttachmentDescription.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
-        depthAttachmentDescription.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
-        depthAttachmentDescription.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
-        depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachments.push_back(depthAttachmentDescription);
-    }
-
     if (descriptor.sampleCount > 1)
     {
         for (auto colorAttachment : descriptor.colorAttachments)
@@ -63,6 +48,21 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
 
             attachments.push_back(attachmentDescription);
         }
+    }
+
+    if (descriptor.depthStencilAttachment.has_value())
+    {
+        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        VkAttachmentDescription depthAttachmentDescription{};
+        depthAttachmentDescription.format = ToVkFormat(depthStencilAttachment.format);
+        depthAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+        depthAttachmentDescription.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
+        depthAttachmentDescription.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
+        depthAttachmentDescription.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
+        depthAttachmentDescription.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
+        depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachments.push_back(depthAttachmentDescription);
     }
 
     VkSubpassDescription subpassDescription{};
@@ -83,20 +83,11 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     subpassDescription.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
     subpassDescription.pColorAttachments = colorAttachmentReferences.data();
 
-    VkAttachmentReference depthAttachment{};
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        depthAttachment.attachment = static_cast<uint32_t>(colorAttachmentReferences.size());
-        depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        subpassDescription.pDepthStencilAttachment = &depthAttachment;
-    }
-
     std::vector<VkAttachmentReference> resolveAttachmentReferences{};
     if (descriptor.sampleCount > 1)
     {
         // resolve attachments
-        for (uint32_t i = colorAttachmentCount + 1; i < colorAttachmentCount * 2 + 1; ++i)
+        for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
         {
             VkAttachmentReference resolveAttachmentReference{};
             resolveAttachmentReference.attachment = i;
@@ -105,6 +96,15 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
             resolveAttachmentReferences.push_back(resolveAttachmentReference);
         }
         subpassDescription.pResolveAttachments = resolveAttachmentReferences.data();
+    }
+
+    VkAttachmentReference depthAttachment{};
+    if (descriptor.depthStencilAttachment.has_value())
+    {
+        depthAttachment.attachment = static_cast<uint32_t>(colorAttachmentReferences.size() + resolveAttachmentReferences.size());
+        depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        subpassDescription.pDepthStencilAttachment = &depthAttachment;
     }
 
     VkSubpassDependency subpassDependency{};
