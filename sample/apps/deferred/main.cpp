@@ -70,23 +70,16 @@ private:
     void createQueue();
 
 private:
-    struct OffscreenVertex
-    {
-        glm::vec3 position;
-    };
-
-    struct CompositionVertex
-    {
-        glm::vec3 position;
-        glm::vec2 textureCoordinate;
-    };
-
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
+    struct OffscreenVertex
+    {
+        glm::vec3 position;
+    };
     struct
     {
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
@@ -94,8 +87,18 @@ private:
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::vector<OffscreenVertex> vertices{
+            { { 0.0, -0.5, 0.0 } },
+            { { -0.5, 0.5, 0.0 } },
+            { { 0.5, 0.5, 0.0 } }
+        };
     } m_offscreen;
 
+    struct CompositionVertex
+    {
+        glm::vec3 position;
+        glm::vec2 textureCoordinate;
+    };
     struct
     {
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
@@ -103,29 +106,18 @@ private:
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::vector<CompositionVertex> vertices{
+            { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
+            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
+            { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
+            { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+            { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+        };
     } m_composition;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-
-    std::vector<OffscreenVertex> vertices = {
-        { { 0.0, -0.5, 0.0 } },
-        { { -0.5, 0.5, 0.0 } },
-        { { 0.5, 0.5, 0.0 } }
-    };
-
-    std::vector<CompositionVertex> quadrangle = {
-        { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
-        { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
-    };
-
-    std::vector<glm::vec2> textureCoordinate = {
-
-    };
 
     uint32_t m_sampleCount = 1;
 };
@@ -140,6 +132,12 @@ DeferredSample::~DeferredSample()
 {
     m_queue.reset();
     m_commandBuffer.reset();
+
+    m_composition.vertexBuffer.reset();
+    m_composition.pipeline.reset();
+    m_composition.pipelineLayout.reset();
+    m_composition.depthStencilTextureView.reset();
+    m_composition.depthStencilTexture.reset();
 
     m_offscreen.vertexBuffer.reset();
     m_offscreen.pipeline.reset();
@@ -208,7 +206,7 @@ void DeferredSample::draw()
     renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
     renderPassEncoder->setScissor(0, 0, m_width, m_height);
-    renderPassEncoder->draw(static_cast<uint32_t>(vertices.size()));
+    renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.vertices.size()));
     renderPassEncoder->end();
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
@@ -379,33 +377,144 @@ void DeferredSample::createOffscreenPipeline()
 void DeferredSample::createOffscreenVertexBuffer()
 {
     BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(OffscreenVertex) * vertices.size();
+    bufferDescriptor.size = sizeof(OffscreenVertex) * m_offscreen.vertices.size();
     bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
 
     m_offscreen.vertexBuffer = m_device->createBuffer(bufferDescriptor);
     void* mappedPointer = m_offscreen.vertexBuffer->map();
-    memcpy(mappedPointer, vertices.data(), sizeof(OffscreenVertex) * vertices.size());
+    memcpy(mappedPointer, m_offscreen.vertices.data(), bufferDescriptor.size);
     m_offscreen.vertexBuffer->unmap();
 }
 
 void DeferredSample::createCompositionDepthStencilTexture()
 {
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+
+    m_composition.depthStencilTexture = m_device->createTexture(descriptor);
 }
 
 void DeferredSample::createCompositionDepthStencilTextureView()
 {
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kDepth;
+
+    m_composition.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
 void DeferredSample::createCompositionPipelineLayout()
 {
+    PipelineLayoutDescriptor descriptor{};
+    m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
 void DeferredSample::createCompositionPipeline()
 {
+    // Input Assembly
+    InputAssemblyStage inputAssemblyStage{};
+    inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
+
+    // Vertex
+    std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+
+    VertexStage vertexStage{};
+    vertexStage.entryPoint = "main";
+    { // vertex layout
+        VertexInputLayout vertexInputLayout{};
+        { // vertex attribute
+            std::vector<VertexAttribute> attributes(2);
+
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx3;
+            positionAttribute.offset = offsetof(CompositionVertex, position);
+            attributes[0] = positionAttribute;
+
+            VertexAttribute texCoordAttribute{};
+            texCoordAttribute.format = VertexFormat::kSFLOATx2;
+            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            attributes[1] = texCoordAttribute;
+
+            vertexInputLayout.attributes = attributes;
+        }
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = sizeof(CompositionVertex);
+
+        vertexStage.layouts = { vertexInputLayout };
+    }
+    { // vertex shader module
+        std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
+
+        ShaderModuleDescriptor shaderModuleDescriptor{};
+        shaderModuleDescriptor.code = vertexSource.data();
+        shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
+        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+
+        vertexStage.shaderModule = vertexShaderModule.get();
+    }
+
+    // Rasterization
+    RasterizationStage rasterizationStage{};
+    rasterizationStage.cullMode = CullMode::kBack;
+    rasterizationStage.frontFace = FrontFace::kCounterClockwise;
+    rasterizationStage.sampleCount = m_sampleCount;
+
+    // Fragment
+    std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+
+    FragmentStage fragmentStage{};
+    fragmentStage.entryPoint = "main";
+    { // fragment shader targets
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+
+        fragmentStage.targets = { target };
+    }
+
+    { // fragment shader module
+        std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
+
+        ShaderModuleDescriptor shaderModuleDescriptor{};
+        shaderModuleDescriptor.code = fragmentShaderSource.data();
+        shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
+        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+
+        fragmentStage.shaderModule = fragmentShaderModule.get();
+    }
+
+    // DepthStencil
+    DepthStencilStage depthStencilStage{};
+    depthStencilStage.format = m_composition.depthStencilTexture->getFormat();
+
+    RenderPipelineDescriptor renderPipelineDescriptor{};
+    renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
+    renderPipelineDescriptor.vertex = vertexStage;
+    renderPipelineDescriptor.rasterization = rasterizationStage;
+    renderPipelineDescriptor.fragment = fragmentStage;
+    renderPipelineDescriptor.depthStencil = depthStencilStage;
+    renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
+
+    m_composition.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
 void DeferredSample::createCompositionVertexBuffer()
 {
+    BufferDescriptor descriptor{};
+    descriptor.size = sizeof(CompositionVertex) * m_composition.vertices.size();
+    descriptor.usage = BufferUsageFlagBits::kVertex;
+
+    m_composition.vertexBuffer = m_device->createBuffer(descriptor);
+
+    auto& vertexBuffer = m_composition.vertexBuffer;
+    void* mappedPointer = vertexBuffer->map();
+    memcpy(mappedPointer, m_composition.vertices.data(), descriptor.size);
+    // vertexBuffer->unmap();
 }
 
 void DeferredSample::createCommandBuffer()
