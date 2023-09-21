@@ -39,9 +39,9 @@ find_program(GLSLC_EXE NAMES glslc)
 if(EXISTS ${GLSLC_EXE})
     file(GLOB_RECURSE SHADERS $${SHADERS_INPUT} "*.vert" "*.frag")
 
-    function(run_glslc target shader_name)
+    function(run_glslc target shader)
         add_custom_command(TARGET ${target} PRE_BUILD
-            COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/${shader_name}.vert -o ${SHADERS_INPUT}/${shader_name}.vert.spv
+            COMMAND ${GLSLC_EXE} ${shader} -o ${shader}.spv
         )
     endfunction()
 
