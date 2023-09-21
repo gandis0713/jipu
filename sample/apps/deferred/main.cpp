@@ -56,19 +56,29 @@ private:
 
     void createOffscreenDepthStencilTexture();
     void createOffscreenDepthStencilTextureView();
-
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
+    void createOffscreenVertexBuffer();
+
+    void createCompositionDepthStencilTexture();
+    void createCompositionDepthStencilTextureView();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
-    void createVertexBuffer();
+    void createCompositionVertexBuffer();
+
     void createCommandBuffer();
     void createQueue();
 
 private:
-    struct Vertex
+    struct OffscreenVertex
     {
         glm::vec3 position;
+    };
+
+    struct CompositionVertex
+    {
+        glm::vec3 position;
+        glm::vec2 textureCoordinate;
     };
 
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -83,34 +93,38 @@ private:
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
     } m_offscreen;
 
-    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    struct
+    {
+        std::unique_ptr<Texture> depthStencilTexture = nullptr;
+        std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
+        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+        std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
+    } m_composition;
+
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
 
-    std::vector<Vertex> vertices = {
+    std::vector<OffscreenVertex> vertices = {
         { { 0.0, -0.5, 0.0 } },
         { { -0.5, 0.5, 0.0 } },
         { { 0.5, 0.5, 0.0 } }
     };
 
-    std::vector<Vertex> quadrangle = {
-        { { -1.0, -1.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 } },
-        { { 1.0, -1.0, 0.0 } },
-        { { 1.0, -1.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 } },
-        { { 1.0, 1.0, 0.0 } },
+    std::vector<CompositionVertex> quadrangle = {
+        { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
+        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+        { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
     };
 
     std::vector<glm::vec2> textureCoordinate = {
-        { 0.0, 0.0 },
-        { 0.0, 1.0 },
-        { 1.0, 0.0 },
-        { 1.0, 0.0 },
-        { 0.0, 1.0 },
-        { 1.0, 1.0 },
+
     };
 
     uint32_t m_sampleCount = 1;
@@ -127,11 +141,9 @@ DeferredSample::~DeferredSample()
     m_queue.reset();
     m_commandBuffer.reset();
 
-    m_vertexBuffer.reset();
-
+    m_offscreen.vertexBuffer.reset();
     m_offscreen.pipeline.reset();
     m_offscreen.pipelineLayout.reset();
-
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
 
@@ -153,13 +165,15 @@ void DeferredSample::init()
 
     createOffscreenDepthStencilTexture();
     createOffscreenDepthStencilTextureView();
-
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
+    createOffscreenVertexBuffer();
+
+    createCompositionDepthStencilTexture();
+    createCompositionDepthStencilTextureView();
     createCompositionPipelineLayout();
     createCompositionPipeline();
-
-    createVertexBuffer();
+    createCompositionVertexBuffer();
 
     createCommandBuffer();
     createQueue();
@@ -191,7 +205,7 @@ void DeferredSample::draw()
 
     auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
     renderPassEncoder->setScissor(0, 0, m_width, m_height);
     renderPassEncoder->draw(static_cast<uint32_t>(vertices.size()));
@@ -304,11 +318,11 @@ void DeferredSample::createOffscreenPipeline()
         // input layout
         VertexInputLayout inputLayout;
         inputLayout.mode = VertexMode::kVertex;
-        inputLayout.stride = sizeof(Vertex);
+        inputLayout.stride = sizeof(OffscreenVertex);
 
         VertexAttribute attribute;
         attribute.format = VertexFormat::kSFLOATx3;
-        attribute.offset = offsetof(Vertex, position);
+        attribute.offset = offsetof(OffscreenVertex, position);
 
         inputLayout.attributes = { attribute };
 
@@ -362,6 +376,26 @@ void DeferredSample::createOffscreenPipeline()
     m_offscreen.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
+void DeferredSample::createOffscreenVertexBuffer()
+{
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(OffscreenVertex) * vertices.size();
+    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
+
+    m_offscreen.vertexBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_offscreen.vertexBuffer->map();
+    memcpy(mappedPointer, vertices.data(), sizeof(OffscreenVertex) * vertices.size());
+    m_offscreen.vertexBuffer->unmap();
+}
+
+void DeferredSample::createCompositionDepthStencilTexture()
+{
+}
+
+void DeferredSample::createCompositionDepthStencilTextureView()
+{
+}
+
 void DeferredSample::createCompositionPipelineLayout()
 {
 }
@@ -370,16 +404,8 @@ void DeferredSample::createCompositionPipeline()
 {
 }
 
-void DeferredSample::createVertexBuffer()
+void DeferredSample::createCompositionVertexBuffer()
 {
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(Vertex) * vertices.size();
-    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-
-    m_vertexBuffer = m_device->createBuffer(bufferDescriptor);
-    void* mappedPointer = m_vertexBuffer->map();
-    memcpy(mappedPointer, vertices.data(), sizeof(Vertex) * vertices.size());
-    m_vertexBuffer->unmap();
 }
 
 void DeferredSample::createCommandBuffer()
