@@ -38,10 +38,16 @@ find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
     add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/deferred.vert -o ${SHADERS_INPUT}/deferred.vert.spv
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/offscreen.vert -o ${SHADERS_INPUT}/offscreen.vert.spv
     )
     add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/deferred.frag -o ${SHADERS_INPUT}/deferred.frag.spv
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/offscreen.frag -o ${SHADERS_INPUT}/offscreen.frag.spv
+    )
+    add_custom_command(TARGET deferred PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/composition.vert -o ${SHADERS_INPUT}/composition.vert.spv
+    )
+    add_custom_command(TARGET deferred PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/composition.frag -o ${SHADERS_INPUT}/composition.frag.spv
     )
 endif()
 
@@ -56,8 +62,10 @@ if(NOT ANDROID)
     set(SHADER_OUTPUT ${BINARY_OUT})
 
     # TODO: copy after creating *spv.
-    file(COPY ${SHADERS_INPUT}/deferred.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/deferred.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/offscreen.vert.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/offscreen.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/composition.vert.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/composition.frag.spv DESTINATION ${SHADER_OUTPUT})
 endif()
 
 if(MSVC)

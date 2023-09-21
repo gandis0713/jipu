@@ -266,7 +266,7 @@ void DeferredSample::createOffscreenPipeline()
     // shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        std::vector<char> vertexSource = utils::readFile(m_appDir / "deferred.vert.spv", m_handle);
+        std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.code = vertexSource.data();
@@ -305,7 +305,7 @@ void DeferredSample::createOffscreenPipeline()
     // shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        std::vector<char> fragmentSource = utils::readFile(m_appDir / "deferred.frag.spv", m_handle);
+        std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.code = fragmentSource.data();
