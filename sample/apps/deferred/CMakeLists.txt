@@ -37,18 +37,17 @@ set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/offscreen.vert -o ${SHADERS_INPUT}/offscreen.vert.spv
-    )
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/offscreen.frag -o ${SHADERS_INPUT}/offscreen.frag.spv
-    )
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/composition.vert -o ${SHADERS_INPUT}/composition.vert.spv
-    )
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/composition.frag -o ${SHADERS_INPUT}/composition.frag.spv
-    )
+    file(GLOB_RECURSE SHADERS $${SHADERS_INPUT} "*.vert" "*.frag")
+
+    function(run_glslc target shader_name)
+        add_custom_command(TARGET ${target} PRE_BUILD
+            COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/${shader_name}.vert -o ${SHADERS_INPUT}/${shader_name}.vert.spv
+        )
+    endfunction()
+
+    foreach(SHADER ${SHADERS})
+        run_glslc(deferred ${SHADER})
+    endforeach(SHADER)
 endif()
 
 # copy spirv to output
@@ -62,10 +61,11 @@ if(NOT ANDROID)
     set(SHADER_OUTPUT ${BINARY_OUT})
 
     # TODO: copy after creating *spv.
-    file(COPY ${SHADERS_INPUT}/offscreen.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/offscreen.frag.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/composition.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/composition.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(GLOB_RECURSE SPVS $${SHADERS_INPUT} "*.spv")
+
+    foreach(SPV ${SPVS})
+        file(COPY ${SPV} DESTINATION ${SHADER_OUTPUT})
+    endforeach()
 endif()
 
 if(MSVC)
