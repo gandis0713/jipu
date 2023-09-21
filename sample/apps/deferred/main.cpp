@@ -54,6 +54,8 @@ private:
     void createDevice();
     void createSwapchain();
 
+    void createOffscreenColorAttachmentTexture();
+    void createOffscreenColorAttachmentTextureView();
     void createOffscreenDepthStencilTexture();
     void createOffscreenDepthStencilTextureView();
     void createOffscreenPipelineLayout();
@@ -82,6 +84,8 @@ private:
     };
     struct
     {
+        std::unique_ptr<Texture> colorAttachmentTexture = nullptr;
+        std::unique_ptr<TextureView> colorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -130,9 +134,6 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
-    m_queue.reset();
-    m_commandBuffer.reset();
-
     m_composition.vertexBuffer.reset();
     m_composition.pipeline.reset();
     m_composition.pipelineLayout.reset();
@@ -144,6 +145,11 @@ DeferredSample::~DeferredSample()
     m_offscreen.pipelineLayout.reset();
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
+    m_offscreen.colorAttachmentTextureView.reset();
+    m_offscreen.colorAttachmentTexture.reset();
+
+    m_queue.reset();
+    m_commandBuffer.reset();
 
     m_swapchain.reset();
     m_device.reset();
@@ -161,6 +167,11 @@ void DeferredSample::init()
     createDevice();
     createSwapchain();
 
+    createCommandBuffer();
+    createQueue();
+
+    createOffscreenColorAttachmentTexture();
+    createOffscreenColorAttachmentTextureView();
     createOffscreenDepthStencilTexture();
     createOffscreenDepthStencilTextureView();
     createOffscreenPipelineLayout();
@@ -172,9 +183,6 @@ void DeferredSample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
     createCompositionVertexBuffer();
-
-    createCommandBuffer();
-    createQueue();
 }
 
 void DeferredSample::draw()
@@ -202,11 +210,23 @@ void DeferredSample::draw()
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
-    renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
-    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-    renderPassEncoder->setScissor(0, 0, m_width, m_height);
-    renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.vertices.size()));
+    if (false)
+    {
+        renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
+        renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+        renderPassEncoder->setScissor(0, 0, m_width, m_height);
+        renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.vertices.size()));
+    }
+    else
+    {
+        renderPassEncoder->setPipeline(m_composition.pipeline.get());
+        renderPassEncoder->setVertexBuffer(m_composition.vertexBuffer.get());
+        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+        renderPassEncoder->setScissor(0, 0, m_width, m_height);
+        renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+    }
+
     renderPassEncoder->end();
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
@@ -259,6 +279,79 @@ void DeferredSample::createDevice()
 {
     DeviceDescriptor descriptor;
     m_device = m_physicalDevice->createDevice(descriptor);
+}
+
+void DeferredSample::createOffscreenColorAttachmentTexture()
+{
+
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    // descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    // descriptor.usages = TextureUsageFlagBits::kColorAttachment;
+    descriptor.usages = TextureUsageFlagBits::kCopySrc |
+                        TextureUsageFlagBits::kCopyDst |
+                        TextureUsageFlagBits::kTextureBinding;
+
+    m_offscreen.colorAttachmentTexture = m_device->createTexture(descriptor);
+
+    // create dummy texture data and copy
+    {
+        uint32_t width = m_swapchain->getWidth();
+        uint32_t height = m_swapchain->getHeight();
+        uint32_t channel = 4;
+        uint32_t byteSize = sizeof(unsigned char);
+        std::vector<unsigned char> pixel(width * height * channel, 0xff);
+
+        std::unique_ptr<Buffer> colorAttachmentStagingBuffer = nullptr;
+        {
+            BufferDescriptor bufferDescriptor{};
+            bufferDescriptor.size = byteSize * pixel.size();
+            bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+            colorAttachmentStagingBuffer = m_device->createBuffer(bufferDescriptor);
+
+            void* mappedPointer = colorAttachmentStagingBuffer->map();
+            memcpy(mappedPointer, pixel.data(), bufferDescriptor.size);
+        }
+
+        Texture* colorAttachmentTexture = m_offscreen.colorAttachmentTexture.get();
+        Buffer* colorAttachmentBuffer = colorAttachmentStagingBuffer.get();
+
+        BlitTextureBuffer blitTextureBuffer{};
+        blitTextureBuffer.buffer = colorAttachmentBuffer;
+        blitTextureBuffer.offset = 0;
+        blitTextureBuffer.bytesPerRow = byteSize * width * channel;
+        blitTextureBuffer.rowsPerTexture = height;
+
+        BlitTexture blitTexture{ .texture = colorAttachmentTexture };
+        Extent3D extent{};
+        extent.width = width;
+        extent.height = height;
+        extent.depth = 1;
+
+        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+        std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+
+        m_queue->submit({ commandEndoer->finish() });
+    }
+}
+
+void DeferredSample::createOffscreenColorAttachmentTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_offscreen.colorAttachmentTextureView = m_offscreen.colorAttachmentTexture->createTextureView(descriptor);
 }
 
 void DeferredSample::createOffscreenDepthStencilTexture()
