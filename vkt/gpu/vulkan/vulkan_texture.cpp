@@ -26,7 +26,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.format = ToVkFormat(descriptor.format);
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    createInfo.usage = ToVkImageUsageFlags(descriptor.usages);
+    createInfo.usage = ToVkImageUsageFlags(descriptor.usage);
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     createInfo.flags = 0; // Optional

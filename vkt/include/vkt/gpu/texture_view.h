@@ -54,6 +54,7 @@ public:
     TextureView(Texture* texture, TextureViewDescriptor descriptor);
     virtual ~TextureView() = default;
 
+    TextureViewType getType() const;
     TextureFormat getFormat() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
@@ -62,6 +63,7 @@ public:
 
 protected:
     Texture* m_texture = nullptr;
+    TextureViewDescriptor m_descriptor{};
 };
 
 } // namespace vkt

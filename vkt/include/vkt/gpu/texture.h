@@ -43,7 +43,7 @@ struct TextureDescriptor
 {
     TextureType type = TextureType::kUndefined;
     TextureFormat format = TextureFormat::kUndefined;
-    TextureUsageFlags usages = TextureUsageFlagBits::kUndefined;
+    TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t mipLevels = 0;
@@ -66,6 +66,7 @@ public:
 public:
     TextureType getType() const;
     TextureFormat getFormat() const;
+    TextureUsageFlags getUsage() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
     uint32_t getMipLevels() const;
@@ -75,13 +76,7 @@ public:
 
 protected:
     Device* m_device = nullptr;
-
-    TextureType m_type = TextureType::kUndefined;
-    TextureFormat m_format = TextureFormat::kUndefined;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_mipLevels = 0;
-    uint32_t m_sampleCount = 0;
+    TextureDescriptor m_descriptor{};
 };
 
 } // namespace vkt

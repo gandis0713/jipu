@@ -328,9 +328,9 @@ void TriangleSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
-                                         .usages = TextureUsageFlagBits::kCopySrc |
-                                                   TextureUsageFlagBits::kCopyDst |
-                                                   TextureUsageFlagBits::kTextureBinding,
+                                         .usage = TextureUsageFlagBits::kCopySrc |
+                                                  TextureUsageFlagBits::kCopyDst |
+                                                  TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
                                          .mipLevels = mipLevels,
@@ -358,7 +358,7 @@ void TriangleSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usages = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kColorAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .mipLevels = 1,
@@ -380,7 +380,7 @@ void TriangleSample::createDepthStencilTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();

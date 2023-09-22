@@ -6,7 +6,13 @@ namespace vkt
 
 TextureView::TextureView(Texture* texture, TextureViewDescriptor descriptor)
     : m_texture(texture)
+    , m_descriptor(descriptor)
 {
+}
+
+TextureViewType TextureView::getType() const
+{
+    return m_descriptor.type;
 }
 
 TextureFormat TextureView::getFormat() const
