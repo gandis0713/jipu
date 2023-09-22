@@ -404,9 +404,9 @@ void TriangleSample::createImageSampler()
     descriptor.magFilter = FilterMode::kLinear;
     descriptor.minFilter = FilterMode::kLinear;
     descriptor.mipmapFilter = MipmapFilterMode::kLinear;
-    descriptor.addressModeU = AddressMode::kRepeat;
-    descriptor.addressModeV = AddressMode::kRepeat;
-    descriptor.addressModeW = AddressMode::kRepeat;
+    descriptor.addressModeU = AddressMode::kClampToEdge;
+    descriptor.addressModeV = AddressMode::kClampToEdge;
+    descriptor.addressModeW = AddressMode::kClampToEdge;
     descriptor.lodMin = 0.0f;
     // descriptor.lodMin = static_cast<float>(m_imageTexture->getMipLevels() / 2);
     descriptor.lodMax = static_cast<float>(m_imageTexture->getMipLevels());
