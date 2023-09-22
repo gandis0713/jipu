@@ -197,7 +197,6 @@ void DeferredSample::init()
 
 void DeferredSample::draw()
 {
-    int targetIndex = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -207,7 +206,7 @@ void DeferredSample::draw()
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
-        colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
+        colorAttachment.renderView = m_offscreen.colorAttachmentTextureView.get();
         colorAttachment.resolveView = nullptr;
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
@@ -231,6 +230,8 @@ void DeferredSample::draw()
     }
     // second pass
     {
+        int targetIndex = m_swapchain->acquireNextTexture();
+
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
@@ -312,23 +313,31 @@ void DeferredSample::createDevice()
 
 void DeferredSample::createOffscreenColorAttachmentTexture()
 {
+    bool selfImage = false;
 
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    // descriptor.format = m_swapchain->getTextureFormat();
-    descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    descriptor.format = m_swapchain->getTextureFormat();
+    if (selfImage)
+    {
+        descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    }
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
-    // descriptor.usages = TextureUsageFlagBits::kColorAttachment;
-    descriptor.usages = TextureUsageFlagBits::kCopySrc |
-                        TextureUsageFlagBits::kCopyDst |
-                        TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment;
+    if (selfImage)
+    {
+        descriptor.usage = TextureUsageFlagBits::kCopySrc |
+                           TextureUsageFlagBits::kCopyDst |
+                           TextureUsageFlagBits::kTextureBinding;
+    }
 
     m_offscreen.colorAttachmentTexture = m_device->createTexture(descriptor);
 
     // create dummy texture data and copy
+    if (selfImage)
     {
         uint32_t width = m_swapchain->getWidth();
         uint32_t height = m_swapchain->getHeight();
@@ -392,7 +401,7 @@ void DeferredSample::createOffscreenDepthStencilTexture()
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
-    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
 
     m_offscreen.depthStencilTexture = m_device->createTexture(descriptor);
 }
@@ -513,7 +522,7 @@ void DeferredSample::createCompositionDepthStencilTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.mipLevels = 1;
