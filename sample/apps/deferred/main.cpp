@@ -64,6 +64,8 @@ private:
 
     void createCompositionDepthStencilTexture();
     void createCompositionDepthStencilTextureView();
+    void createCompositionBindingGroupLayout();
+    void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
     void createCompositionVertexBuffer();
@@ -107,6 +109,9 @@ private:
     {
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<Sampler> sampler = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
@@ -137,6 +142,9 @@ DeferredSample::~DeferredSample()
     m_composition.vertexBuffer.reset();
     m_composition.pipeline.reset();
     m_composition.pipelineLayout.reset();
+    m_composition.bindingGroupLayout.reset();
+    m_composition.bindingGroup.reset();
+    m_composition.sampler.reset();
     m_composition.depthStencilTextureView.reset();
     m_composition.depthStencilTexture.reset();
 
@@ -180,6 +188,8 @@ void DeferredSample::init()
 
     createCompositionDepthStencilTexture();
     createCompositionDepthStencilTextureView();
+    createCompositionBindingGroupLayout();
+    createCompositionBindingGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
     createCompositionVertexBuffer();
@@ -189,45 +199,64 @@ void DeferredSample::draw()
 {
     int targetIndex = m_swapchain->acquireNextTexture();
 
-    ColorAttachment colorAttachment{};
-    colorAttachment.loadOp = LoadOp::kClear;
-    colorAttachment.storeOp = StoreOp::kStore;
-    colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
-    colorAttachment.resolveView = nullptr;
-    colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
-
-    DepthStencilAttachment depthStencilAttachment{};
-    depthStencilAttachment.textureView = m_offscreen.depthStencilTextureView.get();
-    depthStencilAttachment.depthLoadOp = LoadOp::kClear;
-    depthStencilAttachment.depthStoreOp = StoreOp::kStore;
-    depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
-
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-    renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    if (false)
+    // first pass
     {
+        ColorAttachment colorAttachment{};
+        colorAttachment.loadOp = LoadOp::kClear;
+        colorAttachment.storeOp = StoreOp::kStore;
+        colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
+        colorAttachment.resolveView = nullptr;
+        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+        DepthStencilAttachment depthStencilAttachment{};
+        depthStencilAttachment.textureView = m_offscreen.depthStencilTextureView.get();
+        depthStencilAttachment.depthLoadOp = LoadOp::kClear;
+        depthStencilAttachment.depthStoreOp = StoreOp::kStore;
+        depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
+
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
         renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.vertices.size()));
+        renderPassEncoder->end();
     }
-    else
+    // second pass
     {
+        ColorAttachment colorAttachment{};
+        colorAttachment.loadOp = LoadOp::kClear;
+        colorAttachment.storeOp = StoreOp::kStore;
+        colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
+        colorAttachment.resolveView = nullptr;
+        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+        DepthStencilAttachment depthStencilAttachment{};
+        depthStencilAttachment.textureView = m_composition.depthStencilTextureView.get();
+        depthStencilAttachment.depthLoadOp = LoadOp::kClear;
+        depthStencilAttachment.depthStoreOp = StoreOp::kStore;
+        depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
+
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_composition.pipeline.get());
         renderPassEncoder->setVertexBuffer(m_composition.vertexBuffer.get());
+        renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+        renderPassEncoder->end();
     }
-
-    renderPassEncoder->end();
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
@@ -502,9 +531,50 @@ void DeferredSample::createCompositionDepthStencilTextureView()
     m_composition.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
+void DeferredSample::createCompositionBindingGroupLayout()
+{
+    BindingGroupLayoutDescriptor descriptor{};
+
+    SamplerBindingLayout samplerBindingLayout{};
+    samplerBindingLayout.index = 0;
+    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    descriptor.samplers = { samplerBindingLayout };
+
+    m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+}
+
+void DeferredSample::createCompositionBindingGroup()
+{
+    SamplerDescriptor samplerDescriptor{};
+    samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+    samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+    samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+    samplerDescriptor.magFilter = FilterMode::kLinear;
+    samplerDescriptor.minFilter = FilterMode::kLinear;
+    samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+    samplerDescriptor.lodMin = 0.0f;
+    samplerDescriptor.lodMax = static_cast<float>(m_offscreen.colorAttachmentTexture->getMipLevels());
+
+    m_composition.sampler = m_device->createSampler(samplerDescriptor);
+
+    SamplerBinding samplerBinding{};
+    samplerBinding.index = 0;
+    samplerBinding.sampler = m_composition.sampler.get();
+    samplerBinding.textureView = m_offscreen.colorAttachmentTextureView.get();
+
+    BindingGroupDescriptor descriptor{};
+    descriptor.layout = m_composition.bindingGroupLayout.get();
+    descriptor.samplers = { samplerBinding };
+
+    m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
+}
+
 void DeferredSample::createCompositionPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
+    descriptor.layouts = { m_composition.bindingGroupLayout.get() };
+
     m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
