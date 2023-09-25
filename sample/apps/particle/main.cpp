@@ -585,6 +585,7 @@ CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
 
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
     renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+    renderPassEncoderDescriptor.sampleCount = m_sampleCount;
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

@@ -660,7 +660,8 @@ void TriangleSample::draw()
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
-                                                             .depthStencilAttachment = depthStencilAttachment };
+                                                             .depthStencilAttachment = depthStencilAttachment,
+                                                             .sampleCount = m_sampleCount };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

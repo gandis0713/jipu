@@ -62,6 +62,7 @@ struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
+    uint32_t sampleCount = 0;
 };
 
 class VKT_EXPORT RenderPassEncoder

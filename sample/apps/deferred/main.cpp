@@ -219,6 +219,7 @@ void DeferredSample::draw()
         RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
         renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
         renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
+        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
@@ -248,6 +249,7 @@ void DeferredSample::draw()
         RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
         renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
         renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
+        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_composition.pipeline.get());

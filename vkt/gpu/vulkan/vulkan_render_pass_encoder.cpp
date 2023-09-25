@@ -50,8 +50,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     if (m_descriptor.colorAttachments.empty())
         throw std::runtime_error("Failed to create vulkan render pass encoder due to empty color attachment.");
 
-    const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
-    const auto sampleCount = colorAttachment.renderView->getSampleCount();
+    const auto sampleCount = descriptor.sampleCount;
     renderPassDescriptor.sampleCount = sampleCount;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
