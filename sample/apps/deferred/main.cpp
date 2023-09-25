@@ -318,69 +318,13 @@ void DeferredSample::createOffscreenColorAttachmentTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = m_swapchain->getTextureFormat();
-    if (selfImage)
-    {
-        descriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-    }
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment;
-    if (selfImage)
-    {
-        descriptor.usage = TextureUsageFlagBits::kCopySrc |
-                           TextureUsageFlagBits::kCopyDst |
-                           TextureUsageFlagBits::kTextureBinding;
-    }
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.colorAttachmentTexture = m_device->createTexture(descriptor);
-
-    // create dummy texture data and copy
-    if (selfImage)
-    {
-        uint32_t width = m_swapchain->getWidth();
-        uint32_t height = m_swapchain->getHeight();
-        uint32_t channel = 4;
-        uint32_t byteSize = sizeof(unsigned char);
-        std::vector<unsigned char> pixel(width * height * channel, 0xff);
-
-        std::unique_ptr<Buffer> colorAttachmentStagingBuffer = nullptr;
-        {
-            BufferDescriptor bufferDescriptor{};
-            bufferDescriptor.size = byteSize * pixel.size();
-            bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
-
-            colorAttachmentStagingBuffer = m_device->createBuffer(bufferDescriptor);
-
-            void* mappedPointer = colorAttachmentStagingBuffer->map();
-            memcpy(mappedPointer, pixel.data(), bufferDescriptor.size);
-        }
-
-        Texture* colorAttachmentTexture = m_offscreen.colorAttachmentTexture.get();
-        Buffer* colorAttachmentBuffer = colorAttachmentStagingBuffer.get();
-
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = colorAttachmentBuffer;
-        blitTextureBuffer.offset = 0;
-        blitTextureBuffer.bytesPerRow = byteSize * width * channel;
-        blitTextureBuffer.rowsPerTexture = height;
-
-        BlitTexture blitTexture{ .texture = colorAttachmentTexture };
-        Extent3D extent{};
-        extent.width = width;
-        extent.height = height;
-        extent.depth = 1;
-
-        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-        std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
-        CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
-        commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-
-        m_queue->submit({ commandEndoer->finish() });
-    }
 }
 
 void DeferredSample::createOffscreenColorAttachmentTextureView()
