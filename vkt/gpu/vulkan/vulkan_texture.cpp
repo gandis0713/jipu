@@ -86,6 +86,11 @@ VkImage VulkanTexture::getVkImage() const
     return m_image;
 }
 
+TextureOwner VulkanTexture::getTextureOwner() const
+{
+    return m_owner;
+}
+
 void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
 {
     VkImageLayout oldLayout = m_layout;

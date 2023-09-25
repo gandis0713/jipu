@@ -15,7 +15,7 @@ namespace vkt
 enum class TextureOwner
 {
     External,
-    Internal
+    Internal // by swap chain
 };
 
 class VulkanDevice;
@@ -36,6 +36,7 @@ public:
 
 public:
     VkImage getVkImage() const;
+    TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
     void setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
