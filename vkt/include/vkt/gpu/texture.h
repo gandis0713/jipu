@@ -27,6 +27,19 @@ enum class TextureType
     k3D,
 };
 
+enum class TextureFormat
+{
+    kUndefined = 0,
+    kBGRA_8888_UInt_Norm,
+    kBGRA_8888_UInt_Norm_SRGB,
+    kRGB_888_UInt_Norm,
+    kRGB_888_UInt_Norm_SRGB,
+    kRGBA_8888_UInt_Norm,
+    kRGBA_8888_UInt_Norm_SRGB,
+    kD_32_SFloat,
+    kD_24_UInt_Norm_S_8_UInt,
+};
+
 struct TextureUsageFlagBits
 {
     static constexpr uint32_t kUndefined = 0x00000000;
