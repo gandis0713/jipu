@@ -24,10 +24,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
         colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        if (descriptor.sampleCount > 1)
-            colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        else
-            colorAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // If sample count is 1, attachment is used to present.
+        colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
 
         attachments.push_back(colorAttachmentDescription);
     }
@@ -153,6 +150,7 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
         combineHash(hash, colorAttachment.loadOp);
         combineHash(hash, colorAttachment.storeOp);
         combineHash(hash, colorAttachment.format);
+        combineHash(hash, colorAttachment.finalLayout);
     }
 
     if (descriptor.depthStencilAttachment)
@@ -182,7 +180,8 @@ bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor
         {
             if (lhs.colorAttachments[i].loadOp != rhs.colorAttachments[i].loadOp ||
                 lhs.colorAttachments[i].storeOp != rhs.colorAttachments[i].storeOp ||
-                lhs.colorAttachments[i].format != rhs.colorAttachments[i].format)
+                lhs.colorAttachments[i].format != rhs.colorAttachments[i].format ||
+                lhs.colorAttachments[i].finalLayout != rhs.colorAttachments[i].finalLayout)
             {
                 return false;
             }

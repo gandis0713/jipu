@@ -17,6 +17,9 @@ struct VulkanColorAttachment
     TextureFormat format = TextureFormat::kUndefined;
     LoadOp loadOp = LoadOp::kDontCare;
     StoreOp storeOp = StoreOp::kDontCare;
+
+    // TODO: custom type?
+    VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
 struct VulkanDepthStencilAttachment

@@ -28,17 +28,26 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     for (auto i = 0; i < colorAttachmentSize; ++i)
     {
         const auto& colorAttachment = m_descriptor.colorAttachments[i];
+        const auto texture = colorAttachment.renderView->getTexture();
         VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
-        vulkanColorAttachment.format = colorAttachment.renderView->getFormat();
+        vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
         vulkanColorAttachment.storeOp = colorAttachment.storeOp;
+
+        VkImageLayout finalLayout = downcast(texture)->getTextureOwner() == TextureOwner::Internal ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : GenerateImageLayout(texture->getUsage());
+        if (descriptor.sampleCount > 1)
+            finalLayout = GenerateImageLayout(texture->getUsage());
+        else
+            finalLayout = downcast(texture)->getTextureOwner() == TextureOwner::Internal ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : GenerateImageLayout(texture->getUsage());
+
+        vulkanColorAttachment.finalLayout = finalLayout;
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())
     {
         const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
         VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getFormat();
+        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
         vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
         vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
         vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
