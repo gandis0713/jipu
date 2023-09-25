@@ -3,6 +3,7 @@
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_sampler.h"
+#include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
 #include <stdexcept>
@@ -73,7 +74,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         const SamplerBindingLayout samplerLayout = descriptor.layout->getSamplerBindingLayout(sampler.index);
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageInfo.imageLayout = GenerateImageLayout(sampler.textureView->getTexture()->getUsage());
         imageInfo.imageView = downcast(sampler.textureView)->getVkImageView();
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
 
