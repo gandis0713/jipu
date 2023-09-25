@@ -13,7 +13,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_type(ToVkImageType(descriptor.type))
     , m_format(ToVkFormat(descriptor.format))
-    , m_owner(TextureOwner::Internal)
+    , m_owner(TextureOwner::External)
 {
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -61,13 +61,13 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescrip
     , m_image(image)
     , m_type(ToVkImageType(descriptor.type))
     , m_format(ToVkFormat(descriptor.format))
-    , m_owner(TextureOwner::External)
+    , m_owner(TextureOwner::Internal)
 {
 }
 
 VulkanTexture::~VulkanTexture()
 {
-    if (m_owner == TextureOwner::Internal)
+    if (m_owner == TextureOwner::External)
     {
         m_memory.reset();
 
