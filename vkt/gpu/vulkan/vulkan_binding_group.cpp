@@ -74,7 +74,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         const SamplerBindingLayout samplerLayout = descriptor.layout->getSamplerBindingLayout(sampler.index);
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = GenerateImageLayout(sampler.textureView->getTexture()->getUsage());
+        imageInfo.imageLayout = downcast(sampler.textureView->getTexture())->getLayout();
         imageInfo.imageView = downcast(sampler.textureView)->getVkImageView();
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
 

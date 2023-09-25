@@ -177,7 +177,21 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
 }
 VkImageLayout VulkanTexture::getLayout() const
 {
-    return m_layout;
+    VkImageLayout layout = m_layout;
+
+    if (layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    {
+        if (m_owner == TextureOwner::Internal)
+        {
+            layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        }
+        else
+        {
+            layout = GenerateImageLayout(m_descriptor.usage);
+        }
+    }
+
+    return layout;
 }
 
 // Convert Helper

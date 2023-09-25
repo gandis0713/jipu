@@ -33,14 +33,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
         vulkanColorAttachment.storeOp = colorAttachment.storeOp;
-
-        VkImageLayout finalLayout = downcast(texture)->getTextureOwner() == TextureOwner::Internal ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : GenerateImageLayout(texture->getUsage());
-        if (descriptor.sampleCount > 1)
-            finalLayout = GenerateImageLayout(texture->getUsage());
-        else
-            finalLayout = downcast(texture)->getTextureOwner() == TextureOwner::Internal ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : GenerateImageLayout(texture->getUsage());
-
-        vulkanColorAttachment.finalLayout = finalLayout;
+        vulkanColorAttachment.finalLayout = downcast(texture)->getLayout();
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())
