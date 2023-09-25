@@ -10,14 +10,14 @@ TextureView::TextureView(Texture* texture, TextureViewDescriptor descriptor)
 {
 }
 
+Texture* TextureView::getTexture() const
+{
+    return m_texture;
+}
+
 TextureViewType TextureView::getType() const
 {
     return m_descriptor.type;
-}
-
-TextureFormat TextureView::getFormat() const
-{
-    return m_texture->getFormat();
 }
 
 uint32_t TextureView::getWidth() const
