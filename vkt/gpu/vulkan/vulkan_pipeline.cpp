@@ -220,8 +220,9 @@ void VulkanRenderPipeline::initialize()
         const auto& target = m_descriptor.fragment.targets[i];
         VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
         vulkanColorAttachment.format = target.format;
-        vulkanColorAttachment.loadOp = LoadOp::kClear;   // TODO: from descriptor
-        vulkanColorAttachment.storeOp = StoreOp::kStore; // TODO: from descriptor
+        vulkanColorAttachment.loadOp = LoadOp::kClear;
+        vulkanColorAttachment.storeOp = StoreOp::kStore;
+        vulkanColorAttachment.finalLayout = GenerateImageLayout(TextureUsageFlagBits::kColorAttachment);
     }
 
     if (m_descriptor.depthStencil.has_value())
@@ -229,10 +230,10 @@ void VulkanRenderPipeline::initialize()
         const DepthStencilStage depthStencilStage = m_descriptor.depthStencil.value();
         VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
         vulkanDepthStencilAttachment.format = depthStencilStage.format;
-        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;        // TODO: from descriptor
-        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;      // TODO: from descriptor
-        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;   // TODO: from descriptor
-        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare; // TODO: from descriptor
+        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;
+        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;
+        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;
+        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare;
 
         renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
     }
