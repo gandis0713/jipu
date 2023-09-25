@@ -79,7 +79,6 @@ public:
 public:
     TextureType getType() const;
     TextureFormat getFormat() const;
-    TextureUsageFlags getUsage() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
     uint32_t getMipLevels() const;
