@@ -115,6 +115,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     {
         TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                              .format = m_textureFormat,
+                                             .usage = TextureUsageFlagBits::kColorAttachment,
                                              .width = m_width,
                                              .height = m_height,
                                              .mipLevels = 1 };
