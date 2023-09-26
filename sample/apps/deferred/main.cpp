@@ -115,7 +115,8 @@ private:
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
-        std::unique_ptr<Sampler> sampler = nullptr;
+        std::unique_ptr<Sampler> positionSampler = nullptr;
+        std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
@@ -148,7 +149,8 @@ DeferredSample::~DeferredSample()
     m_composition.pipelineLayout.reset();
     m_composition.bindingGroupLayout.reset();
     m_composition.bindingGroup.reset();
-    m_composition.sampler.reset();
+    m_composition.positionSampler.reset();
+    m_composition.normalSampler.reset();
     m_composition.depthStencilTextureView.reset();
     m_composition.depthStencilTexture.reset();
 
@@ -530,37 +532,62 @@ void DeferredSample::createCompositionBindingGroupLayout()
 {
     BindingGroupLayoutDescriptor descriptor{};
 
-    SamplerBindingLayout samplerBindingLayout{};
-    samplerBindingLayout.index = 0;
-    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    SamplerBindingLayout positionSamplerBindingLayout{};
+    positionSamplerBindingLayout.index = 0;
+    positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    descriptor.samplers = { samplerBindingLayout };
+    SamplerBindingLayout normalSamplerBindingLayout{};
+    normalSamplerBindingLayout.index = 1;
+    normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout };
 
     m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
 
 void DeferredSample::createCompositionBindingGroup()
 {
-    SamplerDescriptor samplerDescriptor{};
-    samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-    samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-    samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-    samplerDescriptor.magFilter = FilterMode::kLinear;
-    samplerDescriptor.minFilter = FilterMode::kLinear;
-    samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-    samplerDescriptor.lodMin = 0.0f;
-    samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
+    SamplerBinding positionSamplerBinding{};
+    {
+        SamplerDescriptor samplerDescriptor{};
+        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+        samplerDescriptor.magFilter = FilterMode::kLinear;
+        samplerDescriptor.minFilter = FilterMode::kLinear;
+        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+        samplerDescriptor.lodMin = 0.0f;
+        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.positionColorAttachmentTexture->getMipLevels());
 
-    m_composition.sampler = m_device->createSampler(samplerDescriptor);
+        m_composition.positionSampler = m_device->createSampler(samplerDescriptor);
 
-    SamplerBinding samplerBinding{};
-    samplerBinding.index = 0;
-    samplerBinding.sampler = m_composition.sampler.get();
-    samplerBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+        positionSamplerBinding.index = 0;
+        positionSamplerBinding.sampler = m_composition.positionSampler.get();
+        positionSamplerBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+    }
+
+    SamplerBinding normalSamplerBinding{};
+    {
+        SamplerDescriptor samplerDescriptor{};
+        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+        samplerDescriptor.magFilter = FilterMode::kLinear;
+        samplerDescriptor.minFilter = FilterMode::kLinear;
+        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+        samplerDescriptor.lodMin = 0.0f;
+        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
+
+        m_composition.normalSampler = m_device->createSampler(samplerDescriptor);
+
+        normalSamplerBinding.index = 1;
+        normalSamplerBinding.sampler = m_composition.normalSampler.get();
+        normalSamplerBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+    }
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_composition.bindingGroupLayout.get();
-    descriptor.samplers = { samplerBinding };
+    descriptor.samplers = { positionSamplerBinding, normalSamplerBinding };
 
     m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
 }
