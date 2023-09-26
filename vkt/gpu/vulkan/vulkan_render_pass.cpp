@@ -16,7 +16,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
 
     for (auto colorAttachment : descriptor.colorAttachments)
     {
-        VkAttachmentDescription colorAttachmentDescription;
+        VkAttachmentDescription colorAttachmentDescription{};
         colorAttachmentDescription.format = ToVkFormat(colorAttachment.format);
         colorAttachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
         colorAttachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
@@ -33,7 +33,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     {
         for (auto colorAttachment : descriptor.colorAttachments)
         {
-            VkAttachmentDescription attachmentDescription;
+            VkAttachmentDescription attachmentDescription{};
             attachmentDescription.format = ToVkFormat(colorAttachment.format);
             attachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
             attachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
