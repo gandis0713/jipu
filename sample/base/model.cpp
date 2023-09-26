@@ -4,6 +4,12 @@
 #include <tiny_obj_loader.h>
 #include <unordered_map>
 
+#define TINYGLTF_IMPLEMENTATION
+// #define STB_IMAGE_IMPLEMENTATION <- is in image.cpp
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+// #define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
+#include "tiny_gltf.h"
+
 namespace
 {
 
@@ -72,6 +78,42 @@ Polygon loadOBJ(void* buf, uint64_t len)
     }
 
     return generatePolygon(attrib, shapes);
+}
+
+Polygon loadGLTF(const std::filesystem::path& path)
+{
+    using namespace tinygltf;
+
+    Model model;
+    TinyGLTF gltf;
+    std::string err;
+    std::string warn;
+
+    if (!gltf.LoadASCIIFromFile(&model, &err, &warn, path.string().c_str()))
+    {
+        throw std::runtime_error(warn + err);
+    }
+
+    // TODO: convert it to polygon.
+    return {};
+}
+
+Polygon loadGLTF(void* buf, uint64_t len)
+{
+    using namespace tinygltf;
+
+    Model model;
+    TinyGLTF gltf;
+    std::string err;
+    std::string warn;
+
+    // TODO
+    // if (!gltf.LoadBinaryFromMemory(&model, &err, &warn, static_cast<const unsigned char*>(buf), len))
+    // {
+    //     throw std::runtime_error(warn + err);
+    // }
+
+    return {};
 }
 
 } // namespace vkt
