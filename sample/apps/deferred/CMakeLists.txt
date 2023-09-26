@@ -68,6 +68,12 @@ if(NOT ANDROID)
     endforeach()
 endif()
 
+set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+set(RESOURCE_OUT ${BINARY_OUT})
+file(COPY ${RESOURCE_DIR}/armor.gltf DESTINATION ${RESOURCE_OUT})
+file(COPY ${RESOURCE_DIR}/colormap_rgba.ktx DESTINATION ${RESOURCE_OUT})
+file(COPY ${RESOURCE_DIR}/normalmap_rgba.ktx DESTINATION ${RESOURCE_OUT})
+
 if(MSVC)
 # TODO
 elseif(APPLE)

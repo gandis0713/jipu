@@ -1,4 +1,5 @@
 #include "file.h"
+#include "model.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
