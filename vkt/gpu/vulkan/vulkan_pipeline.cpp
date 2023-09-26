@@ -161,23 +161,31 @@ void VulkanRenderPipeline::initialize()
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+    uint32_t targetSize = static_cast<uint32_t>(m_descriptor.fragment.targets.size());
+    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates(targetSize);
+    for (auto i = 0; i < targetSize; ++i)
+    {
+        // TODO: from descriptor.
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+
+        colorBlendAttachmentStates[i] = colorBlendAttachment;
+    }
 
     VkPipelineColorBlendStateCreateInfo colorBlendingStateCreateInfo{};
     colorBlendingStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
     colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
-    colorBlendingStateCreateInfo.attachmentCount = 1;
-    colorBlendingStateCreateInfo.pAttachments = &colorBlendAttachment;
+    colorBlendingStateCreateInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachmentStates.size());
+    colorBlendingStateCreateInfo.pAttachments = colorBlendAttachmentStates.data();
     colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
     colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
     colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
@@ -213,7 +221,6 @@ void VulkanRenderPipeline::initialize()
 
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
-    uint32_t targetSize = static_cast<uint32_t>(m_descriptor.fragment.targets.size());
     renderPassDescriptor.colorAttachments.resize(targetSize);
     for (auto i = 0; i < targetSize; ++i)
     {

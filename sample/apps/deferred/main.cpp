@@ -54,8 +54,10 @@ private:
     void createDevice();
     void createSwapchain();
 
-    void createOffscreenColorAttachmentTexture();
-    void createOffscreenColorAttachmentTextureView();
+    void createOffscreenPositionColorAttachmentTexture();
+    void createOffscreenPositionColorAttachmentTextureView();
+    void createOffscreenNormalColorAttachmentTexture();
+    void createOffscreenNormalColorAttachmentTextureView();
     void createOffscreenDepthStencilTexture();
     void createOffscreenDepthStencilTextureView();
     void createOffscreenPipelineLayout();
@@ -86,8 +88,10 @@ private:
     };
     struct
     {
-        std::unique_ptr<Texture> colorAttachmentTexture = nullptr;
-        std::unique_ptr<TextureView> colorAttachmentTextureView = nullptr;
+        std::unique_ptr<Texture> positionColorAttachmentTexture = nullptr;
+        std::unique_ptr<TextureView> positionColorAttachmentTextureView = nullptr;
+        std::unique_ptr<Texture> normalColorAttachmentTexture = nullptr;
+        std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
@@ -153,8 +157,10 @@ DeferredSample::~DeferredSample()
     m_offscreen.pipelineLayout.reset();
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
-    m_offscreen.colorAttachmentTextureView.reset();
-    m_offscreen.colorAttachmentTexture.reset();
+    m_offscreen.normalColorAttachmentTextureView.reset();
+    m_offscreen.normalColorAttachmentTexture.reset();
+    m_offscreen.positionColorAttachmentTextureView.reset();
+    m_offscreen.positionColorAttachmentTexture.reset();
 
     m_queue.reset();
     m_commandBuffer.reset();
@@ -178,8 +184,10 @@ void DeferredSample::init()
     createCommandBuffer();
     createQueue();
 
-    createOffscreenColorAttachmentTexture();
-    createOffscreenColorAttachmentTextureView();
+    createOffscreenPositionColorAttachmentTexture();
+    createOffscreenPositionColorAttachmentTextureView();
+    createOffscreenNormalColorAttachmentTexture();
+    createOffscreenNormalColorAttachmentTextureView();
     createOffscreenDepthStencilTexture();
     createOffscreenDepthStencilTextureView();
     createOffscreenPipelineLayout();
@@ -203,12 +211,19 @@ void DeferredSample::draw()
 
     // first pass
     {
-        ColorAttachment colorAttachment{};
-        colorAttachment.loadOp = LoadOp::kClear;
-        colorAttachment.storeOp = StoreOp::kStore;
-        colorAttachment.renderView = m_offscreen.colorAttachmentTextureView.get();
-        colorAttachment.resolveView = nullptr;
-        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+        ColorAttachment positionColorAttachment{};
+        positionColorAttachment.loadOp = LoadOp::kClear;
+        positionColorAttachment.storeOp = StoreOp::kStore;
+        positionColorAttachment.renderView = m_offscreen.positionColorAttachmentTextureView.get();
+        positionColorAttachment.resolveView = nullptr;
+        positionColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+
+        ColorAttachment normalColorAttachment{};
+        normalColorAttachment.loadOp = LoadOp::kClear;
+        normalColorAttachment.storeOp = StoreOp::kStore;
+        normalColorAttachment.renderView = m_offscreen.normalColorAttachmentTextureView.get();
+        normalColorAttachment.resolveView = nullptr;
+        normalColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
         DepthStencilAttachment depthStencilAttachment{};
         depthStencilAttachment.textureView = m_offscreen.depthStencilTextureView.get();
@@ -217,7 +232,7 @@ void DeferredSample::draw()
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
         RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment };
         renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
         renderPassEncoderDescriptor.sampleCount = m_sampleCount;
 
@@ -313,10 +328,8 @@ void DeferredSample::createDevice()
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
-void DeferredSample::createOffscreenColorAttachmentTexture()
+void DeferredSample::createOffscreenPositionColorAttachmentTexture()
 {
-    bool selfImage = false;
-
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = m_swapchain->getTextureFormat();
@@ -326,16 +339,39 @@ void DeferredSample::createOffscreenColorAttachmentTexture()
     descriptor.height = m_swapchain->getHeight();
     descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.colorAttachmentTexture = m_device->createTexture(descriptor);
+    m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
 
-void DeferredSample::createOffscreenColorAttachmentTextureView()
+void DeferredSample::createOffscreenPositionColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
-    m_offscreen.colorAttachmentTextureView = m_offscreen.colorAttachmentTexture->createTextureView(descriptor);
+    m_offscreen.positionColorAttachmentTextureView = m_offscreen.positionColorAttachmentTexture->createTextureView(descriptor);
+}
+
+void DeferredSample::createOffscreenNormalColorAttachmentTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+
+    m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
+}
+
+void DeferredSample::createOffscreenNormalColorAttachmentTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_offscreen.normalColorAttachmentTextureView = m_offscreen.normalColorAttachmentTexture->createTextureView(descriptor);
 }
 
 void DeferredSample::createOffscreenDepthStencilTexture()
@@ -431,9 +467,13 @@ void DeferredSample::createOffscreenPipeline()
         fragmentStage.entryPoint = "main";
 
         // targets
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
-        fragmentStage.targets = { target };
+        FragmentStage::Target positionTarget{};
+        positionTarget.format = m_swapchain->getTextureFormat();
+
+        FragmentStage::Target normalTarget{};
+        normalTarget.format = m_swapchain->getTextureFormat();
+
+        fragmentStage.targets = { positionTarget, normalTarget };
         fragmentStage.shaderModule = fragmentShaderModule.get();
     }
 
@@ -509,14 +549,14 @@ void DeferredSample::createCompositionBindingGroup()
     samplerDescriptor.minFilter = FilterMode::kLinear;
     samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
     samplerDescriptor.lodMin = 0.0f;
-    samplerDescriptor.lodMax = static_cast<float>(m_offscreen.colorAttachmentTexture->getMipLevels());
+    samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
 
     m_composition.sampler = m_device->createSampler(samplerDescriptor);
 
     SamplerBinding samplerBinding{};
     samplerBinding.index = 0;
     samplerBinding.sampler = m_composition.sampler.get();
-    samplerBinding.textureView = m_offscreen.colorAttachmentTextureView.get();
+    samplerBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_composition.bindingGroupLayout.get();
