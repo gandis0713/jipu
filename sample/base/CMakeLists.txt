@@ -33,6 +33,8 @@ list(APPEND SRC_FILES
     model.h
     file.cpp
     file.h
+    khronos_texture.cpp
+    khronos_texture.h
     image.cpp
     image.h
 )

@@ -1,5 +1,5 @@
 #include "file.h"
-#include "image.h"
+#include "khronos_texture.h"
 #include "model.h"
 #include "sample.h"
 
@@ -480,15 +480,15 @@ void DeferredSample::createOffscreenDepthStencilTextureView()
 
 void DeferredSample::createOffscreenColorMapTexture()
 {
-    Image image{ m_appDir / "colormap_rgba.ktx" };
+    KTX ktx{ m_appDir / "colormap_rgba.ktx" };
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
     textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm; // kRGBA_8888_UInt_Norm_SRGB
     textureDescriptor.mipLevels = 1;
     textureDescriptor.sampleCount = 1;
-    textureDescriptor.width = image.getWidth();
-    textureDescriptor.height = image.getHeight();
+    textureDescriptor.width = ktx.getWidth();
+    textureDescriptor.height = ktx.getHeight();
     textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
                               TextureUsageFlagBits::kCopyDst |
                               TextureUsageFlagBits::kTextureBinding,
@@ -498,26 +498,26 @@ void DeferredSample::createOffscreenColorMapTexture()
     // copy texture data
     {
         BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = image.getWidth() * image.getHeight() * image.getChannel() * sizeof(char);
+        bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
         auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
         void* pointer = stagingBuffer->map();
-        memcpy(pointer, image.getPixels(), bufferDescriptor.size);
+        memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{};
         blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = image.getWidth() * image.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = image.getHeight();
+        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
+        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
         blitTextureBuffer.offset = 0;
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.colorMapTexture.get();
 
         Extent3D extent{};
-        extent.width = image.getWidth();
-        extent.height = image.getHeight();
+        extent.width = ktx.getWidth();
+        extent.height = ktx.getHeight();
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
@@ -546,15 +546,15 @@ void DeferredSample::createOffscreenColorMapTextureView()
 
 void DeferredSample::createOffscreenNormalMapTexture()
 {
-    Image image{ m_appDir / "normalmap_rgba.ktx" };
+    KTX ktx{ m_appDir / "normalmap_rgba.ktx" };
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
     textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
     textureDescriptor.mipLevels = 1;
     textureDescriptor.sampleCount = 1;
-    textureDescriptor.width = image.getWidth();
-    textureDescriptor.height = image.getHeight();
+    textureDescriptor.width = ktx.getWidth();
+    textureDescriptor.height = ktx.getHeight();
     textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
                               TextureUsageFlagBits::kCopyDst |
                               TextureUsageFlagBits::kTextureBinding,
@@ -564,26 +564,26 @@ void DeferredSample::createOffscreenNormalMapTexture()
     // copy texture data
     {
         BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = image.getWidth() * image.getHeight() * image.getChannel() * sizeof(char);
+        bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
         auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
         void* pointer = stagingBuffer->map();
-        memcpy(pointer, image.getPixels(), bufferDescriptor.size);
+        memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{};
         blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = image.getWidth() * image.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = image.getHeight();
+        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
+        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
         blitTextureBuffer.offset = 0;
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.normalMapTexture.get();
 
         Extent3D extent{};
-        extent.width = image.getWidth();
-        extent.height = image.getHeight();
+        extent.width = ktx.getWidth();
+        extent.height = ktx.getHeight();
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
