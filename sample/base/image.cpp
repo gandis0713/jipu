@@ -1,5 +1,6 @@
 #include "image.h"
 
+#include <ktx.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #define STB_IMAGE_IMPLEMENTATION
@@ -10,16 +11,38 @@ namespace vkt
 
 Image::Image(const std::filesystem::path& path)
 {
-    int components = 0;
-    stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &components, STBI_rgb_alpha);
+    namespace fs = std::filesystem;
 
-    if (pixels == nullptr)
+    fs::path ex = path.extension();
+    if (ex == ".ktx")
     {
-        throw std::runtime_error("failed to load texture image by path.");
-    }
+        ktxTexture* texture = nullptr;
+        ktxResult ret = ktxTexture_CreateFromNamedFile((path).c_str(),
+                                                       KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+                                                       &texture);
+        if (ret != KTX_SUCCESS)
+        {
+            throw std::runtime_error("Failed to load KTX.");
+        }
 
-    m_pixels = pixels;
-    m_channel = static_cast<int>(STBI_rgb_alpha);
+        m_width = texture->baseWidth;
+        m_height = texture->baseHeight;
+        m_pixels = ktxTexture_GetData(texture);
+        m_channel = ktxTexture_GetElementSize(texture);
+    }
+    else // png, jpg and so on.
+    {
+        int components = 0;
+        stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &components, STBI_rgb_alpha);
+
+        if (pixels == nullptr)
+        {
+            throw std::runtime_error("failed to load texture image by path.");
+        }
+
+        m_pixels = pixels;
+        m_channel = static_cast<int>(STBI_rgb_alpha);
+    }
 }
 
 Image::Image(void* buf, uint64_t len)

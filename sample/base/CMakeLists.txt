@@ -10,6 +10,7 @@ project(
 find_package(spdlog CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
+find_package(Ktx CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_path(TINYGLTF_INCLUDE
     NAMES "tiny_gltf.h"
@@ -70,6 +71,7 @@ target_link_libraries(vkt_sample_base
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
     glm::glm
+    KTX::ktx
 )
 
 if(NOT ANDROID)
