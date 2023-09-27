@@ -16,6 +16,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -63,8 +64,11 @@ private:
     void createOffscreenAlbedoColorAttachmentTextureView();
     void createOffscreenDepthStencilTexture();
     void createOffscreenDepthStencilTextureView();
+    void createOffscreenBindingGroupLayout();
+    void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
+    void createOffscreenUniformBuffer();
     void createOffscreenVertexBuffer();
 
     void createCompositionDepthStencilTexture();
@@ -85,10 +89,13 @@ private:
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
-    struct OffscreenVertex
+    struct MVP
     {
-        glm::vec3 position;
-    };
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    } m_mvp;
+
     struct
     {
         std::unique_ptr<Texture> positionColorAttachmentTexture = nullptr;
@@ -99,14 +106,13 @@ private:
         std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
-        std::vector<OffscreenVertex> vertices{
-            { { 0.0, -0.5, 0.0 } },
-            { { -0.5, 0.5, 0.0 } },
-            { { 0.5, 0.5, 0.0 } }
-        };
+        Polygon polygon{};
     } m_offscreen;
 
     struct CompositionVertex
@@ -150,20 +156,23 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
-    m_composition.vertexBuffer.reset();
     m_composition.pipeline.reset();
     m_composition.pipelineLayout.reset();
     m_composition.bindingGroupLayout.reset();
     m_composition.bindingGroup.reset();
+    m_composition.vertexBuffer.reset();
     m_composition.positionSampler.reset();
     m_composition.normalSampler.reset();
     m_composition.albedoSampler.reset();
     m_composition.depthStencilTextureView.reset();
     m_composition.depthStencilTexture.reset();
 
-    m_offscreen.vertexBuffer.reset();
     m_offscreen.pipeline.reset();
     m_offscreen.pipelineLayout.reset();
+    m_offscreen.bindingGroupLayout.reset();
+    m_offscreen.bindingGroup.reset();
+    m_offscreen.vertexBuffer.reset();
+    m_offscreen.uniformBuffer.reset();
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
     m_offscreen.albedoColorAttachmentTextureView.reset();
@@ -186,6 +195,7 @@ DeferredSample::~DeferredSample()
 
 void DeferredSample::init()
 {
+    Polygon polygon = loadGLTF(m_appDir / "armor.gltf");
     createDriver();
     createPhysicalDevice();
     createSurface();
@@ -203,17 +213,20 @@ void DeferredSample::init()
     createOffscreenAlbedoColorAttachmentTextureView();
     createOffscreenDepthStencilTexture();
     createOffscreenDepthStencilTextureView();
+    createOffscreenUniformBuffer();
+    createOffscreenVertexBuffer();
+    createOffscreenBindingGroupLayout();
+    createOffscreenBindingGroup();
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
-    createOffscreenVertexBuffer();
 
     createCompositionDepthStencilTexture();
     createCompositionDepthStencilTextureView();
+    createCompositionVertexBuffer();
     createCompositionBindingGroupLayout();
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
-    createCompositionVertexBuffer();
 }
 
 void DeferredSample::draw()
@@ -259,9 +272,10 @@ void DeferredSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
         renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.vertices.size()));
+        renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.polygon.vertices.size()));
         renderPassEncoder->end();
     }
     // second pass
@@ -440,9 +454,38 @@ void DeferredSample::createOffscreenDepthStencilTextureView()
     m_offscreen.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
+void DeferredSample::createOffscreenBindingGroupLayout()
+{
+    BufferBindingLayout bufferBindingLayout{};
+    bufferBindingLayout.type = BufferBindingType::kUniform;
+    bufferBindingLayout.index = 0;
+    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+    bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+
+    m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+}
+
+void DeferredSample::createOffscreenBindingGroup()
+{
+    BufferBinding bufferBinding{};
+    bufferBinding.buffer = m_offscreen.uniformBuffer.get();
+    bufferBinding.index = 0;
+    bufferBinding.offset = 0;
+    bufferBinding.size = sizeof(MVP);
+
+    BindingGroupDescriptor bindingGroupDescriptor{};
+    bindingGroupDescriptor.buffers = { bufferBinding };
+    bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
+
+    m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+}
+
 void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
+    descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
     m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
@@ -472,13 +515,25 @@ void DeferredSample::createOffscreenPipeline()
         // input layout
         VertexInputLayout inputLayout;
         inputLayout.mode = VertexMode::kVertex;
-        inputLayout.stride = sizeof(OffscreenVertex);
+        inputLayout.stride = sizeof(Vertex);
 
-        VertexAttribute attribute;
-        attribute.format = VertexFormat::kSFLOATx3;
-        attribute.offset = offsetof(OffscreenVertex, position);
+        VertexAttribute positionAttribute;
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
 
-        inputLayout.attributes = { attribute };
+        VertexAttribute normalAttribute;
+        normalAttribute.format = VertexFormat::kSFLOATx3;
+        normalAttribute.offset = offsetof(Vertex, normal);
+
+        VertexAttribute tangentAttribute;
+        tangentAttribute.format = VertexFormat::kSFLOATx4;
+        tangentAttribute.offset = offsetof(Vertex, tangent);
+
+        VertexAttribute texCoordAttribute;
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(Vertex, texCoord);
+
+        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
         vertexShage.layouts = { inputLayout };
 
@@ -488,7 +543,7 @@ void DeferredSample::createOffscreenPipeline()
     // Rasterization
     RasterizationStage rasterizationStage{};
     rasterizationStage.sampleCount = m_sampleCount;
-    rasterizationStage.cullMode = CullMode::kBack;
+    rasterizationStage.cullMode = CullMode::kNone;
     rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
     // shader module
@@ -537,15 +592,33 @@ void DeferredSample::createOffscreenPipeline()
     m_offscreen.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
+void DeferredSample::createOffscreenUniformBuffer()
+{
+    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(MVP);
+    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_offscreen.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_offscreen.uniformBuffer->map();
+    memcpy(mappedPointer, &m_mvp, sizeof(MVP));
+    // m_offscreen.uniformBuffer->unmap();
+}
+
 void DeferredSample::createOffscreenVertexBuffer()
 {
+    m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
+
     BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(OffscreenVertex) * m_offscreen.vertices.size();
+    bufferDescriptor.size = sizeof(Vertex) * m_offscreen.polygon.vertices.size();
     bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
 
     m_offscreen.vertexBuffer = m_device->createBuffer(bufferDescriptor);
     void* mappedPointer = m_offscreen.vertexBuffer->map();
-    memcpy(mappedPointer, m_offscreen.vertices.data(), bufferDescriptor.size);
+    memcpy(mappedPointer, m_offscreen.polygon.vertices.data(), bufferDescriptor.size);
     m_offscreen.vertexBuffer->unmap();
 }
 
