@@ -1,4 +1,5 @@
 #include "file.h"
+#include "image.h"
 #include "model.h"
 #include "sample.h"
 
@@ -64,12 +65,16 @@ private:
     void createOffscreenAlbedoColorAttachmentTextureView();
     void createOffscreenDepthStencilTexture();
     void createOffscreenDepthStencilTextureView();
+    void createOffscreenColorMapTexture();
+    void createOffscreenColorMapTextureView();
+    void createOffscreenNormalMapTexture();
+    void createOffscreenNormalMapTextureView();
+    void createOffscreenUniformBuffer();
+    void createOffscreenVertexBuffer();
     void createOffscreenBindingGroupLayout();
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
-    void createOffscreenUniformBuffer();
-    void createOffscreenVertexBuffer();
 
     void createCompositionDepthStencilTexture();
     void createCompositionDepthStencilTextureView();
@@ -106,13 +111,18 @@ private:
         std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> depthStencilTexture = nullptr;
         std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
+        std::unique_ptr<Texture> colorMapTexture = nullptr;
+        std::unique_ptr<TextureView> colorMapTextureView = nullptr;
+        std::unique_ptr<Texture> normalMapTexture = nullptr;
+        std::unique_ptr<TextureView> normalMapTextureView = nullptr;
+        std::unique_ptr<Sampler> colorMapSampler = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
-        std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<Buffer> vertexBuffer = nullptr;
-        std::unique_ptr<Buffer> indexBuffer = nullptr;
         Polygon polygon{};
     } m_offscreen;
 
@@ -175,6 +185,11 @@ DeferredSample::~DeferredSample()
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
+    m_offscreen.colorMapSampler.reset();
+    m_offscreen.colorMapTextureView.reset();
+    m_offscreen.colorMapTexture.reset();
+    m_offscreen.normalMapTextureView.reset();
+    m_offscreen.normalMapTexture.reset();
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
     m_offscreen.albedoColorAttachmentTextureView.reset();
@@ -215,6 +230,10 @@ void DeferredSample::init()
     createOffscreenAlbedoColorAttachmentTextureView();
     createOffscreenDepthStencilTexture();
     createOffscreenDepthStencilTextureView();
+    createOffscreenColorMapTexture();
+    createOffscreenColorMapTextureView();
+    createOffscreenNormalMapTexture();
+    createOffscreenNormalMapTextureView();
     createOffscreenUniformBuffer();
     createOffscreenVertexBuffer();
     createOffscreenBindingGroupLayout();
@@ -457,6 +476,97 @@ void DeferredSample::createOffscreenDepthStencilTextureView()
     m_offscreen.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
+void DeferredSample::createOffscreenColorMapTexture()
+{
+    Image image{ m_appDir / "colormap_rgba.ktx" };
+
+    TextureDescriptor textureDescriptor{};
+    textureDescriptor.type = TextureType::k2D;
+    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm; // kRGBA_8888_UInt_Norm_SRGB
+    textureDescriptor.mipLevels = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.width = image.getWidth();
+    textureDescriptor.height = image.getHeight();
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
+                              TextureUsageFlagBits::kCopyDst |
+                              TextureUsageFlagBits::kTextureBinding,
+
+    m_offscreen.colorMapTexture = m_device->createTexture(textureDescriptor);
+
+    // copy texture data
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = image.getWidth() * image.getHeight() * image.getChannel() * sizeof(char);
+        bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = stagingBuffer->map();
+        memcpy(pointer, image.getPixels(), bufferDescriptor.size);
+        // stagingBuffer->unmap();
+
+        BlitTextureBuffer blitTextureBuffer{};
+        blitTextureBuffer.buffer = stagingBuffer.get();
+        blitTextureBuffer.bytesPerRow = image.getWidth() * image.getChannel() * sizeof(char);
+        blitTextureBuffer.rowsPerTexture = image.getHeight();
+        blitTextureBuffer.offset = 0;
+
+        BlitTexture blitTexture{};
+        blitTexture.texture = m_offscreen.colorMapTexture.get();
+
+        Extent3D extent{};
+        extent.width = image.getWidth();
+        extent.height = image.getHeight();
+        extent.depth = 1;
+
+        CommandBufferDescriptor commandBufferDescriptor{};
+        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
+
+        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->finish();
+
+        m_queue->submit({ commandBuffer.get() });
+    }
+}
+
+void DeferredSample::createOffscreenColorMapTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_offscreen.colorMapTextureView = m_offscreen.colorMapTexture->createTextureView(descriptor);
+}
+
+void DeferredSample::createOffscreenNormalMapTexture()
+{
+    Image image{ m_appDir / "normalmap_rgba.ktx" };
+
+    TextureDescriptor textureDescriptor{};
+    textureDescriptor.type = TextureType::k2D;
+    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    textureDescriptor.mipLevels = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.width = image.getWidth();
+    textureDescriptor.height = image.getHeight();
+    textureDescriptor.usage = TextureUsageFlagBits::kTextureBinding;
+
+    m_offscreen.normalMapTexture = m_device->createTexture(textureDescriptor);
+}
+
+void DeferredSample::createOffscreenNormalMapTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kColor;
+
+    m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
+}
+
 void DeferredSample::createOffscreenUniformBuffer()
 {
     m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -506,8 +616,13 @@ void DeferredSample::createOffscreenBindingGroupLayout()
     bufferBindingLayout.index = 0;
     bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
+    SamplerBindingLayout samplerBindingLayout{};
+    samplerBindingLayout.index = 1;
+    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+    bindingGroupLayoutDescriptor.samplers = { samplerBindingLayout };
 
     m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -520,8 +635,28 @@ void DeferredSample::createOffscreenBindingGroup()
     bufferBinding.offset = 0;
     bufferBinding.size = sizeof(MVP);
 
+    { // create color map sampler
+
+        SamplerDescriptor samplerDescriptor{};
+        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+        samplerDescriptor.lodMin = 0.0f;
+        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.colorMapTexture->getMipLevels());
+        samplerDescriptor.minFilter = FilterMode::kLinear;
+        samplerDescriptor.magFilter = FilterMode::kLinear;
+        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+
+        m_offscreen.colorMapSampler = m_device->createSampler(samplerDescriptor);
+    }
+    SamplerBinding samplerBinding{};
+    samplerBinding.index = 1;
+    samplerBinding.sampler = m_offscreen.colorMapSampler.get();
+    samplerBinding.textureView = m_offscreen.colorMapTextureView.get();
+
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding };
+    bindingGroupDescriptor.samplers = { samplerBinding };
     bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
 
     m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
