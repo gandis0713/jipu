@@ -116,6 +116,7 @@ private:
         std::unique_ptr<Texture> normalMapTexture = nullptr;
         std::unique_ptr<TextureView> normalMapTextureView = nullptr;
         std::unique_ptr<Sampler> colorMapSampler = nullptr;
+        std::unique_ptr<Sampler> normalMapSampler = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
@@ -185,6 +186,7 @@ DeferredSample::~DeferredSample()
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
+    m_offscreen.normalMapSampler.reset();
     m_offscreen.colorMapSampler.reset();
     m_offscreen.colorMapTextureView.reset();
     m_offscreen.colorMapTexture.reset();
@@ -548,14 +550,55 @@ void DeferredSample::createOffscreenNormalMapTexture()
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
-    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
     textureDescriptor.mipLevels = 1;
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = image.getWidth();
     textureDescriptor.height = image.getHeight();
-    textureDescriptor.usage = TextureUsageFlagBits::kTextureBinding;
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
+                              TextureUsageFlagBits::kCopyDst |
+                              TextureUsageFlagBits::kTextureBinding,
 
     m_offscreen.normalMapTexture = m_device->createTexture(textureDescriptor);
+
+    // copy texture data
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = image.getWidth() * image.getHeight() * image.getChannel() * sizeof(char);
+        bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = stagingBuffer->map();
+        memcpy(pointer, image.getPixels(), bufferDescriptor.size);
+        // stagingBuffer->unmap();
+
+        BlitTextureBuffer blitTextureBuffer{};
+        blitTextureBuffer.buffer = stagingBuffer.get();
+        blitTextureBuffer.bytesPerRow = image.getWidth() * image.getChannel() * sizeof(char);
+        blitTextureBuffer.rowsPerTexture = image.getHeight();
+        blitTextureBuffer.offset = 0;
+
+        BlitTexture blitTexture{};
+        blitTexture.texture = m_offscreen.normalMapTexture.get();
+
+        Extent3D extent{};
+        extent.width = image.getWidth();
+        extent.height = image.getHeight();
+        extent.depth = 1;
+
+        CommandBufferDescriptor commandBufferDescriptor{};
+        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
+
+        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+        commandEncoder->finish();
+
+        m_queue->submit({ commandBuffer.get() });
+    }
 }
 
 void DeferredSample::createOffscreenNormalMapTextureView()
@@ -616,13 +659,17 @@ void DeferredSample::createOffscreenBindingGroupLayout()
     bufferBindingLayout.index = 0;
     bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-    SamplerBindingLayout samplerBindingLayout{};
-    samplerBindingLayout.index = 1;
-    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    SamplerBindingLayout colorSamplerBindingLayout{};
+    colorSamplerBindingLayout.index = 1;
+    colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    SamplerBindingLayout normalSamplerBindingLayout{};
+    normalSamplerBindingLayout.index = 2;
+    normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
-    bindingGroupLayoutDescriptor.samplers = { samplerBindingLayout };
+    bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
 
     m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -649,14 +696,35 @@ void DeferredSample::createOffscreenBindingGroup()
 
         m_offscreen.colorMapSampler = m_device->createSampler(samplerDescriptor);
     }
-    SamplerBinding samplerBinding{};
-    samplerBinding.index = 1;
-    samplerBinding.sampler = m_offscreen.colorMapSampler.get();
-    samplerBinding.textureView = m_offscreen.colorMapTextureView.get();
+
+    { // create normal map sampler
+
+        SamplerDescriptor samplerDescriptor{};
+        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+        samplerDescriptor.lodMin = 0.0f;
+        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalMapTexture->getMipLevels());
+        samplerDescriptor.minFilter = FilterMode::kLinear;
+        samplerDescriptor.magFilter = FilterMode::kLinear;
+        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+
+        m_offscreen.normalMapSampler = m_device->createSampler(samplerDescriptor);
+    }
+
+    SamplerBinding colorSamplerBinding{};
+    colorSamplerBinding.index = 1;
+    colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+    colorSamplerBinding.textureView = m_offscreen.colorMapTextureView.get();
+
+    SamplerBinding normalSamplerBinding{};
+    normalSamplerBinding.index = 2;
+    normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+    normalSamplerBinding.textureView = m_offscreen.normalMapTextureView.get();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding };
-    bindingGroupDescriptor.samplers = { samplerBinding };
+    bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
     bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
 
     m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
