@@ -112,6 +112,7 @@ Polygon loadGLTF(const std::filesystem::path& path)
             {
                 const float* positionBuffer = nullptr;
                 const float* normalsBuffer = nullptr;
+                const float* tangentBuffer = nullptr;
                 const float* texCoordsBuffer = nullptr;
                 size_t vertexCount = 0;
 
@@ -130,6 +131,15 @@ Polygon loadGLTF(const std::filesystem::path& path)
                     const tinygltf::BufferView& view = model.bufferViews[accessor.bufferView];
                     normalsBuffer = reinterpret_cast<const float*>(&(model.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                 }
+
+                // Get buffer data for vertex tangent
+                if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
+                {
+                    const tinygltf::Accessor& accessor = model.accessors[glTFPrimitive.attributes.find("TANGENT")->second];
+                    const tinygltf::BufferView& view = model.bufferViews[accessor.bufferView];
+                    tangentBuffer = reinterpret_cast<const float*>(&(model.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                }
+
                 // Get buffer data for vertex texture coordinates
                 // glTF supports multiple sets, we only load the first one
                 if (glTFPrimitive.attributes.find("TEXCOORD_0") != glTFPrimitive.attributes.end())
@@ -145,6 +155,7 @@ Polygon loadGLTF(const std::filesystem::path& path)
                     Vertex vert{};
                     vert.pos = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
                     vert.normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                    vert.tangent = glm::normalize(glm::vec4(tangentBuffer ? glm::make_vec4(&tangentBuffer[v * 4]) : glm::vec4(0.0f)));
                     vert.texCoord = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec3(0.0f);
                     polygon.vertices.push_back(vert);
                 }
