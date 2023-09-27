@@ -112,6 +112,7 @@ private:
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::unique_ptr<Buffer> indexBuffer = nullptr;
         Polygon polygon{};
     } m_offscreen;
 
@@ -172,6 +173,7 @@ DeferredSample::~DeferredSample()
     m_offscreen.bindingGroupLayout.reset();
     m_offscreen.bindingGroup.reset();
     m_offscreen.vertexBuffer.reset();
+    m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
     m_offscreen.depthStencilTextureView.reset();
     m_offscreen.depthStencilTexture.reset();
@@ -272,10 +274,11 @@ void DeferredSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
         renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get());
         renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_offscreen.polygon.vertices.size()));
+        renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()));
         renderPassEncoder->end();
     }
     // second pass
@@ -454,6 +457,48 @@ void DeferredSample::createOffscreenDepthStencilTextureView()
     m_offscreen.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
+void DeferredSample::createOffscreenUniformBuffer()
+{
+    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_mvp.view = glm::lookAt(glm::vec3(500.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(MVP);
+    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_offscreen.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_offscreen.uniformBuffer->map();
+    memcpy(mappedPointer, &m_mvp, sizeof(MVP));
+    // m_offscreen.uniformBuffer->unmap();
+}
+
+void DeferredSample::createOffscreenVertexBuffer()
+{
+    m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
+
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = sizeof(Vertex) * m_offscreen.polygon.vertices.size();
+        bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
+
+        m_offscreen.vertexBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_offscreen.vertexBuffer->map();
+        memcpy(mappedPointer, m_offscreen.polygon.vertices.data(), bufferDescriptor.size);
+        m_offscreen.vertexBuffer->unmap();
+    }
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = sizeof(uint16_t) * m_offscreen.polygon.indices.size();
+        bufferDescriptor.usage = BufferUsageFlagBits::kIndex;
+
+        m_offscreen.indexBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_offscreen.indexBuffer->map();
+        memcpy(mappedPointer, m_offscreen.polygon.indices.data(), bufferDescriptor.size);
+        m_offscreen.indexBuffer->unmap();
+    }
+}
+
 void DeferredSample::createOffscreenBindingGroupLayout()
 {
     BufferBindingLayout bufferBindingLayout{};
@@ -590,36 +635,6 @@ void DeferredSample::createOffscreenPipeline()
     renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
 
     m_offscreen.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
-}
-
-void DeferredSample::createOffscreenUniformBuffer()
-{
-    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
-
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(MVP);
-    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
-
-    m_offscreen.uniformBuffer = m_device->createBuffer(bufferDescriptor);
-    void* mappedPointer = m_offscreen.uniformBuffer->map();
-    memcpy(mappedPointer, &m_mvp, sizeof(MVP));
-    // m_offscreen.uniformBuffer->unmap();
-}
-
-void DeferredSample::createOffscreenVertexBuffer()
-{
-    m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
-
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = sizeof(Vertex) * m_offscreen.polygon.vertices.size();
-    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-
-    m_offscreen.vertexBuffer = m_device->createBuffer(bufferDescriptor);
-    void* mappedPointer = m_offscreen.vertexBuffer->map();
-    memcpy(mappedPointer, m_offscreen.polygon.vertices.data(), bufferDescriptor.size);
-    m_offscreen.vertexBuffer->unmap();
 }
 
 void DeferredSample::createCompositionDepthStencilTexture()

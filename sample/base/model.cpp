@@ -100,7 +100,7 @@ Polygon loadGLTF(const std::filesystem::path& path)
 
     Polygon polygon;
     // for (const auto& mesh : model.meshes)
-    const auto& mesh = model.meshes[0];
+    const auto& mesh = model.meshes[1];
     {
         // Iterate through all primitives of this node's mesh
         for (size_t i = 0; i < mesh.primitives.size(); i++)
