@@ -8,7 +8,7 @@ namespace vkt
 
 KTX::KTX(const std::filesystem::path& path)
 {
-    ktxResult ret = ktxTexture_CreateFromNamedFile((path).c_str(),
+    ktxResult ret = ktxTexture_CreateFromNamedFile(path.string().c_str(),
                                                    KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
                                                    &m_texture);
     if (ret != KTX_SUCCESS)
