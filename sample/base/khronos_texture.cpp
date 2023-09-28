@@ -46,7 +46,6 @@ int KTX::getHeight() const
 int KTX::getChannel() const
 {
     return ktxTexture_GetElementSize(m_texture);
-    ;
 }
 
 } // namespace vkt
