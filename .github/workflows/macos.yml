@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: "Prepare tools"
-        run: brew install ninja
+        run: brew install cmake ninja autoconf automake libtool
       # # https://github.com/marketplace/actions/install-vulkan-sdk
       # - name: Install Vulkan SDK
       #   uses: humbletim/install-vulkan-sdk@v1.1.1
