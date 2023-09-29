@@ -182,6 +182,8 @@ void ParticleSample::init()
 
     createQueue();
     createCommandBuffer();
+
+    m_initialized = true;
 }
 
 void ParticleSample::draw()

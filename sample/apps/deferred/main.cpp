@@ -214,7 +214,6 @@ DeferredSample::~DeferredSample()
 
 void DeferredSample::init()
 {
-    Polygon polygon = loadGLTF(m_appDir / "armor.gltf");
     createDriver();
     createPhysicalDevice();
     createSurface();
@@ -250,6 +249,8 @@ void DeferredSample::init()
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
+
+    m_initialized = true;
 }
 
 void DeferredSample::draw()
@@ -480,7 +481,9 @@ void DeferredSample::createOffscreenDepthStencilTextureView()
 
 void DeferredSample::createOffscreenColorMapTexture()
 {
-    KTX ktx{ m_appDir / "colormap_rgba.ktx" };
+    // ktx{ m_appDir / "colormap_rgba.ktx" };
+    std::vector<char> data = utils::readFile(m_appDir / "colormap_rgba.ktx", m_handle);
+    KTX ktx{ data.data(), data.size() };
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
@@ -546,7 +549,9 @@ void DeferredSample::createOffscreenColorMapTextureView()
 
 void DeferredSample::createOffscreenNormalMapTexture()
 {
-    KTX ktx{ m_appDir / "normalmap_rgba.ktx" };
+    // KTX ktx{ m_appDir / "normalmap_rgba.ktx" };
+    std::vector<char> data = utils::readFile(m_appDir / "normalmap_rgba.ktx", m_handle);
+    KTX ktx{ data.data(), data.size() };
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
@@ -628,7 +633,9 @@ void DeferredSample::createOffscreenUniformBuffer()
 
 void DeferredSample::createOffscreenVertexBuffer()
 {
-    m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
+    // m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
+    std::vector<char> data = utils::readFile(m_appDir / "armor.gltf", m_handle);
+    m_offscreen.polygon = loadGLTF(data.data(), data.size(), m_appDir);
 
     {
         BufferDescriptor bufferDescriptor{};
