@@ -24,6 +24,7 @@ struct VulkanDriverKnobs
     uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     // TODO: use bitset instead of bool type.
+    bool debugReport = false;
     bool debugUtils = false;
     bool surface = false;
     bool androidSurface = false;
@@ -81,6 +82,11 @@ struct VulkanAPI
     // Not technically an instance proc but we want to be able to use it as soon as the
     // device is created.
     PFN_vkDestroyDevice DestroyDevice = nullptr;
+
+    // VK_EXT_debug_report
+    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT;
+    PFN_vkDebugReportMessageEXT DebugReportMessageEXT;
+    PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT;
 
     // VK_EXT_debug_utils
     PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;

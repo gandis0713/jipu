@@ -25,6 +25,7 @@ const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 const char kLayerKhronosValidation[] = "VK_LAYER_KHRONOS_validation";
 
 // debug
+const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
 const char kExtensionNameExtDebugUtils[] = "VK_EXT_debug_utils";
 
 namespace vkt
@@ -231,6 +232,10 @@ void VulkanDriver::gatherDriverInfo()
             {
                 m_driverInfo.win32Surface = true;
             }
+            if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugReport, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.debugReport = true;
+            }
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugUtils, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
                 m_driverInfo.debugUtils = true;
@@ -315,7 +320,9 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #endif
 
 #ifndef NDEBUG
-    requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
+    // TODO
+    // requiredInstanceExtensions.push_back(kExtensionNameExtDebugReport);
+    // requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
 #endif
 
 #if VK_HEADER_VERSION >= 216
@@ -330,9 +337,6 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     {
         spdlog::info("{}{}", '\t', extension);
     }
-
-    // TODO: Debug Utils
-    // requiredInstanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     return requiredInstanceExtensions;
 }

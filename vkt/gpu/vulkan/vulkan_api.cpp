@@ -67,6 +67,13 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
     GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties);
     GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties);
 
+    if (driverKnobs.debugReport)
+    {
+        GET_INSTANCE_PROC(CreateDebugReportCallbackEXT);
+        GET_INSTANCE_PROC(DebugReportMessageEXT);
+        GET_INSTANCE_PROC(DestroyDebugReportCallbackEXT);
+    }
+
     if (driverKnobs.debugUtils)
     {
         GET_INSTANCE_PROC(CmdBeginDebugUtilsLabelEXT);
