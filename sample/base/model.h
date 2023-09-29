@@ -17,6 +17,6 @@ struct Polygon
 Polygon loadOBJ(const std::filesystem::path& path);
 Polygon loadOBJ(void* buf, uint64_t len);
 Polygon loadGLTF(const std::filesystem::path& path);
-Polygon loadGLTF(void* buf, uint64_t len);
+Polygon loadGLTF(void* buf, uint64_t len, const std::filesystem::path& baseDir);
 
 } // namespace vkt
