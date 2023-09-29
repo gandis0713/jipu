@@ -320,9 +320,10 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #endif
 
 #ifndef NDEBUG
-    // TODO
-    // requiredInstanceExtensions.push_back(kExtensionNameExtDebugReport);
-    // requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
+    if (m_driverInfo.debugReport)
+        requiredInstanceExtensions.push_back(kExtensionNameExtDebugReport);
+    if (m_driverInfo.debugUtils)
+        requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
 #endif
 
 #if VK_HEADER_VERSION >= 216
