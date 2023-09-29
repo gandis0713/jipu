@@ -427,6 +427,7 @@ void TriangleSample::createBindingGroupLayout()
     SamplerBindingLayout samplerBindingLayout{};
     samplerBindingLayout.index = 1;
     samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    samplerBindingLayout.withTexture = true;
     std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,

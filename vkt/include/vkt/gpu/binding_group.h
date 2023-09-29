@@ -31,7 +31,7 @@ struct SamplerBinding : Binding
 
 struct TextureBinding : Binding
 {
-    // TODO: texture binding
+    TextureView* textureView = nullptr;
 };
 
 class BindingGroupLayout;

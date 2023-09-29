@@ -662,10 +662,12 @@ void DeferredSample::createOffscreenBindingGroupLayout()
     SamplerBindingLayout colorSamplerBindingLayout{};
     colorSamplerBindingLayout.index = 1;
     colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    colorSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 2;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    normalSamplerBindingLayout.withTexture = true;
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
@@ -870,14 +872,17 @@ void DeferredSample::createCompositionBindingGroupLayout()
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
     positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    positionSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 1;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    normalSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout albedoSamplerBindingLayout{};
     albedoSamplerBindingLayout.index = 2;
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    albedoSamplerBindingLayout.withTexture = true;
 
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
 

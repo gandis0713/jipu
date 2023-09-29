@@ -36,6 +36,7 @@ struct BufferBindingLayout : BindingLayout
 
 struct SamplerBindingLayout : BindingLayout
 {
+    bool withTexture = false;
 };
 
 struct TextureBindingLayout : BindingLayout
