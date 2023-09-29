@@ -13,13 +13,20 @@ KTX::KTX(const std::filesystem::path& path)
                                                    &m_texture);
     if (ret != KTX_SUCCESS)
     {
-        throw std::runtime_error("Failed to load KTX.");
+        throw std::runtime_error("Failed to load KTX from file.");
     }
 }
 
 KTX::KTX(void* buf, uint64_t len)
 {
-    // TODO
+    ktxResult ret = ktxTexture_CreateFromMemory(static_cast<const ktx_uint8_t*>(buf),
+                                                len,
+                                                KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+                                                &m_texture);
+    if (ret != KTX_SUCCESS)
+    {
+        throw std::runtime_error("Failed to load KTX from memory.");
+    }
 }
 
 KTX::~KTX()
