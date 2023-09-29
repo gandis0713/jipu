@@ -34,13 +34,13 @@ jobs:
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
         uses: lukka/get-cmake@latest
-      - name: Setup vcpkg and install them.
-        uses: lukka/run-vcpkg@v10
-        with:
-          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-          vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
-          vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
-          runVcpkgInstall: false
+      # - name: Setup vcpkg and install them.
+      #   uses: lukka/run-vcpkg@v10
+      #   with:
+      #     vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+      #     vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+      #     vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+      #     runVcpkgInstall: false
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
         uses: lukka/run-cmake@v10
         with:
