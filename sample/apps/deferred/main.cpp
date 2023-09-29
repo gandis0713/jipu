@@ -391,7 +391,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -414,7 +414,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -437,7 +437,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = m_swapchain->getTextureFormat();
+    descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -617,7 +617,7 @@ void DeferredSample::createOffscreenNormalMapTextureView()
 
 void DeferredSample::createOffscreenUniformBuffer()
 {
-    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     m_mvp.view = glm::lookAt(glm::vec3(500.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
 
@@ -823,13 +823,13 @@ void DeferredSample::createOffscreenPipeline()
 
         // targets
         FragmentStage::Target positionTarget{};
-        positionTarget.format = m_swapchain->getTextureFormat();
+        positionTarget.format = m_offscreen.positionColorAttachmentTexture->getFormat();
 
         FragmentStage::Target normalTarget{};
-        normalTarget.format = m_swapchain->getTextureFormat();
+        normalTarget.format = m_offscreen.normalColorAttachmentTexture->getFormat();
 
         FragmentStage::Target albedoTarget{};
-        albedoTarget.format = m_swapchain->getTextureFormat();
+        albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
 
         fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
         fragmentStage.shaderModule = fragmentShaderModule.get();

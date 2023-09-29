@@ -36,6 +36,7 @@ enum class TextureFormat
     kRGB_888_UInt_Norm_SRGB,
     kRGBA_8888_UInt_Norm,
     kRGBA_8888_UInt_Norm_SRGB,
+    kRGBA_16161616_UInt_Norm,
     kD_32_SFloat,
     kD_24_UInt_Norm_S_8_UInt,
 };
