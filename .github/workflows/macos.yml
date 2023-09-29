@@ -10,6 +10,8 @@ jobs:
     runs-on: "macos-12"
     steps:
       - uses: actions/checkout@v3
+      - name: "Prepare tools"
+        run: brew install ninja
       # # https://github.com/marketplace/actions/install-vulkan-sdk
       # - name: Install Vulkan SDK
       #   uses: humbletim/install-vulkan-sdk@v1.1.1
