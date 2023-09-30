@@ -19,6 +19,8 @@ layout(binding = 3) uniform UBO
 }
 ubo;
 
+#define ambient 0.0
+
 void main()
 {
     if (inTexCoord.x < 0.5 && inTexCoord.y < 0.5)
@@ -28,11 +30,15 @@ void main()
         vec3 normal = texture(texSamplerNormal, inTexCoord * 2.0f).rgb;
         vec4 albedo = texture(texSamplerAlbedo, inTexCoord * 2.0f);
 
+        Light light = ubo.light;
+        light.position = vec3(0.0f, 0.0f, 300.0f);
+        light.color = vec3(1.0f, 1.0f, 1.0f);
+
         // Ambient part
-        vec3 color = albedo.rgb * 0.0;
+        vec3 color = albedo.rgb * ambient;
 
         // Vector to light
-        vec3 L = ubo.light.position.xyz - position;
+        vec3 L = light.position.xyz - position;
         // Distance from light to fragment position
         float dist = length(L);
 
@@ -40,30 +46,29 @@ void main()
         vec3 V = vec3(0.0f, 0.0f, 300.0f) - position;
         V = normalize(V);
 
-        // if(dist < ubo.lights[i].radius)
+        float range = 25000.0f;
+        if (dist < range)
         {
             // Light to fragment
             L = normalize(L);
 
             // Attenuation
-            // float atten = ubo.lights[i].radius / (pow(dist, 2.0) + 1.0);
-            float atten = 5.0f / (pow(dist, 2.0) + 1.0);
+            float atten = range / (pow(dist, 2.0) + 1.0);
 
             // Diffuse part
             vec3 N = normalize(normal);
             float NdotL = max(0.0, dot(N, L));
-            vec3 diff = ubo.light.color * albedo.rgb * NdotL * atten;
+            vec3 diff = light.color * albedo.rgb * NdotL * atten;
 
             // Specular part
             // Specular map values are stored in alpha of albedo mrt
             vec3 R = reflect(-L, N);
             float NdotR = max(0.0, dot(R, V));
-            vec3 spec = ubo.light.color * albedo.a * pow(NdotR, 16.0) * atten;
+            vec3 spec = light.color * albedo.a * pow(NdotR, 16.0) * atten;
 
             color += diff + spec;
         }
-
-        outColor = vec4(color, 1.0);
+        outColor = vec4(color, 1.0f);
     }
     else if (inTexCoord.x < 0.5 && inTexCoord.y >= 0.5)
     {
