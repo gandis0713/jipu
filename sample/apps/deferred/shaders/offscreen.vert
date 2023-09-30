@@ -26,9 +26,9 @@ void main()
     outPos = vec3(mvp.model * vec4(inPos, 1.0));
 
     // Normal in world space
-    mat3 mNormal = transpose(inverse(mat3(mvp.model)));
-    outNormal = mNormal * normalize(inNormal);
-    outTangent = mNormal * normalize(vec3(inTangent));
+    mat3 modelWorldTranspos = transpose(inverse(mat3(mvp.model))); // refer to : https://webglfundamentals.org/webgl/lessons/ko/webgl-3d-lighting-directional.html
+    outNormal = modelWorldTranspos * normalize(inNormal);
+    outTangent = modelWorldTranspos * normalize(vec3(inTangent));
 
     outTexCoord = inTexCoord;
 }
