@@ -1,3 +1,4 @@
+#include "camera.h"
 #include "file.h"
 #include "khronos_texture.h"
 #include "light.h"
@@ -70,6 +71,7 @@ private:
     void createOffscreenColorMapTextureView();
     void createOffscreenNormalMapTexture();
     void createOffscreenNormalMapTextureView();
+    void createOffscreenCamera();
     void createOffscreenUniformBuffer();
     void createOffscreenVertexBuffer();
     void createOffscreenBindingGroupLayout();
@@ -126,6 +128,7 @@ private:
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
 
@@ -196,6 +199,7 @@ DeferredSample::~DeferredSample()
     m_offscreen.pipelineLayout.reset();
     m_offscreen.bindingGroupLayout.reset();
     m_offscreen.bindingGroup.reset();
+    m_offscreen.camera.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
@@ -248,6 +252,7 @@ void DeferredSample::init()
     createOffscreenColorMapTextureView();
     createOffscreenNormalMapTexture();
     createOffscreenNormalMapTextureView();
+    createOffscreenCamera();
     createOffscreenUniformBuffer();
     createOffscreenVertexBuffer();
     createOffscreenBindingGroupLayout();
@@ -629,14 +634,23 @@ void DeferredSample::createOffscreenNormalMapTextureView()
     m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
 }
 
+void DeferredSample::createOffscreenCamera()
+{
+    m_offscreen.camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
+                                                             m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
+                                                             0.1f,
+                                                             1000.0f);
+    m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
 void DeferredSample::createOffscreenUniformBuffer()
 {
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
     glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 reori = R * T;
     m_mvp.model = reori;
-    m_mvp.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-    m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
+    m_mvp.view = m_offscreen.camera->getViewMat();
+    m_mvp.proj = m_offscreen.camera->getProjectionMat();
 
     BufferDescriptor bufferDescriptor{};
     bufferDescriptor.size = sizeof(MVP);
