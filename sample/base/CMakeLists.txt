@@ -23,6 +23,8 @@ if(NOT ANDROID)
 endif()
 
 list(APPEND SRC_FILES
+    camera.cpp
+    camera.h
     sample.cpp
     sample.h
     window.cpp
