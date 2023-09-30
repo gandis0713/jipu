@@ -14,11 +14,21 @@ layout(location = 2) in vec4 inTangent;
 layout(location = 3) in vec2 inTexCoord;
 
 layout(location = 0) out vec3 outPos;
-layout(location = 1) out vec2 outTexCoord;
+layout(location = 1) out vec3 outNormal;
+layout(location = 2) out vec3 outTangent;
+layout(location = 3) out vec2 outTexCoord;
 
 void main()
 {
     gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPos, 1.0);
-    outPos = inPos;
+
+    // Position in world space
+    outPos = vec3(mvp.model * vec4(inPos, 1.0));
+
+    // Normal in world space
+    mat3 mNormal = transpose(inverse(mat3(mvp.model)));
+    outNormal = mNormal * normalize(inNormal);
+    outTangent = mNormal * normalize(vec3(inTangent));
+
     outTexCoord = inTexCoord;
 }
