@@ -1,5 +1,6 @@
 #include "file.h"
 #include "khronos_texture.h"
+#include "light.h"
 #include "model.h"
 #include "sample.h"
 
@@ -82,6 +83,7 @@ private:
     void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
+    void createCompositionUniformBuffer();
     void createCompositionVertexBuffer();
 
     void createCommandBuffer();
@@ -143,7 +145,11 @@ private:
         std::unique_ptr<Sampler> albedoSampler = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::vector<Light> lights{
+            Light({ 300.0f, 300.0f, 0.0f }, { 1.0f, 0.0f, 0.0f })
+        };
         std::vector<CompositionVertex> vertices{
             { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
             { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
@@ -173,6 +179,7 @@ DeferredSample::~DeferredSample()
     m_composition.bindingGroupLayout.reset();
     m_composition.bindingGroup.reset();
     m_composition.vertexBuffer.reset();
+    m_composition.uniformBuffer.reset();
     m_composition.positionSampler.reset();
     m_composition.normalSampler.reset();
     m_composition.albedoSampler.reset();
@@ -244,6 +251,7 @@ void DeferredSample::init()
 
     createCompositionDepthStencilTexture();
     createCompositionDepthStencilTextureView();
+    createCompositionUniformBuffer();
     createCompositionVertexBuffer();
     createCompositionBindingGroupLayout();
     createCompositionBindingGroup();
@@ -617,12 +625,11 @@ void DeferredSample::createOffscreenNormalMapTextureView()
 
 void DeferredSample::createOffscreenUniformBuffer()
 {
-    glm::mat4 R1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-    glm::mat4 R2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 80.0f, 0.0f));
-    glm::mat4 reori = T * R2 * R1;
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 reori = R * T;
     m_mvp.model = reori;
-    m_mvp.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_mvp.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
     m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
 
     BufferDescriptor bufferDescriptor{};
@@ -895,6 +902,12 @@ void DeferredSample::createCompositionBindingGroupLayout()
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
     albedoSamplerBindingLayout.withTexture = true;
 
+    BufferBindingLayout uniformBufferBindingLayout{};
+    uniformBufferBindingLayout.index = 3;
+    uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    uniformBufferBindingLayout.type = BufferBindingType::kUniform;
+
+    descriptor.buffers = { uniformBufferBindingLayout };
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
 
     m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
@@ -959,8 +972,17 @@ void DeferredSample::createCompositionBindingGroup()
         albedoSamplerBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
     }
 
+    BufferBinding uniformBufferBinding{};
+    {
+        uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
+        uniformBufferBinding.index = 3;
+        uniformBufferBinding.offset = 0;
+        uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
+    }
+
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_composition.bindingGroupLayout.get();
+    descriptor.buffers = { uniformBufferBinding };
     descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
 
     m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
@@ -1060,6 +1082,20 @@ void DeferredSample::createCompositionPipeline()
     renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
 
     m_composition.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+}
+
+void DeferredSample::createCompositionUniformBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = sizeof(Light) * m_composition.lights.size();
+    descriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_composition.uniformBuffer = m_device->createBuffer(descriptor);
+
+    auto& uniformBuffer = m_composition.uniformBuffer;
+    void* pointer = uniformBuffer->map();
+    memcpy(pointer, m_composition.lights.data(), descriptor.size);
+    // uniformBuffer->unmap();
 }
 
 void DeferredSample::createCompositionVertexBuffer()
