@@ -98,9 +98,9 @@ private:
 
     struct MVP
     {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
+        alignas(16) glm::mat4 model;
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
     } m_mvp;
 
     struct
@@ -148,7 +148,13 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::vector<Light> lights{
-            Light({ 300.0f, 300.0f, 0.0f }, { 1.0f, 0.0f, 0.0f })
+            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 0.0f, 0.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 1.0f, 0.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 0.0f, 1.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 1.0f, 0.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 0.0f, 1.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 1.0f, 1.0f }),
+            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 1.0f, 1.0f }),
         };
         std::vector<CompositionVertex> vertices{
             { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
