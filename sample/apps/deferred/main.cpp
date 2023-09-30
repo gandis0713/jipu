@@ -617,8 +617,12 @@ void DeferredSample::createOffscreenNormalMapTextureView()
 
 void DeferredSample::createOffscreenUniformBuffer()
 {
-    m_mvp.model = glm::rotate(glm::mat4(1.0f), glm::radians(270.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    m_mvp.view = glm::lookAt(glm::vec3(500.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 R1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+    glm::mat4 R2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 80.0f, 0.0f));
+    glm::mat4 reori = T * R2 * R1;
+    m_mvp.model = reori;
+    m_mvp.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     m_mvp.proj = glm::perspective(glm::radians(45.0f), m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()), 0.1f, 1000.0f);
 
     BufferDescriptor bufferDescriptor{};
