@@ -18,8 +18,8 @@ public:
     glm::vec3 getColor() const;
 
 protected:
-    glm::vec3 m_position;
-    glm::vec3 m_color;
+    alignas(16) glm::vec3 m_position;
+    alignas(16) glm::vec3 m_color;
 };
 
 } // namespace vkt
