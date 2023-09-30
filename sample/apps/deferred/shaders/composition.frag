@@ -23,6 +23,6 @@ void main()
     }
     else
     {
-        discard;
+        outColor = texture(texSamplerPosition, vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
     }
 }
