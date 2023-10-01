@@ -26,17 +26,17 @@ public:
     Type getType() const;
 
 protected:
-    alignas(1) Type m_type = Type::kUndefined;
-    alignas(16) glm::mat4 m_projection;
-    alignas(16) glm::mat4 m_view;
+    Type m_type = Type::kUndefined;
+    glm::mat4 m_projection;
+    glm::mat4 m_view;
 
-    alignas(16) glm::vec3 m_eye;    // position
-    alignas(16) glm::vec3 m_center; // target
-    alignas(16) glm::vec3 m_up;
+    glm::vec3 m_eye;    // position
+    glm::vec3 m_center; // target
+    glm::vec3 m_up;
 
-    // alignas(4) float m_aspect = 1.0f;
-    alignas(4) float m_near = 0.1f;
-    alignas(4) float m_far = 1000.0f;
+    // float m_aspect = 1.0f;
+    float m_near = 0.1f;
+    float m_far = 1000.0f;
 };
 
 class OrthographicCamera : public Camera
@@ -47,10 +47,10 @@ public:
                                 float near, float far);
 
 private:
-    alignas(4) float m_left = -1.0f;
-    alignas(4) float m_right = 1.0f;
-    alignas(4) float m_bottom = -1.0f;
-    alignas(4) float m_top = 1.0f;
+    float m_left = -1.0f;
+    float m_right = 1.0f;
+    float m_bottom = -1.0f;
+    float m_top = 1.0f;
 };
 
 class PerspectiveCamera : public Camera
@@ -60,7 +60,7 @@ public:
                                float near, float far);
 
 private:
-    alignas(8) double m_fov = 45.0f;
+    double m_fov = 45.0f;
 };
 
 } // namespace vkt
