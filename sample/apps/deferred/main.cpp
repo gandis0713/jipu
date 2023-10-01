@@ -20,6 +20,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <math.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -78,7 +79,7 @@ private:
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
-    void updateUniformBuffer();
+    void updateOffscreenUniformBuffer();
 
     void createCompositionDepthStencilTexture();
     void createCompositionDepthStencilTextureView();
@@ -88,6 +89,7 @@ private:
     void createCompositionPipeline();
     void createCompositionUniformBuffer();
     void createCompositionVertexBuffer();
+    void updateCompositionUniformBuffer();
 
     void createCommandBuffer();
     void createQueue();
@@ -98,6 +100,18 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+    struct CompositionUBO
+    {
+        struct Light
+        {
+            alignas(16) glm::vec3 position;
+            alignas(16) glm::vec3 color;
+        };
+
+        std::vector<CompositionUBO::Light> lights{};
+        alignas(16) glm::vec3 cameraPosition;
+    };
 
     struct MVP
     {
@@ -152,13 +166,13 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::vector<Light> lights{
-            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 0.0f, 0.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 1.0f, 0.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 0.0f, 1.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 1.0f, 0.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 0.0f, 1.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 0.0f, 1.0f, 1.0f }),
-            Light({ 0.0f, 0.0f, 300.0f }, { 1.0f, 1.0f, 1.0f }),
+            Light({ 0.0f, 0.0f, 30.0f }, { 1.0f, 0.0f, 0.0f }),
+            Light({ 70.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }),
+            Light({ 0.0f, 70.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }),
+            Light({ 70.0f, 0.0f, 30.0f }, { 1.0f, 1.0f, 0.0f }),
+            Light({ 0.0f, 70.0f, 30.0f }, { 1.0f, 0.0f, 1.0f }),
+            Light({ 70.0f, 70.0f, 0.0f }, { 0.0f, 1.0f, 1.0f }),
+            Light({ 70.0f, 70.0f, 30.0f }, { 1.0f, 1.0f, 1.0f }),
         };
         std::vector<CompositionVertex> vertices{
             { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
@@ -273,11 +287,11 @@ void DeferredSample::init()
     m_initialized = true;
 }
 
-void DeferredSample::updateUniformBuffer()
+void DeferredSample::updateOffscreenUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
-
     auto currentTime = std::chrono::high_resolution_clock::now();
+
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
@@ -290,9 +304,41 @@ void DeferredSample::updateUniformBuffer()
     memcpy(mappedPointer, &m_mvp, sizeof(MVP));
 }
 
+void DeferredSample::updateCompositionUniformBuffer()
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    CompositionUBO ubo;
+    for (auto i = 0; i < m_composition.lights.size(); ++i)
+    {
+        auto& light = m_composition.lights[i];
+        glm::vec3 position = light.getPosition();
+        float ratio = sin(time);
+        position[0] = light.getPosition()[0] * ratio;
+        position[1] = light.getPosition()[1] * ratio;
+        position[2] = light.getPosition()[2] * ratio;
+        ubo.lights.push_back({ position, light.getColor() });
+    }
+    ubo.cameraPosition = m_offscreen.camera->getPosition();
+
+    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * ubo.lights.size());
+    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
+
+    auto& uniformBuffer = m_composition.uniformBuffer;
+    void* pointer = uniformBuffer->map();
+    char* bytePointer = static_cast<char*>(pointer);
+    memcpy(bytePointer, ubo.lights.data(), lightSize);
+    bytePointer += lightSize;
+    memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
+}
+
 void DeferredSample::draw()
 {
-    updateUniformBuffer();
+    updateOffscreenUniformBuffer();
+    updateCompositionUniformBuffer();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -1125,26 +1171,14 @@ void DeferredSample::createCompositionPipeline()
 
 void DeferredSample::createCompositionUniformBuffer()
 {
-    struct UBO
-    {
-        struct Light
-        {
-            alignas(16) glm::vec3 position;
-            alignas(16) glm::vec3 color;
-        };
-
-        std::vector<UBO::Light> lights{};
-        alignas(16) glm::vec3 cameraPosition;
-    };
-
-    UBO ubo;
+    CompositionUBO ubo;
     for (const auto& light : m_composition.lights)
     {
         ubo.lights.push_back({ light.getPosition(), light.getColor() });
     }
     ubo.cameraPosition = m_offscreen.camera->getPosition();
 
-    uint32_t lightSize = static_cast<uint32_t>(sizeof(UBO::Light) * ubo.lights.size());
+    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * ubo.lights.size());
     uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
 
     BufferDescriptor descriptor{};

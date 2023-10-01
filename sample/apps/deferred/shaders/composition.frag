@@ -49,8 +49,8 @@ void main()
             // vec3 V = vec3(0.0f, 0.0f, 300.0f) - position;
             V = normalize(V);
 
-            float range = 25000.0f;
-            if (dist < range)
+            float range = 250.0f;
+            // if (dist < range)
             {
                 // Light to fragment
                 L = normalize(L);
