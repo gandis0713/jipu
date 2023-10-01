@@ -16,7 +16,8 @@ struct Light
 #define lightCount 7
 #define ambient 0.0
 
-layout(binding = 3) uniform UBO
+// std140 for only uniform, consider alignment such as vec3
+layout(std140, binding = 3) uniform UBO
 {
     Light lights[lightCount];
 }
