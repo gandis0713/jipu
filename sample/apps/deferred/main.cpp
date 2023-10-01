@@ -100,9 +100,9 @@ private:
 
     struct MVP
     {
-        alignas(16) glm::mat4 model;
-        alignas(16) glm::mat4 view;
-        alignas(16) glm::mat4 proj;
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
     } m_mvp;
 
     struct
@@ -1106,15 +1106,32 @@ void DeferredSample::createCompositionPipeline()
 
 void DeferredSample::createCompositionUniformBuffer()
 {
+    struct UBO
+    {
+        struct Light
+        {
+            alignas(16) glm::vec3 position;
+            alignas(16) glm::vec3 color;
+        };
+
+        std::vector<UBO::Light> lights{};
+    };
+
+    UBO ubo;
+    for (const auto& light : m_composition.lights)
+    {
+        ubo.lights.push_back({ light.getPosition(), light.getColor() });
+    }
+
     BufferDescriptor descriptor{};
-    descriptor.size = sizeof(Light) * m_composition.lights.size();
+    descriptor.size = sizeof(UBO::Light) * ubo.lights.size();
     descriptor.usage = BufferUsageFlagBits::kUniform;
 
     m_composition.uniformBuffer = m_device->createBuffer(descriptor);
 
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
-    memcpy(pointer, m_composition.lights.data(), descriptor.size);
+    memcpy(pointer, ubo.lights.data(), descriptor.size);
     // uniformBuffer->unmap();
 }
 
