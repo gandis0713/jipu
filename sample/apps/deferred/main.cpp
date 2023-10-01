@@ -1115,6 +1115,7 @@ void DeferredSample::createCompositionUniformBuffer()
         };
 
         std::vector<UBO::Light> lights{};
+        alignas(16) glm::vec3 cameraPosition;
     };
 
     UBO ubo;
@@ -1122,16 +1123,23 @@ void DeferredSample::createCompositionUniformBuffer()
     {
         ubo.lights.push_back({ light.getPosition(), light.getColor() });
     }
+    ubo.cameraPosition = m_offscreen.camera->getPosition();
+
+    uint32_t lightSize = static_cast<uint32_t>(sizeof(UBO::Light) * ubo.lights.size());
+    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
 
     BufferDescriptor descriptor{};
-    descriptor.size = sizeof(UBO::Light) * ubo.lights.size();
+    descriptor.size = lightSize + cameraPositionSize;
     descriptor.usage = BufferUsageFlagBits::kUniform;
 
     m_composition.uniformBuffer = m_device->createBuffer(descriptor);
 
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
-    memcpy(pointer, ubo.lights.data(), descriptor.size);
+    char* bytePointer = static_cast<char*>(pointer);
+    memcpy(bytePointer, ubo.lights.data(), lightSize);
+    bytePointer += lightSize;
+    memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
     // uniformBuffer->unmap();
 }
 

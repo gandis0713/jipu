@@ -20,6 +20,7 @@ struct Light
 layout(std140, binding = 3) uniform UBO
 {
     Light lights[lightCount];
+    vec3 cameraPosition;
 }
 ubo;
 
@@ -44,7 +45,8 @@ void main()
             float dist = length(L);
 
             // Viewer to fragment
-            vec3 V = vec3(0.0f, 0.0f, 300.0f) - position;
+            vec3 V = ubo.cameraPosition - position;
+            // vec3 V = vec3(0.0f, 0.0f, 300.0f) - position;
             V = normalize(V);
 
             float range = 25000.0f;
