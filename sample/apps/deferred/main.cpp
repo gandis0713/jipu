@@ -78,6 +78,7 @@ private:
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
+    void updateUniformBuffer();
 
     void createCompositionDepthStencilTexture();
     void createCompositionDepthStencilTextureView();
@@ -272,8 +273,26 @@ void DeferredSample::init()
     m_initialized = true;
 }
 
+void DeferredSample::updateUniformBuffer()
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
+    glm::mat4 R1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 R2 = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 reori = R2 * R1 * T;
+    m_mvp.model = reori;
+
+    void* mappedPointer = m_offscreen.uniformBuffer->map();
+    memcpy(mappedPointer, &m_mvp, sizeof(MVP));
+}
+
 void DeferredSample::draw()
 {
+    updateUniformBuffer();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
