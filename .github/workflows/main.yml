@@ -6,13 +6,68 @@ on:
   pull_request:
     branches: [main]
 jobs:
-  desktop-build:
+  macos-build:
     strategy:
       matrix:
-        os: [macos-12, windows-2019]
+        os: [macos-12]
         include:
           - os: macos-12
             cmake_preset: x64-osx-ninja-release
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      # # https://github.com/marketplace/actions/install-vulkan-sdk
+      # - name: Install Vulkan SDK
+      #   uses: humbletim/install-vulkan-sdk@v1.1.1
+      #   with:
+      #     version: 1.3.204.0
+      #     cache: true
+      # https://github.com/marketplace/actions/setup-vulkan-sdk
+      - name: "setup-homebrew"
+        run: mkdir $VCPKG_ROOT/archives
+      - name: Prepare Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.0
+        with:
+          vulkan-query-version: 1.3.204.0
+          vulkan-components: Vulkan-Headers, Vulkan-Loader # Glslang, SPIRV-Cross, SPIRV-Tools
+          vulkan-use-cache: true
+      # https://github.com/marketplace/actions/run-vcpkg
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+      - name: Setup vcpkg and install them.
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          vcpkgGitCommitId: "6f7ffeb18f99796233b958aaaf14ec7bd4fb64b2"
+          vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+          runVcpkgInstall: false
+      - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
+        uses: lukka/run-cmake@v10
+        with:
+          cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
+          configurePreset: "${{ matrix.cmake_preset }}"
+          buildPreset: "${{ matrix.cmake_preset }}"
+          # TODO: enable test.
+          # testPreset: "${{ matrix.cmake_preset }}"
+      # https://github.com/marketplace/actions/action-slack
+      - name: Send status of a job to slack.
+        uses: 8398a7/action-slack@v3.15.0
+        with:
+          status: ${{ job.status }} # TODO : please fix me.
+          author_name: ${{ env.AS_AUTHOR }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          # mention: "gandis0713"
+          # if_mention: "failure"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ failure() }} # always(), failure() # Pick up events even if the job fails or is canceled.
+
+  windows-build:
+    strategy:
+      matrix:
+        os: [windows-2019]
+        include:
           - os: windows-2019
             cmake_preset: x64-windows-ninja-release
     runs-on: ${{ matrix.os }}
