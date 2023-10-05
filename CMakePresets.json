@@ -15,8 +15,7 @@
 				"VKT_TEST": "ON"
 			},
 			"environment": {
-				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries",
-				"VCPKG_DEFAULT_BINARY_CACHE": "$env{VCPKG_ROOT}/archives"
+				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries"
 			},
 			"debug": {
 				"find": false,
