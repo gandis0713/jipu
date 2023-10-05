@@ -29,8 +29,12 @@ jobs:
           vulkan-query-version: 1.3.204.0
           vulkan-components: Vulkan-Headers, Vulkan-Loader # Glslang, SPIRV-Cross, SPIRV-Tools
           vulkan-use-cache: true
+      - name: "test vcpkg"
+        run: |
+          echo $VCPKG_ROOT
+          echo $VCPKG_INSTALLATION_ROOT
       - name: "prepare vcpkg"
-        run: mkdir $VCPKG_INSTALLATION_ROOT/archives
+        run: mkdir $VCPKG_ROOT/archives
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
         uses: lukka/get-cmake@latest
