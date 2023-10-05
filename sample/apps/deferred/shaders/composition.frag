@@ -13,7 +13,7 @@ struct Light
     vec3 color;
 };
 
-#define lightCount 7
+#define lightCount 8
 #define ambient 0.0
 
 // std140 for only uniform, consider alignment such as vec3
@@ -46,10 +46,9 @@ void main()
 
             // Viewer to fragment
             vec3 V = ubo.cameraPosition - position;
-            // vec3 V = vec3(0.0f, 0.0f, 300.0f) - position;
             V = normalize(V);
 
-            float range = 250.0f;
+            float range = 100.0f;
             // if (dist < range)
             {
                 // Light to fragment

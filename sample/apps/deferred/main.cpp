@@ -166,13 +166,14 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::vector<Light> lights{
-            Light({ 0.0f, 0.0f, 30.0f }, { 1.0f, 0.0f, 0.0f }),
-            Light({ 70.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }),
-            Light({ 0.0f, 70.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }),
-            Light({ 70.0f, 0.0f, 30.0f }, { 1.0f, 1.0f, 0.0f }),
-            Light({ 0.0f, 70.0f, 30.0f }, { 1.0f, 0.0f, 1.0f }),
-            Light({ 70.0f, 70.0f, 0.0f }, { 0.0f, 1.0f, 1.0f }),
-            Light({ 70.0f, 70.0f, 30.0f }, { 1.0f, 1.0f, 1.0f }),
+            Light({ 30.0f, 30.0f, 30.0f }, { 1.0f, 0.0f, 0.0f }),
+            Light({ 30.0f, -30.0f, 30.0f }, { 0.0f, 1.0f, 0.0f }),
+            Light({ -30.0f, 30.0f, 30.0f }, { 0.0f, 0.0f, 1.0f }),
+            Light({ -30.0f, -30.0f, 30.0f }, { 1.0f, 1.0f, 0.0f }),
+            Light({ 30.0f, 30.0f, -30.0f }, { 1.0f, 0.0f, 0.0f }),
+            Light({ 30.0f, -30.0f, -30.0f }, { 0.0f, 1.0f, 0.0f }),
+            Light({ -30.0f, 30.0f, -30.0f }, { 0.0f, 0.0f, 1.0f }),
+            Light({ -30.0f, -30.0f, -30.0f }, { 1.0f, 1.0f, 0.0f }),
         };
         std::vector<CompositionVertex> vertices{
             { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
@@ -292,7 +293,7 @@ void DeferredSample::updateOffscreenUniformBuffer()
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
 
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count() / 5.0f;
 
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
     glm::mat4 R1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -319,7 +320,7 @@ void DeferredSample::updateCompositionUniformBuffer()
         float ratio = sin(time);
         position[0] = light.getPosition()[0] * ratio;
         position[1] = light.getPosition()[1] * ratio;
-        position[2] = light.getPosition()[2] * ratio;
+        // position[2] = light.getPosition()[2] * ratio;
         ubo.lights.push_back({ position, light.getColor() });
     }
     ubo.cameraPosition = m_offscreen.camera->getPosition();
