@@ -161,23 +161,31 @@ void VulkanRenderPipeline::initialize()
     multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask =
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+    uint32_t targetSize = static_cast<uint32_t>(m_descriptor.fragment.targets.size());
+    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates(targetSize);
+    for (auto i = 0; i < targetSize; ++i)
+    {
+        // TODO: from descriptor.
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = VK_FALSE;
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+
+        colorBlendAttachmentStates[i] = colorBlendAttachment;
+    }
 
     VkPipelineColorBlendStateCreateInfo colorBlendingStateCreateInfo{};
     colorBlendingStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
     colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
-    colorBlendingStateCreateInfo.attachmentCount = 1;
-    colorBlendingStateCreateInfo.pAttachments = &colorBlendAttachment;
+    colorBlendingStateCreateInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachmentStates.size());
+    colorBlendingStateCreateInfo.pAttachments = colorBlendAttachmentStates.data();
     colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
     colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
     colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
@@ -211,13 +219,35 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
-    // TODO: get RenderPass information from descriptor.
-    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(m_descriptor.fragment.targets[0].format),
-                                                     .depthStencilFormat = m_descriptor.depthStencil.format != TextureFormat::kUndefined ? std::optional<VkFormat>{ ToVkFormat(m_descriptor.depthStencil.format) } : std::nullopt,
-                                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                                     .samples = ToVkSampleCountFlagBits(m_descriptor.rasterization.sampleCount) };
+    VulkanRenderPassDescriptor renderPassDescriptor{};
+
+    renderPassDescriptor.colorAttachments.resize(targetSize);
+    for (auto i = 0; i < targetSize; ++i)
+    {
+        const auto& target = m_descriptor.fragment.targets[i];
+        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
+        vulkanColorAttachment.format = target.format;
+        vulkanColorAttachment.loadOp = LoadOp::kClear;
+        vulkanColorAttachment.storeOp = StoreOp::kStore;
+        vulkanColorAttachment.finalLayout = GenerateImageLayout(TextureUsageFlagBits::kColorAttachment);
+    }
+
+    if (m_descriptor.depthStencil.has_value())
+    {
+        const DepthStencilStage depthStencilStage = m_descriptor.depthStencil.value();
+        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
+        vulkanDepthStencilAttachment.format = depthStencilStage.format;
+        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;
+        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;
+        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;
+        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare;
+
+        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+    }
+
+    renderPassDescriptor.sampleCount = m_descriptor.rasterization.sampleCount;
     VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
+
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};

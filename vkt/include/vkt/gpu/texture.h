@@ -27,6 +27,20 @@ enum class TextureType
     k3D,
 };
 
+enum class TextureFormat
+{
+    kUndefined = 0,
+    kBGRA_8888_UInt_Norm,
+    kBGRA_8888_UInt_Norm_SRGB,
+    kRGB_888_UInt_Norm,
+    kRGB_888_UInt_Norm_SRGB,
+    kRGBA_8888_UInt_Norm,
+    kRGBA_8888_UInt_Norm_SRGB,
+    kRGBA_16161616_UInt_Norm,
+    kD_32_SFloat,
+    kD_24_UInt_Norm_S_8_UInt,
+};
+
 struct TextureUsageFlagBits
 {
     static constexpr uint32_t kUndefined = 0x00000000;
@@ -43,7 +57,7 @@ struct TextureDescriptor
 {
     TextureType type = TextureType::kUndefined;
     TextureFormat format = TextureFormat::kUndefined;
-    TextureUsageFlags usages = TextureUsageFlagBits::kUndefined;
+    TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t mipLevels = 0;
@@ -75,13 +89,7 @@ public:
 
 protected:
     Device* m_device = nullptr;
-
-    TextureType m_type = TextureType::kUndefined;
-    TextureFormat m_format = TextureFormat::kUndefined;
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
-    uint32_t m_mipLevels = 0;
-    uint32_t m_sampleCount = 0;
+    TextureDescriptor m_descriptor{};
 };
 
 } // namespace vkt

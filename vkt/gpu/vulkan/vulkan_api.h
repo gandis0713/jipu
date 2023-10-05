@@ -5,8 +5,8 @@
 #elif defined(__linux__)
     #define VK_USE_PLATFORM_XCB_KHR
 #elif defined(__APPLE__)
-    // #define VK_USE_PLATFORM_METAL_EXT
-    #define VK_USE_PLATFORM_MACOS_MVK
+    #define VK_USE_PLATFORM_METAL_EXT
+// #define VK_USE_PLATFORM_MACOS_MVK
 #elif defined(WIN32)
     #define VK_USE_PLATFORM_WIN32_KHR
 #endif
@@ -24,6 +24,7 @@ struct VulkanDriverKnobs
     uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
 
     // TODO: use bitset instead of bool type.
+    bool debugReport = false;
     bool debugUtils = false;
     bool surface = false;
     bool androidSurface = false;
@@ -70,17 +71,19 @@ struct VulkanAPI
     PFN_vkGetDeviceProcAddr GetDeviceProcAddr = nullptr;
     PFN_vkGetPhysicalDeviceFeatures GetPhysicalDeviceFeatures = nullptr;
     PFN_vkGetPhysicalDeviceFormatProperties GetPhysicalDeviceFormatProperties = nullptr;
-    PFN_vkGetPhysicalDeviceImageFormatProperties GetPhysicalDeviceImageFormatProperties =
-        nullptr;
+    PFN_vkGetPhysicalDeviceImageFormatProperties GetPhysicalDeviceImageFormatProperties = nullptr;
     PFN_vkGetPhysicalDeviceMemoryProperties GetPhysicalDeviceMemoryProperties = nullptr;
     PFN_vkGetPhysicalDeviceProperties GetPhysicalDeviceProperties = nullptr;
-    PFN_vkGetPhysicalDeviceQueueFamilyProperties GetPhysicalDeviceQueueFamilyProperties =
-        nullptr;
-    PFN_vkGetPhysicalDeviceSparseImageFormatProperties
-        GetPhysicalDeviceSparseImageFormatProperties = nullptr;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties GetPhysicalDeviceQueueFamilyProperties = nullptr;
+    PFN_vkGetPhysicalDeviceSparseImageFormatProperties GetPhysicalDeviceSparseImageFormatProperties = nullptr;
     // Not technically an instance proc but we want to be able to use it as soon as the
     // device is created.
     PFN_vkDestroyDevice DestroyDevice = nullptr;
+
+    // VK_EXT_debug_report
+    PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
+    PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
+    PFN_vkDestroyDebugReportCallbackEXT DestroyDebugReportCallbackEXT = nullptr;
 
     // VK_EXT_debug_utils
     PFN_vkCmdBeginDebugUtilsLabelEXT CmdBeginDebugUtilsLabelEXT = nullptr;
@@ -98,33 +101,26 @@ struct VulkanAPI
     // VK_KHR_surface
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceSupportKHR GetPhysicalDeviceSurfaceSupportKHR = nullptr;
-    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR =
-        nullptr;
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR GetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR GetPhysicalDeviceSurfaceFormatsKHR = nullptr;
-    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR =
-        nullptr;
+    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR GetPhysicalDeviceSurfacePresentModesKHR = nullptr;
 
     // Core Vulkan 1.1 promoted extensions
 
     // VK_KHR_external_memory_capabilities
-    PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR
-        GetPhysicalDeviceExternalBufferPropertiesKHR = nullptr;
+    PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR GetPhysicalDeviceExternalBufferPropertiesKHR = nullptr;
 
     // VK_KHR_external_semaphore_capabilities
-    PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR
-        GetPhysicalDeviceExternalSemaphorePropertiesKHR = nullptr;
+    PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR GetPhysicalDeviceExternalSemaphorePropertiesKHR = nullptr;
 
     // VK_KHR_get_physical_device_properties2
     PFN_vkGetPhysicalDeviceFeatures2KHR GetPhysicalDeviceFeatures2KHR = nullptr;
     PFN_vkGetPhysicalDeviceProperties2KHR GetPhysicalDeviceProperties2KHR = nullptr;
     PFN_vkGetPhysicalDeviceFormatProperties2KHR GetPhysicalDeviceFormatProperties2KHR = nullptr;
-    PFN_vkGetPhysicalDeviceImageFormatProperties2KHR
-        GetPhysicalDeviceImageFormatProperties2KHR = nullptr;
-    PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR
-        GetPhysicalDeviceQueueFamilyProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceImageFormatProperties2KHR GetPhysicalDeviceImageFormatProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR GetPhysicalDeviceQueueFamilyProperties2KHR = nullptr;
     PFN_vkGetPhysicalDeviceMemoryProperties2KHR GetPhysicalDeviceMemoryProperties2KHR = nullptr;
-    PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR
-        GetPhysicalDeviceSparseImageFormatProperties2KHR = nullptr;
+    PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR GetPhysicalDeviceSparseImageFormatProperties2KHR = nullptr;
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
     PFN_vkCreateAndroidSurfaceKHR CreateAndroidSurfaceKHR = nullptr;

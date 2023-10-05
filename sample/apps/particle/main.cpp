@@ -182,6 +182,8 @@ void ParticleSample::init()
 
     createQueue();
     createCommandBuffer();
+
+    m_initialized = true;
 }
 
 void ParticleSample::draw()
@@ -310,7 +312,7 @@ void ParticleSample::createColorAttachmentTexture()
     TextureDescriptor descriptor{};
     descriptor.format = m_swapchain->getTextureFormat();
     descriptor.type = TextureType::k2D;
-    descriptor.usages = TextureUsageFlagBits::kColorAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.mipLevels = 1;
@@ -515,18 +517,11 @@ void ParticleSample::createRenderPipeline()
         fragmentStage.targets = { target };
     }
 
-    // Depth/Stencil stage
-    DepthStencilStage depthStencilStage;
-    {
-        depthStencilStage.format = TextureFormat::kUndefined;
-    }
-
     RenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.inputAssembly = inputAssembly;
     renderPipelineDescriptor.vertex = vertexStage;
     renderPipelineDescriptor.rasterization = rasterizationStage;
     renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencilStage;
     renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
@@ -592,6 +587,7 @@ CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
 
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
     renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+    renderPassEncoderDescriptor.sampleCount = m_sampleCount;
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

@@ -8,6 +8,8 @@
     "sdl2",
     "stb",
     "tinyobjloader",
+    "tinygltf",
+    "ktx",
     {
       "name": "vcpkg-cmake",
       "host": true

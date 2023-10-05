@@ -13,7 +13,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_type(ToVkImageType(descriptor.type))
     , m_format(ToVkFormat(descriptor.format))
-    , m_owner(TextureOwner::Internal)
+    , m_owner(TextureOwner::External)
 {
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -26,7 +26,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.format = ToVkFormat(descriptor.format);
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    createInfo.usage = ToVkImageUsageFlags(descriptor.usages);
+    createInfo.usage = ToVkImageUsageFlags(descriptor.usage);
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     createInfo.flags = 0; // Optional
@@ -61,13 +61,13 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescrip
     , m_image(image)
     , m_type(ToVkImageType(descriptor.type))
     , m_format(ToVkFormat(descriptor.format))
-    , m_owner(TextureOwner::External)
+    , m_owner(TextureOwner::Internal)
 {
 }
 
 VulkanTexture::~VulkanTexture()
 {
-    if (m_owner == TextureOwner::Internal)
+    if (m_owner == TextureOwner::External)
     {
         m_memory.reset();
 
@@ -84,6 +84,11 @@ std::unique_ptr<TextureView> VulkanTexture::createTextureView(const TextureViewD
 VkImage VulkanTexture::getVkImage() const
 {
     return m_image;
+}
+
+TextureOwner VulkanTexture::getTextureOwner() const
+{
+    return m_owner;
 }
 
 void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
@@ -172,10 +177,75 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
 }
 VkImageLayout VulkanTexture::getLayout() const
 {
-    return m_layout;
+    VkImageLayout layout = m_layout;
+
+    if (layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    {
+        if (m_owner == TextureOwner::Internal)
+        {
+            layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        }
+        else
+        {
+            layout = GenerateImageLayout(m_descriptor.usage);
+        }
+    }
+
+    return layout;
 }
 
 // Convert Helper
+
+VkFormat ToVkFormat(TextureFormat format)
+{
+    switch (format)
+    {
+    case TextureFormat::kBGRA_8888_UInt_Norm:
+        return VK_FORMAT_B8G8R8A8_UNORM;
+    case TextureFormat::kBGRA_8888_UInt_Norm_SRGB:
+        return VK_FORMAT_B8G8R8A8_SRGB;
+    case TextureFormat::kRGB_888_UInt_Norm:
+        return VK_FORMAT_R8G8B8_UNORM;
+    case TextureFormat::kRGB_888_UInt_Norm_SRGB:
+        return VK_FORMAT_R8G8B8_SRGB;
+    case TextureFormat::kRGBA_8888_UInt_Norm:
+        return VK_FORMAT_R8G8B8A8_UNORM;
+    case TextureFormat::kRGBA_8888_UInt_Norm_SRGB:
+        return VK_FORMAT_R8G8B8A8_SRGB;
+    case TextureFormat::kRGBA_16161616_UInt_Norm:
+        return VK_FORMAT_R16G16B16A16_SFLOAT;
+    case TextureFormat::kD_32_SFloat:
+        return VK_FORMAT_D32_SFLOAT;
+    case TextureFormat::kD_24_UInt_Norm_S_8_UInt:
+        return VK_FORMAT_D24_UNORM_S8_UINT;
+    default:
+        assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
+        return VK_FORMAT_UNDEFINED;
+    }
+}
+
+TextureFormat ToTextureFormat(VkFormat format)
+{
+    switch (format)
+    {
+    case VK_FORMAT_B8G8R8A8_UNORM:
+        return TextureFormat::kBGRA_8888_UInt_Norm;
+    case VK_FORMAT_B8G8R8A8_SRGB:
+        return TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+    case VK_FORMAT_R8G8B8_UNORM:
+        return TextureFormat::kRGB_888_UInt_Norm;
+    case VK_FORMAT_R8G8B8_SRGB:
+        return TextureFormat::kRGB_888_UInt_Norm_SRGB;
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return TextureFormat::kRGBA_8888_UInt_Norm;
+    case VK_FORMAT_R8G8B8A8_SRGB:
+        return TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    default:
+        assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
+        return TextureFormat::kUndefined;
+    }
+}
+
 VkImageType ToVkImageType(TextureType type)
 {
     switch (type)
@@ -276,6 +346,38 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
 {
     return count <= 1 ? VK_SAMPLE_COUNT_1_BIT : VK_SAMPLE_COUNT_4_BIT;
+}
+
+// Utiles
+
+VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
+{
+    if (usage & TextureUsageFlagBits::kTextureBinding)
+    {
+        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+    if (usage & TextureUsageFlagBits::kColorAttachment)
+    {
+        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    }
+    if (usage & TextureUsageFlagBits::kStorageBinding)
+    {
+        return VK_IMAGE_LAYOUT_GENERAL;
+    }
+    if (usage & TextureUsageFlagBits::kDepthStencil)
+    {
+        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    }
+    if (usage & TextureUsageFlagBits::kCopySrc)
+    {
+        return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    }
+    if (usage & TextureUsageFlagBits::kCopyDst)
+    {
+        return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    }
+
+    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 }
 
 } // namespace vkt

@@ -44,15 +44,17 @@ struct ColorAttachment
 
 struct DepthStencilClearValue
 {
-    float depth;
-    uint32_t stencil;
+    float depth = 1.0f;
+    uint32_t stencil = 0;
 };
 
 struct DepthStencilAttachment
 {
     TextureView* textureView = nullptr;
-    LoadOp loadOp = LoadOp::kDontCare;
-    StoreOp storeOp = StoreOp::kDontCare;
+    LoadOp depthLoadOp = LoadOp::kDontCare;
+    StoreOp depthStoreOp = StoreOp::kDontCare;
+    LoadOp stencilLoadOp = LoadOp::kDontCare;
+    StoreOp stencilStoreOp = StoreOp::kDontCare;
     DepthStencilClearValue clearValue{};
 };
 
@@ -60,6 +62,7 @@ struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
+    uint32_t sampleCount = 0;
 };
 
 class VKT_EXPORT RenderPassEncoder

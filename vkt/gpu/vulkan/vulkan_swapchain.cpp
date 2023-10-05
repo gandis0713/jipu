@@ -113,12 +113,13 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
     // create Textures by VkImage.
     for (VkImage image : images)
     {
-        TextureDescriptor descriptor{ .type = TextureType::k2D,
-                                      .format = m_textureFormat,
-                                      .width = m_width,
-                                      .height = m_height,
-                                      .mipLevels = 1 };
-        std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, descriptor);
+        TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
+                                             .format = m_textureFormat,
+                                             .usage = TextureUsageFlagBits::kColorAttachment,
+                                             .width = m_width,
+                                             .height = m_height,
+                                             .mipLevels = 1 };
+        std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, textureDescriptor);
         m_textures.push_back(std::move(texture));
     }
 

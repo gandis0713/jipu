@@ -10,13 +10,21 @@ project(
 find_package(spdlog CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
+find_package(Ktx CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_path(TINYGLTF_INCLUDE
+    NAMES "tiny_gltf.h"
+    HINTS ${VCPKG_INSTALLED_DIR}
+    REQUIRED
+)
 
 if(NOT ANDROID)
     find_package(SDL2 CONFIG REQUIRED)
 endif()
 
 list(APPEND SRC_FILES
+    camera.cpp
+    camera.h
     sample.cpp
     sample.h
     window.cpp
@@ -27,6 +35,10 @@ list(APPEND SRC_FILES
     model.h
     file.cpp
     file.h
+    light.cpp
+    light.h
+    khronos_texture.cpp
+    khronos_texture.h
     image.cpp
     image.h
 )
@@ -57,6 +69,7 @@ add_library(vkt::sample_base ALIAS vkt_sample_base)
 target_include_directories(vkt_sample_base
     PRIVATE
     ${Stb_INCLUDE_DIR}
+    ${TINYGLTF_INCLUDE}
 )
 
 target_link_libraries(vkt_sample_base
@@ -64,6 +77,7 @@ target_link_libraries(vkt_sample_base
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
     glm::glm
+    KTX::ktx
 )
 
 if(NOT ANDROID)

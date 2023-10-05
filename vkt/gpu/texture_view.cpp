@@ -6,12 +6,18 @@ namespace vkt
 
 TextureView::TextureView(Texture* texture, TextureViewDescriptor descriptor)
     : m_texture(texture)
+    , m_descriptor(descriptor)
 {
 }
 
-TextureFormat TextureView::getFormat() const
+Texture* TextureView::getTexture() const
 {
-    return m_texture->getFormat();
+    return m_texture;
+}
+
+TextureViewType TextureView::getType() const
+{
+    return m_descriptor.type;
 }
 
 uint32_t TextureView::getWidth() const

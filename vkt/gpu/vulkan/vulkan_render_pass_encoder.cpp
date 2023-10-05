@@ -7,6 +7,7 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -19,46 +20,110 @@ namespace vkt
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
-    // TODO: multiple color attachments.
-    const ColorAttachment& colorAttachment = m_descriptor.colorAttachments[0];
-    auto vulkanRenderTextureView = downcast(colorAttachment.renderView);
+    // get render pass
+    VulkanRenderPassDescriptor renderPassDescriptor{};
 
-    VulkanRenderPassDescriptor renderPassDescriptor{ .colorFormat = ToVkFormat(vulkanRenderTextureView->getFormat()),
-                                                     .depthStencilFormat = m_descriptor.depthStencilAttachment.has_value() ? std::optional<VkFormat>{ ToVkFormat(descriptor.depthStencilAttachment.value().textureView->getFormat()) } : std::nullopt,
-                                                     .loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp),
-                                                     .storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp),
-                                                     .samples = ToVkSampleCountFlagBits(vulkanRenderTextureView->getSampleCount()) };
+    uint32_t colorAttachmentSize = static_cast<uint32_t>(m_descriptor.colorAttachments.size());
+    renderPassDescriptor.colorAttachments.resize(colorAttachmentSize);
+    for (auto i = 0; i < colorAttachmentSize; ++i)
+    {
+        const auto& colorAttachment = m_descriptor.colorAttachments[i];
+        const auto texture = colorAttachment.renderView->getTexture();
+        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
+        vulkanColorAttachment.format = texture->getFormat();
+        vulkanColorAttachment.loadOp = colorAttachment.loadOp;
+        vulkanColorAttachment.storeOp = colorAttachment.storeOp;
+        vulkanColorAttachment.finalLayout = downcast(texture)->getLayout();
+    }
+
+    if (m_descriptor.depthStencilAttachment.has_value())
+    {
+        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
+        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
+        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
+        vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
+        vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
+        vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
+        vulkanDepthStencilAttachment.stencilStoreOp = depthStencilAttachment.stencilStoreOp;
+
+        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+    }
+
+    if (m_descriptor.colorAttachments.empty())
+        throw std::runtime_error("Failed to create vulkan render pass encoder due to empty color attachment.");
+
+    const auto sampleCount = descriptor.sampleCount;
+    renderPassDescriptor.sampleCount = sampleCount;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    bool hasDepthStencil = m_descriptor.depthStencilAttachment.has_value();
-    bool hasMultiSample = vulkanRenderTextureView->getSampleCount() > 1 && colorAttachment.resolveView;
+    // get framebuffer
+    VulkanFramebufferDescriptor framebufferDescriptor{};
+    framebufferDescriptor.renderPass = vulkanRenderPass;
 
-    uint64_t imageViewCount = m_descriptor.colorAttachments.size();
-    imageViewCount += hasDepthStencil ? 1 : 0;
-    imageViewCount += hasMultiSample ? 1 : 0;
-
-    uint64_t imageViewIndex = 0;
-
-    std::vector<VkImageView> imageviews{};
-    imageviews.resize(imageViewCount); // set only for color and depth texture.
-    imageviews[imageViewIndex++] = vulkanRenderTextureView->getVkImageView();
-    if (hasDepthStencil)
+    auto& textureViews = framebufferDescriptor.textureViews;
+    for (auto i = 0; i < colorAttachmentSize; ++i)
     {
-        auto vulkanDepthStencilTextureView = downcast(m_descriptor.depthStencilAttachment.value().textureView);
-        imageviews[imageViewIndex++] = vulkanDepthStencilTextureView->getVkImageView();
+        const auto& colorAttachment = m_descriptor.colorAttachments[i];
+        textureViews.push_back(colorAttachment.renderView);
     }
 
-    if (hasMultiSample)
-        imageviews[imageViewIndex++] = downcast(colorAttachment.resolveView)->getVkImageView();
+    if (sampleCount > 1)
+    {
+        for (auto i = 0; i < colorAttachmentSize; ++i)
+        {
+            const auto& colorAttachment = m_descriptor.colorAttachments[i];
+            textureViews.push_back(colorAttachment.resolveView);
+        }
+    }
 
-    VulkanFramebufferDescriptor framebufferDescriptor{ .renderPass = vulkanRenderPass->getVkRenderPass(),
-                                                       .imageViews = imageviews,
-                                                       .width = vulkanRenderTextureView->getWidth(),
-                                                       .height = vulkanRenderTextureView->getHeight() };
+    if (m_descriptor.depthStencilAttachment.has_value())
+    {
+        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
+        textureViews.push_back(depthStencilAttachment.textureView);
+    }
+
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
+
+    // get clear color
+    auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments)
+    {
+        for (auto i = 0; i < colorAttachments.size(); ++i)
+        {
+            const auto& colorAttachment = colorAttachments[i];
+            if (colorAttachment.loadOp == LoadOp::kClear)
+            {
+                VkClearValue colorClearValue{};
+                for (uint32_t i = 0; i < 4; ++i)
+                {
+                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+                }
+                clearValues.push_back(colorClearValue);
+            }
+        }
+    };
+
+    std::vector<VkClearValue> clearValues{};
+    addColorClearValue(clearValues, m_descriptor.colorAttachments);
+    if (sampleCount > 1)
+    {
+        addColorClearValue(clearValues, m_descriptor.colorAttachments);
+    }
+
+    if (m_descriptor.depthStencilAttachment.has_value())
+    {
+        auto depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
+        if (depthStencilAttachment.depthLoadOp == LoadOp::kClear || depthStencilAttachment.stencilLoadOp == LoadOp::kClear)
+        {
+            VkClearValue depthStencilClearValue{};
+            depthStencilClearValue.depthStencil = { depthStencilAttachment.clearValue.depth,
+                                                    depthStencilAttachment.clearValue.stencil };
+
+            clearValues.push_back(depthStencilClearValue);
+        }
+    }
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -66,31 +131,6 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     renderPassInfo.framebuffer = vulkanFrameBuffer->getVkFrameBuffer();
     renderPassInfo.renderArea.offset = { 0, 0 };
     renderPassInfo.renderArea.extent = { vulkanFrameBuffer->getWidth(), vulkanFrameBuffer->getHeight() };
-
-    uint64_t clearValueCount = m_descriptor.colorAttachments.size();
-    clearValueCount += m_descriptor.depthStencilAttachment.has_value() ? 1 : 0;
-
-    std::vector<VkClearValue> clearValues{};
-    clearValues.resize(clearValueCount);
-
-    uint64_t clearValueIndex = 0;
-
-    VkClearValue colorClearValue{};
-    for (uint32_t i = 0; i < 4; ++i)
-    {
-        colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
-    }
-    clearValues[clearValueIndex++] = colorClearValue;
-
-    if (hasDepthStencil)
-    {
-        auto depthStencilClearValue = m_descriptor.depthStencilAttachment.value();
-        VkClearValue depthStencilValue;
-        depthStencilValue.depthStencil = { depthStencilClearValue.clearValue.depth, depthStencilClearValue.clearValue.stencil };
-
-        clearValues[clearValueIndex++] = depthStencilValue;
-    }
-
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
@@ -200,77 +240,6 @@ void VulkanRenderPassEncoder::end()
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice->vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
-}
-
-// Convert Helper
-VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp)
-{
-    switch (loadOp)
-    {
-    case LoadOp::kClear:
-        return VK_ATTACHMENT_LOAD_OP_CLEAR;
-
-    case LoadOp::kLoad:
-        return VK_ATTACHMENT_LOAD_OP_LOAD;
-
-    case LoadOp::kDontCare:
-        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-
-    default:
-        spdlog::error("{} Load Op type is not supported.", static_cast<uint8_t>(loadOp));
-        return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    }
-}
-
-LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp)
-{
-    switch (loadOp)
-    {
-    case VK_ATTACHMENT_LOAD_OP_CLEAR:
-        return LoadOp::kClear;
-
-    case VK_ATTACHMENT_LOAD_OP_LOAD:
-        return LoadOp::kLoad;
-
-    case VK_ATTACHMENT_LOAD_OP_DONT_CARE:
-        return LoadOp::kDontCare;
-
-    default:
-        spdlog::error("{} Load Op type is not supported.", static_cast<int32_t>(loadOp));
-        return LoadOp::kDontCare;
-    }
-}
-
-VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp)
-{
-    switch (storeOp)
-    {
-    case StoreOp::kStore:
-        return VK_ATTACHMENT_STORE_OP_STORE;
-
-    case StoreOp::kDontCare:
-        return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-    default:
-        spdlog::error("{} Store Op type is not supported.", static_cast<uint8_t>(storeOp));
-        return VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    }
-}
-
-StoreOp ToStoreOp(VkAttachmentStoreOp storeOp)
-{
-    switch (storeOp)
-    {
-    case VK_ATTACHMENT_STORE_OP_STORE:
-        return StoreOp::kStore;
-
-    case VK_ATTACHMENT_STORE_OP_DONT_CARE:
-        return StoreOp::kDontCare;
-
-    default:
-        spdlog::error("{} Store Op type is not supported.", static_cast<uint8_t>(storeOp));
-        return StoreOp::kDontCare;
-    }
 }
 
 } // namespace vkt

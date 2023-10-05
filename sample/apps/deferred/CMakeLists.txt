@@ -37,12 +37,17 @@ set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/deferred.vert -o ${SHADERS_INPUT}/deferred.vert.spv
-    )
-    add_custom_command(TARGET deferred PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/deferred.frag -o ${SHADERS_INPUT}/deferred.frag.spv
-    )
+    file(GLOB_RECURSE SHADERS $${SHADERS_INPUT} "*.vert" "*.frag")
+
+    function(run_glslc target shader)
+        add_custom_command(TARGET ${target} PRE_BUILD
+            COMMAND ${GLSLC_EXE} ${shader} -o ${shader}.spv
+        )
+    endfunction()
+
+    foreach(SHADER ${SHADERS})
+        run_glslc(deferred ${SHADER})
+    endforeach(SHADER)
 endif()
 
 # copy spirv to output
@@ -56,9 +61,18 @@ if(NOT ANDROID)
     set(SHADER_OUTPUT ${BINARY_OUT})
 
     # TODO: copy after creating *spv.
-    file(COPY ${SHADERS_INPUT}/deferred.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/deferred.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(GLOB_RECURSE SPVS $${SHADERS_INPUT} "*.spv")
+
+    foreach(SPV ${SPVS})
+        file(COPY ${SPV} DESTINATION ${SHADER_OUTPUT})
+    endforeach()
 endif()
+
+set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
+set(RESOURCE_OUT ${BINARY_OUT})
+file(COPY ${RESOURCE_DIR}/armor.gltf DESTINATION ${RESOURCE_OUT})
+file(COPY ${RESOURCE_DIR}/colormap_rgba.ktx DESTINATION ${RESOURCE_OUT})
+file(COPY ${RESOURCE_DIR}/normalmap_rgba.ktx DESTINATION ${RESOURCE_OUT})
 
 if(MSVC)
 # TODO

@@ -328,9 +328,9 @@ void TriangleSample::createImageTexture()
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
-                                         .usages = TextureUsageFlagBits::kCopySrc |
-                                                   TextureUsageFlagBits::kCopyDst |
-                                                   TextureUsageFlagBits::kTextureBinding,
+                                         .usage = TextureUsageFlagBits::kCopySrc |
+                                                  TextureUsageFlagBits::kCopyDst |
+                                                  TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
                                          .mipLevels = mipLevels,
@@ -358,7 +358,7 @@ void TriangleSample::createColorAttachmentTexture()
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
                                          .format = m_swapchain->getTextureFormat(),
-                                         .usages = TextureUsageFlagBits::kColorAttachment,
+                                         .usage = TextureUsageFlagBits::kColorAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
                                          .mipLevels = 1,
@@ -380,7 +380,7 @@ void TriangleSample::createDepthStencilTexture()
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
     descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.usages = TextureUsageFlagBits::kDepthStencil;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
@@ -404,9 +404,9 @@ void TriangleSample::createImageSampler()
     descriptor.magFilter = FilterMode::kLinear;
     descriptor.minFilter = FilterMode::kLinear;
     descriptor.mipmapFilter = MipmapFilterMode::kLinear;
-    descriptor.addressModeU = AddressMode::kRepeat;
-    descriptor.addressModeV = AddressMode::kRepeat;
-    descriptor.addressModeW = AddressMode::kRepeat;
+    descriptor.addressModeU = AddressMode::kClampToEdge;
+    descriptor.addressModeV = AddressMode::kClampToEdge;
+    descriptor.addressModeW = AddressMode::kClampToEdge;
     descriptor.lodMin = 0.0f;
     // descriptor.lodMin = static_cast<float>(m_imageTexture->getMipLevels() / 2);
     descriptor.lodMax = static_cast<float>(m_imageTexture->getMipLevels());
@@ -427,6 +427,7 @@ void TriangleSample::createBindingGroupLayout()
     SamplerBindingLayout samplerBindingLayout{};
     samplerBindingLayout.index = 1;
     samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    samplerBindingLayout.withTexture = true;
     std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,
@@ -465,6 +466,7 @@ void TriangleSample::createBindingGroup()
     }
 
     std::vector<TextureBinding> textureBindings{};
+
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
     descriptor.buffers = bufferBindings;
@@ -551,7 +553,7 @@ void TriangleSample::createRenderPipeline()
     // Depth/Stencil stage
     DepthStencilStage depthStencilStage;
     {
-        depthStencilStage.format = m_depthStencilTextureView->getFormat();
+        depthStencilStage.format = m_depthStencilTextureView->getTexture()->getFormat();
     }
 
     RenderPipelineDescriptor descriptor;
@@ -652,12 +654,15 @@ void TriangleSample::draw()
                             .storeOp = StoreOp::kStore,
                             .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
     DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
-                                                   .loadOp = LoadOp::kClear,
-                                                   .storeOp = StoreOp::kStore,
+                                                   .depthLoadOp = LoadOp::kClear,
+                                                   .depthStoreOp = StoreOp::kStore,
+                                                   .stencilLoadOp = LoadOp::kDontCare,
+                                                   .stencilStoreOp = StoreOp::kDontCare,
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
     RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
-                                                             .depthStencilAttachment = depthStencilAttachment };
+                                                             .depthStencilAttachment = depthStencilAttachment,
+                                                             .sampleCount = m_sampleCount };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

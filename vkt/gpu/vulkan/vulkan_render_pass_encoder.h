@@ -35,10 +35,4 @@ public:
     void end() override;
 };
 
-// Convert Helper
-VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp);
-LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp);
-VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp);
-StoreOp ToStoreOp(VkAttachmentStoreOp storeOp);
-
 } // namespace vkt

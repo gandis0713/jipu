@@ -14,6 +14,9 @@
 				"VKT_SAMPLE": "ON",
 				"VKT_TEST": "ON"
 			},
+			"environment": {
+				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries"
+			},
 			"debug": {
 				"find": false,
 				"output": false,

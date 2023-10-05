@@ -15,7 +15,7 @@ namespace vkt
 enum class TextureOwner
 {
     External,
-    Internal
+    Internal // by swap chain
 };
 
 class VulkanDevice;
@@ -36,6 +36,7 @@ public:
 
 public:
     VkImage getVkImage() const;
+    TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
     void setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
@@ -54,10 +55,15 @@ private:
 DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
+VkFormat ToVkFormat(TextureFormat format);
+TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
+
+// Utils
+VkImageLayout GenerateImageLayout(TextureUsageFlags usage);
 
 } // namespace vkt

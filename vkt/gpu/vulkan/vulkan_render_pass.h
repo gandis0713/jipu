@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vkt/gpu/render_pass_encoder.h"
+#include "vkt/gpu/texture.h"
 #include "vulkan_api.h"
 
 #include <memory>
@@ -10,14 +12,29 @@
 namespace vkt
 {
 
+struct VulkanColorAttachment
+{
+    TextureFormat format = TextureFormat::kUndefined;
+    LoadOp loadOp = LoadOp::kDontCare;
+    StoreOp storeOp = StoreOp::kDontCare;
+
+    // TODO: custom type?
+    VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+};
+
+struct VulkanDepthStencilAttachment
+{
+    TextureFormat format = TextureFormat::kUndefined;
+    LoadOp depthLoadOp = LoadOp::kDontCare;
+    StoreOp depthStoreOp = StoreOp::kDontCare;
+    LoadOp stencilLoadOp = LoadOp::kDontCare;
+    StoreOp stencilStoreOp = StoreOp::kDontCare;
+};
 struct VulkanRenderPassDescriptor
 {
-    /// @brief Color attachment format. It should be same with the image in swapchain.
-    VkFormat colorFormat = VK_FORMAT_UNDEFINED; // TODO: multiple color attachments
-    std::optional<VkFormat> depthStencilFormat = std::nullopt;
-    VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+    std::vector<VulkanColorAttachment> colorAttachments{};
+    std::optional<VulkanDepthStencilAttachment> depthStencilAttachment = std::nullopt;
+    uint32_t sampleCount = 1;
 };
 
 class VulkanDevice;
@@ -60,5 +77,11 @@ private:
 
     Cache m_cache{};
 };
+
+// Convert Helper
+VkAttachmentLoadOp ToVkAttachmentLoadOp(LoadOp loadOp);
+LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp);
+VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp);
+StoreOp ToStoreOp(VkAttachmentStoreOp storeOp);
 
 } // namespace vkt

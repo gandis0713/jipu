@@ -6,12 +6,7 @@ namespace vkt
 
 Texture::Texture(Device* device, TextureDescriptor descriptor)
     : m_device(device)
-    , m_type(descriptor.type)
-    , m_format(descriptor.format)
-    , m_width(descriptor.width)
-    , m_height(descriptor.height)
-    , m_mipLevels(descriptor.mipLevels)
-    , m_sampleCount(descriptor.sampleCount)
+    , m_descriptor(descriptor)
 {
 }
 
@@ -22,31 +17,31 @@ Device* Texture::getDevice() const
 
 TextureType Texture::getType() const
 {
-    return m_type;
+    return m_descriptor.type;
 }
 
 TextureFormat Texture::getFormat() const
 {
-    return m_format;
+    return m_descriptor.format;
 }
 
 uint32_t Texture::getWidth() const
 {
-    return m_width;
+    return m_descriptor.width;
 }
 uint32_t Texture::getHeight() const
 {
-    return m_height;
+    return m_descriptor.height;
 }
 
 uint32_t Texture::getMipLevels() const
 {
-    return m_mipLevels;
+    return m_descriptor.mipLevels;
 }
 
 uint32_t Texture::getSampleCount() const
 {
-    return m_sampleCount;
+    return m_descriptor.sampleCount;
 }
 
 } // namespace vkt
