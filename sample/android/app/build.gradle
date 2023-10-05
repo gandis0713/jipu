@@ -7,16 +7,18 @@ plugins {
 
 // Paths
 def projectDir = Paths.get(project.projectDir.getParent()).getParent().getParent()
-def shaderDir = "${projectDir}/sample/apps/triangle/shaders"
-def resourceDir = "${projectDir}/sample/apps/triangle/res"
+def sampleName = "triangle"
+def shaderDir = "${projectDir}/sample/apps/${sampleName}/shaders"
+def resDir = "${projectDir}/sample/apps/${sampleName}/res"
 
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
 def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
-def androidNDKVersion = System.getenv("ANDROID_NDK_VERSION") // environment by self.
+def androidNDKVersion = "25.1.8937393"
 
 android {
     compileSdk 33
+    ndkPath "${androidSDKRootDir}/ndk/${androidNDKVersion}"
     ndkVersion androidNDKVersion
 
     defaultConfig {
@@ -38,7 +40,7 @@ android {
                 arguments += "-DANDROID_ARM_NEON=ON"
                 arguments += "-DANDROID_STL=c++_shared"
 
-                targets "triangle"
+                targets += "${sampleName}"
             }
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -46,7 +48,7 @@ android {
 
     sourceSets {
         main.assets.srcDirs += "${shaderDir}"
-        main.assets.srcDirs += "${resourceDir}"
+        main.assets.srcDirs += "${resDir}"
     }
 
     buildTypes {
