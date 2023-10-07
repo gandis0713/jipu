@@ -47,12 +47,12 @@ extern "C"
 namespace vkt
 {
 
-class TriangleSample : public Sample
+class OBJModelSample : public Sample
 {
 public:
-    TriangleSample() = delete;
-    TriangleSample(const SampleDescriptor& descriptor);
-    ~TriangleSample() override;
+    OBJModelSample() = delete;
+    OBJModelSample(const SampleDescriptor& descriptor);
+    ~OBJModelSample() override;
 
     void init() override;
 
@@ -137,12 +137,12 @@ private:
     uint32_t m_sampleCount = 4;
 };
 
-TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
+OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
 }
 
-TriangleSample::~TriangleSample()
+OBJModelSample::~OBJModelSample()
 {
     // clear swapchain first.
     m_swapchain.reset();
@@ -183,7 +183,7 @@ TriangleSample::~TriangleSample()
     m_driver.reset();
 }
 
-void TriangleSample::init()
+void OBJModelSample::init()
 {
     // create Driver.
     {
@@ -242,7 +242,7 @@ void TriangleSample::init()
     m_initialized = true;
 }
 
-void TriangleSample::createSwapchain()
+void OBJModelSample::createSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -258,7 +258,7 @@ void TriangleSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void TriangleSample::createVertexBuffer()
+void OBJModelSample::createVertexBuffer()
 {
     // load obj as buffer for android.
     std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.obj", m_handle);
@@ -283,7 +283,7 @@ void TriangleSample::createVertexBuffer()
     // vertexStagingBuffer->unmap(); // TODO: need unmap before destroy it?
 }
 
-void TriangleSample::createIndexBuffer()
+void OBJModelSample::createIndexBuffer()
 {
     uint64_t indexSize = static_cast<uint64_t>(sizeof(uint16_t) * m_polygon.indices.size());
     BufferDescriptor indexBufferDescriptor{ .size = indexSize,
@@ -296,7 +296,7 @@ void TriangleSample::createIndexBuffer()
     m_indexBuffer->unmap();
 }
 
-void TriangleSample::createUniformBuffer()
+void OBJModelSample::createUniformBuffer()
 {
     BufferDescriptor descriptor{ .size = sizeof(UniformBufferObject),
                                  .usage = BufferUsageFlagBits::kUniform };
@@ -304,7 +304,7 @@ void TriangleSample::createUniformBuffer()
     m_uniformBufferMappedPointer = m_uniformBuffer->map();
 }
 
-void TriangleSample::createImageTexture()
+void OBJModelSample::createImageTexture()
 {
     // load as buffer for android.
     std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.png", m_handle);
@@ -344,7 +344,7 @@ void TriangleSample::createImageTexture()
     // imageTextureStagingBuffer->unmap(); // TODO: need unmap before destroy it?
 }
 
-void TriangleSample::createImageTextureView()
+void OBJModelSample::createImageTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -353,7 +353,7 @@ void TriangleSample::createImageTextureView()
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
 }
 
-void TriangleSample::createColorAttachmentTexture()
+void OBJModelSample::createColorAttachmentTexture()
 {
     // create color texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
@@ -366,7 +366,7 @@ void TriangleSample::createColorAttachmentTexture()
     m_colorAttachmentTexture = m_device->createTexture(textureDescriptor);
 }
 
-void TriangleSample::createColorAttachmentTextureView()
+void OBJModelSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -375,7 +375,7 @@ void TriangleSample::createColorAttachmentTextureView()
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
 }
 
-void TriangleSample::createDepthStencilTexture()
+void OBJModelSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
@@ -389,7 +389,7 @@ void TriangleSample::createDepthStencilTexture()
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
 
-void TriangleSample::createDepthStencilTextureView()
+void OBJModelSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -398,7 +398,7 @@ void TriangleSample::createDepthStencilTextureView()
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
-void TriangleSample::createImageSampler()
+void OBJModelSample::createImageSampler()
 {
     SamplerDescriptor descriptor{};
     descriptor.magFilter = FilterMode::kLinear;
@@ -414,7 +414,7 @@ void TriangleSample::createImageSampler()
     m_imageSampler = m_device->createSampler(descriptor);
 }
 
-void TriangleSample::createBindingGroupLayout()
+void OBJModelSample::createBindingGroupLayout()
 {
     // Uniform Buffer
     BufferBindingLayout bufferBindingLayout{};
@@ -436,7 +436,7 @@ void TriangleSample::createBindingGroupLayout()
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
 
-void TriangleSample::createBindingGroup()
+void OBJModelSample::createBindingGroup()
 {
     const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
     std::vector<BufferBinding> bufferBindings{};
@@ -476,13 +476,13 @@ void TriangleSample::createBindingGroup()
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
 
-void TriangleSample::createPipelineLayout()
+void OBJModelSample::createPipelineLayout()
 {
     PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayout.get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
-void TriangleSample::createRenderPipeline()
+void OBJModelSample::createRenderPipeline()
 {
 
     // Input Assembly
@@ -495,7 +495,7 @@ void TriangleSample::createRenderPipeline()
     VertexStage vertexStage{};
     {
         // create vertex shader
-        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "triangle.vert.spv", m_handle);
+        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "obj_model.vert.spv", m_handle);
         ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
                                                              .codeSize = vertShaderCode.size() };
         m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
@@ -539,7 +539,7 @@ void TriangleSample::createRenderPipeline()
     FragmentStage fragmentStage{};
     {
         // create fragment shader
-        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "triangle.frag.spv", m_handle);
+        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "obj_model.frag.spv", m_handle);
         ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
                                                                .codeSize = fragShaderCode.size() };
         m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
@@ -567,13 +567,13 @@ void TriangleSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void TriangleSample::createCommandBuffers()
+void OBJModelSample::createCommandBuffers()
 {
     CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
     m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void TriangleSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
+void OBJModelSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
 {
     BlitBuffer srcBuffer{};
     srcBuffer.buffer = src;
@@ -594,7 +594,7 @@ void TriangleSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
     m_queue->submit({ commandEncoder->finish() });
 }
 
-void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
+void OBJModelSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
 {
     BlitTextureBuffer blitTextureBuffer{};
     blitTextureBuffer.buffer = imageTextureStagingBuffer;
@@ -620,7 +620,7 @@ void TriangleSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     m_queue->submit({ commandEndoer->finish() });
 }
 
-void TriangleSample::updateUniformBuffer()
+void OBJModelSample::updateUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -637,7 +637,7 @@ void TriangleSample::updateUniformBuffer()
     memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
 }
 
-void TriangleSample::draw()
+void OBJModelSample::draw()
 {
     updateUniformBuffer();
 
@@ -684,13 +684,13 @@ void TriangleSample::draw()
 void android_main(struct android_app* app)
 {
     vkt::SampleDescriptor descriptor{
-        { 1000, 2000, "Triangle", app },
+        { 1000, 2000, "OBJModel", app },
         ""
     };
 
-    vkt::TriangleSample triangleSample(descriptor);
+    vkt::OBJModelSample sample(descriptor);
 
-    triangleSample.exec();
+    sample.exec();
 }
 
 #else
@@ -700,13 +700,13 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     vkt::SampleDescriptor descriptor{
-        { 800, 600, "Triangle", nullptr },
+        { 800, 600, "OBJModel", nullptr },
         argv[0]
     };
 
-    vkt::TriangleSample triangleSample(descriptor);
+    vkt::OBJModelSample sample(descriptor);
 
-    return triangleSample.exec();
+    return sample.exec();
 }
 
 #endif

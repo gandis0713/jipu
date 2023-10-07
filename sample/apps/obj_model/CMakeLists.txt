@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    triangle
+    obj_model
     VERSION 0.1
-    DESCRIPTION "triangle sample"
+    DESCRIPTION "obj model sample"
     LANGUAGES CXX
 )
 
@@ -12,11 +12,11 @@ list(APPEND SRC_FILES
 )
 
 if(ANDROID)
-    add_library(triangle SHARED
+    add_library(obj_model SHARED
         ${SRC_FILES}
     )
 else()
-    add_executable(triangle
+    add_executable(obj_model
         ${SRC_FILES}
     )
 endif()
@@ -24,7 +24,7 @@ endif()
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-target_link_libraries(triangle
+target_link_libraries(obj_model
     PRIVATE
     glm::glm
     vkt::vkt
@@ -39,11 +39,11 @@ set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET triangle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/triangle.vert -o ${SHADERS_INPUT}/triangle.vert.spv
+    add_custom_command(TARGET obj_model PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/obj_model.vert -o ${SHADERS_INPUT}/obj_model.vert.spv
     )
-    add_custom_command(TARGET triangle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/triangle.frag -o ${SHADERS_INPUT}/triangle.frag.spv
+    add_custom_command(TARGET obj_model PRE_BUILD
+        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/obj_model.frag -o ${SHADERS_INPUT}/obj_model.frag.spv
     )
 endif()
 
@@ -57,8 +57,8 @@ endif()
 if(NOT ANDROID)
     set(SHADER_OUTPUT ${BINARY_OUT})
 
-    file(COPY ${SHADERS_INPUT}/triangle.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/triangle.frag.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/obj_model.vert.spv DESTINATION ${SHADER_OUTPUT})
+    file(COPY ${SHADERS_INPUT}/obj_model.frag.spv DESTINATION ${SHADER_OUTPUT})
 endif()
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
@@ -69,7 +69,7 @@ file(COPY ${RESOURCE_DIR}/viking_room.png DESTINATION ${RESOURCE_OUT})
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(triangle
+    target_compile_options(obj_model
         PUBLIC
         -Wall
         -Werror

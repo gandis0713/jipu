@@ -6,10 +6,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Triangle Debug for x64 windows",
+            "name": "OBJ Model Debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/triangle/triangle.exe",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/obj_model/obj_model.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
@@ -33,10 +33,10 @@
             "environment": [],
         },
         {
-            "name": "Triangle Debug for arm64 osx",
+            "name": "OBJ Model Debug for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/obj_model/obj_model",
             "args": [],
             "stopAtEntry": false,
             "environment": [],

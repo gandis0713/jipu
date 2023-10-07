@@ -10,7 +10,7 @@ class MainActivity : GameActivity() {
 
     companion object {
         init {
-            System.loadLibrary("triangle")
+            System.loadLibrary("obj_model")
         }
     }
 }

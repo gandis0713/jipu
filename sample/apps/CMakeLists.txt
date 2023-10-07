@@ -8,6 +8,6 @@ if(APPLE)
     )
 endif()
 
-add_subdirectory(triangle)
+add_subdirectory(obj_model)
 add_subdirectory(particle)
 add_subdirectory(deferred)

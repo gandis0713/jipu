@@ -17,7 +17,7 @@
             android:exported="true"
             android:configChanges="orientation|keyboardHidden">
             <meta-data android:name="android.app.lib_name"
-                android:value="triangle" />
+                android:value="obj_model" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
