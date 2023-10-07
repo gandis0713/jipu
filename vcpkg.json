@@ -10,6 +10,7 @@
     "tinyobjloader",
     "tinygltf",
     "ktx",
+    "imgui",
     {
       "name": "vcpkg-cmake",
       "host": true
