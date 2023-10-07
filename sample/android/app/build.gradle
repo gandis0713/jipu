@@ -7,7 +7,7 @@ plugins {
 
 // Paths
 def projectDir = Paths.get(project.projectDir.getParent()).getParent().getParent()
-def sampleName = "triangle"
+def sampleName = "obj_model"
 def shaderDir = "${projectDir}/sample/apps/${sampleName}/shaders"
 def resDir = "${projectDir}/sample/apps/${sampleName}/res"
 
