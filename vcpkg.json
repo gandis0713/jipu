@@ -12,6 +12,12 @@
     "ktx",
     "imgui",
     {
+      "name": "imgui",
+      "features": [
+        "sdl2-binding"
+      ]
+    },
+    {
       "name": "vcpkg-cmake",
       "host": true
     },
