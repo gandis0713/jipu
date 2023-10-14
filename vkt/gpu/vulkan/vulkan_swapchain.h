@@ -16,6 +16,7 @@ class VulkanDevice;
 class VulkanSwapchain : public Swapchain
 {
 public:
+    VulkanSwapchain() = delete;
     VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
