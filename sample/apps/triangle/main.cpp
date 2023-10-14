@@ -6,6 +6,7 @@
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/surface.h"
+#include "vkt/gpu/swapchain.h"
 
 #include <spdlog/spdlog.h>
 
@@ -42,12 +43,14 @@ private:
     void createPhysicalDevice();
     void createSurface();
     void createDevice();
+    void createSwapchain();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -57,6 +60,7 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
+    m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
     m_physicalDevice.reset();
@@ -69,6 +73,7 @@ void TriangleSample::init()
     createPhysicalDevice();
     createSurface();
     createDevice();
+    createSwapchain();
 }
 
 void TriangleSample::draw()
@@ -104,6 +109,25 @@ void TriangleSample::createSurface()
     DeviceDescriptor descriptor{};
 
     m_device = m_physicalDevice->createDevice(descriptor);
+}
+
+void TriangleSample::createSwapchain()
+{
+#if defined(__ANDROID__) || defined(ANDROID)
+    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+#else
+    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+#endif
+
+    SwapchainDescriptor descriptor{};
+    descriptor.width = m_width;
+    descriptor.height = m_height;
+    descriptor.surface = m_surface.get();
+    descriptor.textureFormat = textureFormat;
+    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
+    descriptor.presentMode = PresentMode::kFifo;
+
+    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 } // namespace vkt
