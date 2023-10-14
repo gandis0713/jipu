@@ -2,9 +2,12 @@
 
 #include "sample.h"
 
+#include "vkt/gpu/command_buffer.h"
+#include "vkt/gpu/command_encoder.h"
 #include "vkt/gpu/device.h"
 #include "vkt/gpu/driver.h"
 #include "vkt/gpu/physical_device.h"
+#include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
@@ -44,12 +47,16 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
+    void createQueue();
+    void createCommandBuffer();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
+    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
 };
 
@@ -61,6 +68,8 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 TriangleSample::~TriangleSample()
 {
     m_swapchain.reset();
+    m_commandBuffer.reset();
+    m_queue.reset();
     m_device.reset();
     m_surface.reset();
     m_physicalDevice.reset();
@@ -73,7 +82,11 @@ void TriangleSample::init()
     createPhysicalDevice();
     createSurface();
     createDevice();
+    createQueue();
+    createCommandBuffer();
     createSwapchain();
+    // createPipeline();
+    // encode command.
 }
 
 void TriangleSample::draw()
@@ -109,6 +122,22 @@ void TriangleSample::createSurface()
     DeviceDescriptor descriptor{};
 
     m_device = m_physicalDevice->createDevice(descriptor);
+}
+
+void TriangleSample::createQueue()
+{
+    QueueDescriptor descriptor{};
+    descriptor.flags = QueueFlagBits::kGraphics;
+
+    m_queue = m_device->createQueue(descriptor);
+}
+
+void TriangleSample::createCommandBuffer()
+{
+    CommandBufferDescriptor descriptor{};
+    descriptor.usage = CommandBufferUsage::kOneTime;
+
+    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void TriangleSample::createSwapchain()
