@@ -52,8 +52,8 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
-    void createQueue();
     void createCommandBuffer();
+    void createQueue();
     void createVertexBuffer();
     void createRenderPipeline();
 
@@ -63,8 +63,8 @@ private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
 
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
@@ -76,9 +76,9 @@ private:
     };
 
     std::vector<Vertex> m_vertices{
-        { { 0.0, -1.0, 0.0 }, { 1.0, 1.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 }, { 1.0, 0.0, 0.0 } },
-        { { 1.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 } },
+        { { 0.0, -0.5, 0.0 }, { 1.0, 0.0, 0.0 } },
+        { { -0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0 } },
+        { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
     };
 
     uint32_t m_sampleCount = 1;
@@ -93,8 +93,8 @@ TriangleSample::~TriangleSample()
 {
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
-    m_commandBuffer.reset();
     m_queue.reset();
+    m_commandBuffer.reset();
     m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
@@ -109,8 +109,8 @@ void TriangleSample::init()
     createSurface();
     createDevice();
     createSwapchain();
-    createQueue();
     createCommandBuffer();
+    createQueue();
     createVertexBuffer();
     createRenderPipeline();
 
@@ -119,6 +119,33 @@ void TriangleSample::init()
 
 void TriangleSample::draw()
 {
+    auto swapchainIndex = m_swapchain->acquireNextTexture();
+
+    {
+        ColorAttachment attachment{};
+        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.loadOp = LoadOp::kClear;
+        attachment.storeOp = StoreOp::kStore;
+        attachment.renderView = m_swapchain->getTextureView(swapchainIndex);
+        attachment.resolveView = nullptr;
+
+        RenderPassEncoderDescriptor renderPassDescriptor;
+        renderPassDescriptor.sampleCount = m_sampleCount;
+        renderPassDescriptor.colorAttachments = { attachment };
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
+        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setScissor(0, 0, m_width, m_height);
+        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->end();
+
+        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+    }
 }
 
 void TriangleSample::createDevier()
@@ -171,20 +198,20 @@ void TriangleSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void TriangleSample::createQueue()
-{
-    QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
-
-    m_queue = m_device->createQueue(descriptor);
-}
-
 void TriangleSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
+}
+
+void TriangleSample::createQueue()
+{
+    QueueDescriptor descriptor{};
+    descriptor.flags = QueueFlagBits::kGraphics;
+
+    m_queue = m_device->createQueue(descriptor);
 }
 
 void TriangleSample::createVertexBuffer()
@@ -240,7 +267,7 @@ void TriangleSample::createRenderPipeline()
 
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = 0u;
+        vertexInputLayout.stride = sizeof(Vertex);
         vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
         vertexStage.entryPoint = "main";
