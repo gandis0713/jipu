@@ -32,6 +32,12 @@ target_link_libraries(obj_model
     spdlog::spdlog_header_only
 )
 
+if(CMAKE_GENERATOR STREQUAL "Ninja")
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+else()
+    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+endif()
+
 set(SHADERS
     obj_model.vert
     obj_model.frag
@@ -47,13 +53,6 @@ if(EXISTS ${GLSLC_EXE})
 
         # copy spirv to output
         set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
-
-        if(CMAKE_GENERATOR STREQUAL "Ninja")
-            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
-        else()
-            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-        endif()
-
         set(SHADER_DST ${BINARY_OUT})
 
         function(run_glslc target shader src dst)
