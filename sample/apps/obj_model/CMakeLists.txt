@@ -32,33 +32,40 @@ target_link_libraries(obj_model
     spdlog::spdlog_header_only
 )
 
-# define shader input
-set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADERS
+    obj_model.vert
+    obj_model.frag
+)
 
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET obj_model PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/obj_model.vert -o ${SHADERS_INPUT}/obj_model.vert.spv
-    )
-    add_custom_command(TARGET obj_model PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/obj_model.frag -o ${SHADERS_INPUT}/obj_model.frag.spv
-    )
-endif()
+    if(NOT ANDROID)
+        # define shader input
+        set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
-# copy spirv to output
-if(CMAKE_GENERATOR STREQUAL "Ninja")
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
-else()
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-endif()
+        # copy spirv to output
+        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
 
-if(NOT ANDROID)
-    set(SHADER_OUTPUT ${BINARY_OUT})
+        if(CMAKE_GENERATOR STREQUAL "Ninja")
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+        endif()
 
-    file(COPY ${SHADERS_INPUT}/obj_model.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/obj_model.frag.spv DESTINATION ${SHADER_OUTPUT})
+        set(SHADER_DST ${BINARY_OUT})
+
+        function(run_glslc target shader src dst)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${GLSLC_EXE} ${src}/${shader} -o ${dst}/${shader}.spv
+            )
+        endfunction()
+
+        foreach(SHADER ${SHADERS})
+            run_glslc(obj_model ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+        endforeach(SHADER)
+    endif()
 endif()
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
