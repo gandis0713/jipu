@@ -6,6 +6,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Triangle Model Debug for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/triangle/triangle.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "OBJ Model Debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
@@ -31,6 +40,18 @@
             "args": [],
             "stopAtEntry": false,
             "environment": [],
+        },
+        {
+            "name": "Triangle Debug for arm64 osx",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
         },
         {
             "name": "OBJ Model Debug for arm64 osx",

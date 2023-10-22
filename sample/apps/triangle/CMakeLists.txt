@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    particle
+    triangle
     VERSION 0.1
-    DESCRIPTION "particle sample"
+    DESCRIPTION "triangle sample"
     LANGUAGES CXX
 )
 
@@ -12,19 +12,21 @@ list(APPEND SRC_FILES
 )
 
 if(ANDROID)
-    add_library(particle SHARED
+    add_library(triangle SHARED
         ${SRC_FILES}
     )
 else()
-    add_executable(particle
+    add_executable(triangle
         ${SRC_FILES}
     )
 endif()
 
 find_package(spdlog CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
-target_link_libraries(particle
+target_link_libraries(triangle
     PRIVATE
+    glm::glm
     vkt::vkt
     vkt::sample_base
     spdlog::spdlog_header_only
@@ -37,9 +39,8 @@ else()
 endif()
 
 set(SHADERS
-    particle.vert
-    particle.frag
-    particle.comp
+    triangle.vert
+    triangle.frag
 )
 
 # convert shader to spirv
@@ -61,7 +62,7 @@ if(EXISTS ${GLSLC_EXE})
         endfunction()
 
         foreach(SHADER ${SHADERS})
-            run_glslc(particle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+            run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
         endforeach(SHADER)
     endif()
 endif()
@@ -69,7 +70,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(particle
+    target_compile_options(triangle
         PUBLIC
         -Wall
         -Werror
