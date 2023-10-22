@@ -30,38 +30,41 @@ target_link_libraries(particle
     spdlog::spdlog_header_only
 )
 
-# define shader input
-set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADERS
+    particle.vert
+    particle.frag
+    particle.comp
+)
 
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET particle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.vert -o ${SHADERS_INPUT}/particle.vert.spv
-    )
-    add_custom_command(TARGET particle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.frag -o ${SHADERS_INPUT}/particle.frag.spv
-    )
-    add_custom_command(TARGET particle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/particle.comp -o ${SHADERS_INPUT}/particle.comp.spv
-    )
-endif()
+    if(NOT ANDROID)
+        # define shader input
+        set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
-# copy spirv to output
-if(CMAKE_GENERATOR STREQUAL "Ninja")
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
-else()
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-endif()
+        # copy spirv to output
+        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
 
-if(NOT ANDROID)
-    set(SHADER_OUTPUT ${BINARY_OUT})
+        if(CMAKE_GENERATOR STREQUAL "Ninja")
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+        endif()
 
-    # TODO: copy after creating *spv.
-    file(COPY ${SHADERS_INPUT}/particle.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/particle.frag.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/particle.comp.spv DESTINATION ${SHADER_OUTPUT})
+        set(SHADER_DST ${BINARY_OUT})
+
+        function(run_glslc target shader src dst)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${GLSLC_EXE} ${src}/${shader} -o ${dst}/${shader}.spv
+            )
+        endfunction()
+
+        foreach(SHADER ${SHADERS})
+            run_glslc(particle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+        endforeach(SHADER)
+    endif()
 endif()
 
 if(MSVC)

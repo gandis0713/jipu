@@ -30,42 +30,42 @@ target_link_libraries(deferred
     spdlog::spdlog_header_only
 )
 
-# define shader input
-set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+set(SHADERS
+    composition.vert
+    composition.frag
+    offscreen.vert
+    offscreen.frag
+)
 
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    file(GLOB_RECURSE SHADERS $${SHADERS_INPUT} "*.vert" "*.frag")
+    if(NOT ANDROID)
+        # define shader input
+        set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
-    function(run_glslc target shader)
-        add_custom_command(TARGET ${target} PRE_BUILD
-            COMMAND ${GLSLC_EXE} ${shader} -o ${shader}.spv
-        )
-    endfunction()
+        # copy spirv to output
+        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
 
-    foreach(SHADER ${SHADERS})
-        run_glslc(deferred ${SHADER})
-    endforeach(SHADER)
-endif()
+        if(CMAKE_GENERATOR STREQUAL "Ninja")
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+        endif()
 
-# copy spirv to output
-if(CMAKE_GENERATOR STREQUAL "Ninja")
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
-else()
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-endif()
+        set(SHADER_DST ${BINARY_OUT})
 
-if(NOT ANDROID)
-    set(SHADER_OUTPUT ${BINARY_OUT})
+        function(run_glslc target shader src dst)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${GLSLC_EXE} ${src}/${shader} -o ${dst}/${shader}.spv
+            )
+        endfunction()
 
-    # TODO: copy after creating *spv.
-    file(GLOB_RECURSE SPVS $${SHADERS_INPUT} "*.spv")
-
-    foreach(SPV ${SPVS})
-        file(COPY ${SPV} DESTINATION ${SHADER_OUTPUT})
-    endforeach()
+        foreach(SHADER ${SHADERS})
+            run_glslc(deferred ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+        endforeach(SHADER)
+    endif()
 endif()
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/res)
