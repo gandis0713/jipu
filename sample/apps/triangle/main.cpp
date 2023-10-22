@@ -69,15 +69,16 @@ private:
 
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
-    std::vector<glm::vec3> m_positions{
-        { 0.0, -1.0, 0.0 },
-        { -1.0, 1.0, 0.0 },
-        { 1.0, 1.0, 0.0 },
+    struct Vertex
+    {
+        glm::vec3 pos;
+        glm::vec3 color;
     };
-    std::vector<glm::vec3> m_colors{
-        { 1.0, 1.0, 0.0 },
-        { 1.0, 0.0, 0.0 },
-        { 0.0, 1.0, 0.0 },
+
+    std::vector<Vertex> m_vertices{
+        { { 0.0, -1.0, 0.0 }, { 1.0, 1.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 1.0, 0.0, 0.0 } },
+        { { 1.0, 1.0, 0.0 }, { 0.0, 1.0, 0.0 } },
     };
 
     uint32_t m_sampleCount = 1;
@@ -91,6 +92,7 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 TriangleSample::~TriangleSample()
 {
     m_renderPipeline.reset();
+    m_vertexBuffer.reset();
     m_commandBuffer.reset();
     m_queue.reset();
     m_swapchain.reset();
@@ -188,7 +190,14 @@ void TriangleSample::createCommandBuffer()
 void TriangleSample::createVertexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size =
+    descriptor.size = m_vertices.size() * sizeof(Vertex);
+    descriptor.usage = BufferUsageFlagBits::kVertex;
+
+    m_vertexBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_vertexBuffer->map();
+    memcpy(pointer, m_vertices.data(), descriptor.size);
+    // m_vertexBuffer->unmap();
 }
 
 void TriangleSample::createRenderPipeline()
@@ -221,8 +230,22 @@ void TriangleSample::createRenderPipeline()
     // vertex stage
     VertexStage vertexStage{};
     {
+        VertexAttribute positionAttribute{};
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
+
+        VertexAttribute colorAttribute{};
+        colorAttribute.format = VertexFormat::kSFLOATx3;
+        colorAttribute.offset = offsetof(Vertex, color);
+
+        VertexInputLayout vertexInputLayout{};
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = 0u;
+        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
         vertexStage.entryPoint = "main";
         vertexStage.shaderModule = vertexShaderModule.get();
+        vertexStage.layouts = { vertexInputLayout };
     }
 
     // rasterization
