@@ -32,6 +32,11 @@ target_link_libraries(triangle
     spdlog::spdlog_header_only
 )
 
+set(SHADERS
+    triangle.vert
+    triangle.frag
+)
+
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
@@ -41,17 +46,14 @@ if(EXISTS ${GLSLC_EXE})
         set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
         # copy spirv to output
+        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
+
         if(CMAKE_GENERATOR STREQUAL "Ninja")
             set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
         else()
             set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
         endif()
 
-        list(APPEND SHADERS
-            triangle.vert
-            triangle.frag
-        )
-        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
         set(SHADER_DST ${BINARY_OUT})
 
         function(run_glslc target shader src dst)
