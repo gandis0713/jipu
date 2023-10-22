@@ -32,33 +32,38 @@ target_link_libraries(triangle
     spdlog::spdlog_header_only
 )
 
-# define shader input
-set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
 if(EXISTS ${GLSLC_EXE})
-    add_custom_command(TARGET triangle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/triangle.vert -o ${SHADERS_INPUT}/triangle.vert.spv
-    )
-    add_custom_command(TARGET triangle PRE_BUILD
-        COMMAND ${GLSLC_EXE} ${SHADERS_INPUT}/triangle.frag -o ${SHADERS_INPUT}/triangle.frag.spv
-    )
-endif()
+    if(NOT ANDROID)
+        # define shader input
+        set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
 
-# copy spirv to output
-if(CMAKE_GENERATOR STREQUAL "Ninja")
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
-else()
-    set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
-endif()
+        # copy spirv to output
+        if(CMAKE_GENERATOR STREQUAL "Ninja")
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
+        else()
+            set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+        endif()
 
-if(NOT ANDROID)
-    set(SHADER_OUTPUT ${BINARY_OUT})
+        list(APPEND SHADERS
+            triangle.vert
+            triangle.frag
+        )
+        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
+        set(SHADER_DST ${BINARY_OUT})
 
-    file(COPY ${SHADERS_INPUT}/triangle.vert.spv DESTINATION ${SHADER_OUTPUT})
-    file(COPY ${SHADERS_INPUT}/triangle.frag.spv DESTINATION ${SHADER_OUTPUT})
+        function(run_glslc target shader src dst)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${GLSLC_EXE} ${src}/${shader} -o ${dst}/${shader}.spv
+            )
+        endfunction()
+
+        foreach(SHADER ${SHADERS})
+            run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+        endforeach(SHADER)
+    endif()
 endif()
 
 if(MSVC)
