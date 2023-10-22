@@ -113,8 +113,6 @@ void TriangleSample::init()
     createQueue();
     createVertexBuffer();
     createRenderPipeline();
-
-    // encode command.
 }
 
 void TriangleSample::draw()
@@ -224,7 +222,7 @@ void TriangleSample::createVertexBuffer()
 
     void* pointer = m_vertexBuffer->map();
     memcpy(pointer, m_vertices.data(), descriptor.size);
-    // m_vertexBuffer->unmap();
+    m_vertexBuffer->unmap();
 }
 
 void TriangleSample::createRenderPipeline()
