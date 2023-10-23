@@ -3,6 +3,10 @@
 #include "file.h"
 #include "sample.h"
 
+#include <imgui.h>
+#include <imgui_impl_sdl2.h>
+#include <imgui_impl_vulkan.h>
+
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/command_encoder.h"
@@ -47,6 +51,12 @@ public:
     void draw() override;
 
 private:
+    void initImGui();
+    void updateImGui();
+    void drawImGui();
+    void clearImGui();
+
+private:
     void createDevier();
     void createPhysicalDevice();
     void createSurface();
@@ -66,8 +76,13 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    struct ImGuiResources
+    {
+        std::unique_ptr<Texture> fontTexture = nullptr;
+        std::unique_ptr<TextureView> fontTextureView = nullptr;
+    } m_imguiResources{};
 
     struct Vertex
     {
@@ -91,6 +106,8 @@ ImGuiSample::ImGuiSample(const SampleDescriptor& descriptor)
 
 ImGuiSample::~ImGuiSample()
 {
+    clearImGui();
+
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
     m_queue.reset();
@@ -113,6 +130,8 @@ void ImGuiSample::init()
     createQueue();
     createVertexBuffer();
     createRenderPipeline();
+
+    initImGui();
 }
 
 void ImGuiSample::draw()
@@ -144,6 +163,80 @@ void ImGuiSample::draw()
 
         m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
+}
+
+void ImGuiSample::initImGui()
+{
+    // IMGUI_CHECKVERSION();
+    ImGuiContext* imguiContext = ImGui::CreateContext();
+    if (imguiContext == nullptr)
+    {
+        throw std::runtime_error("Failed to create imgui context");
+    }
+
+    auto scale = 10.0f;
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = scale;
+    io.DisplaySize = ImVec2(m_width, m_height);
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(scale);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.6f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(1.0f, 0.0f, 0.0f, 0.8f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
+    style.Colors[ImGuiCol_Header] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+    // Get texture for fonts.
+    unsigned char* fontData;
+    int texWidth, texHeight;
+    io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+
+    // create font texture.
+    {
+        TextureDescriptor fontTextureDescriptor{};
+        fontTextureDescriptor.type = TextureType::k2D;
+        fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+        fontTextureDescriptor.width = texWidth;
+        fontTextureDescriptor.height = texHeight;
+        fontTextureDescriptor.mipLevels = 0;
+        fontTextureDescriptor.sampleCount = 1;
+        fontTextureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
+                                      TextureUsageFlagBits::kCopyDst |
+                                      TextureUsageFlagBits::kTextureBinding;
+
+        m_imguiResources.fontTexture = m_device->createTexture(fontTextureDescriptor);
+    }
+
+    // create font texture view.
+    {
+        TextureViewDescriptor fontTextureViewDescriptor{};
+        fontTextureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
+        fontTextureViewDescriptor.type = TextureViewType::k2D;
+
+        m_imguiResources.fontTextureView = m_imguiResources.fontTexture->createTextureView(fontTextureViewDescriptor);
+    }
+
+    // create font staging buffer.
+    {
+    }
+}
+void ImGuiSample::updateImGui()
+{
+}
+void ImGuiSample::drawImGui()
+{
+    // TODO: test draw
+    ImGui::Text("Hello, world %d", 123);
+}
+
+void ImGuiSample::clearImGui()
+{
+    ImGui::DestroyContext();
+
+    m_imguiResources.fontTextureView.reset();
+    m_imguiResources.fontTexture.reset();
 }
 
 void ImGuiSample::createDevier()
