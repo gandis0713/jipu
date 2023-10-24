@@ -189,18 +189,19 @@ void ImGuiSample::initImGui()
     style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 
     // Get texture for fonts.
-    unsigned char* fontData;
-    int texWidth, texHeight;
-    io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+    using FontDataType = unsigned char;
+    FontDataType* fontData;
+    int fontTexWidth, fontTexHeight;
+    io.Fonts->GetTexDataAsRGBA32(&fontData, &fontTexWidth, &fontTexHeight);
 
     // create font texture.
     {
         TextureDescriptor fontTextureDescriptor{};
         fontTextureDescriptor.type = TextureType::k2D;
         fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
-        fontTextureDescriptor.width = texWidth;
-        fontTextureDescriptor.height = texHeight;
-        fontTextureDescriptor.mipLevels = 0;
+        fontTextureDescriptor.width = fontTexWidth;
+        fontTextureDescriptor.height = fontTexHeight;
+        fontTextureDescriptor.mipLevels = 1;
         fontTextureDescriptor.sampleCount = 1;
         fontTextureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
                                       TextureUsageFlagBits::kCopyDst |
@@ -219,8 +220,44 @@ void ImGuiSample::initImGui()
     }
 
     // create font staging buffer.
+    std::unique_ptr<Buffer> m_fontBuffer = nullptr;
     {
+        BufferDescriptor fontBufferDescriptor{};
+        fontBufferDescriptor.size = fontTexWidth * fontTexHeight * 4 * sizeof(FontDataType);
+        fontBufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
+
+        m_fontBuffer = m_device->createBuffer(fontBufferDescriptor);
+
+        void* fontGPUMappedPointer = m_fontBuffer->map();
+        memcpy(fontGPUMappedPointer, fontData, fontBufferDescriptor.size);
+        // m_fontBuffer->unmap();
     }
+
+    // copy buffer to texture
+    {
+        BlitTextureBuffer blitTextureBuffer{};
+        blitTextureBuffer.buffer = m_fontBuffer.get();
+        blitTextureBuffer.offset = 0;
+        uint32_t channel = 4;
+        uint32_t bytesPerData = sizeof(FontDataType);
+        blitTextureBuffer.bytesPerRow = bytesPerData * m_imguiResources.fontTexture->getWidth() * channel;
+        blitTextureBuffer.rowsPerTexture = m_imguiResources.fontTexture->getHeight();
+
+        BlitTexture blitTexture{ .texture = m_imguiResources.fontTexture.get() };
+        Extent3D extent{};
+        extent.width = m_imguiResources.fontTexture->getWidth();
+        extent.height = m_imguiResources.fontTexture->getHeight();
+        extent.depth = 1;
+
+        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+        std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
+
+        m_queue->submit({ commandEncoder->finish() });
+    };
 }
 void ImGuiSample::updateImGui()
 {
