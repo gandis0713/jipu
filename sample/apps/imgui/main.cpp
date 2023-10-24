@@ -82,6 +82,10 @@ private:
     {
         std::unique_ptr<Texture> fontTexture = nullptr;
         std::unique_ptr<TextureView> fontTextureView = nullptr;
+        std::unique_ptr<Sampler> fontSampler = nullptr;
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<Pipeline> pipeline = nullptr;
     } m_imguiResources{};
 
     struct Vertex
@@ -257,7 +261,53 @@ void ImGuiSample::initImGui()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
         m_queue->submit({ commandEncoder->finish() });
-    };
+    }
+
+    // create font sampler
+    {
+        SamplerDescriptor fontSamplerDescriptor{};
+        fontSamplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+        fontSamplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+        fontSamplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+        fontSamplerDescriptor.lodMin = 0.0f;
+        fontSamplerDescriptor.lodMax = static_cast<uint32_t>(m_imguiResources.fontTexture->getMipLevels());
+        fontSamplerDescriptor.minFilter = FilterMode::kLinear;
+        fontSamplerDescriptor.magFilter = FilterMode::kLinear;
+        fontSamplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+
+        m_imguiResources.fontSampler = m_device->createSampler(fontSamplerDescriptor);
+    }
+
+    // create binding group layout
+    {
+        SamplerBindingLayout fontSamplerBindingLayout{};
+        fontSamplerBindingLayout.index = 0;
+        fontSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        fontSamplerBindingLayout.withTexture = m_imguiResources.fontTextureView != nullptr;
+
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+        bindingGroupLayoutDescriptor.samplers = { fontSamplerBindingLayout };
+
+        m_imguiResources.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
+
+    // create binding group
+    {
+        SamplerBinding fontSamplerBinding{};
+        fontSamplerBinding.index = 0;
+        fontSamplerBinding.sampler = m_imguiResources.fontSampler.get();
+        fontSamplerBinding.textureView = m_imguiResources.fontTextureView.get();
+
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.layout = m_imguiResources.bindingGroupLayout.get();
+        bindingGroupDescriptor.samplers = { fontSamplerBinding };
+
+        m_imguiResources.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+    }
+
+    // create pipeline
+    {
+    }
 }
 void ImGuiSample::updateImGui()
 {
@@ -272,8 +322,13 @@ void ImGuiSample::clearImGui()
 {
     ImGui::DestroyContext();
 
+    m_imguiResources.fontSampler.reset();
     m_imguiResources.fontTextureView.reset();
     m_imguiResources.fontTexture.reset();
+
+    m_imguiResources.pipeline.reset();
+    m_imguiResources.bindingGroup.reset();
+    m_imguiResources.bindingGroupLayout.reset();
 }
 
 void ImGuiSample::createDevier()
