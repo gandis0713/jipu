@@ -134,7 +134,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizationStateCreateInfo.polygonMode = ToVkPolygonMode(m_descriptor.inputAssembly.topology);
     rasterizationStateCreateInfo.lineWidth = 1.0f;
     rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(m_descriptor.rasterization.cullMode);
     rasterizationStateCreateInfo.frontFace = ToVkFrontFace(m_descriptor.rasterization.frontFace);
@@ -320,6 +320,24 @@ VkFormat ToVkVertexFormat(VertexFormat format)
     }
 }
 
+VkPolygonMode ToVkPolygonMode(PrimitiveTopology topology)
+{
+    switch (topology)
+    {
+    case PrimitiveTopology::kPointList:
+        return VK_POLYGON_MODE_POINT;
+    case PrimitiveTopology::kLineStrip:
+    case PrimitiveTopology::kLineList:
+        return VK_POLYGON_MODE_LINE;
+    case PrimitiveTopology::kTriangleStrip:
+    case PrimitiveTopology::kTriangleList:
+        return VK_POLYGON_MODE_FILL;
+    default:
+        spdlog::error("{} topology for polygon mode is not supported.", static_cast<uint32_t>(topology));
+        return VK_POLYGON_MODE_FILL;
+    }
+}
+
 VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
 {
     switch (topology)
@@ -339,7 +357,7 @@ VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
     case PrimitiveTopology::kTriangleList:
         return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     default:
-        spdlog::error("{} topology is not supported.", static_cast<uint32_t>(topology));
+        spdlog::error("{} topology for primitive is not supported.", static_cast<uint32_t>(topology));
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 }
