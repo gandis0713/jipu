@@ -53,7 +53,7 @@ public:
 private:
     void initImGui();
     void updateImGui();
-    void drawImGui();
+    void drawImGui(RenderPassEncoder* renderPassEncoder);
     void clearImGui();
 
 private:
@@ -80,6 +80,8 @@ private:
 
     struct ImGuiResources
     {
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Texture> fontTexture = nullptr;
         std::unique_ptr<TextureView> fontTextureView = nullptr;
         std::unique_ptr<Sampler> fontSampler = nullptr;
@@ -140,6 +142,8 @@ void ImGuiSample::init()
 
 void ImGuiSample::draw()
 {
+    // updateImGui();
+
     auto swapchainIndex = m_swapchain->acquireNextTexture();
 
     {
@@ -163,6 +167,9 @@ void ImGuiSample::draw()
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+
+        drawImGui(renderPassEncoder.get());
+
         renderPassEncoder->end();
 
         m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
@@ -305,17 +312,218 @@ void ImGuiSample::initImGui()
         m_imguiResources.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
     }
 
+    // create pipeline layout
+    std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+    {
+        PipelineLayoutDescriptor pipelineLayoutDescriptor{};
+        pipelineLayoutDescriptor.layouts = { m_imguiResources.bindingGroupLayout.get() };
+
+        pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
+    }
+
     // create pipeline
     {
+        InputAssemblyStage inputAssemblyStage{};
+        {
+            inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
+        }
+
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        VertexStage vertexStage{};
+        {
+
+            VertexInputLayout vertexInputLayout{};
+            {
+                VertexAttribute positionAttribute{};
+                positionAttribute.format = VertexFormat::kSFLOATx2;
+                positionAttribute.offset = offsetof(ImDrawVert, pos);
+
+                VertexAttribute uiAttribute{};
+                uiAttribute.format = VertexFormat::kSFLOATx2;
+                uiAttribute.offset = offsetof(ImDrawVert, uv);
+
+                VertexAttribute colorAttribute{};
+                colorAttribute.format = VertexFormat::kSFLOATx4;
+                colorAttribute.offset = offsetof(ImDrawVert, col);
+
+                vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
+                vertexInputLayout.mode = VertexMode::kVertex;
+                vertexInputLayout.stride = sizeof(ImDrawVert);
+            }
+
+            {
+                std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "imgui.vert.spv", m_handle);
+                ShaderModuleDescriptor vertexShaderModuleDescriptor{};
+                vertexShaderModuleDescriptor.code = vertexShaderSource.data();
+                vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSource.size());
+
+                vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
+            }
+
+            vertexStage.entryPoint = "main";
+            vertexStage.layouts = { vertexInputLayout };
+            vertexStage.shaderModule = vertexShaderModule.get();
+        }
+
+        RasterizationStage rasterizationStage{};
+        {
+            rasterizationStage.cullMode = CullMode::kNone;
+            rasterizationStage.frontFace = FrontFace::kCounterClockwise;
+            rasterizationStage.sampleCount = 1;
+        }
+
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+        FragmentStage fragmentStage{};
+        {
+            FragmentStage::Target target{};
+            target.format = m_swapchain->getTextureFormat();
+
+            {
+                std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "imgui.frag.spv", m_handle);
+                ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
+                fragmentShaderModuleDescriptor.code = fragmentShaderSource.data();
+                fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSource.size());
+
+                fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
+            }
+
+            fragmentStage.targets = { target };
+            fragmentStage.entryPoint = "main";
+            fragmentStage.shaderModule = fragmentShaderModule.get();
+        }
+
+        RenderPipelineDescriptor renderPipelineDescriptor{};
+        renderPipelineDescriptor.layout = pipelineLayout.get();
+        renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
+        renderPipelineDescriptor.vertex = vertexStage;
+        renderPipelineDescriptor.rasterization = rasterizationStage;
+        renderPipelineDescriptor.fragment = fragmentStage;
+
+        m_imguiResources.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
     }
 }
 void ImGuiSample::updateImGui()
 {
-}
-void ImGuiSample::drawImGui()
-{
-    // TODO: test draw
+    // TODO: draw
+    ImGui::NewFrame();
+
+    auto scale = 10.0f;
+    ImGui::SetNextWindowPos(ImVec2(20 * scale, 360 * scale));
+    ImGui::SetNextWindowSize(ImVec2(300 * scale, 200 * scale));
+
     ImGui::Text("Hello, world %d", 123);
+
+    ImGui::End();
+
+    // SRS - ShowDemoWindow() sets its own initial position and size, cannot override here
+    ImGui::ShowDemoWindow();
+
+    // Render to generate draw buffers
+    ImGui::Render();
+
+    // update buffer
+    {
+        ImDrawData* imDrawData = ImGui::GetDrawData();
+        VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
+        VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
+
+        if ((vertexBufferSize == 0) || (indexBufferSize == 0))
+        {
+            return;
+        }
+
+        // Update buffers only if vertex or index count has been changed compared to current buffer size
+
+        // Vertex buffer
+        if ((m_imguiResources.vertexBuffer == nullptr) || (m_imguiResources.vertexBuffer->getSize() != vertexBufferSize))
+        {
+            m_imguiResources.vertexBuffer.reset();
+
+            BufferDescriptor descriptor{};
+            descriptor.size = vertexBufferSize;
+            descriptor.usage = BufferUsageFlagBits::kVertex;
+
+            m_imguiResources.vertexBuffer = m_device->createBuffer(descriptor);
+            m_imguiResources.vertexBuffer->map();
+        }
+
+        // Index buffer
+        if ((m_imguiResources.indexBuffer == nullptr) || (m_imguiResources.indexBuffer->getSize() < indexBufferSize))
+        {
+            m_imguiResources.indexBuffer.reset();
+
+            BufferDescriptor descriptor{};
+            descriptor.size = indexBufferSize;
+            descriptor.usage = BufferUsageFlagBits::kIndex;
+
+            m_imguiResources.indexBuffer = m_device->createBuffer(descriptor);
+            m_imguiResources.indexBuffer->map();
+        }
+
+        // Upload data
+        ImDrawVert* vtxDst = (ImDrawVert*)m_imguiResources.vertexBuffer->map();
+        ImDrawIdx* idxDst = (ImDrawIdx*)m_imguiResources.indexBuffer->map();
+
+        for (int n = 0; n < imDrawData->CmdListsCount; n++)
+        {
+            const ImDrawList* cmd_list = imDrawData->CmdLists[n];
+            memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+            memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+            vtxDst += cmd_list->VtxBuffer.Size;
+            idxDst += cmd_list->IdxBuffer.Size;
+        }
+
+        // Flush to make writes visible to GPU
+        // vertexBuffer.flush();
+        // indexBuffer.flush();
+    }
+}
+
+void ImGuiSample::drawImGui(RenderPassEncoder* renderPassEncoder)
+{
+    // ImGuiIO& io = ImGui::GetIO();
+
+    // vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+    // vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    // VkViewport viewport = vks::initializers::viewport(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0.0f, 1.0f);
+    // vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    // // UI scale and translate via push constants
+    // pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
+    // pushConstBlock.translate = glm::vec2(-1.0f);
+    // vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
+
+    // // Render commands
+    // ImDrawData* imDrawData = ImGui::GetDrawData();
+    // int32_t vertexOffset = 0;
+    // int32_t indexOffset = 0;
+
+    // if (imDrawData->CmdListsCount > 0)
+    // {
+
+    //     VkDeviceSize offsets[1] = { 0 };
+    //     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, offsets);
+    //     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+
+    //     for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
+    //     {
+    //         const ImDrawList* cmd_list = imDrawData->CmdLists[i];
+    //         for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
+    //         {
+    //             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+    //             VkRect2D scissorRect;
+    //             scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
+    //             scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
+    //             scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
+    //             scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
+    //             vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
+    //             vkCmdDrawIndexed(commandBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+    //             indexOffset += pcmd->ElemCount;
+    //         }
+    //         vertexOffset += cmd_list->VtxBuffer.Size;
+    //     }
+    // }
 }
 
 void ImGuiSample::clearImGui()
