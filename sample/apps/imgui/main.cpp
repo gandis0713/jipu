@@ -403,20 +403,31 @@ void ImGuiSample::initImGui()
 }
 void ImGuiSample::updateImGui()
 {
-    // TODO: draw
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
     ImGui::NewFrame();
 
-    auto scale = 1.0f;
-    ImGui::SetNextWindowPos(ImVec2(20 * scale, 300 * scale), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Test");
-    ImGui::Text("Hello, world %d", 123);
-    ImGui::End();
+    // set windows position and size
+    {
+        auto scale = 1.0f;
+        ImGui::SetNextWindowPos(ImVec2(20 * scale, 20 * scale), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
 
-    // SRS - ShowDemoWindow() sets its own initial position and size, cannot override here
-    // ImGui::ShowDemoWindow();
-
-    // Render to generate draw buffers
+    // set ui
+    {
+        ImGui::Begin("Information");
+        ImGui::Text("Triangle count: %d", 3);
+        ImGui::End();
+    }
     ImGui::Render();
 
     // update buffer
