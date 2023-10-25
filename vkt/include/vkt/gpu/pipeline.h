@@ -72,6 +72,10 @@ enum class VertexFormat
     kSFLOATx2,
     kSFLOATx3,
     kSFLOATx4,
+    kUNORM8,
+    kUNORM8x2,
+    kUNORM8x3,
+    kUNORM8x4
 };
 
 enum class VertexMode

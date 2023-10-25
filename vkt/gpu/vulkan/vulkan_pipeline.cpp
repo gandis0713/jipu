@@ -280,40 +280,36 @@ VkFormat ToVkVertexFormat(VertexFormat format)
     {
     case VertexFormat::kSFLOAT:
         return VK_FORMAT_R32_SFLOAT;
-
     case VertexFormat::kSFLOATx2:
         return VK_FORMAT_R32G32_SFLOAT;
-
     case VertexFormat::kSFLOATx3:
         return VK_FORMAT_R32G32B32_SFLOAT;
-
     case VertexFormat::kSFLOATx4:
         return VK_FORMAT_R32G32B32A32_SFLOAT;
-
     case VertexFormat::kSINT:
         return VK_FORMAT_R32_SINT;
-
     case VertexFormat::kSINTx2:
         return VK_FORMAT_R32G32_SINT;
-
     case VertexFormat::kSINTx3:
         return VK_FORMAT_R32G32B32_SINT;
-
     case VertexFormat::kSINTx4:
         return VK_FORMAT_R32G32B32A32_SINT;
-
     case VertexFormat::kUINT:
         return VK_FORMAT_R32_UINT;
-
     case VertexFormat::kUINTx2:
         return VK_FORMAT_R32G32_UINT;
-
     case VertexFormat::kUINTx3:
         return VK_FORMAT_R32G32B32_UINT;
-
     case VertexFormat::kUINTx4:
         return VK_FORMAT_R32G32B32A32_UINT;
-
+    case VertexFormat::kUNORM8:
+        return VK_FORMAT_R8_UNORM;
+    case VertexFormat::kUNORM8x2:
+        return VK_FORMAT_R8G8_UNORM;
+    case VertexFormat::kUNORM8x3:
+        return VK_FORMAT_R8G8B8_UNORM;
+    case VertexFormat::kUNORM8x4:
+        return VK_FORMAT_R8G8B8A8_UNORM;
     default:
         spdlog::error("{} vertex format is not supported.", static_cast<uint32_t>(format));
         return VK_FORMAT_UNDEFINED;
