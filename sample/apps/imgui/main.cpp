@@ -194,7 +194,6 @@ void ImGuiSample::initImGui()
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(scale);
     style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.6f);
     style.Colors[ImGuiCol_TitleBgActive] = ImVec4(1.0f, 0.0f, 0.0f, 0.8f);
     style.Colors[ImGuiCol_MenuBarBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
@@ -203,7 +202,7 @@ void ImGuiSample::initImGui()
 
     // Get texture for fonts.
     using FontDataType = unsigned char;
-    FontDataType* fontData;
+    FontDataType* fontData = nullptr;
     int fontTexWidth, fontTexHeight;
     io.Fonts->GetTexDataAsRGBA32(&fontData, &fontTexWidth, &fontTexHeight);
 
@@ -216,8 +215,7 @@ void ImGuiSample::initImGui()
         fontTextureDescriptor.height = fontTexHeight;
         fontTextureDescriptor.mipLevels = 1;
         fontTextureDescriptor.sampleCount = 1;
-        fontTextureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
-                                      TextureUsageFlagBits::kCopyDst |
+        fontTextureDescriptor.usage = TextureUsageFlagBits::kCopyDst |
                                       TextureUsageFlagBits::kTextureBinding;
 
         m_imguiResources.fontTexture = m_device->createTexture(fontTextureDescriptor);
@@ -344,7 +342,7 @@ void ImGuiSample::initImGui()
                 uiAttribute.offset = offsetof(ImDrawVert, uv);
 
                 VertexAttribute colorAttribute{};
-                colorAttribute.format = VertexFormat::kSFLOATx4;
+                colorAttribute.format = VertexFormat::kUNORM8x4;
                 colorAttribute.offset = offsetof(ImDrawVert, col);
 
                 vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
@@ -409,14 +407,14 @@ void ImGuiSample::updateImGui()
     ImGui::NewFrame();
 
     auto scale = 1.0f;
-    ImGui::SetNextWindowPos(ImVec2(20 * scale, 360 * scale), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(300 * scale, 200 * scale), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(20 * scale, 300 * scale), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
     ImGui::Begin("Test");
     ImGui::Text("Hello, world %d", 123);
     ImGui::End();
 
     // SRS - ShowDemoWindow() sets its own initial position and size, cannot override here
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
     // Render to generate draw buffers
     ImGui::Render();
@@ -509,8 +507,6 @@ void ImGuiSample::drawImGui(RenderPassEncoder* renderPassEncoder)
                 auto scissorHeight = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
                 renderPassEncoder->setScissor(scissorX, scissorY, scissorWidth, scissorHeight);
                 renderPassEncoder->drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
-                //             vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
-                //             vkCmdDrawIndexed(commandBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
                 indexOffset += pcmd->ElemCount;
             }
             vertexOffset += cmd_list->VtxBuffer.Size;
