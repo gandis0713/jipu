@@ -30,7 +30,11 @@ public:
                     float height) override;
 
     void draw(uint32_t vertexCount) override;
-    void drawIndexed(uint32_t indexCount) override;
+    void drawIndexed(uint32_t indexCount,
+                     uint32_t instanceCount,
+                     uint32_t indexOffset,
+                     uint32_t vertexOffset,
+                     uint32_t firstInstance) override;
 
     void end() override;
 };
