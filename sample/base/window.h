@@ -44,5 +44,12 @@ protected:
 
     uint32_t m_width = 0;
     uint32_t m_height = 0;
+
+    bool m_leftMouseButton = false;
+    bool m_rightMouseButton = false;
+    bool m_middleMouseButton = false;
+
+    int m_mouseX = 0;
+    int m_mouseY = 0;
 };
 } // namespace vkt
