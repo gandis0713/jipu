@@ -87,6 +87,7 @@ private:
         std::unique_ptr<Sampler> fontSampler = nullptr;
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
     } m_imguiResources{};
 
@@ -142,9 +143,10 @@ void ImGuiSample::init()
 
 void ImGuiSample::draw()
 {
-    // updateImGui();
 
     auto swapchainIndex = m_swapchain->acquireNextTexture();
+
+    updateImGui();
 
     {
         ColorAttachment attachment{};
@@ -185,7 +187,7 @@ void ImGuiSample::initImGui()
         throw std::runtime_error("Failed to create imgui context");
     }
 
-    auto scale = 10.0f;
+    auto scale = 1.0f;
     ImGuiIO& io = ImGui::GetIO();
     io.FontGlobalScale = scale;
     io.DisplaySize = ImVec2(m_width, m_height);
@@ -313,12 +315,11 @@ void ImGuiSample::initImGui()
     }
 
     // create pipeline layout
-    std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
         pipelineLayoutDescriptor.layouts = { m_imguiResources.bindingGroupLayout.get() };
 
-        pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
+        m_imguiResources.pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
     }
 
     // create pipeline
@@ -393,7 +394,7 @@ void ImGuiSample::initImGui()
         }
 
         RenderPipelineDescriptor renderPipelineDescriptor{};
-        renderPipelineDescriptor.layout = pipelineLayout.get();
+        renderPipelineDescriptor.layout = m_imguiResources.pipelineLayout.get();
         renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
         renderPipelineDescriptor.vertex = vertexStage;
         renderPipelineDescriptor.rasterization = rasterizationStage;
@@ -407,12 +408,11 @@ void ImGuiSample::updateImGui()
     // TODO: draw
     ImGui::NewFrame();
 
-    auto scale = 10.0f;
-    ImGui::SetNextWindowPos(ImVec2(20 * scale, 360 * scale));
-    ImGui::SetNextWindowSize(ImVec2(300 * scale, 200 * scale));
-
+    auto scale = 1.0f;
+    ImGui::SetNextWindowPos(ImVec2(20 * scale, 360 * scale), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(300 * scale, 200 * scale), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Test");
     ImGui::Text("Hello, world %d", 123);
-
     ImGui::End();
 
     // SRS - ShowDemoWindow() sets its own initial position and size, cannot override here
@@ -481,49 +481,41 @@ void ImGuiSample::updateImGui()
 
 void ImGuiSample::drawImGui(RenderPassEncoder* renderPassEncoder)
 {
-    // ImGuiIO& io = ImGui::GetIO();
+    ImDrawData* imDrawData = ImGui::GetDrawData();
+    int32_t vertexOffset = 0;
+    int32_t indexOffset = 0;
 
-    // vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-    // vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    ImGuiIO& io = ImGui::GetIO();
 
-    // VkViewport viewport = vks::initializers::viewport(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0.0f, 1.0f);
-    // vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    renderPassEncoder->setPipeline(m_imguiResources.pipeline.get());
+    renderPassEncoder->setBindingGroup(0, m_imguiResources.bindingGroup.get());
+    renderPassEncoder->setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
 
-    // // UI scale and translate via push constants
-    // pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-    // pushConstBlock.translate = glm::vec2(-1.0f);
-    // vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock), &pushConstBlock);
+    if (imDrawData->CmdListsCount > 0)
+    {
+        renderPassEncoder->setVertexBuffer(m_imguiResources.vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_imguiResources.indexBuffer.get());
 
-    // // Render commands
-    // ImDrawData* imDrawData = ImGui::GetDrawData();
-    // int32_t vertexOffset = 0;
-    // int32_t indexOffset = 0;
-
-    // if (imDrawData->CmdListsCount > 0)
-    // {
-
-    //     VkDeviceSize offsets[1] = { 0 };
-    //     vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, offsets);
-    //     vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-
-    //     for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
-    //     {
-    //         const ImDrawList* cmd_list = imDrawData->CmdLists[i];
-    //         for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
-    //         {
-    //             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
-    //             VkRect2D scissorRect;
-    //             scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
-    //             scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
-    //             scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
-    //             scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
-    //             vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
-    //             vkCmdDrawIndexed(commandBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
-    //             indexOffset += pcmd->ElemCount;
-    //         }
-    //         vertexOffset += cmd_list->VtxBuffer.Size;
-    //     }
-    // }
+        for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
+        {
+            const ImDrawList* cmd_list = imDrawData->CmdLists[i];
+            for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
+            {
+                const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+                VkRect2D scissorRect;
+                auto scissorX = std::max((int32_t)(pcmd->ClipRect.x), 0);
+                auto scissorY = std::max((int32_t)(pcmd->ClipRect.y), 0);
+                auto scissorWidth = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
+                auto scissorHeight = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
+                renderPassEncoder->setScissor(scissorX, scissorY, scissorWidth, scissorHeight);
+                renderPassEncoder->drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+                //             vkCmdSetScissor(commandBuffer, 0, 1, &scissorRect);
+                //             vkCmdDrawIndexed(commandBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+                indexOffset += pcmd->ElemCount;
+            }
+            vertexOffset += cmd_list->VtxBuffer.Size;
+        }
+    }
 }
 
 void ImGuiSample::clearImGui()
@@ -534,7 +526,11 @@ void ImGuiSample::clearImGui()
     m_imguiResources.fontTextureView.reset();
     m_imguiResources.fontTexture.reset();
 
+    m_imguiResources.vertexBuffer.reset();
+    m_imguiResources.indexBuffer.reset();
+
     m_imguiResources.pipeline.reset();
+    m_imguiResources.pipelineLayout.reset();
     m_imguiResources.bindingGroup.reset();
     m_imguiResources.bindingGroupLayout.reset();
 }
