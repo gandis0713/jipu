@@ -1,7 +1,7 @@
 
 
+#include "debug_gui.h"
 #include "file.h"
-#include "gui.h"
 #include "sample.h"
 
 #include <glm/glm.hpp>
@@ -25,7 +25,7 @@ extern "C"
 namespace vkt
 {
 
-class ImGuiSample : public Sample, public GUI
+class ImGuiSample : public Sample, public DebugGUI
 {
 public:
     ImGuiSample() = delete;
@@ -146,6 +146,7 @@ void ImGuiSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
