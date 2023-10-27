@@ -18,12 +18,12 @@
 namespace vkt
 {
 
-class IM_GUI
+class Im_Gui
 {
 protected:
     virtual void initImGui(Device* device, Queue* queue, Swapchain* swapchain);
-    virtual void updateImGui() = 0;
-    virtual void updateImGuiBuffer();
+    virtual void implImGui() = 0;
+    virtual void updateImGui();
     virtual void drawImGui(RenderPassEncoder* renderPassEncoder);
     virtual void clearImGui();
 

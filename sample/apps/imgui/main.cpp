@@ -25,7 +25,7 @@ extern "C"
 namespace vkt
 {
 
-class ImGuiSample : public Sample, public IM_GUI
+class ImGuiSample : public Sample, public Im_Gui
 {
 public:
     ImGuiSample() = delete;
@@ -36,7 +36,7 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void implImGui() override;
 
 private:
     void createDevier();
@@ -112,8 +112,8 @@ void ImGuiSample::init()
 
 void ImGuiSample::draw()
 {
+    implImGui();
     updateImGui();
-    updateImGuiBuffer();
 
     auto swapchainIndex = m_swapchain->acquireNextTexture();
 
@@ -148,7 +148,7 @@ void ImGuiSample::draw()
     }
 }
 
-void ImGuiSample::updateImGui()
+void ImGuiSample::implImGui()
 {
     // set display size and mouse state.
     {
