@@ -1,5 +1,7 @@
 #include "im_gui.h"
 
+#include <stdexcept>
+
 namespace vkt
 {
 
