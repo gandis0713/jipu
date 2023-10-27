@@ -246,6 +246,19 @@ void IM_GUI::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         {
             FragmentStage::Target target{};
             target.format = swapchain->getTextureFormat();
+            target.blend = {
+                .color = {
+                    .srcFactor = BlendFactor::kSrcAlpha,
+                    .dstFactor = BlendFactor::kOneMinusSrcAlpha,
+                    .operation = BlendOperation::kAdd,
+                },
+                .alpha = {
+
+                    .srcFactor = BlendFactor::kOneMinusSrcAlpha,
+                    .dstFactor = BlendFactor::kZero,
+                    .operation = BlendOperation::kAdd,
+                }
+            };
 
             {
                 ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
@@ -268,7 +281,7 @@ void IM_GUI::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         renderPipelineDescriptor.fragment = fragmentStage;
 
         m_pipeline = device->createRenderPipeline(renderPipelineDescriptor);
-    }
+    } // namespace vkt
 }
 
 void IM_GUI::updateImGuiBuffer()

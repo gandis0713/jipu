@@ -123,12 +123,48 @@ struct RasterizationStage
     FrontFace frontFace = FrontFace::kCounterClockwise;
 };
 
+enum class BlendOperation
+{
+    kAdd = 0,
+    kSubtract,
+    kMin,
+    kMax,
+};
+
+enum class BlendFactor
+{
+    kZero = 0,
+    kOne,
+    kSrcColor,
+    kSrcAlpha,
+    kOneMinusSrcColor,
+    kOneMinusSrcAlpha,
+    kDstColor,
+    kDstAlpha,
+    kOneMinusDstColor,
+    kOneMinusDstAlpha,
+};
+
+struct BlentComponent
+{
+    BlendFactor srcFactor = BlendFactor::kOne;
+    BlendFactor dstFactor = BlendFactor::kZero;
+    BlendOperation operation = BlendOperation::kAdd;
+};
+
+struct BlendState
+{
+    BlentComponent color;
+    BlentComponent alpha;
+};
+
 // Fragment Shader Stage
 struct FragmentStage : ProgrammableStage
 {
     struct Target
     {
         TextureFormat format;
+        std::optional<BlendState> blend = std::nullopt;
     };
 
     std::vector<FragmentStage::Target> targets{};

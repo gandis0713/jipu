@@ -165,17 +165,29 @@ void VulkanRenderPipeline::initialize()
     std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates(targetSize);
     for (auto i = 0; i < targetSize; ++i)
     {
-        // TODO: from descriptor.
+        auto target = m_descriptor.fragment.targets[i];
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = target.blend.has_value();
+        if (colorBlendAttachment.blendEnable)
+        {
+            auto blend = target.blend.value();
+            colorBlendAttachment.srcColorBlendFactor = ToVkBlendFactor(blend.color.srcFactor);
+            colorBlendAttachment.dstColorBlendFactor = ToVkBlendFactor(blend.color.dstFactor);
+            colorBlendAttachment.colorBlendOp = ToVkBlendOp(blend.color.operation);
+            colorBlendAttachment.srcAlphaBlendFactor = ToVkBlendFactor(blend.alpha.srcFactor);
+            colorBlendAttachment.dstAlphaBlendFactor = ToVkBlendFactor(blend.alpha.dstFactor);
+            colorBlendAttachment.alphaBlendOp = ToVkBlendOp(blend.alpha.operation);
+        }
+        else
+        {
+            colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+            colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        }
 
         colorBlendAttachmentStates[i] = colorBlendAttachment;
     }
@@ -393,6 +405,72 @@ VkFrontFace ToVkFrontFace(FrontFace frontFace)
     }
 
     return face;
+}
+
+VkBlendOp ToVkBlendOp(BlendOperation op)
+{
+    VkBlendOp blendOp = VK_BLEND_OP_ADD;
+
+    switch (op)
+    {
+    default:
+    case BlendOperation::kAdd:
+        blendOp = VK_BLEND_OP_ADD;
+        break;
+    case BlendOperation::kSubtract:
+        blendOp = VK_BLEND_OP_SUBTRACT;
+        break;
+    case BlendOperation::kMin:
+        blendOp = VK_BLEND_OP_MIN;
+        break;
+    case BlendOperation::kMax:
+        blendOp = VK_BLEND_OP_MAX;
+        break;
+    }
+
+    return blendOp;
+}
+
+VkBlendFactor ToVkBlendFactor(BlendFactor factor)
+{
+    VkBlendFactor blendFactor = VK_BLEND_FACTOR_ONE;
+
+    switch (factor)
+    {
+    default:
+    case BlendFactor::kZero:
+        blendFactor = VK_BLEND_FACTOR_ZERO;
+        break;
+    case BlendFactor::kOne:
+        blendFactor = VK_BLEND_FACTOR_ONE;
+        break;
+    case BlendFactor::kSrcColor:
+        blendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+        break;
+    case BlendFactor::kSrcAlpha:
+        blendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        break;
+    case BlendFactor::kOneMinusSrcColor:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        break;
+    case BlendFactor::kOneMinusSrcAlpha:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        break;
+    case BlendFactor::kDstColor:
+        blendFactor = VK_BLEND_FACTOR_DST_COLOR;
+        break;
+    case BlendFactor::kDstAlpha:
+        blendFactor = VK_BLEND_FACTOR_DST_ALPHA;
+        break;
+    case BlendFactor::kOneMinusDstColor:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        break;
+    case BlendFactor::kOneMinusDstAlpha:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        break;
+    }
+
+    return blendFactor;
 }
 
 } // namespace vkt
