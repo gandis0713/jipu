@@ -7,6 +7,7 @@ project(
     LANGUAGES CXX
 )
 
+find_package(imgui CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(tinyobjloader CONFIG REQUIRED)
@@ -31,6 +32,8 @@ list(APPEND SRC_FILES
     window.h
     vertex.cpp
     vertex.h
+    im_gui.cpp
+    im_gui.h
     model.cpp
     model.h
     file.cpp
@@ -78,6 +81,8 @@ target_link_libraries(vkt_sample_base
     spdlog::spdlog_header_only
     glm::glm
     KTX::ktx
+    vkt::vkt
+    imgui::imgui
 )
 
 if(NOT ANDROID)

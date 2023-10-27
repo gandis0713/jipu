@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL_syswm.h>
+#include <spdlog/spdlog.h>
 
 namespace vkt
 {
@@ -47,12 +48,37 @@ int Window::exec()
     {
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            switch (event.type)
             {
+            case SDL_QUIT:
                 quit = 1;
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                if (event.button.state == SDL_PRESSED)
+                {
+                    m_leftMouseButton = (event.button.button == SDL_BUTTON_LEFT);
+                    m_rightMouseButton = (event.button.button == SDL_BUTTON_RIGHT);
+                    m_middleMouseButton = (event.button.button == SDL_BUTTON_MIDDLE);
+                }
+                break;
+            case SDL_MOUSEBUTTONUP:
+                if (event.button.state == SDL_RELEASED)
+                {
+                    m_leftMouseButton = m_rightMouseButton = m_middleMouseButton = false;
+                }
+                break;
+            default:
+                // do nothing.
+                break;
             }
+
+            SDL_GetMouseState(&m_mouseX, &m_mouseY);
+
+            // spdlog::trace("mouse button l: {}, r: {}, m: {}", m_leftMouseButton, m_rightMouseButton, m_middleMouseButton);
+            // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
+        update();
         draw();
     }
 

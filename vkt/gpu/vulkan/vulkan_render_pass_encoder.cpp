@@ -226,12 +226,21 @@ void VulkanRenderPassEncoder::draw(uint32_t vertexCount)
     vulkanDevice->vkAPI.CmdDraw(vulkanCommandBuffer->getVkCommandBuffer(), vertexCount, 1, 0, 0);
 }
 
-void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount)
+void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
+                                          uint32_t instanceCount,
+                                          uint32_t indexOffset,
+                                          uint32_t vertexOffset,
+                                          uint32_t firstInstance)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(), indexCount, 1, 0, 0, 0);
+    vulkanDevice->vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(),
+                                       indexCount,
+                                       instanceCount,
+                                       indexOffset,
+                                       vertexOffset,
+                                       firstInstance);
 }
 
 void VulkanRenderPassEncoder::end()

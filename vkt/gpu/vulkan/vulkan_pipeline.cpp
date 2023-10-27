@@ -134,7 +134,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizationStateCreateInfo.polygonMode = ToVkPolygonMode(m_descriptor.inputAssembly.topology);
     rasterizationStateCreateInfo.lineWidth = 1.0f;
     rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(m_descriptor.rasterization.cullMode);
     rasterizationStateCreateInfo.frontFace = ToVkFrontFace(m_descriptor.rasterization.frontFace);
@@ -165,17 +165,29 @@ void VulkanRenderPipeline::initialize()
     std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates(targetSize);
     for (auto i = 0; i < targetSize; ++i)
     {
-        // TODO: from descriptor.
+        auto target = m_descriptor.fragment.targets[i];
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.blendEnable = target.blend.has_value();
+        if (colorBlendAttachment.blendEnable)
+        {
+            auto blend = target.blend.value();
+            colorBlendAttachment.srcColorBlendFactor = ToVkBlendFactor(blend.color.srcFactor);
+            colorBlendAttachment.dstColorBlendFactor = ToVkBlendFactor(blend.color.dstFactor);
+            colorBlendAttachment.colorBlendOp = ToVkBlendOp(blend.color.operation);
+            colorBlendAttachment.srcAlphaBlendFactor = ToVkBlendFactor(blend.alpha.srcFactor);
+            colorBlendAttachment.dstAlphaBlendFactor = ToVkBlendFactor(blend.alpha.dstFactor);
+            colorBlendAttachment.alphaBlendOp = ToVkBlendOp(blend.alpha.operation);
+        }
+        else
+        {
+            colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+            colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        }
 
         colorBlendAttachmentStates[i] = colorBlendAttachment;
     }
@@ -280,43 +292,57 @@ VkFormat ToVkVertexFormat(VertexFormat format)
     {
     case VertexFormat::kSFLOAT:
         return VK_FORMAT_R32_SFLOAT;
-
     case VertexFormat::kSFLOATx2:
         return VK_FORMAT_R32G32_SFLOAT;
-
     case VertexFormat::kSFLOATx3:
         return VK_FORMAT_R32G32B32_SFLOAT;
-
     case VertexFormat::kSFLOATx4:
         return VK_FORMAT_R32G32B32A32_SFLOAT;
-
     case VertexFormat::kSINT:
         return VK_FORMAT_R32_SINT;
-
     case VertexFormat::kSINTx2:
         return VK_FORMAT_R32G32_SINT;
-
     case VertexFormat::kSINTx3:
         return VK_FORMAT_R32G32B32_SINT;
-
     case VertexFormat::kSINTx4:
         return VK_FORMAT_R32G32B32A32_SINT;
-
     case VertexFormat::kUINT:
         return VK_FORMAT_R32_UINT;
-
     case VertexFormat::kUINTx2:
         return VK_FORMAT_R32G32_UINT;
-
     case VertexFormat::kUINTx3:
         return VK_FORMAT_R32G32B32_UINT;
-
     case VertexFormat::kUINTx4:
         return VK_FORMAT_R32G32B32A32_UINT;
-
+    case VertexFormat::kUNORM8:
+        return VK_FORMAT_R8_UNORM;
+    case VertexFormat::kUNORM8x2:
+        return VK_FORMAT_R8G8_UNORM;
+    case VertexFormat::kUNORM8x3:
+        return VK_FORMAT_R8G8B8_UNORM;
+    case VertexFormat::kUNORM8x4:
+        return VK_FORMAT_R8G8B8A8_UNORM;
     default:
         spdlog::error("{} vertex format is not supported.", static_cast<uint32_t>(format));
         return VK_FORMAT_UNDEFINED;
+    }
+}
+
+VkPolygonMode ToVkPolygonMode(PrimitiveTopology topology)
+{
+    switch (topology)
+    {
+    case PrimitiveTopology::kPointList:
+        return VK_POLYGON_MODE_POINT;
+    case PrimitiveTopology::kLineStrip:
+    case PrimitiveTopology::kLineList:
+        return VK_POLYGON_MODE_LINE;
+    case PrimitiveTopology::kTriangleStrip:
+    case PrimitiveTopology::kTriangleList:
+        return VK_POLYGON_MODE_FILL;
+    default:
+        spdlog::error("{} topology for polygon mode is not supported.", static_cast<uint32_t>(topology));
+        return VK_POLYGON_MODE_FILL;
     }
 }
 
@@ -339,7 +365,7 @@ VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology)
     case PrimitiveTopology::kTriangleList:
         return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     default:
-        spdlog::error("{} topology is not supported.", static_cast<uint32_t>(topology));
+        spdlog::error("{} topology for primitive is not supported.", static_cast<uint32_t>(topology));
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 }
@@ -379,6 +405,72 @@ VkFrontFace ToVkFrontFace(FrontFace frontFace)
     }
 
     return face;
+}
+
+VkBlendOp ToVkBlendOp(BlendOperation op)
+{
+    VkBlendOp blendOp = VK_BLEND_OP_ADD;
+
+    switch (op)
+    {
+    default:
+    case BlendOperation::kAdd:
+        blendOp = VK_BLEND_OP_ADD;
+        break;
+    case BlendOperation::kSubtract:
+        blendOp = VK_BLEND_OP_SUBTRACT;
+        break;
+    case BlendOperation::kMin:
+        blendOp = VK_BLEND_OP_MIN;
+        break;
+    case BlendOperation::kMax:
+        blendOp = VK_BLEND_OP_MAX;
+        break;
+    }
+
+    return blendOp;
+}
+
+VkBlendFactor ToVkBlendFactor(BlendFactor factor)
+{
+    VkBlendFactor blendFactor = VK_BLEND_FACTOR_ONE;
+
+    switch (factor)
+    {
+    default:
+    case BlendFactor::kZero:
+        blendFactor = VK_BLEND_FACTOR_ZERO;
+        break;
+    case BlendFactor::kOne:
+        blendFactor = VK_BLEND_FACTOR_ONE;
+        break;
+    case BlendFactor::kSrcColor:
+        blendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+        break;
+    case BlendFactor::kSrcAlpha:
+        blendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        break;
+    case BlendFactor::kOneMinusSrcColor:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+        break;
+    case BlendFactor::kOneMinusSrcAlpha:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        break;
+    case BlendFactor::kDstColor:
+        blendFactor = VK_BLEND_FACTOR_DST_COLOR;
+        break;
+    case BlendFactor::kDstAlpha:
+        blendFactor = VK_BLEND_FACTOR_DST_ALPHA;
+        break;
+    case BlendFactor::kOneMinusDstColor:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR;
+        break;
+    case BlendFactor::kOneMinusDstAlpha:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        break;
+    }
+
+    return blendFactor;
 }
 
 } // namespace vkt

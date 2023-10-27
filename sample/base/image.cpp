@@ -25,7 +25,7 @@ Image::Image(const std::filesystem::path& path)
 Image::Image(void* buf, uint64_t len)
 {
     int components = 0;
-    stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), len, &m_width, &m_height, &components, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), static_cast<int>(len), &m_width, &m_height, &components, STBI_rgb_alpha);
 
     if (pixels == nullptr)
     {

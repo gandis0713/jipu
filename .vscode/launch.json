@@ -6,7 +6,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Triangle Model Debug for x64 windows",
+            "name": "Triangle Debug for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/triangle/triangle.exe",
@@ -15,7 +15,7 @@
             "environment": [],
         },
         {
-            "name": "OBJ Model Debug for x64 windows",
+            "name": "OBJ Model for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/obj_model/obj_model.exe",
@@ -24,7 +24,7 @@
             "environment": [],
         },
         {
-            "name": "Partical Debug for x64 windows",
+            "name": "Partical for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/particle/particle.exe",
@@ -33,7 +33,7 @@
             "environment": [],
         },
         {
-            "name": "Deferred Debug for x64 windows",
+            "name": "Deferred for x64 windows",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/deferred/deferred.exe",
@@ -42,7 +42,16 @@
             "environment": [],
         },
         {
-            "name": "Triangle Debug for arm64 osx",
+            "name": "ImGui for x64 windows",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/imgui/imgui.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
+            "name": "Triangle for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
@@ -54,7 +63,7 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "OBJ Model Debug for arm64 osx",
+            "name": "OBJ Model for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/obj_model/obj_model",
@@ -66,7 +75,7 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Partical Debug for arm64 osx",
+            "name": "Partical for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/particle/particle",
@@ -78,10 +87,22 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Deferred Debug for arm64 osx",
+            "name": "Deferred for arm64 osx",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred/deferred",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "ImGui for arm64 osx",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/imgui/imgui",
             "args": [],
             "stopAtEntry": false,
             "environment": [],

@@ -47,10 +47,10 @@ public:
                                 float near, float far);
 
 private:
-    float m_left = -1.0f;
-    float m_right = 1.0f;
-    float m_bottom = -1.0f;
-    float m_top = 1.0f;
+    // float m_left = -1.0f;
+    // float m_right = 1.0f;
+    // float m_bottom = -1.0f;
+    // float m_top = 1.0f;
 };
 
 class PerspectiveCamera : public Camera
@@ -60,7 +60,7 @@ public:
                                float near, float far);
 
 private:
-    double m_fov = 45.0f;
+    // double m_fov = 45.0f;
 };
 
 } // namespace vkt

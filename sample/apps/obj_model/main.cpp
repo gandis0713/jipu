@@ -55,6 +55,8 @@ public:
     ~OBJModelSample() override;
 
     void init() override;
+    void update() override;
+    void draw() override;
 
 private:
     void createSwapchain();
@@ -83,7 +85,6 @@ private:
     void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
 
     void updateUniformBuffer();
-    void draw() override;
 
 private:
     struct UniformBufferObject
@@ -240,6 +241,49 @@ void OBJModelSample::init()
     createCommandBuffers();
 
     m_initialized = true;
+}
+
+void OBJModelSample::update()
+{
+    updateUniformBuffer();
+}
+
+void OBJModelSample::draw()
+{
+    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
+    int nextImageIndex = m_swapchain->acquireNextTexture();
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
+                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
+                            .loadOp = LoadOp::kClear,
+                            .storeOp = StoreOp::kStore,
+                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
+    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+                                                   .depthLoadOp = LoadOp::kClear,
+                                                   .depthStoreOp = StoreOp::kStore,
+                                                   .stencilLoadOp = LoadOp::kDontCare,
+                                                   .stencilStoreOp = StoreOp::kDontCare,
+                                                   .clearValue = { .depth = 1.0f, .stencil = 0 } };
+
+    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
+                                                             .depthStencilAttachment = depthStencilAttachment,
+                                                             .sampleCount = m_sampleCount };
+
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
+    renderPassEncoder->end();
+
+    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
 void OBJModelSample::createSwapchain()
@@ -635,46 +679,6 @@ void OBJModelSample::updateUniformBuffer()
     ubo.proj[1][1] *= -1;
 
     memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
-}
-
-void OBJModelSample::draw()
-{
-    updateUniformBuffer();
-
-    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
-    int nextImageIndex = m_swapchain->acquireNextTexture();
-
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
-                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
-                            .loadOp = LoadOp::kClear,
-                            .storeOp = StoreOp::kStore,
-                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
-                                                   .depthLoadOp = LoadOp::kClear,
-                                                   .depthStoreOp = StoreOp::kStore,
-                                                   .stencilLoadOp = LoadOp::kDontCare,
-                                                   .stencilStoreOp = StoreOp::kDontCare,
-                                                   .clearValue = { .depth = 1.0f, .stencil = 0 } };
-
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
-                                                             .depthStencilAttachment = depthStencilAttachment,
-                                                             .sampleCount = m_sampleCount };
-
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
-    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
-    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()));
-    renderPassEncoder->end();
-
-    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
 } // namespace vkt

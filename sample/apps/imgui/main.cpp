@@ -1,19 +1,8 @@
 
 
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
-
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
 
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
@@ -36,16 +25,19 @@ extern "C"
 namespace vkt
 {
 
-class TriangleSample : public Sample
+class ImGuiSample : public Sample, public Im_Gui
 {
 public:
-    TriangleSample() = delete;
-    TriangleSample(const SampleDescriptor& descriptor);
-    ~TriangleSample() override;
+    ImGuiSample() = delete;
+    ImGuiSample(const SampleDescriptor& descriptor);
+    ~ImGuiSample() override;
 
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void setupImGui() override;
 
 private:
     void createDevier();
@@ -67,7 +59,6 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     struct Vertex
@@ -85,13 +76,15 @@ private:
     uint32_t m_sampleCount = 1;
 };
 
-TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
+ImGuiSample::ImGuiSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
 }
 
-TriangleSample::~TriangleSample()
+ImGuiSample::~ImGuiSample()
 {
+    clearImGui();
+
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
     m_queue.reset();
@@ -103,7 +96,7 @@ TriangleSample::~TriangleSample()
     m_driver.reset();
 }
 
-void TriangleSample::init()
+void ImGuiSample::init()
 {
     createDevier();
     createPhysicalDevice();
@@ -114,15 +107,19 @@ void TriangleSample::init()
     createQueue();
     createVertexBuffer();
     createRenderPipeline();
+
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 }
 
-void TriangleSample::update()
-{}
+void ImGuiSample::update()
+{
+    setupImGui();
+    updateImGui();
+}
 
-void TriangleSample::draw()
+void ImGuiSample::draw()
 {
     auto swapchainIndex = m_swapchain->acquireNextTexture();
-
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
@@ -139,18 +136,52 @@ void TriangleSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+
+        drawImGui(renderPassEncoder.get());
+
         renderPassEncoder->end();
 
         m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
 }
 
-void TriangleSample::createDevier()
+void ImGuiSample::setupImGui()
+{
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+
+    // set windows position and size
+    {
+        auto scale = 1.0f;
+        ImGui::SetNextWindowPos(ImVec2(20 * scale, 20 * scale), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Information");
+        ImGui::Text("Triangle count: %d", 3);
+        ImGui::End();
+    }
+    ImGui::Render();
+}
+
+void ImGuiSample::createDevier()
 {
     DriverDescriptor descriptor{};
     descriptor.type = DriverType::VULKAN;
@@ -158,7 +189,7 @@ void TriangleSample::createDevier()
     m_driver = Driver::create(descriptor);
 }
 
-void TriangleSample::createPhysicalDevice()
+void ImGuiSample::createPhysicalDevice()
 {
     PhysicalDeviceDescriptor descriptor{};
     descriptor.index = 0; // TODO: select device.
@@ -166,7 +197,7 @@ void TriangleSample::createPhysicalDevice()
     m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
 }
 
-void TriangleSample::createDevice()
+void ImGuiSample::createDevice()
 {
     SurfaceDescriptor descriptor{};
     descriptor.windowHandle = getWindowHandle();
@@ -174,14 +205,14 @@ void TriangleSample::createDevice()
     m_surface = m_driver->createSurface(descriptor);
 }
 
-void TriangleSample::createSurface()
+void ImGuiSample::createSurface()
 {
     DeviceDescriptor descriptor{};
 
     m_device = m_physicalDevice->createDevice(descriptor);
 }
 
-void TriangleSample::createSwapchain()
+void ImGuiSample::createSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -200,7 +231,7 @@ void TriangleSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void TriangleSample::createCommandBuffer()
+void ImGuiSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
     descriptor.usage = CommandBufferUsage::kOneTime;
@@ -208,7 +239,7 @@ void TriangleSample::createCommandBuffer()
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void TriangleSample::createQueue()
+void ImGuiSample::createQueue()
 {
     QueueDescriptor descriptor{};
     descriptor.flags = QueueFlagBits::kGraphics;
@@ -216,7 +247,7 @@ void TriangleSample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-void TriangleSample::createVertexBuffer()
+void ImGuiSample::createVertexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = m_vertices.size() * sizeof(Vertex);
@@ -229,7 +260,7 @@ void TriangleSample::createVertexBuffer()
     m_vertexBuffer->unmap();
 }
 
-void TriangleSample::createRenderPipeline()
+void ImGuiSample::createRenderPipeline()
 {
     // render pipeline layout
     std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
@@ -331,7 +362,7 @@ void android_main(struct android_app* app)
         ""
     };
 
-    vkt::TriangleSample sample(descriptor);
+    vkt::ImGuiSample sample(descriptor);
 
     sample.exec();
 }
@@ -347,7 +378,7 @@ int main(int argc, char** argv)
         argv[0]
     };
 
-    vkt::TriangleSample sample(descriptor);
+    vkt::ImGuiSample sample(descriptor);
 
     return sample.exec();
 }

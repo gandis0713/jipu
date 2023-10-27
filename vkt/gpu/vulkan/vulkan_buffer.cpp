@@ -45,6 +45,8 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
 
 VulkanBuffer::~VulkanBuffer()
 {
+    unmap();
+
     m_memory.reset();
 
     auto vulkanDevice = downcast(m_device);
@@ -67,10 +69,13 @@ void* VulkanBuffer::map()
 }
 void VulkanBuffer::unmap()
 {
-    m_mappedPtr = nullptr;
+    if (m_mappedPtr)
+    {
+        auto device = downcast(m_device);
+        device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 
-    auto device = downcast(m_device);
-    device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
+        m_mappedPtr = nullptr;
+    }
 }
 
 void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags)

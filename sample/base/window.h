@@ -30,8 +30,9 @@ public:
     uint32_t getWidth() const;
     uint32_t getHeight() const;
 
-    virtual void draw() = 0;
     virtual void init() = 0;
+    virtual void update() = 0;
+    virtual void draw() = 0;
 
     bool isInitialized() const;
 
@@ -44,5 +45,12 @@ protected:
 
     uint32_t m_width = 0;
     uint32_t m_height = 0;
+
+    bool m_leftMouseButton = false;
+    bool m_rightMouseButton = false;
+    bool m_middleMouseButton = false;
+
+    int m_mouseX = 0;
+    int m_mouseY = 0;
 };
 } // namespace vkt

@@ -17,7 +17,7 @@ class Sample : public Window
 public:
     Sample() = delete;
     Sample(const SampleDescriptor& descriptor);
-    virtual ~Sample() = default;
+    virtual ~Sample();
 
 protected:
     std::filesystem::path m_appPath;
