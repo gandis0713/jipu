@@ -4,8 +4,6 @@
 #include "sample.h"
 
 #include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_vulkan.h>
 
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/command_buffer.h"
@@ -433,8 +431,8 @@ void ImGuiSample::updateImGui()
     // update buffer
     {
         ImDrawData* imDrawData = ImGui::GetDrawData();
-        VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
-        VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
+        uint32_t vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
+        uint32_t indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
 
         if ((vertexBufferSize == 0) || (indexBufferSize == 0))
         {
@@ -511,7 +509,6 @@ void ImGuiSample::drawImGui(RenderPassEncoder* renderPassEncoder)
             for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
             {
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
-                VkRect2D scissorRect;
                 auto scissorX = std::max((int32_t)(pcmd->ClipRect.x), 0);
                 auto scissorY = std::max((int32_t)(pcmd->ClipRect.y), 0);
                 auto scissorWidth = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
