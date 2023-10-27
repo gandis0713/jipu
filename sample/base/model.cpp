@@ -223,7 +223,7 @@ Polygon loadGLTF(void* buf, uint64_t len, const std::filesystem::path& baseDir)
     std::string warn;
 
     // TODO
-    if (!gltf.LoadASCIIFromString(&model, &err, &warn, static_cast<const char*>(buf), len, baseDir.string().c_str()))
+    if (!gltf.LoadASCIIFromString(&model, &err, &warn, static_cast<const char*>(buf), static_cast<int>(len), baseDir.string().c_str()))
     {
         throw std::runtime_error(warn + err);
     }
