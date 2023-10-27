@@ -117,8 +117,7 @@ void TriangleSample::init()
 }
 
 void TriangleSample::update()
-{
-}
+{}
 
 void TriangleSample::draw()
 {

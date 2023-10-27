@@ -62,6 +62,7 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
         //                   static_cast<uint32_t>(format.format),
         //                   static_cast<uint32_t>(format.colorSpace));
         // }
+
     }
 
     // Surface present modes.
