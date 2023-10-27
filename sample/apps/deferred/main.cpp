@@ -51,6 +51,7 @@ public:
 
 public:
     void init() override;
+    void update() override;
     void draw() override;
 
 private:
@@ -288,6 +289,12 @@ void DeferredSample::init()
     m_initialized = true;
 }
 
+void DeferredSample::update()
+{
+    updateOffscreenUniformBuffer();
+    updateCompositionUniformBuffer();
+}
+
 void DeferredSample::updateOffscreenUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
@@ -338,9 +345,6 @@ void DeferredSample::updateCompositionUniformBuffer()
 
 void DeferredSample::draw()
 {
-    updateOffscreenUniformBuffer();
-    updateCompositionUniformBuffer();
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 

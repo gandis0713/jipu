@@ -55,6 +55,7 @@ public:
 
 public:
     void init() override;
+    void update() override;
     void draw() override;
 
 private:
@@ -186,10 +187,13 @@ void ParticleSample::init()
     m_initialized = true;
 }
 
-void ParticleSample::draw()
+void ParticleSample::update()
 {
     updateUniformBuffer();
+}
 
+void ParticleSample::draw()
+{
     CommandBuffer* computeCommandBuffer = recodeComputeCommandBuffer();
     // m_queue->submit({ computeCommandBuffer });
 

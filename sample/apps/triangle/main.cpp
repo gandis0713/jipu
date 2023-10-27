@@ -44,6 +44,7 @@ public:
     ~TriangleSample() override;
 
     void init() override;
+    void update() override;
     void draw() override;
 
 private:
@@ -113,6 +114,10 @@ void TriangleSample::init()
     createQueue();
     createVertexBuffer();
     createRenderPipeline();
+}
+
+void TriangleSample::update()
+{
 }
 
 void TriangleSample::draw()
