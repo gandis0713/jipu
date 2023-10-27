@@ -1,7 +1,7 @@
 
 
-#include "debug_gui.h"
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
 
 #include <glm/glm.hpp>
@@ -25,7 +25,7 @@ extern "C"
 namespace vkt
 {
 
-class ImGuiSample : public Sample, public DebugGUI
+class ImGuiSample : public Sample, public IM_GUI
 {
 public:
     ImGuiSample() = delete;
@@ -59,19 +59,6 @@ private:
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
-
-    struct ImGuiResources
-    {
-        std::unique_ptr<Buffer> vertexBuffer = nullptr;
-        std::unique_ptr<Buffer> indexBuffer = nullptr;
-        std::unique_ptr<Texture> fontTexture = nullptr;
-        std::unique_ptr<TextureView> fontTextureView = nullptr;
-        std::unique_ptr<Sampler> fontSampler = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
-        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<Pipeline> pipeline = nullptr;
-    } m_imguiResources{};
 
     struct Vertex
     {

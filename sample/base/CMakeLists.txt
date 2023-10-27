@@ -32,8 +32,8 @@ list(APPEND SRC_FILES
     window.h
     vertex.cpp
     vertex.h
-    debug_gui.cpp
-    debug_gui.h
+    im_gui.cpp
+    im_gui.h
     model.cpp
     model.h
     file.cpp

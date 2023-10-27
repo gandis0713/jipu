@@ -41,8 +41,6 @@ endif()
 set(SHADERS
     triangle.vert
     triangle.frag
-    imgui.vert
-    imgui.frag
 )
 
 # convert shader to spirv

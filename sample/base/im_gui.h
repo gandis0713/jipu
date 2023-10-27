@@ -18,7 +18,7 @@
 namespace vkt
 {
 
-class DebugGUI
+class IM_GUI
 {
 protected:
     virtual void initImGui(Device* device, Queue* queue, Swapchain* swapchain);
