@@ -33,10 +33,11 @@ public:
     ~ImGuiSample() override;
 
     void init() override;
+    void update() override;
     void draw() override;
 
 private:
-    void implImGui() override;
+    void setupImGui() override;
 
 private:
     void createDevier();
@@ -110,13 +111,15 @@ void ImGuiSample::init()
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 }
 
+void ImGuiSample::update()
+{
+    setupImGui();
+    updateImGui();
+}
+
 void ImGuiSample::draw()
 {
-    implImGui();
-    updateImGui();
-
     auto swapchainIndex = m_swapchain->acquireNextTexture();
-
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
@@ -148,7 +151,7 @@ void ImGuiSample::draw()
     }
 }
 
-void ImGuiSample::implImGui()
+void ImGuiSample::setupImGui()
 {
     // set display size and mouse state.
     {
