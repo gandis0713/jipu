@@ -74,10 +74,11 @@ int Window::exec()
 
             SDL_GetMouseState(&m_mouseX, &m_mouseY);
 
-            spdlog::trace("mouse button l: {}, r: {}, m: {}", m_leftMouseButton, m_rightMouseButton, m_middleMouseButton);
-            spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
+            // spdlog::trace("mouse button l: {}, r: {}, m: {}", m_leftMouseButton, m_rightMouseButton, m_middleMouseButton);
+            // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
+        update();
         draw();
     }
 

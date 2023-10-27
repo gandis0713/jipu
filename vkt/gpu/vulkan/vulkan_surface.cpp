@@ -56,14 +56,12 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
             throw std::runtime_error(fmt::format("Failure GetPhysicalDeviceSurfaceFormatsKHR. Error: {}", static_cast<int32_t>(result)));
         }
 
-#ifndef NDEBUG
-        for (const auto& format : surfaceInfo.formats)
-        {
-            spdlog::trace("Surface format, colorspace: {}, {}",
-                          static_cast<uint32_t>(format.format),
-                          static_cast<uint32_t>(format.colorSpace));
-        }
-#endif
+        // for (const auto& format : surfaceInfo.formats)
+        // {
+        //     spdlog::trace("Surface format, colorspace: {}, {}",
+        //                   static_cast<uint32_t>(format.format),
+        //                   static_cast<uint32_t>(format.colorSpace));
+        // }
     }
 
     // Surface present modes.
