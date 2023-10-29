@@ -64,9 +64,14 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         throw std::runtime_error("Failed to create imgui context");
     }
 
-    auto scale = 1.0f;
     ImGuiIO& io = ImGui::GetIO();
-    io.FontGlobalScale = scale;
+#if defined(__ANDROID__)
+    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 170.0f);
+    io.FontGlobalScale = 2.0;
+#else
+    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 0.0f);
+    io.FontGlobalScale = 1.0;
+#endif
     io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 

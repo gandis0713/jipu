@@ -7,21 +7,6 @@
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
-#if defined(__ANDROID__) || defined(ANDROID)
-
-    // GameActivity's C/C++ code
-    #include <game-activity/GameActivity.cpp>
-    #include <game-text-input/gametextinput.cpp>
-
-// // Glue from GameActivity to android_main()
-// // Passing GameActivity event from main thread to app native thread.
-extern "C"
-{
-    #include <game-activity/native_app_glue/android_native_app_glue.c>
-}
-
-#endif
-
 namespace vkt
 {
 
@@ -109,6 +94,8 @@ void ImGuiSample::init()
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
+    m_initialized = true;
 }
 
 void ImGuiSample::update()
@@ -167,8 +154,8 @@ void ImGuiSample::setupImGui()
 
     // set windows position and size
     {
-        auto scale = 1.0f;
-        ImGui::SetNextWindowPos(ImVec2(20 * scale, 20 * scale), ImGuiCond_FirstUseEver);
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
     }
 
@@ -354,6 +341,17 @@ void ImGuiSample::createRenderPipeline()
 } // namespace vkt
 
 #if defined(__ANDROID__) || defined(ANDROID)
+
+    // GameActivity's C/C++ code
+    #include <game-activity/GameActivity.cpp>
+    #include <game-text-input/gametextinput.cpp>
+
+// // Glue from GameActivity to android_main()
+// // Passing GameActivity event from main thread to app native thread.
+extern "C"
+{
+    #include <game-activity/native_app_glue/android_native_app_glue.c>
+}
 
 void android_main(struct android_app* app)
 {
