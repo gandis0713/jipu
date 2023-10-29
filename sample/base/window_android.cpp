@@ -58,6 +58,7 @@ int Window::exec()
 
         if (isInitialized())
         {
+            update();
             draw();
         }
 
