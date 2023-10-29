@@ -57,6 +57,14 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     m_queue = queue;
     m_swapchain = swapchain;
 
+#if defined(__ANDROID__)
+    m_padding.top = 80.0f;
+    m_padding.bottom = 170.0f;
+#else
+    m_padding.top = 0.0f;
+    m_padding.bottom = 0.0f;
+#endif
+
     // IMGUI_CHECKVERSION();
     ImGuiContext* imguiContext = ImGui::CreateContext();
     if (imguiContext == nullptr)
@@ -64,12 +72,12 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         throw std::runtime_error("Failed to create imgui context");
     }
 
+    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, m_padding.bottom);
+
     ImGuiIO& io = ImGui::GetIO();
 #if defined(__ANDROID__)
-    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 170.0f);
     io.FontGlobalScale = 2.0;
 #else
-    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 0.0f);
     io.FontGlobalScale = 1.0;
 #endif
     io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
@@ -81,6 +89,10 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     style.Colors[ImGuiCol_MenuBarBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
     style.Colors[ImGuiCol_Header] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
     style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+    // view background
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
 
     // Get texture for fonts.
     using FontDataType = unsigned char;

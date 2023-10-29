@@ -48,6 +48,12 @@ protected:
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<Pipeline> m_pipeline = nullptr;
+
+    struct Padding
+    {
+        float top = 0.0f;
+        float bottom = 0.0f;
+    } m_padding;
 };
 
 } // namespace vkt
