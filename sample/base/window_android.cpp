@@ -76,11 +76,9 @@ int Window::exec()
                         switch (actionMasked)
                         {
                         case AMOTION_EVENT_ACTION_DOWN:
-                        {
                             pointerIndex = 0;
                             m_leftMouseButton = true;
-                        }
-                        break;
+                            break;
                         case AMOTION_EVENT_ACTION_POINTER_DOWN:
                             pointerIndex = ((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
                             m_leftMouseButton = true;
