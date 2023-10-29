@@ -58,6 +58,58 @@ int Window::exec()
 
         if (isInitialized())
         {
+            android_input_buffer* inputBuffer = android_app_swap_input_buffers(app);
+            if (inputBuffer && inputBuffer->motionEventsCount)
+            {
+                for (uint64_t i = 0; i < inputBuffer->motionEventsCount; ++i)
+                {
+                    GameActivityMotionEvent* motionEvent = &inputBuffer->motionEvents[i];
+
+                    if (motionEvent->pointerCount > 0)
+                    {
+                        const int action = motionEvent->action;
+                        const int actionMasked = action & AMOTION_EVENT_ACTION_MASK;
+                        // Initialize pointerIndex to the max size, we only cook an
+                        // event at the end of the function if pointerIndex is set to a valid index range
+                        uint32_t pointerIndex = GAMEACTIVITY_MAX_NUM_POINTERS_IN_MOTION_EVENT;
+
+                        switch (actionMasked)
+                        {
+                        case AMOTION_EVENT_ACTION_DOWN:
+                        {
+                            pointerIndex = 0;
+                            m_leftMouseButton = true;
+                        }
+                        break;
+                        case AMOTION_EVENT_ACTION_POINTER_DOWN:
+                            pointerIndex = ((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
+                            m_leftMouseButton = true;
+                            break;
+                        case AMOTION_EVENT_ACTION_UP:
+                            pointerIndex = 0;
+                            m_leftMouseButton = false;
+                            break;
+                        case AMOTION_EVENT_ACTION_POINTER_UP:
+                            pointerIndex = ((action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
+                            m_leftMouseButton = false;
+                            break;
+                        case AMOTION_EVENT_ACTION_MOVE:
+                            pointerIndex = 0;
+                            break;
+                        default:
+                            break;
+                        }
+
+                        if (pointerIndex != GAMEACTIVITY_MAX_NUM_POINTERS_IN_MOTION_EVENT)
+                        {
+                            auto& pointer = motionEvent->pointers[pointerIndex];
+                            m_mouseX = GameActivityPointerAxes_getX(&pointer);
+                            m_mouseY = GameActivityPointerAxes_getY(&pointer);
+                        }
+                    }
+                }
+                android_app_clear_motion_events(inputBuffer);
+            }
             update();
             draw();
         }

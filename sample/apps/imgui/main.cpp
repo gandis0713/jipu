@@ -154,8 +154,8 @@ void ImGuiSample::setupImGui()
 
     // set windows position and size
     {
-        auto scale = 1.0f;
-        ImGui::SetNextWindowPos(ImVec2(20 * scale, 200 * scale), ImGuiCond_FirstUseEver);
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 100), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
     }
 
