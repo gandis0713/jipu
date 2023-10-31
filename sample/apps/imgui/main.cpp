@@ -22,7 +22,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createDevier();
@@ -100,8 +100,8 @@ void ImGuiSample::init()
 
 void ImGuiSample::update()
 {
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
 void ImGuiSample::draw()
@@ -138,7 +138,7 @@ void ImGuiSample::draw()
     }
 }
 
-void ImGuiSample::setupImGui()
+void ImGuiSample::updateImGui()
 {
     // set display size and mouse state.
     {

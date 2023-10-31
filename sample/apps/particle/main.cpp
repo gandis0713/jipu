@@ -45,7 +45,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createDriver();
@@ -184,11 +184,11 @@ void ParticleSample::update()
 {
     updateUniformBuffer();
 
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
-void ParticleSample::setupImGui()
+void ParticleSample::updateImGui()
 {
     // set display size and mouse state.
     {

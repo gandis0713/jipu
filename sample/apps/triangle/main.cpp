@@ -34,7 +34,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createDevier();
@@ -81,6 +81,8 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
+    clearImGui();
+
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
     m_queue.reset();
@@ -111,8 +113,8 @@ void TriangleSample::init()
 
 void TriangleSample::update()
 {
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
 void TriangleSample::draw()
@@ -148,7 +150,7 @@ void TriangleSample::draw()
     }
 }
 
-void TriangleSample::setupImGui()
+void TriangleSample::updateImGui()
 {
     // set display size and mouse state.
     {

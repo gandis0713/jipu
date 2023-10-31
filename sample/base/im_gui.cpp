@@ -329,7 +329,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     }
 }
 
-void Im_Gui::updateImGui()
+void Im_Gui::buildImGui()
 {
     // update transfrom buffer
     {

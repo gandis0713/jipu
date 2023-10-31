@@ -45,7 +45,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createSwapchain();
@@ -240,11 +240,11 @@ void OBJModelSample::update()
 {
     updateUniformBuffer();
 
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
-void OBJModelSample::setupImGui()
+void OBJModelSample::updateImGui()
 {
     // set display size and mouse state.
     {

@@ -41,7 +41,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createDriver();
@@ -287,8 +287,8 @@ void DeferredSample::update()
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
 void DeferredSample::updateOffscreenUniformBuffer()
@@ -339,7 +339,7 @@ void DeferredSample::updateCompositionUniformBuffer()
     memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
 }
 
-void DeferredSample::setupImGui()
+void DeferredSample::updateImGui()
 {
     // set display size and mouse state.
     {
