@@ -1,5 +1,6 @@
 
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
@@ -31,7 +32,7 @@ uint64_t getCurrentTime()
 
 } // namespace
 
-class ParticleSample : public Sample
+class ParticleSample : public Sample, public Im_Gui
 {
 public:
     ParticleSample() = delete;
@@ -42,6 +43,9 @@ public:
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void setupImGui() override;
 
 private:
     void createDriver();
@@ -116,6 +120,8 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
+    clearImGui();
+
     m_queue.reset();
 
     // release command buffer after finishing queue.
@@ -169,12 +175,46 @@ void ParticleSample::init()
     createQueue();
     createCommandBuffer();
 
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
     m_initialized = true;
 }
 
 void ParticleSample::update()
 {
     updateUniformBuffer();
+
+    setupImGui();
+    updateImGui();
+}
+
+void ParticleSample::setupImGui()
+{
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Information");
+        ImGui::End();
+    }
+    ImGui::Render();
 }
 
 void ParticleSample::draw()
@@ -561,6 +601,7 @@ CommandBuffer* ParticleSample::recodeComputeCommandBuffer()
 CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
 {
     auto swapchainImageIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->getTextureView(swapchainImageIndex);
 
     if (swapchainImageIndex < 0)
         spdlog::error("swap chain: {}", swapchainImageIndex);
@@ -569,7 +610,7 @@ CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
     std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     ColorAttachment colorAttachment{};
-    colorAttachment.renderView = m_swapchain->getTextureView(swapchainImageIndex);
+    colorAttachment.renderView = renderView;
     colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
     colorAttachment.loadOp = LoadOp::kClear;
     colorAttachment.storeOp = StoreOp::kStore;
@@ -585,6 +626,8 @@ CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
     renderPassEncoder->end();
+
+    // drawImGui(renderCommandEncoder.get(), renderView);
 
     return renderCommandEncoder->finish();
 }

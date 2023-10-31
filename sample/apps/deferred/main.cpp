@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "file.h"
+#include "im_gui.h"
 #include "khronos_texture.h"
 #include "light.h"
 #include "model.h"
@@ -27,7 +28,7 @@
 namespace vkt
 {
 
-class DeferredSample : public Sample
+class DeferredSample : public Sample, public Im_Gui
 {
 public:
     DeferredSample() = delete;
@@ -38,6 +39,9 @@ public:
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void setupImGui() override;
 
 private:
     void createDriver();
@@ -185,6 +189,8 @@ DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
 
 DeferredSample::~DeferredSample()
 {
+    clearImGui();
+
     m_composition.pipeline.reset();
     m_composition.pipelineLayout.reset();
     m_composition.bindingGroupLayout.reset();
@@ -271,6 +277,8 @@ void DeferredSample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
 
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
     m_initialized = true;
 }
 
@@ -278,6 +286,9 @@ void DeferredSample::update()
 {
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
+
+    setupImGui();
+    updateImGui();
 }
 
 void DeferredSample::updateOffscreenUniformBuffer()
@@ -326,6 +337,35 @@ void DeferredSample::updateCompositionUniformBuffer()
     memcpy(bytePointer, ubo.lights.data(), lightSize);
     bytePointer += lightSize;
     memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
+}
+
+void DeferredSample::setupImGui()
+{
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Information");
+        ImGui::End();
+    }
+    ImGui::Render();
 }
 
 void DeferredSample::draw()
@@ -380,11 +420,12 @@ void DeferredSample::draw()
     // second pass
     {
         int targetIndex = m_swapchain->acquireNextTexture();
+        auto renderView = m_swapchain->getTextureViews()[targetIndex];
 
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
-        colorAttachment.renderView = m_swapchain->getTextureViews()[targetIndex];
+        colorAttachment.renderView = renderView;
         colorAttachment.resolveView = nullptr;
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
@@ -407,6 +448,10 @@ void DeferredSample::draw()
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
         renderPassEncoder->end();
+
+        drawImGui(commandEncoder.get(), renderView);
+
+        // renderPassEncoder->end();
     }
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());

@@ -1,6 +1,7 @@
 
 
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
@@ -21,7 +22,7 @@
 namespace vkt
 {
 
-class TriangleSample : public Sample
+class TriangleSample : public Sample, public Im_Gui
 {
 public:
     TriangleSample() = delete;
@@ -31,6 +32,9 @@ public:
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void setupImGui() override;
 
 private:
     void createDevier();
@@ -100,23 +104,27 @@ void TriangleSample::init()
     createVertexBuffer();
     createRenderPipeline();
 
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
     m_initialized = true;
 }
 
 void TriangleSample::update()
 {
+    setupImGui();
+    updateImGui();
 }
 
 void TriangleSample::draw()
 {
     auto swapchainIndex = m_swapchain->acquireNextTexture();
-
+    auto renderView = m_swapchain->getTextureView(swapchainIndex);
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = m_swapchain->getTextureView(swapchainIndex);
+        attachment.renderView = renderView;
         attachment.resolveView = nullptr;
 
         RenderPassEncoderDescriptor renderPassDescriptor;
@@ -134,8 +142,39 @@ void TriangleSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
+        drawImGui(commadEncoder.get(), renderView);
+
         m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
+}
+
+void TriangleSample::setupImGui()
+{
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Information");
+        ImGui::End();
+    }
+    ImGui::Render();
 }
 
 void TriangleSample::createDevier()

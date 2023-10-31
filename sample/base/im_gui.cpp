@@ -90,9 +90,9 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     style.Colors[ImGuiCol_Header] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
     style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
     // view background
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
 
     // Get texture for fonts.
     using FontDataType = unsigned char;
@@ -326,7 +326,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         renderPipelineDescriptor.fragment = fragmentStage;
 
         m_pipeline = device->createRenderPipeline(renderPipelineDescriptor);
-    } // namespace vkt
+    }
 }
 
 void Im_Gui::updateImGui()
@@ -397,23 +397,32 @@ void Im_Gui::updateImGui()
     }
 }
 
-void Im_Gui::drawImGui(RenderPassEncoder* renderPassEncoder)
+void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
-    int32_t vertexOffset = 0;
-    int32_t indexOffset = 0;
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    renderPassEncoder->setPipeline(m_pipeline.get());
-    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderPassEncoder->setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
 
     if (imDrawData->CmdListsCount > 0)
     {
+        ImGuiIO& io = ImGui::GetIO();
+
+        ColorAttachment colorAttachment{};
+        colorAttachment.renderView = renderView;
+        colorAttachment.loadOp = LoadOp::kLoad;
+        colorAttachment.storeOp = StoreOp::kStore;
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.sampleCount = 1;
+
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        renderPassEncoder->setPipeline(m_pipeline.get());
+        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+        renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
 
+        int32_t vertexOffset = 0;
+        int32_t indexOffset = 0;
         for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
         {
             const ImDrawList* cmd_list = imDrawData->CmdLists[i];
@@ -430,6 +439,7 @@ void Im_Gui::drawImGui(RenderPassEncoder* renderPassEncoder)
             }
             vertexOffset += cmd_list->VtxBuffer.Size;
         }
+        renderPassEncoder->end();
     }
 }
 

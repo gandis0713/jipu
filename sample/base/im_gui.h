@@ -22,11 +22,11 @@ namespace vkt
 class Im_Gui
 {
 protected:
-    virtual void initImGui(Device* device, Queue* queue, Swapchain* swapchain);
+    void initImGui(Device* device, Queue* queue, Swapchain* swapchain);
+    void clearImGui();
     virtual void setupImGui() = 0;
-    virtual void updateImGui();
-    virtual void drawImGui(RenderPassEncoder* renderPassEncoder);
-    virtual void clearImGui();
+    void updateImGui();
+    void drawImGui(CommandEncoder* commandEncoder, TextureView* renderView);
 
     Device* m_device = nullptr;
     Queue* m_queue = nullptr;
