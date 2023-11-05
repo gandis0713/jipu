@@ -135,7 +135,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
         void* fontGPUMappedPointer = m_fontBuffer->map();
         memcpy(fontGPUMappedPointer, fontData, fontBufferDescriptor.size);
-        // m_fontBuffer->unmap();
+        m_fontBuffer->unmap();
     }
 
     // copy buffer to texture
