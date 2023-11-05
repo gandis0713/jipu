@@ -23,7 +23,6 @@ public:
     virtual void setPipeline(Pipeline* pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
     virtual void dispatch(uint32_t x, uint32_t y = 1, uint32_t z = 1) = 0;
-
     virtual void end() = 0;
 
 protected:
