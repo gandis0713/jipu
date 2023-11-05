@@ -3,6 +3,7 @@
 #include "vulkan_physical_device.h"
 #include "vulkan_swapchain.h"
 
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -111,13 +112,23 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
         submitInfos[i] = submitInfo;
     }
 
-    if (vkAPI.QueueSubmit(m_queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence) != VK_SUCCESS)
+    VkResult result = vkAPI.QueueSubmit(m_queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
+    if (result != VK_SUCCESS)
     {
-        spdlog::error("failed to submit command buffer.");
+        throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
     }
 
-    vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
-    vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
+    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
+    }
+
+    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
+    }
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
@@ -128,8 +139,9 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
 
     auto commandBufferCount = commandBuffers.size();
     auto renderCommandBuffer = downcast(commandBuffers[commandBufferCount - 1]);
-    renderCommandBuffer->injectWaitSemaphore(vulkanSwapchain->getAcquireImageSemaphore(), VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    vulkanSwapchain->injectSemaphore(renderCommandBuffer->getSignalSemaphore().first);
+    auto acquireImageSemaphore = vulkanSwapchain->getSignalSemaphore();
+    renderCommandBuffer->injectWaitSemaphore(acquireImageSemaphore.first, acquireImageSemaphore.second);
+    vulkanSwapchain->injectSignalSemaphore(renderCommandBuffer->getSignalSemaphore().first);
 
     submit(commandBuffers);
 
