@@ -65,9 +65,6 @@ private:
 
     void updateUniformBuffer();
 
-    CommandBuffer* recodeComputeCommandBuffer();
-    CommandBuffer* recodeRenderCommandBuffer();
-
 private:
     struct Particle
     {
@@ -219,11 +216,56 @@ void ParticleSample::updateImGui()
 
 void ParticleSample::draw()
 {
-    CommandBuffer* computeCommandBuffer = recodeComputeCommandBuffer();
+    // encoder compute command
+    {
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+        ComputePassEncoderDescriptor computePassEncoderDescriptor{};
+        std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
+        computePassEncoder->setPipeline(m_computePipeline.get());
+        computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
+        computePassEncoder->dispatch(256, 1, 1);
+        computePassEncoder->end();
+
+        computeCommandEncoder->finish();
+    }
     // m_queue->submit({ computeCommandBuffer });
 
-    CommandBuffer* renderCommandBuffer = recodeRenderCommandBuffer();
-    m_queue->submit({ computeCommandBuffer, renderCommandBuffer }, m_swapchain.get());
+    // encode render command
+    {
+        auto swapchainImageIndex = m_swapchain->acquireNextTexture();
+        auto renderView = m_swapchain->getTextureView(swapchainImageIndex);
+
+        if (swapchainImageIndex < 0)
+            spdlog::error("swap chain: {}", swapchainImageIndex);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+        ColorAttachment colorAttachment{};
+        colorAttachment.renderView = renderView;
+        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+        colorAttachment.loadOp = LoadOp::kClear;
+        colorAttachment.storeOp = StoreOp::kStore;
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
+
+        std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
+        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+        renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->end();
+
+        drawImGui(renderCommandEncoder.get(), renderView);
+
+        renderCommandEncoder->finish();
+    }
+    m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
@@ -581,55 +623,6 @@ void ParticleSample::updateUniformBuffer()
     memcpy(m_uniformBufferMappedPointer, &deltaTime, sizeof(deltaTime));
 
     m_previousTime = currentTime;
-}
-
-CommandBuffer* ParticleSample::recodeComputeCommandBuffer()
-{
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    ComputePassEncoderDescriptor computePassEncoderDescriptor{};
-    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
-    computePassEncoder->setPipeline(m_computePipeline.get());
-    computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
-    computePassEncoder->dispatch(256, 1, 1);
-    computePassEncoder->end();
-
-    return computeCommandEncoder->finish();
-}
-
-CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
-{
-    auto swapchainImageIndex = m_swapchain->acquireNextTexture();
-    auto renderView = m_swapchain->getTextureView(swapchainImageIndex);
-
-    if (swapchainImageIndex < 0)
-        spdlog::error("swap chain: {}", swapchainImageIndex);
-
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    ColorAttachment colorAttachment{};
-    colorAttachment.renderView = renderView;
-    colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
-    colorAttachment.loadOp = LoadOp::kClear;
-    colorAttachment.storeOp = StoreOp::kStore;
-
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-    renderPassEncoderDescriptor.sampleCount = m_sampleCount;
-
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
-    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
-    renderPassEncoder->end();
-
-    // drawImGui(renderCommandEncoder.get(), renderView);
-
-    return renderCommandEncoder->finish();
 }
 } // namespace vkt
 
