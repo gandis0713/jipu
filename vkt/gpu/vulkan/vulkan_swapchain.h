@@ -30,8 +30,8 @@ public:
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
-    void injectSemaphore(VkSemaphore semaphore);
-    VkSemaphore getAcquireImageSemaphore() const;
+    void injectSignalSemaphore(VkSemaphore semaphore);
+    std::pair<VkSemaphore, VkPipelineStageFlags> getSignalSemaphore() const;
 
 private:
     VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha);

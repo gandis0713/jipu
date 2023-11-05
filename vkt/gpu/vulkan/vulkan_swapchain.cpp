@@ -210,14 +210,14 @@ VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
     return m_swapchain;
 }
 
-void VulkanSwapchain::injectSemaphore(VkSemaphore semaphore)
+void VulkanSwapchain::injectSignalSemaphore(VkSemaphore semaphore)
 {
     m_waitSemaphores.push_back(semaphore);
 }
 
-VkSemaphore VulkanSwapchain::getAcquireImageSemaphore() const
+std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getSignalSemaphore() const
 {
-    return m_presentSemaphore;
+    return { m_presentSemaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 }
 
 VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)
