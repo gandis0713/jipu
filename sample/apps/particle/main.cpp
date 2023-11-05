@@ -105,7 +105,7 @@ private:
 
     void* m_uniformBufferMappedPointer = nullptr;
     uint32_t m_sampleCount = 1;
-    uint32_t m_particleCount = 8092;
+    uint32_t m_particleCount = 8192;
     uint64_t m_previousTime = 0;
     uint64_t m_vertexIndex = 0;
 };
@@ -225,12 +225,13 @@ void ParticleSample::draw()
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
         computePassEncoder->setPipeline(m_computePipeline.get());
         computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
-        computePassEncoder->dispatch(256, 1, 1);
+        computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
         computePassEncoder->end();
 
         computeCommandEncoder->finish();
+
+        m_queue->submit({ m_computeCommandBuffer.get() });
     }
-    // m_queue->submit({ computeCommandBuffer });
 
     // encode render command
     {
@@ -264,8 +265,11 @@ void ParticleSample::draw()
         drawImGui(renderCommandEncoder.get(), renderView);
 
         renderCommandEncoder->finish();
+
+        m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
     }
-    m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
+
+    // m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
