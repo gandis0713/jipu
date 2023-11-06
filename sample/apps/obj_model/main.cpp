@@ -267,9 +267,11 @@ void OBJModelSample::updateImGui()
 
     // set ui
     {
-        ImGui::Begin("Information");
+        ImGui::Begin("Settings");
         ImGui::End();
     }
+
+    debugWindow();
     ImGui::Render();
 }
 

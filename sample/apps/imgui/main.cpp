@@ -151,20 +151,7 @@ void ImGuiSample::updateImGui()
     }
 
     ImGui::NewFrame();
-
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Information");
-        ImGui::Text("Triangle count: %d", 3);
-        ImGui::End();
-    }
+    debugWindow();
     ImGui::Render();
 }
 

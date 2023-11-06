@@ -190,6 +190,7 @@ void ParticleSample::update()
 
 void ParticleSample::updateImGui()
 {
+
     // set display size and mouse state.
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -211,10 +212,13 @@ void ParticleSample::updateImGui()
 
     // set ui
     {
-        ImGui::Begin("Information");
+        ImGui::Begin("Settings");
         ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
         ImGui::End();
     }
+
+    debugWindow();
+
     ImGui::Render();
 }
 
