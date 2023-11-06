@@ -1,5 +1,6 @@
 #include "im_gui.h"
 
+#include <fmt/format.h>
 #include <stdexcept>
 
 namespace vkt
@@ -329,6 +330,30 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     }
 }
 
+void Im_Gui::debugWindow()
+{
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 200 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    {
+        ImGui::Begin("Debug");
+    }
+
+    // fps
+    {
+        updateFPS();
+        ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps).c_str());
+    }
+
+    {
+        ImGui::End();
+    }
+}
+
 void Im_Gui::buildImGui()
 {
     // update transfrom buffer
@@ -459,6 +484,29 @@ void Im_Gui::clearImGui()
     m_pipelineLayout.reset();
     m_bindingGroup.reset();
     m_bindingGroupLayout.reset();
+}
+
+void Im_Gui::updateFPS()
+{
+    using namespace std::chrono;
+
+    if (m_fps.time.count() != 0)
+    {
+        auto currentTime = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+        auto durationTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - m_fps.time).count();
+
+        m_fps.frame++;
+        if (durationTime > 1000)
+        {
+            m_fps.fps = m_fps.frame * 1000.0 / durationTime;
+            m_fps.time = currentTime;
+            m_fps.frame = 0;
+        }
+    }
+    else
+    {
+        m_fps.time = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+    }
 }
 
 } // namespace vkt

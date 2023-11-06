@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <chrono>
 #include <glm/glm.hpp>
 #include <imgui.h>
 
@@ -54,6 +55,18 @@ protected:
         float top = 0.0f;
         float bottom = 0.0f;
     } m_padding;
+
+protected:
+    void debugWindow();
+
+private:
+    struct FPS
+    {
+        std::chrono::milliseconds time = std::chrono::milliseconds::zero();
+        uint64_t frame = 0;
+        float fps = 0.0f;
+    } m_fps;
+    void updateFPS();
 };
 
 } // namespace vkt
