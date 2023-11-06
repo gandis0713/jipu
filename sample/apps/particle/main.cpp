@@ -108,6 +108,9 @@ private:
     uint32_t m_particleCount = 8192;
     uint64_t m_previousTime = 0;
     uint64_t m_vertexIndex = 0;
+
+private:
+    bool separateCmdBuffer = false;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -209,6 +212,7 @@ void ParticleSample::updateImGui()
     // set ui
     {
         ImGui::Begin("Information");
+        ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
         ImGui::End();
     }
     ImGui::Render();
@@ -230,7 +234,8 @@ void ParticleSample::draw()
 
         computeCommandEncoder->finish();
 
-        m_queue->submit({ m_computeCommandBuffer.get() });
+        if (separateCmdBuffer)
+            m_queue->submit({ m_computeCommandBuffer.get() });
     }
 
     // encode render command
@@ -266,10 +271,12 @@ void ParticleSample::draw()
 
         renderCommandEncoder->finish();
 
-        m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
+        if (separateCmdBuffer)
+            m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
     }
 
-    // m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
+    if (!separateCmdBuffer)
+        m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
