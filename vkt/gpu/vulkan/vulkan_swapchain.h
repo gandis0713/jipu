@@ -30,8 +30,8 @@ public:
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
-    void injectSignalSemaphore(VkSemaphore semaphore);
-    std::pair<VkSemaphore, VkPipelineStageFlags> getSignalSemaphore() const;
+    std::pair<VkSemaphore, VkPipelineStageFlags> getPresentSemaphore() const;
+    std::pair<VkSemaphore, VkPipelineStageFlags> getRenderSemaphore() const;
 
 private:
     VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha);
@@ -39,9 +39,8 @@ private:
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_presentSemaphore = VK_NULL_HANDLE;
+    VkSemaphore m_renderSemaphore = VK_NULL_HANDLE;
     uint32_t m_acquiredImageIndex = 0u;
-
-    std::vector<VkSemaphore> m_waitSemaphores = {};
 };
 
 DOWN_CAST(VulkanSwapchain, Swapchain);

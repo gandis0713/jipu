@@ -63,51 +63,107 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
+    std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
+
+    submit(submits);
+}
+
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
+{
+    std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
+
+    auto vulkanDevice = downcast(m_device);
+    auto vulkanSwapchain = downcast(swapchain);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    auto commandBufferCount = commandBuffers.size();
+    // we assume the last command buffer is for rendering.
+    auto renderCommandBufferIndex = commandBufferCount - 1;
+
+    auto renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
+    auto acquireImageSemaphore = vulkanSwapchain->getPresentSemaphore();
+    auto renderSemaphore = vulkanSwapchain->getRenderSemaphore();
+
+    // add signal semaphore to signal that render command buffer is finished.
+    submits[renderCommandBufferIndex].signal.first.push_back(renderSemaphore.first);
+
+    // add wait semaphore to wait next swapchain image.
+    submits[renderCommandBufferIndex].wait.first.push_back(acquireImageSemaphore.first);
+    submits[renderCommandBufferIndex].wait.second.push_back(acquireImageSemaphore.second);
+
+    submit(submits);
+
+    swapchain->present(this);
+}
+
+VkQueue VulkanQueue::getVkQueue() const
+{
+    return m_queue;
+}
+
+std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
+{
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    std::vector<VkCommandBuffer> buffers{};
-    std::vector<VkSubmitInfo> submitInfos{};
-    std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> signalSemaphores{};
-    std::vector<std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>>> waitSemaphores{};
+    std::vector<SubmitInfo> submitInfo{};
 
     auto commandBufferSize = commandBuffers.size();
-    buffers.resize(commandBufferSize);
-    submitInfos.resize(commandBufferSize);
-    signalSemaphores.resize(commandBufferSize);
-    waitSemaphores.resize(commandBufferSize);
+    submitInfo.resize(commandBufferSize);
 
     for (auto i = 0; i < commandBufferSize; ++i)
     {
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo[i].cmdBuf = downcast(commandBuffers[i])->getVkCommandBuffer();
 
-        buffers[i] = downcast(commandBuffers[i])->getVkCommandBuffer();
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &buffers[i];
-
-        // send signal even if last command buffer.
-        signalSemaphores[i] = downcast(commandBuffers[i])->getSignalSemaphore();
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &signalSemaphores[i].first;
+        auto nextIndex = i + 1;
+        if (nextIndex < commandBufferSize)
+        {
+            auto signalSemaphore = downcast(commandBuffers[i])->getSignalSemaphore();
+            submitInfo[i].signal.first.push_back(signalSemaphore.first);
+            submitInfo[i].signal.second.push_back(signalSemaphore.second);
+        }
 
         auto preIndex = i - 1;
         if (preIndex >= 0)
         {
-            waitSemaphores[i].first.push_back(signalSemaphores[preIndex].first);
-            waitSemaphores[i].second.push_back(signalSemaphores[preIndex].second);
+            submitInfo[i].wait.first.push_back(submitInfo[preIndex].signal.first[0]);
+            submitInfo[i].wait.second.push_back(submitInfo[preIndex].signal.second[0]);
         }
 
         auto waitSems = downcast(commandBuffers[i])->ejectWaitSemaphores();
         for (auto sem : waitSems)
         {
-            waitSemaphores[i].first.push_back(sem.first);
-            waitSemaphores[i].second.push_back(sem.second);
+            submitInfo[i].wait.first.push_back(sem.first);
+            submitInfo[i].wait.second.push_back(sem.second);
         }
+    }
 
-        submitInfo.pWaitSemaphores = waitSemaphores[i].first.data();
-        submitInfo.pWaitDstStageMask = waitSemaphores[i].second.data();
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores[i].first.size());
+    return submitInfo;
+}
+
+void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)
+{
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    auto submitInfoSize = submits.size();
+
+    std::vector<VkSubmitInfo> submitInfos{};
+    submitInfos.resize(submitInfoSize);
+
+    for (auto i = 0; i < submitInfoSize; ++i)
+    {
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &submits[i].cmdBuf;
+
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].signal.first.size());
+        submitInfo.pSignalSemaphores = submits[i].signal.first.data();
+
+        submitInfo.pWaitSemaphores = submits[i].wait.first.data();
+        submitInfo.pWaitDstStageMask = submits[i].wait.second.data();
+        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].wait.first.size());
 
         submitInfos[i] = submitInfo;
     }
@@ -129,28 +185,6 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     {
         throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));
     }
-}
-
-void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
-{
-    auto vulkanDevice = downcast(m_device);
-    auto vulkanSwapchain = downcast(swapchain);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    auto commandBufferCount = commandBuffers.size();
-    auto renderCommandBuffer = downcast(commandBuffers[commandBufferCount - 1]);
-    auto acquireImageSemaphore = vulkanSwapchain->getSignalSemaphore();
-    renderCommandBuffer->injectWaitSemaphore(acquireImageSemaphore.first, acquireImageSemaphore.second);
-    vulkanSwapchain->injectSignalSemaphore(renderCommandBuffer->getSignalSemaphore().first);
-
-    submit(commandBuffers);
-
-    swapchain->present(this);
-}
-
-VkQueue VulkanQueue::getVkQueue() const
-{
-    return m_queue;
 }
 
 // Convert Helper

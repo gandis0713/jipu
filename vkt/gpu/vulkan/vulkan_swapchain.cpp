@@ -142,7 +142,12 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
 
     if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_presentSemaphore) != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create swap chain semephore.");
+        throw std::runtime_error("Failed to create semephore for present.");
+    }
+
+    if (vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create semaphore for rendering.");
     }
 }
 
@@ -152,6 +157,7 @@ VulkanSwapchain::~VulkanSwapchain()
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_presentSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderSemaphore, nullptr);
 
     /* do not delete VkImages from swapchain. */
 
@@ -168,8 +174,8 @@ void VulkanSwapchain::present(Queue* queue)
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(m_waitSemaphores.size());
-    presentInfo.pWaitSemaphores = m_waitSemaphores.data();
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &m_renderSemaphore;
 
     VkSwapchainKHR swapChains[] = { m_swapchain };
     presentInfo.swapchainCount = 1;
@@ -178,8 +184,6 @@ void VulkanSwapchain::present(Queue* queue)
     presentInfo.pResults = nullptr; // Optional
 
     vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
-
-    m_waitSemaphores.clear();
 }
 
 int VulkanSwapchain::acquireNextTexture()
@@ -210,14 +214,14 @@ VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
     return m_swapchain;
 }
 
-void VulkanSwapchain::injectSignalSemaphore(VkSemaphore semaphore)
-{
-    m_waitSemaphores.push_back(semaphore);
-}
-
-std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getSignalSemaphore() const
+std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getPresentSemaphore() const
 {
     return { m_presentSemaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+}
+
+std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getRenderSemaphore() const
+{
+    return { m_renderSemaphore, VK_PIPELINE_STAGE_NONE };
 }
 
 VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)
