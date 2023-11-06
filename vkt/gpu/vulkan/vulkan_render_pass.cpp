@@ -23,7 +23,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        colorAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachmentDescription.initialLayout = colorAttachment.loadOp == LoadOp::kLoad ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
 
         attachments.push_back(colorAttachmentDescription);

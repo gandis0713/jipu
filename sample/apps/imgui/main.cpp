@@ -22,7 +22,7 @@ public:
     void draw() override;
 
 private:
-    void setupImGui() override;
+    void updateImGui() override;
 
 private:
     void createDevier();
@@ -100,19 +100,20 @@ void ImGuiSample::init()
 
 void ImGuiSample::update()
 {
-    setupImGui();
     updateImGui();
+    buildImGui();
 }
 
 void ImGuiSample::draw()
 {
     auto swapchainIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->getTextureView(swapchainIndex);
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = m_swapchain->getTextureView(swapchainIndex);
+        attachment.renderView = renderView;
         attachment.resolveView = nullptr;
 
         RenderPassEncoderDescriptor renderPassDescriptor;
@@ -120,25 +121,24 @@ void ImGuiSample::draw()
         renderPassDescriptor.colorAttachments = { attachment };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
-
-        drawImGui(renderPassEncoder.get());
-
         renderPassEncoder->end();
 
-        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+        drawImGui(commandEncoder.get(), renderView);
+
+        m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
     }
 }
 
-void ImGuiSample::setupImGui()
+void ImGuiSample::updateImGui()
 {
     // set display size and mouse state.
     {
@@ -151,20 +151,7 @@ void ImGuiSample::setupImGui()
     }
 
     ImGui::NewFrame();
-
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 100), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Information");
-        ImGui::Text("Triangle count: %d", 3);
-        ImGui::End();
-    }
+    debugWindow();
     ImGui::Render();
 }
 

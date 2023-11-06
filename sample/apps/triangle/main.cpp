@@ -1,6 +1,7 @@
 
 
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
@@ -21,7 +22,7 @@
 namespace vkt
 {
 
-class TriangleSample : public Sample
+class TriangleSample : public Sample, public Im_Gui
 {
 public:
     TriangleSample() = delete;
@@ -31,6 +32,9 @@ public:
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void updateImGui() override;
 
 private:
     void createDevier();
@@ -77,6 +81,8 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
+    clearImGui();
+
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
     m_queue.reset();
@@ -100,23 +106,27 @@ void TriangleSample::init()
     createVertexBuffer();
     createRenderPipeline();
 
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
     m_initialized = true;
 }
 
 void TriangleSample::update()
 {
+    updateImGui();
+    buildImGui();
 }
 
 void TriangleSample::draw()
 {
     auto swapchainIndex = m_swapchain->acquireNextTexture();
-
+    auto renderView = m_swapchain->getTextureView(swapchainIndex);
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = m_swapchain->getTextureView(swapchainIndex);
+        attachment.renderView = renderView;
         attachment.resolveView = nullptr;
 
         RenderPassEncoderDescriptor renderPassDescriptor;
@@ -134,8 +144,27 @@ void TriangleSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
+        drawImGui(commadEncoder.get(), renderView);
+
         m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
+}
+
+void TriangleSample::updateImGui()
+{
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+    debugWindow();
+    ImGui::Render();
 }
 
 void TriangleSample::createDevier()

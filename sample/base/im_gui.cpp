@@ -1,5 +1,6 @@
 #include "im_gui.h"
 
+#include <fmt/format.h>
 #include <stdexcept>
 
 namespace vkt
@@ -90,9 +91,9 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     style.Colors[ImGuiCol_Header] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
     style.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
     // view background
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
-    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.1f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.05f, 0.05f, 0.05f, 0.5f);
 
     // Get texture for fonts.
     using FontDataType = unsigned char;
@@ -135,7 +136,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
         void* fontGPUMappedPointer = m_fontBuffer->map();
         memcpy(fontGPUMappedPointer, fontData, fontBufferDescriptor.size);
-        // m_fontBuffer->unmap();
+        m_fontBuffer->unmap();
     }
 
     // copy buffer to texture
@@ -326,10 +327,34 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         renderPipelineDescriptor.fragment = fragmentStage;
 
         m_pipeline = device->createRenderPipeline(renderPipelineDescriptor);
-    } // namespace vkt
+    }
 }
 
-void Im_Gui::updateImGui()
+void Im_Gui::debugWindow()
+{
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 200 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    {
+        ImGui::Begin("Debug");
+    }
+
+    // fps
+    {
+        updateFPS();
+        ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps).c_str());
+    }
+
+    {
+        ImGui::End();
+    }
+}
+
+void Im_Gui::buildImGui()
 {
     // update transfrom buffer
     {
@@ -397,23 +422,32 @@ void Im_Gui::updateImGui()
     }
 }
 
-void Im_Gui::drawImGui(RenderPassEncoder* renderPassEncoder)
+void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
-    int32_t vertexOffset = 0;
-    int32_t indexOffset = 0;
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    renderPassEncoder->setPipeline(m_pipeline.get());
-    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderPassEncoder->setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
 
     if (imDrawData->CmdListsCount > 0)
     {
+        ImGuiIO& io = ImGui::GetIO();
+
+        ColorAttachment colorAttachment{};
+        colorAttachment.renderView = renderView;
+        colorAttachment.loadOp = LoadOp::kLoad;
+        colorAttachment.storeOp = StoreOp::kStore;
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.sampleCount = 1;
+
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        renderPassEncoder->setPipeline(m_pipeline.get());
+        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+        renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
 
+        int32_t vertexOffset = 0;
+        int32_t indexOffset = 0;
         for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
         {
             const ImDrawList* cmd_list = imDrawData->CmdLists[i];
@@ -430,6 +464,7 @@ void Im_Gui::drawImGui(RenderPassEncoder* renderPassEncoder)
             }
             vertexOffset += cmd_list->VtxBuffer.Size;
         }
+        renderPassEncoder->end();
     }
 }
 
@@ -449,6 +484,29 @@ void Im_Gui::clearImGui()
     m_pipelineLayout.reset();
     m_bindingGroup.reset();
     m_bindingGroupLayout.reset();
+}
+
+void Im_Gui::updateFPS()
+{
+    using namespace std::chrono;
+
+    if (m_fps.time.count() != 0)
+    {
+        auto currentTime = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+        auto durationTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - m_fps.time).count();
+
+        m_fps.frame++;
+        if (durationTime > 1000)
+        {
+            m_fps.fps = m_fps.frame * 1000.0 / durationTime;
+            m_fps.time = currentTime;
+            m_fps.frame = 0;
+        }
+    }
+    else
+    {
+        m_fps.time = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+    }
 }
 
 } // namespace vkt

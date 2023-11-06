@@ -28,6 +28,18 @@ private:
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
     VkQueueFamilyProperties m_properties{};
+
+private:
+    struct SubmitInfo
+    {
+        VkCommandBuffer cmdBuf = VK_NULL_HANDLE;
+        std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>> signal{};
+        std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>> wait{};
+
+    } m_submitInfo;
+
+    std::vector<SubmitInfo> gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers);
+    void submit(const std::vector<SubmitInfo>& submitInfos);
 };
 
 DOWN_CAST(VulkanQueue, Queue);

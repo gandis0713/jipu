@@ -59,7 +59,6 @@ DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);
-VkPolygonMode ToVkPolygonMode(PrimitiveTopology topology);
 VkPrimitiveTopology ToVkPrimitiveTopology(PrimitiveTopology topology);
 VkCullModeFlags ToVkCullModeFlags(CullMode mode);
 VkFrontFace ToVkFrontFace(FrontFace frontFace);

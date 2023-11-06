@@ -1,5 +1,6 @@
 
 #include "file.h"
+#include "im_gui.h"
 #include "sample.h"
 
 #include "vkt/gpu/buffer.h"
@@ -31,7 +32,7 @@ uint64_t getCurrentTime()
 
 } // namespace
 
-class ParticleSample : public Sample
+class ParticleSample : public Sample, public Im_Gui
 {
 public:
     ParticleSample() = delete;
@@ -42,6 +43,9 @@ public:
     void init() override;
     void update() override;
     void draw() override;
+
+private:
+    void updateImGui() override;
 
 private:
     void createDriver();
@@ -60,9 +64,6 @@ private:
     void createCommandBuffer();
 
     void updateUniformBuffer();
-
-    CommandBuffer* recodeComputeCommandBuffer();
-    CommandBuffer* recodeRenderCommandBuffer();
 
 private:
     struct Particle
@@ -104,9 +105,12 @@ private:
 
     void* m_uniformBufferMappedPointer = nullptr;
     uint32_t m_sampleCount = 1;
-    uint32_t m_particleCount = 8092;
+    uint32_t m_particleCount = 8192;
     uint64_t m_previousTime = 0;
     uint64_t m_vertexIndex = 0;
+
+private:
+    bool separateCmdBuffer = false;
 };
 
 ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
@@ -116,6 +120,8 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
+    clearImGui();
+
     m_queue.reset();
 
     // release command buffer after finishing queue.
@@ -169,21 +175,112 @@ void ParticleSample::init()
     createQueue();
     createCommandBuffer();
 
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+
     m_initialized = true;
 }
 
 void ParticleSample::update()
 {
     updateUniformBuffer();
+
+    updateImGui();
+    buildImGui();
+}
+
+void ParticleSample::updateImGui()
+{
+
+    // set display size and mouse state.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+        io.MousePos = ImVec2(m_mouseX, m_mouseY);
+        io.MouseDown[0] = m_leftMouseButton;
+        io.MouseDown[1] = m_rightMouseButton;
+        io.MouseDown[2] = m_middleMouseButton;
+    }
+
+    ImGui::NewFrame();
+
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Settings");
+        ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
+        ImGui::End();
+    }
+
+    debugWindow();
+
+    ImGui::Render();
 }
 
 void ParticleSample::draw()
 {
-    CommandBuffer* computeCommandBuffer = recodeComputeCommandBuffer();
-    // m_queue->submit({ computeCommandBuffer });
+    // encoder compute command
+    {
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    CommandBuffer* renderCommandBuffer = recodeRenderCommandBuffer();
-    m_queue->submit({ computeCommandBuffer, renderCommandBuffer }, m_swapchain.get());
+        ComputePassEncoderDescriptor computePassEncoderDescriptor{};
+        std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
+        computePassEncoder->setPipeline(m_computePipeline.get());
+        computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
+        computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
+        computePassEncoder->end();
+
+        computeCommandEncoder->finish();
+
+        if (separateCmdBuffer)
+            m_queue->submit({ m_computeCommandBuffer.get() });
+    }
+
+    // encode render command
+    {
+        auto swapchainImageIndex = m_swapchain->acquireNextTexture();
+        auto renderView = m_swapchain->getTextureView(swapchainImageIndex);
+
+        if (swapchainImageIndex < 0)
+            spdlog::error("swap chain: {}", swapchainImageIndex);
+
+        CommandEncoderDescriptor commandEncoderDescriptor{};
+        std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+
+        ColorAttachment colorAttachment{};
+        colorAttachment.renderView = renderView;
+        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+        colorAttachment.loadOp = LoadOp::kClear;
+        colorAttachment.storeOp = StoreOp::kStore;
+
+        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
+        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
+
+        std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
+        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+        renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->end();
+
+        drawImGui(renderCommandEncoder.get(), renderView);
+
+        renderCommandEncoder->finish();
+
+        if (separateCmdBuffer)
+            m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
+    }
+
+    if (!separateCmdBuffer)
+        m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
@@ -541,52 +638,6 @@ void ParticleSample::updateUniformBuffer()
     memcpy(m_uniformBufferMappedPointer, &deltaTime, sizeof(deltaTime));
 
     m_previousTime = currentTime;
-}
-
-CommandBuffer* ParticleSample::recodeComputeCommandBuffer()
-{
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    ComputePassEncoderDescriptor computePassEncoderDescriptor{};
-    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
-    computePassEncoder->setPipeline(m_computePipeline.get());
-    computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
-    computePassEncoder->dispatch(256, 1, 1);
-    computePassEncoder->end();
-
-    return computeCommandEncoder->finish();
-}
-
-CommandBuffer* ParticleSample::recodeRenderCommandBuffer()
-{
-    auto swapchainImageIndex = m_swapchain->acquireNextTexture();
-
-    if (swapchainImageIndex < 0)
-        spdlog::error("swap chain: {}", swapchainImageIndex);
-
-    CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
-
-    ColorAttachment colorAttachment{};
-    colorAttachment.renderView = m_swapchain->getTextureView(swapchainImageIndex);
-    colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
-    colorAttachment.loadOp = LoadOp::kClear;
-    colorAttachment.storeOp = StoreOp::kStore;
-
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-    renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-    renderPassEncoderDescriptor.sampleCount = m_sampleCount;
-
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-    renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
-    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-    renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
-    renderPassEncoder->end();
-
-    return renderCommandEncoder->finish();
 }
 } // namespace vkt
 

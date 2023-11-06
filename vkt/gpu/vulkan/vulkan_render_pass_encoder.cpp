@@ -249,6 +249,10 @@ void VulkanRenderPassEncoder::end()
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice->vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
+
+    // TODO: generate stage from binding group.
+    VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    vulkanCommandBuffer->setSignalPipelineStage(flags);
 }
 
 } // namespace vkt

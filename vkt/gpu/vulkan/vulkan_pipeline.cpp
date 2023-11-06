@@ -134,7 +134,7 @@ void VulkanRenderPipeline::initialize()
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationStateCreateInfo.polygonMode = ToVkPolygonMode(m_descriptor.inputAssembly.topology);
+    rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizationStateCreateInfo.lineWidth = 1.0f;
     rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(m_descriptor.rasterization.cullMode);
     rasterizationStateCreateInfo.frontFace = ToVkFrontFace(m_descriptor.rasterization.frontFace);
@@ -214,8 +214,8 @@ void VulkanRenderPipeline::initialize()
 
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = VK_TRUE;
-    depthStencil.depthWriteEnable = VK_TRUE;
+    depthStencil.depthTestEnable = m_descriptor.depthStencil.has_value();
+    depthStencil.depthWriteEnable = m_descriptor.depthStencil.has_value();
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.minDepthBounds = 0.0f; // Optional
@@ -325,24 +325,6 @@ VkFormat ToVkVertexFormat(VertexFormat format)
     default:
         spdlog::error("{} vertex format is not supported.", static_cast<uint32_t>(format));
         return VK_FORMAT_UNDEFINED;
-    }
-}
-
-VkPolygonMode ToVkPolygonMode(PrimitiveTopology topology)
-{
-    switch (topology)
-    {
-    case PrimitiveTopology::kPointList:
-        return VK_POLYGON_MODE_POINT;
-    case PrimitiveTopology::kLineStrip:
-    case PrimitiveTopology::kLineList:
-        return VK_POLYGON_MODE_LINE;
-    case PrimitiveTopology::kTriangleStrip:
-    case PrimitiveTopology::kTriangleList:
-        return VK_POLYGON_MODE_FILL;
-    default:
-        spdlog::error("{} topology for polygon mode is not supported.", static_cast<uint32_t>(topology));
-        return VK_POLYGON_MODE_FILL;
     }
 }
 

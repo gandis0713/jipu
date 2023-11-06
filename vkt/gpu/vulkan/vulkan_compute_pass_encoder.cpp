@@ -45,7 +45,8 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bin
     VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_BIND_POINT_COMPUTE, vulkanPipelineLayout->getVkPipelineLayout(),
+                                VK_PIPELINE_BIND_POINT_COMPUTE,
+                                vulkanPipelineLayout->getVkPipelineLayout(),
                                 0,
                                 1,
                                 &descriptorSet,
