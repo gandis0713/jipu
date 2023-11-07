@@ -22,6 +22,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <math.h>
+#include <random>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -101,7 +102,7 @@ private:
 
         std::vector<CompositionUBO::Light> lights{};
         alignas(16) glm::vec3 cameraPosition;
-    };
+    } m_ubo;
 
     struct MVP
     {
@@ -155,16 +156,6 @@ private:
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
-        std::vector<Light> lights{
-            Light({ 30.0f, 30.0f, 30.0f }, { 1.0f, 0.0f, 0.0f }),
-            Light({ 30.0f, -30.0f, 30.0f }, { 0.0f, 1.0f, 0.0f }),
-            Light({ -30.0f, 30.0f, 30.0f }, { 0.0f, 0.0f, 1.0f }),
-            Light({ -30.0f, -30.0f, 30.0f }, { 1.0f, 1.0f, 0.0f }),
-            Light({ 30.0f, 30.0f, -30.0f }, { 1.0f, 0.0f, 0.0f }),
-            Light({ 30.0f, -30.0f, -30.0f }, { 0.0f, 1.0f, 0.0f }),
-            Light({ -30.0f, 30.0f, -30.0f }, { 0.0f, 0.0f, 1.0f }),
-            Light({ -30.0f, -30.0f, -30.0f }, { 1.0f, 1.0f, 0.0f }),
-        };
         std::vector<CompositionVertex> vertices{
             { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
             { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
@@ -179,6 +170,8 @@ private:
     std::unique_ptr<Queue> m_queue = nullptr;
 
     uint32_t m_sampleCount = 1;
+    int m_lightCount = 8;
+    int m_lightMax = 1000;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -315,28 +308,25 @@ void DeferredSample::updateCompositionUniformBuffer()
 
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    CompositionUBO ubo;
-    for (auto i = 0; i < m_composition.lights.size(); ++i)
+    for (auto i = 0; i < m_lightCount; ++i)
     {
-        auto& light = m_composition.lights[i];
-        glm::vec3 position = light.getPosition();
+        auto& light = m_ubo.lights[i];
         float ratio = sin(time);
-        position[0] = light.getPosition()[0] * ratio;
-        position[1] = light.getPosition()[1] * ratio;
-        // position[2] = light.getPosition()[2] * ratio;
-        ubo.lights.push_back({ position, light.getColor() });
+        light.position[0] = light.position[0] * ratio;
+        light.position[1] = light.position[1] * ratio;
+        // light.position[2] = light.position[2] * ratio;
     }
-    ubo.cameraPosition = m_offscreen.camera->getPosition();
+    m_ubo.cameraPosition = m_offscreen.camera->getPosition();
 
-    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * ubo.lights.size());
+    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightCount);
     uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
 
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
     char* bytePointer = static_cast<char*>(pointer);
-    memcpy(bytePointer, ubo.lights.data(), lightSize);
+    memcpy(bytePointer, m_ubo.lights.data(), lightSize);
     bytePointer += lightSize;
-    memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
+    memcpy(bytePointer, &m_ubo.cameraPosition, cameraPositionSize);
 }
 
 void DeferredSample::updateImGui()
@@ -363,6 +353,7 @@ void DeferredSample::updateImGui()
     // set ui
     {
         ImGui::Begin("Settings");
+        ImGui::SliderInt("Number of Light", &m_lightCount, 1, m_lightMax);
         ImGui::End();
     }
 
@@ -1208,14 +1199,44 @@ void DeferredSample::createCompositionPipeline()
 
 void DeferredSample::createCompositionUniformBuffer()
 {
-    CompositionUBO ubo;
-    for (const auto& light : m_composition.lights)
+    // light
     {
-        ubo.lights.push_back({ light.getPosition(), light.getColor() });
-    }
-    ubo.cameraPosition = m_offscreen.camera->getPosition();
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> xDirDist(0, 1);
+        std::uniform_int_distribution<> yDirDist(0, 1);
+        std::uniform_int_distribution<> zDirDist(0, 1);
+        std::uniform_real_distribution<> xDist(30.0f, 30.0f);
+        std::uniform_real_distribution<> yDist(30.0f, 30.0f);
+        std::uniform_real_distribution<> zDist(30.0f, 30.0f);
+        std::uniform_real_distribution<> rDist(0.0f, 1.0f);
+        std::uniform_real_distribution<> gDist(0.0f, 1.0f);
+        std::uniform_real_distribution<> bDist(0.0f, 1.0f);
 
-    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * ubo.lights.size());
+        for (int i = 0; i < m_lightMax; i++)
+        {
+            auto xDir = xDirDist(gen) == 0 ? -1 : 1;
+            auto yDir = yDirDist(gen) == 0 ? -1 : 1;
+            auto zDir = zDirDist(gen) == 0 ? -1 : 1;
+            auto x = xDist(gen);
+            auto y = yDist(gen);
+            auto z = zDist(gen);
+            auto r = rDist(gen);
+            auto g = gDist(gen);
+            auto b = bDist(gen);
+            spdlog::debug("xDir: {}, yDir: {}, zDir: {}, x: {}, y: {}, z: {}", xDir, yDir, zDir, x, y, z);
+            spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+            CompositionUBO::Light light{ { xDir * x, yDir * y, zDir * z },
+                                         { r, g, b } };
+            m_ubo.lights.push_back(light);
+        }
+    }
+    // camera position
+    {
+        m_ubo.cameraPosition = m_offscreen.camera->getPosition();
+    }
+
+    uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightMax);
     uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
 
     BufferDescriptor descriptor{};
@@ -1227,9 +1248,9 @@ void DeferredSample::createCompositionUniformBuffer()
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
     char* bytePointer = static_cast<char*>(pointer);
-    memcpy(bytePointer, ubo.lights.data(), lightSize);
+    memcpy(bytePointer, m_ubo.lights.data(), lightSize);
     bytePointer += lightSize;
-    memcpy(bytePointer, &ubo.cameraPosition, cameraPositionSize);
+    memcpy(bytePointer, &m_ubo.cameraPosition, cameraPositionSize);
     // uniformBuffer->unmap();
 }
 
