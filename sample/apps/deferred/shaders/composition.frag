@@ -13,7 +13,7 @@ struct Light
     vec3 color;
 };
 
-#define maxLightCount 1000
+#define maxLightCount 10000
 #define ambient 0.0
 
 // std140 for only uniform, consider alignment such as vec3
@@ -21,6 +21,10 @@ layout(std140, binding = 3) uniform UBO
 {
     Light lights[maxLightCount];
     vec3 cameraPosition;
+    int lightCount;
+    int padding1;
+    int padding2;
+    int padding3;
 }
 ubo;
 
@@ -34,7 +38,7 @@ void applyLight(vec2 texCoord)
     // Ambient part
     vec3 color = albedo.rgb * ambient;
 
-    for (int i = 0; i < maxLightCount; ++i)
+    for (int i = 0; i < ubo.lightCount; ++i)
     {
 
         // Vector to light
