@@ -312,7 +312,6 @@ void DeferredSample::updateCompositionUniformBuffer()
 
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     float ratio = sin(time);
-    spdlog::debug("ratio: {}", ratio);
     for (auto i = 0; i < m_lightMax; ++i)
     {
         auto& light = m_composition.ubo.lights[i];
