@@ -1,5 +1,6 @@
 
 
+#include "camera.h"
 #include "file.h"
 #include "im_gui.h"
 #include "sample.h"
@@ -17,6 +18,7 @@
 #include "vkt/gpu/swapchain.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
 
 namespace vkt
@@ -36,6 +38,8 @@ public:
 private:
     void updateImGui() override;
 
+    void updateUniformBuffer();
+
 private:
     void createDevier();
     void createPhysicalDevice();
@@ -44,8 +48,13 @@ private:
     void createSwapchain();
     void createCommandBuffer();
     void createQueue();
+    void createBindingGroupLayout();
+    void createBindingGroup();
     void createVertexBuffer();
+    void createUniformBuffer();
     void createRenderPipeline();
+
+    void createCamera();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -55,8 +64,12 @@ private:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
+    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     struct Vertex
@@ -64,11 +77,20 @@ private:
         glm::vec3 pos;
     };
 
+    struct MVP
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    } m_mvp;
+
     std::vector<Vertex> m_vertices{
-        { { 0.0, -0.5, 0.0 } },
-        { { -0.5, 0.5, 0.0 } },
-        { { 0.5, 0.5, 0.0 } },
+        { { 0.0, -100.5, 0.0 } },
+        { { -100.5, 100.5, 0.0 } },
+        { { 100.5, 100.5, 0.0 } },
     };
+
+    std::unique_ptr<Camera> m_camera = nullptr;
 
     uint32_t m_sampleCount = 1;
 };
@@ -83,7 +105,11 @@ InstancingSample::~InstancingSample()
     clearImGui();
 
     m_renderPipeline.reset();
+    m_renderPipelineLayout.reset();
+    m_uniformBuffer.reset();
     m_vertexBuffer.reset();
+    m_bindingGroup.reset();
+    m_bindingGroupLayout.reset();
     m_queue.reset();
     m_commandBuffer.reset();
     m_swapchain.reset();
@@ -95,6 +121,7 @@ InstancingSample::~InstancingSample()
 
 void InstancingSample::init()
 {
+
     createDevier();
     createPhysicalDevice();
     createSurface();
@@ -103,6 +130,9 @@ void InstancingSample::init()
     createCommandBuffer();
     createQueue();
     createVertexBuffer();
+    createUniformBuffer();
+    createBindingGroupLayout();
+    createBindingGroup();
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -110,8 +140,14 @@ void InstancingSample::init()
     m_initialized = true;
 }
 
+void InstancingSample::updateUniformBuffer()
+{
+}
+
 void InstancingSample::update()
 {
+    updateUniformBuffer();
+
     updateImGui();
     buildImGui();
 }
@@ -137,6 +173,7 @@ void InstancingSample::draw()
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
@@ -245,14 +282,64 @@ void InstancingSample::createVertexBuffer()
     m_vertexBuffer->unmap();
 }
 
+void InstancingSample::createUniformBuffer()
+{
+    createCamera();
+
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 reori = R * T;
+    // m_mvp.model = reori;
+    m_mvp.model = glm::mat4(1.0f);
+    m_mvp.view = m_camera->getViewMat();
+    m_mvp.proj = m_camera->getProjectionMat();
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(MVP);
+    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_uniformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_uniformBuffer->map();
+    memcpy(mappedPointer, &m_mvp, sizeof(MVP));
+    // m_uniformBuffer->unmap();
+}
+
+void InstancingSample::createBindingGroupLayout()
+{
+    BufferBindingLayout bufferBindingLayout{};
+    bufferBindingLayout.index = 0;
+    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+    bufferBindingLayout.type = BufferBindingType::kUniform;
+
+    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+    bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
+
+    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+}
+
+void InstancingSample::createBindingGroup()
+{
+    BufferBinding bufferBinding{};
+    bufferBinding.index = 0;
+    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.offset = 0;
+    bufferBinding.size = m_uniformBuffer->getSize();
+
+    BindingGroupDescriptor bindingGroupDescriptor{};
+    bindingGroupDescriptor.buffers = { bufferBinding };
+    bindingGroupDescriptor.layout = m_bindingGroupLayout.get();
+
+    m_bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+}
+
 void InstancingSample::createRenderPipeline()
 {
     // render pipeline layout
-    std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
     {
         PipelineLayoutDescriptor descriptor{};
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
-        renderPipelineLayout = m_device->createPipelineLayout(descriptor);
+        m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
 
     // input assembly stage
@@ -327,9 +414,18 @@ void InstancingSample::createRenderPipeline()
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterizationStage;
     descriptor.fragment = fragmentStage;
-    descriptor.layout = renderPipelineLayout.get();
+    descriptor.layout = m_renderPipelineLayout.get();
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
+}
+
+void InstancingSample::createCamera()
+{
+    m_camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
+                                                   m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
+                                                   0.1f,
+                                                   1000.0f);
+    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 } // namespace vkt
