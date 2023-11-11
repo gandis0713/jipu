@@ -17,6 +17,7 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/spdlog.h>
@@ -51,6 +52,7 @@ private:
     void createBindingGroupLayout();
     void createBindingGroup();
     void createVertexBuffer();
+    void createIndexBuffer();
     void createUniformBuffer();
     void createRenderPipeline();
 
@@ -67,6 +69,7 @@ private:
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
@@ -77,6 +80,22 @@ private:
         glm::vec3 pos;
     };
 
+    struct Cube
+    {
+        Cube(float len, glm::vec3 pos = glm::vec3(0.0f))
+        {
+            vertices[0] = { { -len + pos[0], -len + pos[1], -len + pos[2] } };
+            vertices[1] = { { +len + pos[0], -len + pos[1], -len + pos[2] } };
+            vertices[2] = { { +len + pos[0], +len + pos[1], -len + pos[2] } };
+            vertices[3] = { { -len + pos[0], +len + pos[1], -len + pos[2] } };
+            vertices[4] = { { -len + pos[0], -len + pos[1], +len + pos[2] } };
+            vertices[5] = { { +len + pos[0], -len + pos[1], +len + pos[2] } };
+            vertices[6] = { { +len + pos[0], +len + pos[1], +len + pos[2] } };
+            vertices[7] = { { -len + pos[0], +len + pos[1], +len + pos[2] } };
+        }
+        Vertex vertices[8];
+    };
+
     struct MVP
     {
         glm::mat4 model;
@@ -84,14 +103,26 @@ private:
         glm::mat4 proj;
     } m_mvp;
 
-    std::vector<Vertex> m_vertices{
-        { { 0.0, -100.5, 0.0 } },
-        { { -100.5, 100.5, 0.0 } },
-        { { 100.5, 100.5, 0.0 } },
+    std::vector<Cube> m_vertices = {
+        Cube(10.0f, glm::vec3(200.0f, 0.0f, 0.0f))
+    };
+
+    std::vector<uint16_t> m_indices{
+        0, 1, 3, // front
+        3, 1, 2,
+        1, 5, 2, // bottom
+        2, 5, 6,
+        5, 4, 6, // back
+        6, 4, 7,
+        4, 0, 7, // top
+        7, 0, 3,
+        3, 2, 7, // right
+        7, 2, 6,
+        4, 5, 0, // left
+        0, 5, 1
     };
 
     std::unique_ptr<Camera> m_camera = nullptr;
-
     uint32_t m_sampleCount = 1;
 };
 
@@ -107,6 +138,7 @@ InstancingSample::~InstancingSample()
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
     m_uniformBuffer.reset();
+    m_indexBuffer.reset();
     m_vertexBuffer.reset();
     m_bindingGroup.reset();
     m_bindingGroupLayout.reset();
@@ -121,7 +153,6 @@ InstancingSample::~InstancingSample()
 
 void InstancingSample::init()
 {
-
     createDevier();
     createPhysicalDevice();
     createSurface();
@@ -130,6 +161,7 @@ void InstancingSample::init()
     createCommandBuffer();
     createQueue();
     createVertexBuffer();
+    createIndexBuffer();
     createUniformBuffer();
     createBindingGroupLayout();
     createBindingGroup();
@@ -175,9 +207,10 @@ void InstancingSample::draw()
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
         drawImGui(commadEncoder.get(), renderView);
@@ -272,7 +305,8 @@ void InstancingSample::createQueue()
 void InstancingSample::createVertexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size = m_vertices.size() * sizeof(Vertex);
+    // descriptor.size = m_vertices.size() * sizeof(Vertex);
+    descriptor.size = m_vertices.size() * sizeof(Cube);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
     m_vertexBuffer = m_device->createBuffer(descriptor);
@@ -280,6 +314,19 @@ void InstancingSample::createVertexBuffer()
     void* pointer = m_vertexBuffer->map();
     memcpy(pointer, m_vertices.data(), descriptor.size);
     m_vertexBuffer->unmap();
+}
+
+void InstancingSample::createIndexBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = m_indices.size() * sizeof(uint16_t);
+    descriptor.usage = BufferUsageFlagBits::kIndex;
+
+    m_indexBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_indexBuffer->map();
+    memcpy(pointer, m_indices.data(), descriptor.size);
+    m_indexBuffer->unmap();
 }
 
 void InstancingSample::createUniformBuffer()
@@ -421,10 +468,15 @@ void InstancingSample::createRenderPipeline()
 
 void InstancingSample::createCamera()
 {
-    m_camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
-                                                   m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
-                                                   0.1f,
-                                                   1000.0f);
+    // m_camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
+    //                                                m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
+    //                                                0.1f,
+    //                                                1000.0f);
+    auto halfWidth = m_swapchain->getWidth() / 2.0f;
+    auto halfHeight = m_swapchain->getHeight() / 2.0f;
+    m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
+                                                    -halfHeight, halfHeight,
+                                                    -1000, 1000);
     m_camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
