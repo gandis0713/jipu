@@ -78,20 +78,21 @@ private:
     struct Vertex
     {
         glm::vec3 pos;
+        glm::vec3 color;
     };
 
     struct Cube
     {
         Cube(float len, glm::vec3 pos = glm::vec3(0.0f))
         {
-            vertices[0] = { { -len + pos[0], -len + pos[1], -len + pos[2] } };
-            vertices[1] = { { +len + pos[0], -len + pos[1], -len + pos[2] } };
-            vertices[2] = { { +len + pos[0], +len + pos[1], -len + pos[2] } };
-            vertices[3] = { { -len + pos[0], +len + pos[1], -len + pos[2] } };
-            vertices[4] = { { -len + pos[0], -len + pos[1], +len + pos[2] } };
-            vertices[5] = { { +len + pos[0], -len + pos[1], +len + pos[2] } };
-            vertices[6] = { { +len + pos[0], +len + pos[1], +len + pos[2] } };
-            vertices[7] = { { -len + pos[0], +len + pos[1], +len + pos[2] } };
+            vertices[0] = { { -len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 0.0, 0.0 } };
+            vertices[1] = { { +len + pos[0], -len + pos[1], -len + pos[2] }, { 1.0, 1.0, 0.0 } };
+            vertices[2] = { { +len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 0.0, 1.0 } };
+            vertices[3] = { { -len + pos[0], +len + pos[1], -len + pos[2] }, { 1.0, 1.0, 1.0 } };
+            vertices[4] = { { -len + pos[0], -len + pos[1], +len + pos[2] }, { 0.0, 1.0, 1.0 } };
+            vertices[5] = { { +len + pos[0], -len + pos[1], +len + pos[2] }, { 0.0, 1.0, 0.0 } };
+            vertices[6] = { { +len + pos[0], +len + pos[1], +len + pos[2] }, { 0.0, 0.0, 1.0 } };
+            vertices[7] = { { -len + pos[0], +len + pos[1], +len + pos[2] }, { 1.0, 0.5, 0.5 } };
         }
         Vertex vertices[8];
     };
@@ -103,9 +104,7 @@ private:
         glm::mat4 proj;
     } m_mvp;
 
-    std::vector<Cube> m_vertices = {
-        Cube(10.0f, glm::vec3(200.0f, 0.0f, 0.0f))
-    };
+    std::vector<Cube> m_vertices{};
 
     std::vector<uint16_t> m_indices{
         0, 1, 3, // front
@@ -124,6 +123,8 @@ private:
 
     std::unique_ptr<Camera> m_camera = nullptr;
     uint32_t m_sampleCount = 1;
+
+    bool m_useInstancing = false;
 };
 
 InstancingSample::InstancingSample(const SampleDescriptor& descriptor)
@@ -232,6 +233,20 @@ void InstancingSample::updateImGui()
     }
 
     ImGui::NewFrame();
+    // set windows position and size
+    {
+        auto scale = ImGui::GetIO().FontGlobalScale;
+        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
+    }
+
+    // set ui
+    {
+        ImGui::Begin("Settings");
+        ImGui::Checkbox("Use Instancing", &m_useInstancing);
+        ImGui::End();
+    }
+
     debugWindow();
     ImGui::Render();
 }
@@ -304,8 +319,11 @@ void InstancingSample::createQueue()
 
 void InstancingSample::createVertexBuffer()
 {
+    {
+        m_vertices.push_back(Cube(10.0f, glm::vec3(200.0f, 0.0f, 0.0f)));
+    }
+
     BufferDescriptor descriptor{};
-    // descriptor.size = m_vertices.size() * sizeof(Vertex);
     descriptor.size = m_vertices.size() * sizeof(Cube);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
@@ -413,10 +431,14 @@ void InstancingSample::createRenderPipeline()
         positionAttribute.format = VertexFormat::kSFLOATx3;
         positionAttribute.offset = offsetof(Vertex, pos);
 
+        VertexAttribute colorAttribute{};
+        colorAttribute.format = VertexFormat::kSFLOATx3;
+        colorAttribute.offset = offsetof(Vertex, color);
+
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
         vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute };
+        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
         vertexStage.entryPoint = "main";
         vertexStage.shaderModule = vertexShaderModule.get();
