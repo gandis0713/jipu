@@ -49,12 +49,12 @@ private:
     void createSwapchain();
     void createCommandBuffer();
     void createQueue();
-    void createBindingGroupLayout();
-    void createBindingGroup();
     void createVertexBuffer();
     void createIndexBuffer();
-    void createUniformBuffer();
-    void createRenderPipeline();
+    void createNonInstancingBindingGroupLayout();
+    void createNonInstancingBindingGroup();
+    void createNonInstancingUniformBuffer();
+    void createNonInstancingRenderPipeline();
 
     void createCamera();
 
@@ -66,14 +66,26 @@ private:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
-    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
-    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+    struct NonInstancing
+    {
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+    } m_nonInstancing;
+
+    struct Instancing
+    {
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+    } m_instancing;
 
     struct Vertex
     {
@@ -104,8 +116,7 @@ private:
         glm::mat4 proj;
     } m_mvp;
 
-    std::vector<Cube> m_vertices{};
-
+    Cube m_vertices = Cube(10.0f);
     std::vector<uint16_t> m_indices{
         0, 1, 3, // front
         3, 1, 2,
@@ -136,13 +147,14 @@ InstancingSample::~InstancingSample()
 {
     clearImGui();
 
-    m_renderPipeline.reset();
-    m_renderPipelineLayout.reset();
-    m_uniformBuffer.reset();
+    m_nonInstancing.renderPipeline.reset();
+    m_nonInstancing.renderPipelineLayout.reset();
+    m_nonInstancing.uniformBuffer.reset();
+    m_nonInstancing.bindingGroup.reset();
+    m_nonInstancing.bindingGroupLayout.reset();
+
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-    m_bindingGroup.reset();
-    m_bindingGroupLayout.reset();
     m_queue.reset();
     m_commandBuffer.reset();
     m_swapchain.reset();
@@ -163,10 +175,10 @@ void InstancingSample::init()
     createQueue();
     createVertexBuffer();
     createIndexBuffer();
-    createUniformBuffer();
-    createBindingGroupLayout();
-    createBindingGroup();
-    createRenderPipeline();
+    createNonInstancingUniformBuffer();
+    createNonInstancingBindingGroupLayout();
+    createNonInstancingBindingGroup();
+    createNonInstancingRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
@@ -205,8 +217,8 @@ void InstancingSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+        renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+        renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -319,18 +331,14 @@ void InstancingSample::createQueue()
 
 void InstancingSample::createVertexBuffer()
 {
-    {
-        m_vertices.push_back(Cube(10.0f, glm::vec3(200.0f, 0.0f, 0.0f)));
-    }
-
     BufferDescriptor descriptor{};
-    descriptor.size = m_vertices.size() * sizeof(Cube);
+    descriptor.size = sizeof(Cube);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
     m_vertexBuffer = m_device->createBuffer(descriptor);
 
     void* pointer = m_vertexBuffer->map();
-    memcpy(pointer, m_vertices.data(), descriptor.size);
+    memcpy(pointer, &m_vertices, descriptor.size);
     m_vertexBuffer->unmap();
 }
 
@@ -347,7 +355,7 @@ void InstancingSample::createIndexBuffer()
     m_indexBuffer->unmap();
 }
 
-void InstancingSample::createUniformBuffer()
+void InstancingSample::createNonInstancingUniformBuffer()
 {
     createCamera();
 
@@ -363,13 +371,13 @@ void InstancingSample::createUniformBuffer()
     bufferDescriptor.size = sizeof(MVP);
     bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
 
-    m_uniformBuffer = m_device->createBuffer(bufferDescriptor);
-    void* mappedPointer = m_uniformBuffer->map();
+    m_nonInstancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_nonInstancing.uniformBuffer->map();
     memcpy(mappedPointer, &m_mvp, sizeof(MVP));
     // m_uniformBuffer->unmap();
 }
 
-void InstancingSample::createBindingGroupLayout()
+void InstancingSample::createNonInstancingBindingGroupLayout()
 {
     BufferBindingLayout bufferBindingLayout{};
     bufferBindingLayout.index = 0;
@@ -379,32 +387,32 @@ void InstancingSample::createBindingGroupLayout()
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    m_nonInstancing.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
 
-void InstancingSample::createBindingGroup()
+void InstancingSample::createNonInstancingBindingGroup()
 {
     BufferBinding bufferBinding{};
     bufferBinding.index = 0;
-    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.buffer = m_nonInstancing.uniformBuffer.get();
     bufferBinding.offset = 0;
-    bufferBinding.size = m_uniformBuffer->getSize();
+    bufferBinding.size = m_nonInstancing.uniformBuffer->getSize();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding };
-    bindingGroupDescriptor.layout = m_bindingGroupLayout.get();
+    bindingGroupDescriptor.layout = m_nonInstancing.bindingGroupLayout.get();
 
-    m_bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+    m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
 }
 
-void InstancingSample::createRenderPipeline()
+void InstancingSample::createNonInstancingRenderPipeline()
 {
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_bindingGroupLayout.get() };
+        descriptor.layouts = { m_nonInstancing.bindingGroupLayout.get() };
 
-        m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
+        m_nonInstancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
 
     // input assembly stage
@@ -430,10 +438,14 @@ void InstancingSample::createRenderPipeline()
         VertexAttribute positionAttribute{};
         positionAttribute.format = VertexFormat::kSFLOATx3;
         positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
+        positionAttribute.slot = 0;
 
         VertexAttribute colorAttribute{};
         colorAttribute.format = VertexFormat::kSFLOATx3;
         colorAttribute.offset = offsetof(Vertex, color);
+        colorAttribute.location = 1;
+        colorAttribute.slot = 0;
 
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
@@ -483,9 +495,9 @@ void InstancingSample::createRenderPipeline()
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterizationStage;
     descriptor.fragment = fragmentStage;
-    descriptor.layout = m_renderPipelineLayout.get();
+    descriptor.layout = m_nonInstancing.renderPipelineLayout.get();
 
-    m_renderPipeline = m_device->createRenderPipeline(descriptor);
+    m_nonInstancing.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 void InstancingSample::createCamera()
