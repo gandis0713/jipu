@@ -20,6 +20,6 @@ ubo;
 
 void main()
 {
-    gl_Position = vec4(inPosition, 1.0);
+    gl_Position = ubo.mvp.proj * ubo.mvp.view * ubo.mvp.model * vec4(inPosition, 1.0);
     outColor = inColor;
 }

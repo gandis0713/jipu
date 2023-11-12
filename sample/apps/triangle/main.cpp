@@ -54,6 +54,8 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
+    void createBindingGroupLayout();
+    void createBindingGroup();
     void createRenderPipeline();
 
 private:
@@ -67,6 +69,9 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
     struct MVP
@@ -90,9 +95,9 @@ private:
     std::vector<uint16_t> m_indices{ 0, 1, 2 };
     std::vector<Vertex>
         m_vertices{
-            { { 0.0, -0.5, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0 } },
-            { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
+            { { 0.0, -100, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { -100, 100, 0.0 }, { 0.0, 1.0, 0.0 } },
+            { { 100, 100, 0.0 }, { 0.0, 0.0, 1.0 } },
         };
 
     uint32_t m_sampleCount = 1;
@@ -109,6 +114,9 @@ TriangleSample::~TriangleSample()
     clearImGui();
 
     m_renderPipeline.reset();
+    m_renderPipelineLayout.reset();
+    m_bindingGroup.reset();
+    m_bindingGroupLayout.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
@@ -136,6 +144,8 @@ void TriangleSample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
+    createBindingGroupLayout();
+    createBindingGroup();
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -150,7 +160,13 @@ void TriangleSample::createCamera()
                                                    0.1f,
                                                    1000.0f);
 
-    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, -1.0f, 0.0));
+    // auto halfWidth = m_swapchain->getWidth() / 2.0f;
+    // auto halfHeight = m_swapchain->getHeight() / 2.0f;
+    // m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
+    //                                                 -halfHeight, halfHeight,
+    //                                                 -1000, 1000);
+
+    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0));
 }
 
 void TriangleSample::updateUniformBuffer()
@@ -192,6 +208,7 @@ void TriangleSample::draw()
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -327,14 +344,42 @@ void TriangleSample::createUniformBuffer()
     // m_uniformBuffer->unmap();
 }
 
+void TriangleSample::createBindingGroupLayout()
+{
+    BufferBindingLayout bufferLayout{};
+    bufferLayout.index = 0;
+    bufferLayout.stages = BindingStageFlagBits::kVertexStage;
+    bufferLayout.type = BufferBindingType::kUniform;
+
+    BindingGroupLayoutDescriptor descriptor{};
+    descriptor.buffers = { bufferLayout };
+
+    m_bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+}
+
+void TriangleSample::createBindingGroup()
+{
+    BufferBinding bufferBinding{};
+    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.index = 0;
+    bufferBinding.offset = 0;
+    bufferBinding.size = m_uniformBuffer->getSize();
+
+    BindingGroupDescriptor descriptor{};
+    descriptor.layout = { m_bindingGroupLayout.get() };
+    descriptor.buffers = { bufferBinding };
+
+    m_bindingGroup = m_device->createBindingGroup(descriptor);
+}
+
 void TriangleSample::createRenderPipeline()
 {
     // render pipeline layout
-    std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
     {
         PipelineLayoutDescriptor descriptor{};
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
-        renderPipelineLayout = m_device->createPipelineLayout(descriptor);
+        m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
 
     // input assembly stage
@@ -413,7 +458,7 @@ void TriangleSample::createRenderPipeline()
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterizationStage;
     descriptor.fragment = fragmentStage;
-    descriptor.layout = renderPipelineLayout.get();
+    descriptor.layout = m_renderPipelineLayout.get();
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
