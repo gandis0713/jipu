@@ -407,7 +407,7 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
-        renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
@@ -440,7 +440,7 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_composition.pipeline.get());
-        renderPassEncoder->setVertexBuffer(m_composition.vertexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
         renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -1235,8 +1235,10 @@ void DeferredSample::createCompositionUniformBuffer()
             auto r = rDist(gen);
             auto g = gDist(gen);
             auto b = bDist(gen);
-            spdlog::debug("xDir: {}, yDir: {}, zDir: {}, x: {}, y: {}, z: {}", xDir, yDir, zDir, x, y, z);
-            spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+
+            // spdlog::trace("xDir: {}, yDir: {}, zDir: {}, x: {}, y: {}, z: {}", xDir, yDir, zDir, x, y, z);
+            // spdlog::trace("r: {}, g: {}, b: {}", r, g, b);
+
             CompositionUBO::Light light{ { xDir * x, yDir * y, zDir * z },
                                          { r, g, b } };
             m_composition.ubo.lights.push_back(light);

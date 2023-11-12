@@ -81,7 +81,7 @@ public:
     virtual void setPipeline(Pipeline* pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
-    virtual void setVertexBuffer(Buffer* buffer) = 0;
+    virtual void setVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
     virtual void setIndexBuffer(Buffer* buffer, IndexFormat format) = 0;
 
     virtual void setViewport(float x,

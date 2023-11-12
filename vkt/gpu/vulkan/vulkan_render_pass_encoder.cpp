@@ -167,7 +167,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bind
                                 nullptr);
 }
 
-void VulkanRenderPassEncoder::setVertexBuffer(Buffer* buffer)
+void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer* buffer)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -175,7 +175,7 @@ void VulkanRenderPassEncoder::setVertexBuffer(Buffer* buffer)
     auto vulkanBuffer = downcast(buffer);
     VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
     VkDeviceSize offsets[] = { 0 };
-    vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, vertexBuffers, offsets);
+    vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), slot, 1, vertexBuffers, offsets);
 }
 
 void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer, IndexFormat format)

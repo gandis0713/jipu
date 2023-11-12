@@ -209,7 +209,7 @@ void TriangleSample::draw()
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
