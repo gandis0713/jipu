@@ -35,6 +35,8 @@ target_link_libraries(instancing
 set(SHADERS
     instancing.vert
     instancing.frag
+    non_instancing.vert
+    non_instancing.frag
 )
 
 if(CMAKE_GENERATOR STREQUAL "Ninja")
