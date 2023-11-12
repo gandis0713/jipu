@@ -126,8 +126,7 @@ private:
     {
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
-        std::unique_ptr<Buffer> mvpUniformBuffer = nullptr;
-        std::unique_ptr<Buffer> instancingUniformBuffer = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         struct UBO
@@ -191,8 +190,7 @@ InstancingSample::~InstancingSample()
 
     m_nonInstancing.renderPipeline.reset();
     m_nonInstancing.renderPipelineLayout.reset();
-    m_nonInstancing.mvpUniformBuffer.reset();
-    m_nonInstancing.instancingUniformBuffer.reset();
+    m_nonInstancing.uniformBuffer.reset();
     m_nonInstancing.bindingGroup.reset();
     m_nonInstancing.bindingGroupLayout.reset();
 
@@ -253,6 +251,8 @@ void InstancingSample::updateUniformBuffer()
     ubo.orientation = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
     void* pointer = m_instancing.uniformBuffer->map();
+    memcpy(pointer, &ubo, sizeof(UBO));
+    pointer = m_nonInstancing.uniformBuffer->map();
     memcpy(pointer, &ubo, sizeof(UBO));
 }
 
@@ -318,10 +318,10 @@ void InstancingSample::draw()
 
             for (auto i = 0; i < m_imguiSettings.instancingCount; ++i)
             {
-                m_nonInstancing.ubo.instacing.shift = glm::vec3(static_cast<float>(-i), static_cast<float>(-i), 0.0f);
-                auto* bufferRef = m_nonInstancing.instancingUniformBuffer.get();
-                void* pointer = bufferRef->map();
-                memcpy(pointer, &m_nonInstancing.ubo.instacing.shift, bufferRef->getSize());
+                // m_nonInstancing.ubo.instacing.shift = glm::vec3(static_cast<float>(-i), static_cast<float>(-i), 0.0f);
+                // auto* bufferRef = m_nonInstancing.instancingUniformBuffer.get();
+                // void* pointer = bufferRef->map();
+                // memcpy(pointer, &m_nonInstancing.ubo.instacing.shift, bufferRef->getSize());
                 // do not unmap.
 
                 renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
@@ -678,20 +678,14 @@ void InstancingSample::createNonInstancingBindingGroupLayout()
 
 void InstancingSample::createNonInstancingBindingGroup()
 {
-    BufferBinding mvpBufferBinding{};
-    mvpBufferBinding.index = 0;
-    mvpBufferBinding.buffer = m_nonInstancing.mvpUniformBuffer.get();
-    mvpBufferBinding.offset = 0;
-    mvpBufferBinding.size = m_nonInstancing.mvpUniformBuffer->getSize();
-
-    BufferBinding instancingBufferBinding{};
-    instancingBufferBinding.index = 1;
-    instancingBufferBinding.buffer = m_nonInstancing.instancingUniformBuffer.get();
-    instancingBufferBinding.offset = 0;
-    instancingBufferBinding.size = m_nonInstancing.instancingUniformBuffer->getSize();
+    BufferBinding bufferBinding{};
+    bufferBinding.index = 0;
+    bufferBinding.buffer = m_nonInstancing.uniformBuffer.get();
+    bufferBinding.offset = 0;
+    bufferBinding.size = m_nonInstancing.uniformBuffer->getSize();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { mvpBufferBinding, instancingBufferBinding };
+    bindingGroupDescriptor.buffers = { bufferBinding };
     bindingGroupDescriptor.layout = m_nonInstancing.bindingGroupLayout.get();
 
     m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -709,23 +703,12 @@ void InstancingSample::createNonInstancingUniformBuffer()
 
     {
         BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(MVP);
+        bufferDescriptor.size = sizeof(UBO);
         bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
 
-        m_nonInstancing.mvpUniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_nonInstancing.mvpUniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(MVP));
-        // m_uniformBuffer->unmap();
-    }
-
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(Instancing);
-        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
-
-        m_nonInstancing.instancingUniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_nonInstancing.instancingUniformBuffer->map();
-        memcpy(mappedPointer, &m_nonInstancing.ubo.instacing, sizeof(Instancing));
+        m_nonInstancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_nonInstancing.uniformBuffer->map();
+        memcpy(mappedPointer, &m_mvp, sizeof(UBO));
         // m_uniformBuffer->unmap();
     }
 }

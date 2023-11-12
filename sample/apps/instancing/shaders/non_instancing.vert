@@ -5,22 +5,23 @@ layout(location = 1) in vec3 inColor;
 
 layout(location = 0) out vec3 outColor;
 
-layout(binding = 0) uniform MVP
+struct MVP
 {
     mat4 model;
     mat4 view;
     mat4 proj;
-}
-mvp;
+};
 
-layout(binding = 1) uniform Instancing
+layout(binding = 0) uniform UBO
 {
-    vec3 shift;
+    MVP mvp;
+    mat4 orientation;
 }
-instancing;
+ubo;
 
 void main()
 {
-    gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition + instancing.shift, 1.0);
+    vec4 position = ubo.orientation * vec4(inPosition, 1.0f);
+    gl_Position = ubo.mvp.proj * ubo.mvp.view * ubo.mvp.model * vec4(position.xyz, 1.0);
     outColor = inColor;
 }
