@@ -111,7 +111,7 @@ void VulkanRenderPipeline::initialize()
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = static_cast<uint32_t>(bindingIndex);
         bindingDescription.stride = static_cast<uint32_t>(m_descriptor.vertex.layouts[bindingIndex].stride);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindingDescription.inputRate = ToVkVertexInputRate(m_descriptor.vertex.layouts[bindingIndex].mode);
         bindingDescriptions.push_back(bindingDescription);
     }
 
@@ -453,6 +453,24 @@ VkBlendFactor ToVkBlendFactor(BlendFactor factor)
     }
 
     return blendFactor;
+}
+
+VkVertexInputRate ToVkVertexInputRate(VertexMode mode)
+{
+    VkVertexInputRate inputRate;
+
+    switch (mode)
+    {
+    case VertexMode::kVertex:
+    default:
+        inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        break;
+    case VertexMode::kInstance:
+        inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+        break;
+    }
+
+    return inputRate;
 }
 
 } // namespace vkt
