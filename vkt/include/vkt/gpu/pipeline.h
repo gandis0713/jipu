@@ -88,6 +88,8 @@ struct VertexAttribute
 {
     VertexFormat format = VertexFormat::kUndefined;
     uint64_t offset = 0u;
+    uint32_t location = 0u;
+    uint32_t slot = 0u;
 };
 
 struct VertexInputLayout

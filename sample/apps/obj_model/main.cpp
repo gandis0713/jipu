@@ -584,11 +584,13 @@ void OBJModelSample::createRenderPipeline()
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Vertex, pos) };
+                                        .offset = offsetof(Vertex, pos),
+                                        .location = 0 };
 
                 // texture coodinate
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
-                                        .offset = offsetof(Vertex, texCoord) };
+                                        .offset = offsetof(Vertex, texCoord),
+                                        .location = 1 };
             }
 
             VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,

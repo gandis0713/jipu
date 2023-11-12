@@ -253,14 +253,17 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
                 VertexAttribute positionAttribute{};
                 positionAttribute.format = VertexFormat::kSFLOATx2;
                 positionAttribute.offset = offsetof(ImDrawVert, pos);
+                positionAttribute.location = 0;
 
                 VertexAttribute uiAttribute{};
                 uiAttribute.format = VertexFormat::kSFLOATx2;
                 uiAttribute.offset = offsetof(ImDrawVert, uv);
+                uiAttribute.location = 1;
 
                 VertexAttribute colorAttribute{};
                 colorAttribute.format = VertexFormat::kUNORM8x4;
                 colorAttribute.offset = offsetof(ImDrawVert, col);
+                colorAttribute.location = 2;
 
                 vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
                 vertexInputLayout.mode = VertexMode::kVertex;

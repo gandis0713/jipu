@@ -563,11 +563,13 @@ void ParticleSample::createRenderPipeline()
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Particle, position) };
+                                        .offset = offsetof(Particle, position),
+                                        .location = 0 };
 
                 // texture coodinate
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
-                                        .offset = offsetof(Particle, color) };
+                                        .offset = offsetof(Particle, color),
+                                        .location = 1 };
             }
 
             VertexInputLayout vertexInputLayout{};

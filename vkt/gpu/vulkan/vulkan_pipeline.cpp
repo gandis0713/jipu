@@ -100,8 +100,8 @@ void VulkanRenderPipeline::initialize()
         for (uint64_t attrIndex = 0; attrIndex < attributes.size(); ++attrIndex)
         {
             VkVertexInputAttributeDescription attributeDescription{};
-            attributeDescription.binding = static_cast<uint32_t>(bindingIndex);
-            attributeDescription.location = static_cast<uint32_t>(attrIndex);
+            attributeDescription.binding = attributes[attrIndex].slot;
+            attributeDescription.location = attributes[attrIndex].location;
             attributeDescription.format = ToVkVertexFormat(attributes[attrIndex].format);
             attributeDescription.offset = static_cast<uint32_t>(attributes[attrIndex].offset);
 
