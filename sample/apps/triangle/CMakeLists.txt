@@ -63,6 +63,7 @@ if(EXISTS ${GLSLC_EXE})
 
         foreach(SHADER ${SHADERS})
             run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+            run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_SRC})
         endforeach(SHADER)
     endif()
 endif()
