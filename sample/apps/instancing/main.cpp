@@ -170,7 +170,7 @@ private:
     {
         bool useInstancing = true;
         int instancingCount = 100;
-        int instancingCountMax = 10000;
+        int instancingCountMax = 100000;
     } m_imguiSettings;
 };
 
