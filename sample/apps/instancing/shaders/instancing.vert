@@ -6,16 +6,24 @@ layout(location = 2) in vec3 inShift;    // binding index = 1
 
 layout(location = 0) out vec3 outColor;
 
-layout(binding = 0) uniform MVP
+struct MVP
 {
     mat4 model;
     mat4 view;
     mat4 proj;
+};
+
+layout(binding = 0) uniform UBO
+{
+    MVP mvp;
+    mat4 orientation;
 }
-mvp;
+ubo;
 
 void main()
 {
-    gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition + inShift, 1.0);
+    vec4 position = ubo.orientation * vec4(inPosition, 1.0);
+
+    gl_Position = ubo.mvp.proj * ubo.mvp.view * ubo.mvp.model * vec4(position.xyz + inShift, 1.0);
     outColor = inColor;
 }

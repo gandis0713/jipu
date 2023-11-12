@@ -83,6 +83,12 @@ private:
         glm::mat4 proj;
     };
 
+    struct UBO
+    {
+        MVP mvp;
+        glm::mat4 orientation;
+    };
+
     struct Instancing
     {
         glm::vec3 shift;
@@ -134,7 +140,7 @@ private:
     {
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
-        std::unique_ptr<Buffer> mvpUniformBuffer = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_instancing;
@@ -179,7 +185,7 @@ InstancingSample::~InstancingSample()
 
     m_instancing.renderPipeline.reset();
     m_instancing.renderPipelineLayout.reset();
-    m_instancing.mvpUniformBuffer.reset();
+    m_instancing.uniformBuffer.reset();
     m_instancing.bindingGroup.reset();
     m_instancing.bindingGroupLayout.reset();
 
@@ -240,13 +246,14 @@ void InstancingSample::updateUniformBuffer()
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    MVP mvp{};
-    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.view = m_camera->getViewMat();
-    mvp.proj = m_camera->getProjectionMat();
+    UBO ubo{};
+    ubo.mvp.model = glm::mat4(1.0f);
+    ubo.mvp.view = m_camera->getViewMat();
+    ubo.mvp.proj = m_camera->getProjectionMat();
+    ubo.orientation = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 
-    void* pointer = m_instancing.mvpUniformBuffer->map();
-    // memcpy(pointer, &mvp, sizeof(MVP));
+    void* pointer = m_instancing.uniformBuffer->map();
+    memcpy(pointer, &ubo, sizeof(UBO));
 }
 
 void InstancingSample::update()
@@ -497,8 +504,13 @@ void InstancingSample::createInstancingBindingGroupLayout()
     mvpBufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
     mvpBufferBindingLayout.type = BufferBindingType::kUniform;
 
+    BufferBindingLayout instancingBufferBindingLayout{};
+    instancingBufferBindingLayout.index = 1;
+    instancingBufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+    instancingBufferBindingLayout.type = BufferBindingType::kUniform;
+
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout };
+    bindingGroupLayoutDescriptor.buffers = { mvpBufferBindingLayout, instancingBufferBindingLayout };
 
     m_instancing.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -507,9 +519,9 @@ void InstancingSample::createInstancingBindingGroup()
 {
     BufferBinding mvpBufferBinding{};
     mvpBufferBinding.index = 0;
-    mvpBufferBinding.buffer = m_instancing.mvpUniformBuffer.get();
+    mvpBufferBinding.buffer = m_instancing.uniformBuffer.get();
     mvpBufferBinding.offset = 0;
-    mvpBufferBinding.size = m_instancing.mvpUniformBuffer->getSize();
+    mvpBufferBinding.size = m_instancing.uniformBuffer->getSize();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { mvpBufferBinding };
@@ -530,12 +542,12 @@ void InstancingSample::createInstancingUniformBuffer()
 
     {
         BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(MVP);
+        bufferDescriptor.size = sizeof(UBO);
         bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
 
-        m_instancing.mvpUniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_instancing.mvpUniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(MVP));
+        m_instancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_instancing.uniformBuffer->map();
+        memcpy(mappedPointer, &m_mvp, sizeof(UBO));
         // m_uniformBuffer->unmap();
     }
 }
