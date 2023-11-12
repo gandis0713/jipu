@@ -178,13 +178,13 @@ void VulkanRenderPassEncoder::setVertexBuffer(Buffer* buffer)
     vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, vertexBuffers, offsets);
 }
 
-void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer)
+void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer, IndexFormat format)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     auto vulkanBuffer = downcast(buffer);
-    vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
+    vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, ToVkIndexType(format));
 }
 
 void VulkanRenderPassEncoder::setViewport(float x,
@@ -253,6 +253,24 @@ void VulkanRenderPassEncoder::end()
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     vulkanCommandBuffer->setSignalPipelineStage(flags);
+}
+
+// Convert Helper
+VkIndexType ToVkIndexType(IndexFormat format)
+{
+    VkIndexType type = VK_INDEX_TYPE_UINT16;
+    switch (format)
+    {
+    case IndexFormat::kUint16:
+    default:
+        type = VK_INDEX_TYPE_UINT16;
+        break;
+    case IndexFormat::kUint32:
+        type = VK_INDEX_TYPE_UINT32;
+        break;
+    }
+
+    return type;
 }
 
 } // namespace vkt

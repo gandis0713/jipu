@@ -65,6 +65,12 @@ struct RenderPassEncoderDescriptor
     uint32_t sampleCount = 0;
 };
 
+enum IndexFormat
+{
+    kUint16 = 0,
+    kUint32,
+};
+
 class VKT_EXPORT RenderPassEncoder
 {
 public:
@@ -76,7 +82,7 @@ public:
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) = 0;
 
     virtual void setVertexBuffer(Buffer* buffer) = 0;
-    virtual void setIndexBuffer(Buffer* buffer) = 0;
+    virtual void setIndexBuffer(Buffer* buffer, IndexFormat format) = 0;
 
     virtual void setViewport(float x,
                              float y,

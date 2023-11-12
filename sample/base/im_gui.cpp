@@ -444,7 +444,7 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
         renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;

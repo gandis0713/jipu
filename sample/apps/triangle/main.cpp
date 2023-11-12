@@ -45,6 +45,7 @@ private:
     void createCommandBuffer();
     void createQueue();
     void createVertexBuffer();
+    void createIndexBuffer();
     void createRenderPipeline();
 
 private:
@@ -56,6 +57,7 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
@@ -65,11 +67,13 @@ private:
         glm::vec3 color;
     };
 
-    std::vector<Vertex> m_vertices{
-        { { 0.0, -0.5, 0.0 }, { 1.0, 0.0, 0.0 } },
-        { { -0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0 } },
-        { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
-    };
+    std::vector<uint16_t> m_indices{ 0, 1, 2 };
+    std::vector<Vertex>
+        m_vertices{
+            { { 0.0, -0.5, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { -0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0 } },
+            { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
+        };
 
     uint32_t m_sampleCount = 1;
 };
@@ -85,6 +89,7 @@ TriangleSample::~TriangleSample()
 
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
+    m_indexBuffer.reset();
     m_queue.reset();
     m_commandBuffer.reset();
     m_swapchain.reset();
@@ -104,6 +109,7 @@ void TriangleSample::init()
     createCommandBuffer();
     createQueue();
     createVertexBuffer();
+    createIndexBuffer();
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -139,9 +145,10 @@ void TriangleSample::draw()
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
         drawImGui(commadEncoder.get(), renderView);
@@ -244,6 +251,19 @@ void TriangleSample::createVertexBuffer()
     void* pointer = m_vertexBuffer->map();
     memcpy(pointer, m_vertices.data(), descriptor.size);
     m_vertexBuffer->unmap();
+}
+
+void TriangleSample::createIndexBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = m_indices.size() * sizeof(uint16_t);
+    descriptor.usage = BufferUsageFlagBits::kIndex;
+
+    m_indexBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_indexBuffer->map();
+    memcpy(pointer, m_indices.data(), descriptor.size);
+    m_indexBuffer->unmap();
 }
 
 void TriangleSample::createRenderPipeline()

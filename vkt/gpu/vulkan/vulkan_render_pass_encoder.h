@@ -17,7 +17,7 @@ public:
     void setPipeline(Pipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup) override;
     void setVertexBuffer(Buffer* buffer) override;
-    void setIndexBuffer(Buffer* buffer) override;
+    void setIndexBuffer(Buffer* buffer, IndexFormat format) override;
     void setViewport(float x,
                      float y,
                      float width,
@@ -38,5 +38,8 @@ public:
 
     void end() override;
 };
+
+// Convert Helper
+VkIndexType ToVkIndexType(IndexFormat format);
 
 } // namespace vkt

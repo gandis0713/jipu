@@ -304,7 +304,7 @@ void OBJModelSample::draw()
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
-    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
