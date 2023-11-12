@@ -1,7 +1,8 @@
 #version 450
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
+layout(location = 0) in vec3 inPosition; // binding index = 0
+layout(location = 1) in vec3 inColor;    // binding index = 0
+layout(location = 2) in vec3 inShift;    // binding index = 1
 
 layout(location = 0) out vec3 outColor;
 
@@ -15,6 +16,6 @@ mvp;
 
 void main()
 {
-    gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition, 1.0);
+    gl_Position = mvp.proj * mvp.view * mvp.model * vec4(inPosition + inShift, 1.0);
     outColor = inColor;
 }
