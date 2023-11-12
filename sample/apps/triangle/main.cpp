@@ -1,5 +1,6 @@
 
 
+#include "camera.h"
 #include "file.h"
 #include "im_gui.h"
 #include "sample.h"
@@ -16,6 +17,7 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
@@ -37,6 +39,11 @@ private:
     void updateImGui() override;
 
 private:
+    void createCamera();
+
+    void updateUniformBuffer();
+
+private:
     void createDevier();
     void createPhysicalDevice();
     void createSurface();
@@ -46,6 +53,7 @@ private:
     void createQueue();
     void createVertexBuffer();
     void createIndexBuffer();
+    void createUniformBuffer();
     void createRenderPipeline();
 
 private:
@@ -58,8 +66,20 @@ private:
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
-
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    struct MVP
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
+    struct UBO
+    {
+        MVP mvp;
+    } m_ubo;
 
     struct Vertex
     {
@@ -76,6 +96,7 @@ private:
         };
 
     uint32_t m_sampleCount = 1;
+    std::unique_ptr<Camera> m_camera = nullptr;
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -90,6 +111,7 @@ TriangleSample::~TriangleSample()
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
+    m_uniformBuffer.reset();
     m_queue.reset();
     m_commandBuffer.reset();
     m_swapchain.reset();
@@ -108,8 +130,12 @@ void TriangleSample::init()
     createSwapchain();
     createCommandBuffer();
     createQueue();
+
+    createCamera(); // need size and aspect ratio from swapchain.
+
     createVertexBuffer();
     createIndexBuffer();
+    createUniformBuffer();
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -117,8 +143,30 @@ void TriangleSample::init()
     m_initialized = true;
 }
 
+void TriangleSample::createCamera()
+{
+    m_camera = std::make_unique<PerspectiveCamera>(45.0f,
+                                                   m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
+                                                   0.1f,
+                                                   1000.0f);
+
+    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, -1.0f, 0.0));
+}
+
+void TriangleSample::updateUniformBuffer()
+{
+    m_ubo.mvp.model = glm::mat4(1.0f);
+    m_ubo.mvp.view = m_camera->getViewMat();
+    m_ubo.mvp.proj = m_camera->getProjectionMat();
+
+    void* pointer = m_uniformBuffer->map(); // do not unmap.
+    memcpy(pointer, &m_ubo, m_uniformBuffer->getSize());
+}
+
 void TriangleSample::update()
 {
+    updateUniformBuffer();
+
     updateImGui();
     buildImGui();
 }
@@ -264,6 +312,19 @@ void TriangleSample::createIndexBuffer()
     void* pointer = m_indexBuffer->map();
     memcpy(pointer, m_indices.data(), descriptor.size);
     m_indexBuffer->unmap();
+}
+
+void TriangleSample::createUniformBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = sizeof(UBO);
+    descriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_uniformBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_uniformBuffer->map();
+    // memcpy(pointer, &m_ubo, descriptor.size);
+    // m_uniformBuffer->unmap();
 }
 
 void TriangleSample::createRenderPipeline()
