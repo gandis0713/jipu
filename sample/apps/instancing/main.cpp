@@ -169,8 +169,8 @@ private:
     struct
     {
         bool useInstancing = true;
-        int instancingCount = 10;
-        int instancingCountMax = 100;
+        int instancingCount = 100;
+        int instancingCountMax = 10000;
     } m_imguiSettings;
 };
 
