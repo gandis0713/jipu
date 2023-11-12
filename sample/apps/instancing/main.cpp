@@ -20,6 +20,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <random>
 #include <spdlog/spdlog.h>
 
 static const uint32_t VERTEX_SLOT = 0;
@@ -162,10 +163,8 @@ private:
     struct
     {
         bool useInstancing = true;
-        int instancingWidth = 3;
-        int instancingHeight = 3;
-        int instancingWidthMax = 1000;
-        int instancingHeightMax = 1000;
+        int instancingCount = 100;
+        int instancingCountMax = 10000;
     } m_imguiSettings;
 };
 
@@ -275,9 +274,7 @@ void InstancingSample::draw()
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-
-            auto instancingCount = m_imguiSettings.instancingWidth * m_imguiSettings.instancingHeight;
-            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(instancingCount), 0, 0, 0);
+            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.instancingCount), 0, 0, 0);
             renderPassEncoder->end();
         }
         else
@@ -293,26 +290,23 @@ void InstancingSample::draw()
             renderPassDescriptor.sampleCount = m_sampleCount;
             renderPassDescriptor.colorAttachments = { attachment };
 
-            for (auto i = 0; i < m_imguiSettings.instancingWidth; ++i)
+            for (auto i = 0; i < m_imguiSettings.instancingCount; ++i)
             {
-                for (auto j = 0; j < m_imguiSettings.instancingHeight; ++j)
-                {
-                    m_nonInstancing.ubo.instacing.shift = glm::vec3(static_cast<float>(-i * 10), static_cast<float>(-j * 10), 0.0f);
-                    auto* bufferRef = m_nonInstancing.instancingUniformBuffer.get();
-                    void* pointer = bufferRef->map();
-                    memcpy(pointer, &m_nonInstancing.ubo.instacing.shift, bufferRef->getSize());
-                    // do not unmap.
+                m_nonInstancing.ubo.instacing.shift = glm::vec3(static_cast<float>(-i * 10), static_cast<float>(-i * 10), 0.0f);
+                auto* bufferRef = m_nonInstancing.instancingUniformBuffer.get();
+                void* pointer = bufferRef->map();
+                memcpy(pointer, &m_nonInstancing.ubo.instacing.shift, bufferRef->getSize());
+                // do not unmap.
 
-                    auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-                    renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
-                    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-                    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
-                    renderPassEncoder->setScissor(0, 0, m_width, m_height);
-                    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-                    renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
-                    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-                    renderPassEncoder->end();
-                }
+                auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+                renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+                renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+                renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+                renderPassEncoder->setScissor(0, 0, m_width, m_height);
+                renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+                renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
+                renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+                renderPassEncoder->end();
             }
         }
 
@@ -346,8 +340,7 @@ void InstancingSample::updateImGui()
     {
         ImGui::Begin("Settings");
         ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
-        ImGui::SliderInt("Instancing Width", &m_imguiSettings.instancingWidth, 1, m_imguiSettings.instancingWidthMax);
-        ImGui::SliderInt("Instancing Height", &m_imguiSettings.instancingHeight, 1, m_imguiSettings.instancingHeightMax);
+        ImGui::SliderInt("Instancing Count", &m_imguiSettings.instancingCount, 1, m_imguiSettings.instancingCountMax);
         ImGui::End();
     }
 
@@ -438,14 +431,24 @@ void InstancingSample::createInstancingBuffer()
 {
     // create instancing data.
     {
-        for (auto i = 0; i < m_imguiSettings.instancingWidthMax; ++i)
+        auto halfWidth = m_swapchain->getWidth() / 2;
+        auto halfHeight = m_swapchain->getHeight() / 2;
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> xShiftDist(-halfWidth, halfWidth);
+        std::uniform_int_distribution<> yShiftDist(-halfHeight, halfHeight);
+
+        for (int i = 0; i < m_imguiSettings.instancingCountMax; i++)
         {
-            for (auto j = 0; j < m_imguiSettings.instancingHeightMax; ++j)
-            {
-                Instancing instancing;
-                instancing.shift = glm::vec3(static_cast<float>(-i * 10), static_cast<float>(-j * 10), 0.0f);
-                m_instancings.push_back(instancing);
-            }
+            auto xShift = xShiftDist(gen);
+            auto yShift = yShiftDist(gen);
+
+            // spdlog::trace("xShift: {}, yShift: {}", xShift, yShift);
+
+            Instancing instancing;
+            instancing.shift = glm::vec3(static_cast<float>(xShift), static_cast<float>(yShift), 0.0f);
+            m_instancings.push_back(instancing);
         }
     }
 
