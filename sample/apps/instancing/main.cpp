@@ -91,7 +91,7 @@ private:
 
     struct Instancing
     {
-        glm::vec3 shift;
+        alignas(16) glm::vec3 shift;
     };
 
     struct Cube
@@ -127,6 +127,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<Buffer> instancingUniformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         struct UBO
@@ -168,8 +169,8 @@ private:
     struct
     {
         bool useInstancing = true;
-        int instancingCount = 100;
-        int instancingCountMax = 100000;
+        int instancingCount = 10;
+        int instancingCountMax = 100;
     } m_imguiSettings;
 };
 
@@ -190,6 +191,7 @@ InstancingSample::~InstancingSample()
 
     m_nonInstancing.renderPipeline.reset();
     m_nonInstancing.renderPipelineLayout.reset();
+    m_nonInstancing.instancingUniformBuffer.reset();
     m_nonInstancing.uniformBuffer.reset();
     m_nonInstancing.bindingGroup.reset();
     m_nonInstancing.bindingGroupLayout.reset();
@@ -315,19 +317,15 @@ void InstancingSample::draw()
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-
             for (auto i = 0; i < m_imguiSettings.instancingCount; ++i)
             {
-                // m_nonInstancing.ubo.instacing.shift = glm::vec3(static_cast<float>(-i), static_cast<float>(-i), 0.0f);
-                // auto* bufferRef = m_nonInstancing.instancingUniformBuffer.get();
-                // void* pointer = bufferRef->map();
-                // memcpy(pointer, &m_nonInstancing.ubo.instacing.shift, bufferRef->getSize());
+                void* pointer = m_nonInstancing.instancingUniformBuffer->map();
+                memcpy(pointer, &m_instancings[i], m_nonInstancing.instancingUniformBuffer->getSize());
                 // do not unmap.
 
                 renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
                 renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
             }
-
             renderPassEncoder->end();
         }
 
@@ -684,8 +682,14 @@ void InstancingSample::createNonInstancingBindingGroup()
     bufferBinding.offset = 0;
     bufferBinding.size = m_nonInstancing.uniformBuffer->getSize();
 
+    BufferBinding instancingBufferBinding{};
+    instancingBufferBinding.index = 1;
+    instancingBufferBinding.buffer = m_nonInstancing.instancingUniformBuffer.get();
+    instancingBufferBinding.offset = 0;
+    instancingBufferBinding.size = m_nonInstancing.instancingUniformBuffer->getSize();
+
     BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { bufferBinding };
+    bindingGroupDescriptor.buffers = { bufferBinding, instancingBufferBinding };
     bindingGroupDescriptor.layout = m_nonInstancing.bindingGroupLayout.get();
 
     m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -709,6 +713,16 @@ void InstancingSample::createNonInstancingUniformBuffer()
         m_nonInstancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
         void* mappedPointer = m_nonInstancing.uniformBuffer->map();
         memcpy(mappedPointer, &m_mvp, sizeof(UBO));
+        // m_uniformBuffer->unmap();
+    }
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = sizeof(Instancing);
+        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+        m_nonInstancing.instancingUniformBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_nonInstancing.instancingUniformBuffer->map();
+        memcpy(mappedPointer, &m_mvp, sizeof(Instancing));
         // m_uniformBuffer->unmap();
     }
 }
