@@ -19,15 +19,15 @@ layout(binding = 0) uniform UBO
 }
 ubo;
 
-layout(binding = 1) uniform InstancingUBO
+layout(binding = 1) uniform Transform
 {
-    vec3 shift;
+    vec3 translation;
 }
-instancingUBO;
+transformUBO;
 
 void main()
 {
     vec4 position = ubo.orientation * vec4(inPosition, 1.0f);
-    gl_Position = ubo.mvp.proj * ubo.mvp.view * ubo.mvp.model * vec4(position.xyz + instancingUBO.shift, 1.0);
+    gl_Position = ubo.mvp.proj * ubo.mvp.view * ubo.mvp.model * vec4(position.xyz + transformUBO.translation, 1.0);
     outColor = inColor;
 }

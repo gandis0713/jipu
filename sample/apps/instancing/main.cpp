@@ -89,9 +89,9 @@ private:
         glm::mat4 orientation;
     };
 
-    struct Instancing
+    struct Transform
     {
-        alignas(16) glm::vec3 shift;
+        alignas(16) glm::vec3 translation;
     };
 
     struct Cube
@@ -119,7 +119,6 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_instancingBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
     struct
@@ -127,13 +126,9 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<Buffer> instancingUniformBuffer = nullptr;
+        std::unique_ptr<Buffer> transformUniformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-        struct UBO
-        {
-            Instancing instacing;
-        } ubo;
     } m_nonInstancing;
 
     struct
@@ -141,6 +136,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<Buffer> instancingBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_instancing;
@@ -161,7 +157,7 @@ private:
         4, 5, 0, // left
         0, 5, 1
     };
-    std::vector<Instancing> m_instancings{};
+    std::vector<Transform> m_instancings{};
 
     std::unique_ptr<Camera> m_camera = nullptr;
     uint32_t m_sampleCount = 1;
@@ -186,18 +182,18 @@ InstancingSample::~InstancingSample()
     m_instancing.renderPipeline.reset();
     m_instancing.renderPipelineLayout.reset();
     m_instancing.uniformBuffer.reset();
+    m_instancing.instancingBuffer.reset();
     m_instancing.bindingGroup.reset();
     m_instancing.bindingGroupLayout.reset();
 
     m_nonInstancing.renderPipeline.reset();
     m_nonInstancing.renderPipelineLayout.reset();
-    m_nonInstancing.instancingUniformBuffer.reset();
+    m_nonInstancing.transformUniformBuffer.reset();
     m_nonInstancing.uniformBuffer.reset();
     m_nonInstancing.bindingGroup.reset();
     m_nonInstancing.bindingGroupLayout.reset();
 
     m_indexBuffer.reset();
-    m_instancingBuffer.reset();
     m_vertexBuffer.reset();
     m_queue.reset();
     m_commandBuffer.reset();
@@ -292,7 +288,7 @@ void InstancingSample::draw()
             renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
             renderPassEncoder->setBindingGroup(0, m_instancing.bindingGroup.get());
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, m_vertexBuffer.get());
-            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancingBuffer.get());
+            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.instancingBuffer.get());
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
@@ -310,8 +306,8 @@ void InstancingSample::draw()
                 CommandEncoderDescriptor commandDescriptor{};
                 auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
-                void* pointer = m_nonInstancing.instancingUniformBuffer->map();
-                memcpy(pointer, &m_instancings[0], m_nonInstancing.instancingUniformBuffer->getSize());
+                void* pointer = m_nonInstancing.transformUniformBuffer->map();
+                memcpy(pointer, &m_instancings[0], m_nonInstancing.transformUniformBuffer->getSize());
 
                 ColorAttachment attachment{};
                 attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
@@ -345,8 +341,8 @@ void InstancingSample::draw()
                 CommandEncoderDescriptor commandDescriptor{};
                 auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
-                void* pointer = m_nonInstancing.instancingUniformBuffer->map();
-                memcpy(pointer, &m_instancings[i], m_nonInstancing.instancingUniformBuffer->getSize());
+                void* pointer = m_nonInstancing.transformUniformBuffer->map();
+                memcpy(pointer, &m_instancings[i], m_nonInstancing.transformUniformBuffer->getSize());
 
                 ColorAttachment attachment{};
                 attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
@@ -517,21 +513,21 @@ void InstancingSample::createInstancingBuffer()
 
             // spdlog::trace("xShift: {}, yShift: {}", xShift, yShift);
 
-            Instancing instancing;
-            instancing.shift = glm::vec3(static_cast<float>(xShift), static_cast<float>(yShift), 0.0f);
+            Transform instancing;
+            instancing.translation = glm::vec3(static_cast<float>(xShift), static_cast<float>(yShift), 0.0f);
             m_instancings.push_back(instancing);
         }
     }
 
     BufferDescriptor descriptor{};
-    descriptor.size = m_instancings.size() * sizeof(Instancing);
+    descriptor.size = m_instancings.size() * sizeof(Transform);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
-    m_instancingBuffer = m_device->createBuffer(descriptor);
+    m_instancing.instancingBuffer = m_device->createBuffer(descriptor);
 
-    void* pointer = m_instancingBuffer->map();
+    void* pointer = m_instancing.instancingBuffer->map();
     memcpy(pointer, m_instancings.data(), descriptor.size);
-    // m_vertexBuffer->unmap();
+    m_vertexBuffer->unmap();
 }
 
 void InstancingSample::createIndexBuffer()
@@ -651,13 +647,13 @@ void InstancingSample::createInstancingRenderPipeline()
 
         VertexAttribute shiftAttribute{};
         shiftAttribute.format = VertexFormat::kSFLOATx3;
-        shiftAttribute.offset = offsetof(Instancing, shift);
+        shiftAttribute.offset = offsetof(Transform, translation);
         shiftAttribute.location = 2;
         shiftAttribute.slot = INSTANCING_SLOT;
 
         VertexInputLayout instancingInputLayout{};
         instancingInputLayout.mode = VertexMode::kInstance;
-        instancingInputLayout.stride = sizeof(Instancing);
+        instancingInputLayout.stride = sizeof(Transform);
         instancingInputLayout.attributes = { shiftAttribute };
 
         vertexStage.entryPoint = "main";
@@ -736,9 +732,9 @@ void InstancingSample::createNonInstancingBindingGroup()
 
     BufferBinding instancingBufferBinding{};
     instancingBufferBinding.index = 1;
-    instancingBufferBinding.buffer = m_nonInstancing.instancingUniformBuffer.get();
+    instancingBufferBinding.buffer = m_nonInstancing.transformUniformBuffer.get();
     instancingBufferBinding.offset = 0;
-    instancingBufferBinding.size = m_nonInstancing.instancingUniformBuffer->getSize();
+    instancingBufferBinding.size = m_nonInstancing.transformUniformBuffer->getSize();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding, instancingBufferBinding };
@@ -769,12 +765,12 @@ void InstancingSample::createNonInstancingUniformBuffer()
     }
     {
         BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(Instancing);
+        bufferDescriptor.size = sizeof(Transform);
         bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
 
-        m_nonInstancing.instancingUniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_nonInstancing.instancingUniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(Instancing));
+        m_nonInstancing.transformUniformBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_nonInstancing.transformUniformBuffer->map();
+        memcpy(mappedPointer, &m_mvp, sizeof(Transform));
         // m_uniformBuffer->unmap();
     }
 }
