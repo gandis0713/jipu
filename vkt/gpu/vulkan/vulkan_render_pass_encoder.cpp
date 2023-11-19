@@ -148,7 +148,7 @@ void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline());
 }
 
-void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
+void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -163,8 +163,8 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bind
                                 0,
                                 1,
                                 &set,
-                                0,
-                                nullptr);
+                                static_cast<uint32_t>(dynamicOffset.size()),
+                                dynamicOffset.data());
 }
 
 void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer* buffer)

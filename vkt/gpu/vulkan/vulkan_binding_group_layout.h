@@ -23,7 +23,7 @@ private:
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
 // Convert Helper
-VkDescriptorType ToVkDescriptorType(BufferBindingType type);
+VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);
 BindingStageFlags ToBindingStageFlags(VkShaderStageFlags flags);

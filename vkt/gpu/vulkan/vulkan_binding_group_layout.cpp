@@ -21,7 +21,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     {
         const auto& buffer = descriptor.buffers[i];
         layoutBindings[i] = { .binding = buffer.index,
-                              .descriptorType = ToVkDescriptorType(buffer.type),
+                              .descriptorType = ToVkDescriptorType(buffer.type, buffer.dynamicOffset),
                               .descriptorCount = 1,
                               .stageFlags = ToVkShaderStageFlags(buffer.stages),
                               .pImmutableSamplers = nullptr };
@@ -70,14 +70,22 @@ VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const
 }
 
 // Convert Helper
-VkDescriptorType ToVkDescriptorType(BufferBindingType type)
+VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
 {
     switch (type)
     {
     case BufferBindingType::kUniform:
-        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    {
+        if (dynamicOffset)
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        else
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    }
     case BufferBindingType::kStorage:
-        return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        if (dynamicOffset)
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+        else
+            return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     default:
     case BufferBindingType::kUndefined:
         throw std::runtime_error(fmt::format("Failed to support type [{}] for VkDescriptorType.", static_cast<int32_t>(type)));
