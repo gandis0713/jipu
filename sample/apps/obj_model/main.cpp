@@ -303,8 +303,8 @@ void OBJModelSample::draw()
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-    renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
-    renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
@@ -584,11 +584,13 @@ void OBJModelSample::createRenderPipeline()
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Vertex, pos) };
+                                        .offset = offsetof(Vertex, pos),
+                                        .location = 0 };
 
                 // texture coodinate
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
-                                        .offset = offsetof(Vertex, texCoord) };
+                                        .offset = offsetof(Vertex, texCoord),
+                                        .location = 1 };
             }
 
             VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,

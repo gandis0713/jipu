@@ -1,5 +1,6 @@
 
 
+#include "camera.h"
 #include "file.h"
 #include "im_gui.h"
 #include "sample.h"
@@ -16,6 +17,7 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
@@ -37,6 +39,11 @@ private:
     void updateImGui() override;
 
 private:
+    void createCamera();
+
+    void updateUniformBuffer();
+
+private:
     void createDevier();
     void createPhysicalDevice();
     void createSurface();
@@ -45,6 +52,10 @@ private:
     void createCommandBuffer();
     void createQueue();
     void createVertexBuffer();
+    void createIndexBuffer();
+    void createUniformBuffer();
+    void createBindingGroupLayout();
+    void createBindingGroup();
     void createRenderPipeline();
 
 private:
@@ -56,8 +67,24 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-
+    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
+    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    struct MVP
+    {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
+    struct UBO
+    {
+        MVP mvp;
+    } m_ubo;
 
     struct Vertex
     {
@@ -65,13 +92,16 @@ private:
         glm::vec3 color;
     };
 
-    std::vector<Vertex> m_vertices{
-        { { 0.0, -0.5, 0.0 }, { 1.0, 0.0, 0.0 } },
-        { { -0.5, 0.5, 0.0 }, { 0.0, 1.0, 0.0 } },
-        { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
-    };
+    std::vector<uint16_t> m_indices{ 0, 1, 2 };
+    std::vector<Vertex>
+        m_vertices{
+            { { 0.0, -100, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { -100, 100, 0.0 }, { 0.0, 1.0, 0.0 } },
+            { { 100, 100, 0.0 }, { 0.0, 0.0, 1.0 } },
+        };
 
     uint32_t m_sampleCount = 1;
+    std::unique_ptr<Camera> m_camera = nullptr;
 };
 
 TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
@@ -84,7 +114,12 @@ TriangleSample::~TriangleSample()
     clearImGui();
 
     m_renderPipeline.reset();
+    m_renderPipelineLayout.reset();
+    m_bindingGroup.reset();
+    m_bindingGroupLayout.reset();
     m_vertexBuffer.reset();
+    m_indexBuffer.reset();
+    m_uniformBuffer.reset();
     m_queue.reset();
     m_commandBuffer.reset();
     m_swapchain.reset();
@@ -103,7 +138,14 @@ void TriangleSample::init()
     createSwapchain();
     createCommandBuffer();
     createQueue();
+
+    createCamera(); // need size and aspect ratio from swapchain.
+
     createVertexBuffer();
+    createIndexBuffer();
+    createUniformBuffer();
+    createBindingGroupLayout();
+    createBindingGroup();
     createRenderPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -111,8 +153,36 @@ void TriangleSample::init()
     m_initialized = true;
 }
 
+void TriangleSample::createCamera()
+{
+    m_camera = std::make_unique<PerspectiveCamera>(45.0f,
+                                                   m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
+                                                   0.1f,
+                                                   1000.0f);
+
+    // auto halfWidth = m_swapchain->getWidth() / 2.0f;
+    // auto halfHeight = m_swapchain->getHeight() / 2.0f;
+    // m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
+    //                                                 -halfHeight, halfHeight,
+    //                                                 -1000, 1000);
+
+    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0));
+}
+
+void TriangleSample::updateUniformBuffer()
+{
+    m_ubo.mvp.model = glm::mat4(1.0f);
+    m_ubo.mvp.view = m_camera->getViewMat();
+    m_ubo.mvp.proj = m_camera->getProjectionMat();
+
+    void* pointer = m_uniformBuffer->map(); // do not unmap.
+    memcpy(pointer, &m_ubo, m_uniformBuffer->getSize());
+}
+
 void TriangleSample::update()
 {
+    updateUniformBuffer();
+
     updateImGui();
     buildImGui();
 }
@@ -138,10 +208,12 @@ void TriangleSample::draw()
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
         drawImGui(commadEncoder.get(), renderView);
@@ -246,14 +318,68 @@ void TriangleSample::createVertexBuffer()
     m_vertexBuffer->unmap();
 }
 
+void TriangleSample::createIndexBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = m_indices.size() * sizeof(uint16_t);
+    descriptor.usage = BufferUsageFlagBits::kIndex;
+
+    m_indexBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_indexBuffer->map();
+    memcpy(pointer, m_indices.data(), descriptor.size);
+    m_indexBuffer->unmap();
+}
+
+void TriangleSample::createUniformBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = sizeof(UBO);
+    descriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_uniformBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_uniformBuffer->map();
+    // memcpy(pointer, &m_ubo, descriptor.size);
+    // m_uniformBuffer->unmap();
+}
+
+void TriangleSample::createBindingGroupLayout()
+{
+    BufferBindingLayout bufferLayout{};
+    bufferLayout.index = 0;
+    bufferLayout.stages = BindingStageFlagBits::kVertexStage;
+    bufferLayout.type = BufferBindingType::kUniform;
+
+    BindingGroupLayoutDescriptor descriptor{};
+    descriptor.buffers = { bufferLayout };
+
+    m_bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+}
+
+void TriangleSample::createBindingGroup()
+{
+    BufferBinding bufferBinding{};
+    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.index = 0;
+    bufferBinding.offset = 0;
+    bufferBinding.size = m_uniformBuffer->getSize();
+
+    BindingGroupDescriptor descriptor{};
+    descriptor.layout = { m_bindingGroupLayout.get() };
+    descriptor.buffers = { bufferBinding };
+
+    m_bindingGroup = m_device->createBindingGroup(descriptor);
+}
+
 void TriangleSample::createRenderPipeline()
 {
     // render pipeline layout
-    std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
     {
         PipelineLayoutDescriptor descriptor{};
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
-        renderPipelineLayout = m_device->createPipelineLayout(descriptor);
+        m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
 
     // input assembly stage
@@ -279,10 +405,12 @@ void TriangleSample::createRenderPipeline()
         VertexAttribute positionAttribute{};
         positionAttribute.format = VertexFormat::kSFLOATx3;
         positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
         VertexAttribute colorAttribute{};
         colorAttribute.format = VertexFormat::kSFLOATx3;
         colorAttribute.offset = offsetof(Vertex, color);
+        colorAttribute.location = 1;
 
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
@@ -332,7 +460,7 @@ void TriangleSample::createRenderPipeline()
     descriptor.vertex = vertexStage;
     descriptor.rasterization = rasterizationStage;
     descriptor.fragment = fragmentStage;
-    descriptor.layout = renderPipelineLayout.get();
+    descriptor.layout = m_renderPipelineLayout.get();
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }

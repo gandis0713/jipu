@@ -253,14 +253,17 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
                 VertexAttribute positionAttribute{};
                 positionAttribute.format = VertexFormat::kSFLOATx2;
                 positionAttribute.offset = offsetof(ImDrawVert, pos);
+                positionAttribute.location = 0;
 
                 VertexAttribute uiAttribute{};
                 uiAttribute.format = VertexFormat::kSFLOATx2;
                 uiAttribute.offset = offsetof(ImDrawVert, uv);
+                uiAttribute.location = 1;
 
                 VertexAttribute colorAttribute{};
                 colorAttribute.format = VertexFormat::kUNORM8x4;
                 colorAttribute.offset = offsetof(ImDrawVert, col);
+                colorAttribute.location = 2;
 
                 vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
                 vertexInputLayout.mode = VertexMode::kVertex;
@@ -443,8 +446,8 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
         renderPassEncoder->setPipeline(m_pipeline.get());
         renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
-        renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_indexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;

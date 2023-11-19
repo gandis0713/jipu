@@ -265,7 +265,7 @@ void ParticleSample::draw()
 
         std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(m_vertexBuffers[m_vertexIndex].get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
         renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
@@ -563,11 +563,13 @@ void ParticleSample::createRenderPipeline()
             {
                 // position
                 vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Particle, position) };
+                                        .offset = offsetof(Particle, position),
+                                        .location = 0 };
 
                 // texture coodinate
                 vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
-                                        .offset = offsetof(Particle, color) };
+                                        .offset = offsetof(Particle, color),
+                                        .location = 1 };
             }
 
             VertexInputLayout vertexInputLayout{};

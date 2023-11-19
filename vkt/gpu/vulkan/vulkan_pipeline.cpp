@@ -100,8 +100,8 @@ void VulkanRenderPipeline::initialize()
         for (uint64_t attrIndex = 0; attrIndex < attributes.size(); ++attrIndex)
         {
             VkVertexInputAttributeDescription attributeDescription{};
-            attributeDescription.binding = static_cast<uint32_t>(bindingIndex);
-            attributeDescription.location = static_cast<uint32_t>(attrIndex);
+            attributeDescription.binding = attributes[attrIndex].slot;
+            attributeDescription.location = attributes[attrIndex].location;
             attributeDescription.format = ToVkVertexFormat(attributes[attrIndex].format);
             attributeDescription.offset = static_cast<uint32_t>(attributes[attrIndex].offset);
 
@@ -111,7 +111,7 @@ void VulkanRenderPipeline::initialize()
         VkVertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = static_cast<uint32_t>(bindingIndex);
         bindingDescription.stride = static_cast<uint32_t>(m_descriptor.vertex.layouts[bindingIndex].stride);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindingDescription.inputRate = ToVkVertexInputRate(m_descriptor.vertex.layouts[bindingIndex].mode);
         bindingDescriptions.push_back(bindingDescription);
     }
 
@@ -453,6 +453,24 @@ VkBlendFactor ToVkBlendFactor(BlendFactor factor)
     }
 
     return blendFactor;
+}
+
+VkVertexInputRate ToVkVertexInputRate(VertexMode mode)
+{
+    VkVertexInputRate inputRate;
+
+    switch (mode)
+    {
+    case VertexMode::kVertex:
+    default:
+        inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        break;
+    case VertexMode::kInstance:
+        inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+        break;
+    }
+
+    return inputRate;
 }
 
 } // namespace vkt

@@ -126,7 +126,7 @@ void ImGuiSample::draw()
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
         renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(m_vertexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
@@ -267,10 +267,12 @@ void ImGuiSample::createRenderPipeline()
         VertexAttribute positionAttribute{};
         positionAttribute.format = VertexFormat::kSFLOATx3;
         positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
         VertexAttribute colorAttribute{};
         colorAttribute.format = VertexFormat::kSFLOATx3;
         colorAttribute.offset = offsetof(Vertex, color);
+        colorAttribute.location = 1;
 
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;

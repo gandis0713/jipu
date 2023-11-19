@@ -407,8 +407,8 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
-        renderPassEncoder->setVertexBuffer(m_offscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
+        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
         renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -440,7 +440,7 @@ void DeferredSample::draw()
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_composition.pipeline.get());
-        renderPassEncoder->setVertexBuffer(m_composition.vertexBuffer.get());
+        renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
         renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -906,18 +906,22 @@ void DeferredSample::createOffscreenPipeline()
         VertexAttribute positionAttribute;
         positionAttribute.format = VertexFormat::kSFLOATx3;
         positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
         VertexAttribute normalAttribute;
         normalAttribute.format = VertexFormat::kSFLOATx3;
         normalAttribute.offset = offsetof(Vertex, normal);
+        normalAttribute.location = 1;
 
         VertexAttribute tangentAttribute;
         tangentAttribute.format = VertexFormat::kSFLOATx4;
         tangentAttribute.offset = offsetof(Vertex, tangent);
+        tangentAttribute.location = 2;
 
         VertexAttribute texCoordAttribute;
         texCoordAttribute.format = VertexFormat::kSFLOATx2;
         texCoordAttribute.offset = offsetof(Vertex, texCoord);
+        texCoordAttribute.location = 3;
 
         inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
@@ -1133,11 +1137,13 @@ void DeferredSample::createCompositionPipeline()
             VertexAttribute positionAttribute{};
             positionAttribute.format = VertexFormat::kSFLOATx3;
             positionAttribute.offset = offsetof(CompositionVertex, position);
+            positionAttribute.location = 0;
             attributes[0] = positionAttribute;
 
             VertexAttribute texCoordAttribute{};
             texCoordAttribute.format = VertexFormat::kSFLOATx2;
             texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            texCoordAttribute.location = 1;
             attributes[1] = texCoordAttribute;
 
             vertexInputLayout.attributes = attributes;
@@ -1229,8 +1235,10 @@ void DeferredSample::createCompositionUniformBuffer()
             auto r = rDist(gen);
             auto g = gDist(gen);
             auto b = bDist(gen);
-            spdlog::debug("xDir: {}, yDir: {}, zDir: {}, x: {}, y: {}, z: {}", xDir, yDir, zDir, x, y, z);
-            spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+
+            // spdlog::trace("xDir: {}, yDir: {}, zDir: {}, x: {}, y: {}, z: {}", xDir, yDir, zDir, x, y, z);
+            // spdlog::trace("r: {}, g: {}, b: {}", r, g, b);
+
             CompositionUBO::Light light{ { xDir * x, yDir * y, zDir * z },
                                          { r, g, b } };
             m_composition.ubo.lights.push_back(light);

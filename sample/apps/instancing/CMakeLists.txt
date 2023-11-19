@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    triangle
+    instancing
     VERSION 0.1
-    DESCRIPTION "triangle sample"
+    DESCRIPTION "instancing sample"
     LANGUAGES CXX
 )
 
@@ -12,11 +12,11 @@ list(APPEND SRC_FILES
 )
 
 if(ANDROID)
-    add_library(triangle SHARED
+    add_library(instancing SHARED
         ${SRC_FILES}
     )
 else()
-    add_executable(triangle
+    add_executable(instancing
         ${SRC_FILES}
     )
 endif()
@@ -24,7 +24,7 @@ endif()
 find_package(spdlog CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
-target_link_libraries(triangle
+target_link_libraries(instancing
     PRIVATE
     glm::glm
     vkt::vkt
@@ -32,16 +32,18 @@ target_link_libraries(triangle
     spdlog::spdlog_header_only
 )
 
+set(SHADERS
+    instancing.vert
+    instancing.frag
+    non_instancing.vert
+    non_instancing.frag
+)
+
 if(CMAKE_GENERATOR STREQUAL "Ninja")
     set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
 else()
     set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE})
 endif()
-
-set(SHADERS
-    triangle.vert
-    triangle.frag
-)
 
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
@@ -62,8 +64,8 @@ if(EXISTS ${GLSLC_EXE})
         endfunction()
 
         foreach(SHADER ${SHADERS})
-            run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_DST})
-            run_glslc(triangle ${SHADER} ${SHADER_SRC} ${SHADER_SRC})
+            run_glslc(instancing ${SHADER} ${SHADER_SRC} ${SHADER_DST})
+            run_glslc(instancing ${SHADER} ${SHADER_SRC} ${SHADER_SRC})
         endforeach(SHADER)
     endif()
 endif()
@@ -71,7 +73,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-    target_compile_options(triangle
+    target_compile_options(instancing
         PUBLIC
         -Wall
         -Werror
