@@ -32,6 +32,7 @@ struct BindingLayout
 struct BufferBindingLayout : BindingLayout
 {
     BufferBindingType type = BufferBindingType::kUndefined;
+    bool dynamicOffset = false;
 };
 
 struct SamplerBindingLayout : BindingLayout

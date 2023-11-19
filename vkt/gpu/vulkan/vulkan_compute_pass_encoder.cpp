@@ -31,7 +31,7 @@ void VulkanComputePassEncoder::setPipeline(Pipeline* pipeline)
                           vulkanComputePipeline->getVkPipeline());
 }
 
-void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup)
+void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     m_bindingGroups[index] = bindingGroup;
 
@@ -50,8 +50,8 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bin
                                 0,
                                 1,
                                 &descriptorSet,
-                                0,
-                                nullptr);
+                                static_cast<uint32_t>(dynamicOffset.size()),
+                                dynamicOffset.data());
 }
 
 void VulkanComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z)

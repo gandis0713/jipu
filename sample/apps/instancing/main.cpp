@@ -54,20 +54,22 @@ private:
     void createCommandBuffer();
     void createQueue();
     void createVertexBuffer();
-    void createInstancingBuffer();
     void createIndexBuffer();
 
     void createInstancingUniformBuffer();
+    void createInstancingTransformBuffer();
     void createInstancingBindingGroupLayout();
     void createInstancingBindingGroup();
     void createInstancingRenderPipeline();
 
     void createNonInstancingUniformBuffer();
+    void createNonInstancingTransformBuffer();
     void createNonInstancingBindingGroupLayout();
     void createNonInstancingBindingGroup();
     void createNonInstancingRenderPipeline();
 
     void createCamera();
+    void createTransforms();
 
 private:
     struct Vertex
@@ -126,7 +128,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<Buffer> transformUniformBuffer = nullptr;
+        std::unique_ptr<Buffer> transformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_nonInstancing;
@@ -136,7 +138,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
-        std::unique_ptr<Buffer> instancingBuffer = nullptr;
+        std::unique_ptr<Buffer> transformBuffer = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
     } m_instancing;
@@ -157,7 +159,7 @@ private:
         4, 5, 0, // left
         0, 5, 1
     };
-    std::vector<Transform> m_instancings{};
+    std::vector<Transform> m_transforms{};
 
     std::unique_ptr<Camera> m_camera = nullptr;
     uint32_t m_sampleCount = 1;
@@ -165,8 +167,8 @@ private:
     struct
     {
         bool useInstancing = true;
-        int instancingCount = 100;
-        int instancingCountMax = 10000;
+        int objectCount = 1000;
+        int maxObjectCount = 50000;
     } m_imguiSettings;
 };
 
@@ -182,13 +184,13 @@ InstancingSample::~InstancingSample()
     m_instancing.renderPipeline.reset();
     m_instancing.renderPipelineLayout.reset();
     m_instancing.uniformBuffer.reset();
-    m_instancing.instancingBuffer.reset();
+    m_instancing.transformBuffer.reset();
     m_instancing.bindingGroup.reset();
     m_instancing.bindingGroupLayout.reset();
 
     m_nonInstancing.renderPipeline.reset();
     m_nonInstancing.renderPipelineLayout.reset();
-    m_nonInstancing.transformUniformBuffer.reset();
+    m_nonInstancing.transformBuffer.reset();
     m_nonInstancing.uniformBuffer.reset();
     m_nonInstancing.bindingGroup.reset();
     m_nonInstancing.bindingGroupLayout.reset();
@@ -215,17 +217,19 @@ void InstancingSample::init()
     createQueue();
 
     createCamera(); // need size and aspect ratio from swapchain.
+    createTransforms();
 
     createVertexBuffer();
-    createInstancingBuffer();
     createIndexBuffer();
 
     createInstancingUniformBuffer();
+    createInstancingTransformBuffer();
     createInstancingBindingGroupLayout();
     createInstancingBindingGroup();
     createInstancingRenderPipeline();
 
     createNonInstancingUniformBuffer();
+    createNonInstancingTransformBuffer();
     createNonInstancingBindingGroupLayout();
     createNonInstancingBindingGroup();
     createNonInstancingRenderPipeline();
@@ -267,32 +271,31 @@ void InstancingSample::draw()
     auto swapchainIndex = m_swapchain->acquireNextTexture();
     auto renderView = m_swapchain->getTextureView(swapchainIndex);
     {
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
+        ColorAttachment attachment{};
+        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.loadOp = LoadOp::kClear;
+        attachment.storeOp = StoreOp::kStore;
+        attachment.renderView = renderView;
+        attachment.resolveView = nullptr;
+
+        RenderPassEncoderDescriptor renderPassDescriptor;
+        renderPassDescriptor.sampleCount = m_sampleCount;
+        renderPassDescriptor.colorAttachments = { attachment };
 
         if (m_imguiSettings.useInstancing)
         {
-            CommandEncoderDescriptor commandDescriptor{};
-            auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
-
-            ColorAttachment attachment{};
-            attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
-            attachment.loadOp = LoadOp::kClear;
-            attachment.storeOp = StoreOp::kStore;
-            attachment.renderView = renderView;
-            attachment.resolveView = nullptr;
-
-            RenderPassEncoderDescriptor renderPassDescriptor;
-            renderPassDescriptor.sampleCount = m_sampleCount;
-            renderPassDescriptor.colorAttachments = { attachment };
-
             auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
             renderPassEncoder->setBindingGroup(0, m_instancing.bindingGroup.get());
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, m_vertexBuffer.get());
-            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.instancingBuffer.get());
+            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.transformBuffer.get());
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.instancingCount), 0, 0, 0);
+            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
             drawImGui(commadEncoder.get(), renderView);
@@ -301,90 +304,23 @@ void InstancingSample::draw()
         }
         else
         {
-            // draw first object with 'kClear' load operation.
+            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+            renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+            renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+            renderPassEncoder->setScissor(0, 0, m_width, m_height);
+            renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+            for (auto i = 0; i < m_imguiSettings.objectCount; ++i)
             {
-                ColorAttachment attachment{};
-                attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
-                attachment.loadOp = LoadOp::kClear;
-                attachment.storeOp = StoreOp::kStore;
-                attachment.renderView = renderView;
-                attachment.resolveView = nullptr;
-
-                RenderPassEncoderDescriptor renderPassDescriptor;
-                renderPassDescriptor.sampleCount = m_sampleCount;
-                renderPassDescriptor.colorAttachments = { attachment };
-
-                {
-                    CommandEncoderDescriptor commandDescriptor{};
-                    auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
-
-                    auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-                    renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
-                    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-                    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
-                    renderPassEncoder->setScissor(0, 0, m_width, m_height);
-                    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-                    // set corresponding transform ubo buffer data.
-                    {
-                        void* pointer = m_nonInstancing.transformUniformBuffer->map();
-                        memcpy(pointer, &m_instancings[0], m_nonInstancing.transformUniformBuffer->getSize());
-                        // do not unmap.
-                        renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
-                    }
-                    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-                    renderPassEncoder->end();
-
-                    m_queue->submit({ commadEncoder->finish() });
-                }
+                uint32_t offset = i * sizeof(Transform);
+                renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get(), { offset });
+                renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
             }
+            renderPassEncoder->end();
 
-            // draw all object with 'kLoad' load operation
-            {
-                ColorAttachment attachment{};
-                attachment.loadOp = LoadOp::kLoad;
-                attachment.storeOp = StoreOp::kStore;
-                attachment.renderView = renderView;
-                attachment.resolveView = nullptr;
+            drawImGui(commadEncoder.get(), renderView);
 
-                RenderPassEncoderDescriptor renderPassDescriptor;
-                renderPassDescriptor.sampleCount = m_sampleCount;
-                renderPassDescriptor.colorAttachments = { attachment };
-
-                for (auto i = 1; i < m_imguiSettings.instancingCount; ++i)
-                {
-                    CommandEncoderDescriptor commandDescriptor{};
-                    auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
-
-                    auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-                    renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
-                    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-                    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
-                    renderPassEncoder->setScissor(0, 0, m_width, m_height);
-                    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-                    // set corresponding transform ubo buffer data.
-                    {
-                        void* pointer = m_nonInstancing.transformUniformBuffer->map();
-                        memcpy(pointer, &m_instancings[i], m_nonInstancing.transformUniformBuffer->getSize());
-                        // do not unmap.
-                        renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
-                    }
-
-                    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-                    renderPassEncoder->end();
-
-                    m_queue->submit({ commadEncoder->finish() });
-                }
-            }
-
-            // draw imgui
-            {
-                CommandEncoderDescriptor commandDescriptor{};
-                auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
-
-                drawImGui(commadEncoder.get(), renderView);
-
-                m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
-            }
+            m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
         }
     }
 }
@@ -413,7 +349,7 @@ void InstancingSample::updateImGui()
     {
         ImGui::Begin("Settings");
         ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
-        ImGui::SliderInt("Instancing Count", &m_imguiSettings.instancingCount, 1, m_imguiSettings.instancingCountMax);
+        ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
         ImGui::End();
     }
 
@@ -500,42 +436,6 @@ void InstancingSample::createVertexBuffer()
     m_vertexBuffer->unmap();
 }
 
-void InstancingSample::createInstancingBuffer()
-{
-    // create instancing data.
-    {
-        auto halfWidth = m_swapchain->getWidth() / 2;
-        auto halfHeight = m_swapchain->getHeight() / 2;
-
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> xShiftDist(-halfWidth, halfWidth);
-        std::uniform_int_distribution<> yShiftDist(-halfHeight, halfHeight);
-
-        for (int i = 0; i < m_imguiSettings.instancingCountMax; i++)
-        {
-            auto xShift = xShiftDist(gen);
-            auto yShift = yShiftDist(gen);
-
-            // spdlog::trace("xShift: {}, yShift: {}", xShift, yShift);
-
-            Transform instancing;
-            instancing.translation = glm::vec3(static_cast<float>(xShift), static_cast<float>(yShift), 0.0f);
-            m_instancings.push_back(instancing);
-        }
-    }
-
-    BufferDescriptor descriptor{};
-    descriptor.size = m_instancings.size() * sizeof(Transform);
-    descriptor.usage = BufferUsageFlagBits::kVertex;
-
-    m_instancing.instancingBuffer = m_device->createBuffer(descriptor);
-
-    void* pointer = m_instancing.instancingBuffer->map();
-    memcpy(pointer, m_instancings.data(), descriptor.size);
-    m_vertexBuffer->unmap();
-}
-
 void InstancingSample::createIndexBuffer()
 {
     BufferDescriptor descriptor{};
@@ -547,6 +447,41 @@ void InstancingSample::createIndexBuffer()
     void* pointer = m_indexBuffer->map();
     memcpy(pointer, m_indices.data(), descriptor.size);
     m_indexBuffer->unmap();
+}
+
+void InstancingSample::createInstancingUniformBuffer()
+{
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 reori = R * T;
+    // m_mvp.model = reori;
+    m_mvp.model = glm::mat4(1.0f);
+    m_mvp.view = m_camera->getViewMat();
+    m_mvp.proj = m_camera->getProjectionMat();
+
+    {
+        BufferDescriptor bufferDescriptor{};
+        bufferDescriptor.size = sizeof(UBO);
+        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+        m_instancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+        void* mappedPointer = m_instancing.uniformBuffer->map();
+        memcpy(mappedPointer, &m_mvp, sizeof(UBO));
+        // m_uniformBuffer->unmap();
+    }
+}
+
+void InstancingSample::createInstancingTransformBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = m_transforms.size() * sizeof(Transform);
+    descriptor.usage = BufferUsageFlagBits::kVertex;
+
+    m_instancing.transformBuffer = m_device->createBuffer(descriptor);
+
+    void* pointer = m_instancing.transformBuffer->map();
+    memcpy(pointer, m_transforms.data(), descriptor.size);
+    m_vertexBuffer->unmap();
 }
 
 void InstancingSample::createInstancingBindingGroupLayout()
@@ -580,28 +515,6 @@ void InstancingSample::createInstancingBindingGroup()
     bindingGroupDescriptor.layout = m_instancing.bindingGroupLayout.get();
 
     m_instancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
-}
-
-void InstancingSample::createInstancingUniformBuffer()
-{
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
-    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 reori = R * T;
-    // m_mvp.model = reori;
-    m_mvp.model = glm::mat4(1.0f);
-    m_mvp.view = m_camera->getViewMat();
-    m_mvp.proj = m_camera->getProjectionMat();
-
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(UBO);
-        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
-
-        m_instancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_instancing.uniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(UBO));
-        // m_uniformBuffer->unmap();
-    }
 }
 
 void InstancingSample::createInstancingRenderPipeline()
@@ -710,6 +623,38 @@ void InstancingSample::createInstancingRenderPipeline()
     m_instancing.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
+void InstancingSample::createNonInstancingUniformBuffer()
+{
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
+    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 reori = R * T;
+    // m_mvp.model = reori;
+    m_mvp.model = glm::mat4(1.0f);
+    m_mvp.view = m_camera->getViewMat();
+    m_mvp.proj = m_camera->getProjectionMat();
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(UBO);
+    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_nonInstancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_nonInstancing.uniformBuffer->map();
+    memcpy(mappedPointer, &m_mvp, sizeof(UBO));
+    m_nonInstancing.uniformBuffer->unmap();
+}
+
+void InstancingSample::createNonInstancingTransformBuffer()
+{
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = sizeof(Transform) * m_transforms.size();
+    bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
+
+    m_nonInstancing.transformBuffer = m_device->createBuffer(bufferDescriptor);
+    void* mappedPointer = m_nonInstancing.transformBuffer->map();
+    memcpy(mappedPointer, m_transforms.data(), bufferDescriptor.size);
+    m_nonInstancing.transformBuffer->unmap();
+}
+
 void InstancingSample::createNonInstancingBindingGroupLayout()
 {
     BufferBindingLayout mvpBufferBindingLayout{};
@@ -719,6 +664,7 @@ void InstancingSample::createNonInstancingBindingGroupLayout()
 
     BufferBindingLayout instancingBufferBindingLayout{};
     instancingBufferBindingLayout.index = 1;
+    instancingBufferBindingLayout.dynamicOffset = true;
     instancingBufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
     instancingBufferBindingLayout.type = BufferBindingType::kUniform;
 
@@ -738,47 +684,15 @@ void InstancingSample::createNonInstancingBindingGroup()
 
     BufferBinding instancingBufferBinding{};
     instancingBufferBinding.index = 1;
-    instancingBufferBinding.buffer = m_nonInstancing.transformUniformBuffer.get();
+    instancingBufferBinding.buffer = m_nonInstancing.transformBuffer.get();
     instancingBufferBinding.offset = 0;
-    instancingBufferBinding.size = m_nonInstancing.transformUniformBuffer->getSize();
+    instancingBufferBinding.size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding, instancingBufferBinding };
     bindingGroupDescriptor.layout = m_nonInstancing.bindingGroupLayout.get();
 
     m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
-}
-
-void InstancingSample::createNonInstancingUniformBuffer()
-{
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
-    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 reori = R * T;
-    // m_mvp.model = reori;
-    m_mvp.model = glm::mat4(1.0f);
-    m_mvp.view = m_camera->getViewMat();
-    m_mvp.proj = m_camera->getProjectionMat();
-
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(UBO);
-        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
-
-        m_nonInstancing.uniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_nonInstancing.uniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(UBO));
-        // m_uniformBuffer->unmap();
-    }
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = sizeof(Transform);
-        bufferDescriptor.usage = BufferUsageFlagBits::kUniform;
-
-        m_nonInstancing.transformUniformBuffer = m_device->createBuffer(bufferDescriptor);
-        void* mappedPointer = m_nonInstancing.transformUniformBuffer->map();
-        memcpy(mappedPointer, &m_mvp, sizeof(Transform));
-        // m_uniformBuffer->unmap();
-    }
 }
 
 void InstancingSample::createNonInstancingRenderPipeline()
@@ -888,6 +802,27 @@ void InstancingSample::createCamera()
                                                     -halfHeight, halfHeight,
                                                     -1000, 1000);
     m_camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+}
+
+void InstancingSample::createTransforms()
+{
+    auto halfWidth = m_swapchain->getWidth() / 2;
+    auto halfHeight = m_swapchain->getHeight() / 2;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> xTranslationDist(-halfWidth, halfWidth);
+    std::uniform_int_distribution<> yTranslationDist(-halfHeight, halfHeight);
+
+    for (int i = 0; i < m_imguiSettings.maxObjectCount; i++)
+    {
+        auto xTranslation = xTranslationDist(gen);
+        auto yTranslation = yTranslationDist(gen);
+
+        Transform transform;
+        transform.translation = glm::vec3(static_cast<float>(xTranslation), static_cast<float>(yTranslation), 0.0f);
+        m_transforms.push_back(transform);
+    }
 }
 
 } // namespace vkt
