@@ -198,7 +198,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
 {
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
-        // TODO: check descriptor pool size.
+
         const uint64_t descriptorPoolCount = 4;
         const uint64_t maxDescriptorSetSize = descriptorPoolCount;
         std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
@@ -208,14 +208,19 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
                                                    .maxSets = maxDescriptorSetSize,
                                                    .poolSizeCount = descriptorPoolCount,
                                                    .pPoolSizes = poolSizes.data() };
+
+        auto vulkanPhysicalDevice = downcast(m_physicalDevice);
+        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice->getInfo();
+
+        // set max value for per stage.
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[0].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[0].descriptorCount = physicalDeviceInfo.physicalDeviceProperties.limits.maxPerStageDescriptorUniformBuffers;
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[1].descriptorCount = physicalDeviceInfo.physicalDeviceProperties.limits.maxPerStageDescriptorSampledImages;
         poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-        poolSizes[2].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[2].descriptorCount = physicalDeviceInfo.physicalDeviceProperties.limits.maxPerStageDescriptorInputAttachments;
         poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        poolSizes[3].descriptorCount = poolCreateInfo.maxSets * 10;
+        poolSizes[3].descriptorCount = physicalDeviceInfo.physicalDeviceProperties.limits.maxPerStageDescriptorStorageBuffers;
 
         if (vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
         {
