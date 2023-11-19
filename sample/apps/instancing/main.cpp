@@ -271,11 +271,12 @@ void InstancingSample::draw()
     auto swapchainIndex = m_swapchain->acquireNextTexture();
     auto renderView = m_swapchain->getTextureView(swapchainIndex);
     {
-        CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         if (m_imguiSettings.useInstancing)
         {
+            CommandEncoderDescriptor commandDescriptor{};
+            auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
             ColorAttachment attachment{};
             attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
             attachment.loadOp = LoadOp::kClear;
@@ -297,41 +298,92 @@ void InstancingSample::draw()
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.instancingCount), 0, 0, 0);
             renderPassEncoder->end();
+
+            drawImGui(commadEncoder.get(), renderView);
+
+            m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
         }
         else
         {
-            ColorAttachment attachment{};
-            attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
-            attachment.loadOp = LoadOp::kClear;
-            attachment.storeOp = StoreOp::kStore;
-            attachment.renderView = renderView;
-            attachment.resolveView = nullptr;
-
-            RenderPassEncoderDescriptor renderPassDescriptor;
-            renderPassDescriptor.sampleCount = m_sampleCount;
-            renderPassDescriptor.colorAttachments = { attachment };
-
-            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
-            renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
-            renderPassEncoder->setScissor(0, 0, m_width, m_height);
-            renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-            for (auto i = 0; i < m_imguiSettings.instancingCount; ++i)
+            // draw first object with 'kClear' load operation.
             {
+                CommandEncoderDescriptor commandDescriptor{};
+                auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
                 void* pointer = m_nonInstancing.instancingUniformBuffer->map();
-                memcpy(pointer, &m_instancings[i], m_nonInstancing.instancingUniformBuffer->getSize());
+                memcpy(pointer, &m_instancings[0], m_nonInstancing.instancingUniformBuffer->getSize());
+
+                ColorAttachment attachment{};
+                attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+                attachment.loadOp = LoadOp::kClear;
+                attachment.storeOp = StoreOp::kStore;
+                attachment.renderView = renderView;
+                attachment.resolveView = nullptr;
+
+                RenderPassEncoderDescriptor renderPassDescriptor;
+                renderPassDescriptor.sampleCount = m_sampleCount;
+                renderPassDescriptor.colorAttachments = { attachment };
+
+                auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+                renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+                renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+                renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+                renderPassEncoder->setScissor(0, 0, m_width, m_height);
+                renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
                 // do not unmap.
 
                 renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
                 renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+                renderPassEncoder->end();
+
+                m_queue->submit({ commadEncoder->finish() });
             }
-            renderPassEncoder->end();
+
+            // draw all object with 'kLoad' load operation
+            for (auto i = 1; i < m_imguiSettings.instancingCount; ++i)
+            {
+                CommandEncoderDescriptor commandDescriptor{};
+                auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
+                void* pointer = m_nonInstancing.instancingUniformBuffer->map();
+                memcpy(pointer, &m_instancings[i], m_nonInstancing.instancingUniformBuffer->getSize());
+
+                ColorAttachment attachment{};
+                attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+                attachment.loadOp = LoadOp::kLoad;
+                attachment.storeOp = StoreOp::kStore;
+                attachment.renderView = renderView;
+                attachment.resolveView = nullptr;
+
+                RenderPassEncoderDescriptor renderPassDescriptor;
+                renderPassDescriptor.sampleCount = m_sampleCount;
+                renderPassDescriptor.colorAttachments = { attachment };
+
+                auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+                renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+                renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+                renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+                renderPassEncoder->setScissor(0, 0, m_width, m_height);
+                renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+                // do not unmap.
+
+                renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get());
+                renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+                renderPassEncoder->end();
+
+                m_queue->submit({ commadEncoder->finish() });
+            }
+
+            // draw imgui
+            {
+                CommandEncoderDescriptor commandDescriptor{};
+                auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+
+                drawImGui(commadEncoder.get(), renderView);
+
+                m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+            }
         }
-
-        drawImGui(commadEncoder.get(), renderView);
-
-        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
 }
 
