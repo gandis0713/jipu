@@ -167,8 +167,8 @@ private:
     struct
     {
         bool useInstancing = true;
-        int instancingCount = 100;
-        int instancingCountMax = 10000;
+        int objectCount = 1000;
+        int maxObjectCount = 50000;
     } m_imguiSettings;
 };
 
@@ -295,7 +295,7 @@ void InstancingSample::draw()
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.instancingCount), 0, 0, 0);
+            renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
             drawImGui(commadEncoder.get(), renderView);
@@ -310,7 +310,7 @@ void InstancingSample::draw()
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-            for (auto i = 0; i < m_imguiSettings.instancingCount; ++i)
+            for (auto i = 0; i < m_imguiSettings.objectCount; ++i)
             {
                 uint32_t offset = i * sizeof(Transform);
                 renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get(), { offset });
@@ -349,7 +349,7 @@ void InstancingSample::updateImGui()
     {
         ImGui::Begin("Settings");
         ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
-        ImGui::SliderInt("Instancing Count", &m_imguiSettings.instancingCount, 1, m_imguiSettings.instancingCountMax);
+        ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
         ImGui::End();
     }
 
@@ -814,7 +814,7 @@ void InstancingSample::createTransforms()
     std::uniform_int_distribution<> xTranslationDist(-halfWidth, halfWidth);
     std::uniform_int_distribution<> yTranslationDist(-halfHeight, halfHeight);
 
-    for (int i = 0; i < m_imguiSettings.instancingCountMax; i++)
+    for (int i = 0; i < m_imguiSettings.maxObjectCount; i++)
     {
         auto xTranslation = xTranslationDist(gen);
         auto yTranslation = yTranslationDist(gen);
