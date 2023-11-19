@@ -136,9 +136,6 @@ OBJModelSample::~OBJModelSample()
 {
     clearImGui();
 
-    // clear swapchain first.
-    m_swapchain.reset();
-
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
@@ -167,6 +164,7 @@ OBJModelSample::~OBJModelSample()
 
     // release command buffer after finising queue.
     m_renderCommandBuffer.reset();
+    m_swapchain.reset();
 
     m_physicalDevice.reset();
     m_device.reset();
