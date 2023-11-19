@@ -56,7 +56,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = buffer.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type);
+        descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type, bufferLayout.dynamicOffset);
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = &bufferInfos[i];
