@@ -89,15 +89,35 @@ private:
     struct Vertex
     {
         glm::vec3 pos;
-        glm::vec3 color;
     };
 
-    std::vector<uint16_t> m_indices{ 0, 1, 2 };
+    std::vector<uint16_t> m_indices{
+        0, 1,
+        0, 2,
+        1, 3,
+        2, 3,
+        2, 4,
+        3, 5,
+        4, 5,
+        4, 6,
+        5, 7,
+        6, 7,
+        6, 8,
+        7, 9,
+        8, 9
+    };
     std::vector<Vertex>
         m_vertices{
-            { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
-            { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
+            { { -200.0, -50.0, 0.0 } },
+            { { -200.0, 50.0, 0.0 } },
+            { { -100.0, -50.0, 0.0 } },
+            { { -100.0, 50.0, 0.0 } },
+            { { 0.0, -50.0, 0.0 } },
+            { { 0.0, 50.0, 0.0 } },
+            { { 100.0, -50.0, 0.0 } },
+            { { 100.0, 50.0, 0.0 } },
+            { { 200.0, -50.0, 0.0 } },
+            { { 200.0, 50.0, 0.0 } },
         };
 
     uint32_t m_sampleCount = 1;
@@ -399,7 +419,7 @@ void SkinningSample::createRenderPipeline()
     // input assembly stage
     InputAssemblyStage inputAssemblyStage{};
     {
-        inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
+        inputAssemblyStage.topology = PrimitiveTopology::kLineList;
     }
 
     // vertex shader module
@@ -421,15 +441,10 @@ void SkinningSample::createRenderPipeline()
         positionAttribute.offset = offsetof(Vertex, pos);
         positionAttribute.location = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(Vertex, color);
-        colorAttribute.location = 1;
-
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
         vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+        vertexInputLayout.attributes = { positionAttribute };
 
         vertexStage.entryPoint = "main";
         vertexStage.shaderModule = vertexShaderModule.get();
