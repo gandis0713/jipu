@@ -39,9 +39,16 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: x64-windows-ninja-release
           buildPreset: x64-windows-ninja-release
+          buildPresetAdditionalArgs: "['--target install']"
           # TODO: enable test.
           # testPreset: x64-windows-ninja-release
       # https://github.com/marketplace/actions/action-slack
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: artifact for windows
+          path: "${{ github.workspace }}/install/x64-windows-ninja/debug
+          retention-days: 5
       - name: Send status of a job to slack.
         uses: 8398a7/action-slack@v3.15.0
         with:
