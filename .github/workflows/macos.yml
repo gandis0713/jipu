@@ -1,4 +1,4 @@
-name: Vulkan Test Build
+name: Build for macos
 
 on:
   push:
