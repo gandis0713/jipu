@@ -2,7 +2,7 @@
 
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanMemoryDescriptor
@@ -26,4 +26,4 @@ private:
     VkDeviceMemory m_deviceMemory = VK_NULL_HANDLE;
 };
 
-} // namespace vkt
+} // namespace jipu

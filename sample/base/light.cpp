@@ -1,6 +1,6 @@
 #include "light.h"
 
-namespace vkt
+namespace jipu
 {
 
 Light::Light(glm::vec3 position, glm::vec3 color)
@@ -29,4 +29,4 @@ glm::vec3 Light::getColor() const
     return m_color;
 }
 
-} // namespace vkt
+} // namespace jipu

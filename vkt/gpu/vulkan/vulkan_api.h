@@ -14,7 +14,7 @@
 #define VK_NO_PROTOTYPES 1
 #include <vulkan/vulkan.h>
 
-namespace vkt
+namespace jipu
 {
 
 class DyLib;
@@ -301,4 +301,4 @@ struct VulkanAPI
 #endif
 };
 
-} // namespace vkt
+} // namespace jipu

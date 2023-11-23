@@ -5,7 +5,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor)
@@ -138,4 +138,4 @@ MipmapFilterMode ToMipmapFilterMode(VkSamplerMipmapMode mode)
     }
 }
 
-}; // namespace vkt
+}; // namespace jipu

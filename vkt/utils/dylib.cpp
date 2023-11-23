@@ -8,7 +8,7 @@
 #endif
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 DyLib::~DyLib()
@@ -98,4 +98,4 @@ void* DyLib::getProc(const std::string& procName) const
     return proc;
 }
 
-} // namespace vkt
+} // namespace jipu

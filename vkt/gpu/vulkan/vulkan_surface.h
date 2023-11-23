@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanSurfaceInfo
@@ -39,4 +39,4 @@ private:
 
 DOWN_CAST(VulkanSurface, Surface);
 
-}; // namespace vkt
+}; // namespace jipu

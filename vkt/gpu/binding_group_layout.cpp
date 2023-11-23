@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 BindingGroupLayout::BindingGroupLayout(Device* device, const BindingGroupLayoutDescriptor& descriptor)
@@ -64,4 +64,4 @@ TextureBindingLayout BindingGroupLayout::getTextureBindingLayout(uint32_t index)
     return {};
 }
 
-} // namespace vkt
+} // namespace jipu

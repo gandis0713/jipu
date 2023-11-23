@@ -9,7 +9,7 @@
 
 #include <fmt/format.h>
 
-namespace vkt
+namespace jipu
 {
 
 enum class TextureOwner
@@ -66,4 +66,4 @@ VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
 // Utils
 VkImageLayout GenerateImageLayout(TextureUsageFlags usage);
 
-} // namespace vkt
+} // namespace jipu

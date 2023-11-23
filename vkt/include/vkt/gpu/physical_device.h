@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace vkt
+namespace jipu
 {
 
 struct PhysicalDeviceDescriptor
@@ -31,4 +31,4 @@ protected:
     Driver* m_driver = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

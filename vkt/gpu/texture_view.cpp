@@ -1,7 +1,7 @@
 #include "vkt/gpu/texture_view.h"
 #include "vkt/gpu/texture.h"
 
-namespace vkt
+namespace jipu
 {
 
 TextureView::TextureView(Texture* texture, TextureViewDescriptor descriptor)
@@ -40,4 +40,4 @@ uint32_t TextureView::getSampleCount() const
     return m_texture->getSampleCount();
 }
 
-} // namespace vkt
+} // namespace jipu

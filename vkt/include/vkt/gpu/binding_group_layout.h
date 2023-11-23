@@ -3,7 +3,7 @@
 #include "export.h"
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 enum class BufferBindingType
@@ -73,4 +73,4 @@ protected:
     BindingGroupLayoutDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

@@ -8,7 +8,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 BindingGroup::BindingGroup(Device* device, const BindingGroupDescriptor& descriptor)
@@ -68,4 +68,4 @@ TextureBinding BindingGroup::getTextureBinding(uint32_t index) const
     return {};
 }
 
-} // namespace vkt
+} // namespace jipu

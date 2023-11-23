@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
@@ -380,4 +380,4 @@ VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
     return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 }
 
-} // namespace vkt
+} // namespace jipu

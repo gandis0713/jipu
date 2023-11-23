@@ -4,7 +4,7 @@
 #include "vkt/gpu/render_pass_encoder.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanCommandBuffer;
@@ -27,4 +27,4 @@ public:
     CommandBuffer* finish() override;
 };
 
-} // namespace vkt
+} // namespace jipu

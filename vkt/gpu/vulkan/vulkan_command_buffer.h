@@ -4,7 +4,7 @@
 #include "vkt/gpu/command_buffer.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -42,4 +42,4 @@ DOWN_CAST(VulkanCommandBuffer, CommandBuffer);
 CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag);
 VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage usage);
 
-} // namespace vkt
+} // namespace jipu

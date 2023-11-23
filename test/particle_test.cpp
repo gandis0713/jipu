@@ -5,7 +5,7 @@
 #include "vkt/gpu/physical_device.h"
 #include "vkt/gpu/surface.h"
 
-using namespace vkt;
+using namespace jipu;
 
 TEST_F(ParticleTest, test)
 {

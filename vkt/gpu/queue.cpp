@@ -1,7 +1,7 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 Queue::Queue(Device* device, const QueueDescriptor& descriptor)
@@ -14,4 +14,4 @@ QueueFlags Queue::getFlags() const
     return m_flags;
 }
 
-} // namespace vkt
+} // namespace jipu

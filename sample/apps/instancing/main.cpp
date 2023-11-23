@@ -26,7 +26,7 @@
 static const uint32_t VERTEX_SLOT = 0;
 static const uint32_t INSTANCING_SLOT = 1;
 
-namespace vkt
+namespace jipu
 {
 
 class InstancingSample : public Sample, public Im_Gui
@@ -825,7 +825,7 @@ void InstancingSample::createTransforms()
     }
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -842,12 +842,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Instancing", app },
         ""
     };
 
-    vkt::InstancingSample sample(descriptor);
+    jipu::InstancingSample sample(descriptor);
 
     sample.exec();
 }
@@ -858,12 +858,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Instancing", nullptr },
         argv[0]
     };
 
-    vkt::InstancingSample sample(descriptor);
+    jipu::InstancingSample sample(descriptor);
 
     return sample.exec();
 }

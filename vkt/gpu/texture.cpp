@@ -1,7 +1,7 @@
 #include "vkt/gpu/texture.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 Texture::Texture(Device* device, TextureDescriptor descriptor)
@@ -44,4 +44,4 @@ uint32_t Texture::getSampleCount() const
     return m_descriptor.sampleCount;
 }
 
-} // namespace vkt
+} // namespace jipu

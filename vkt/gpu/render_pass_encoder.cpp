@@ -5,7 +5,7 @@
 #include "vkt/gpu/pipeline_layout.h"
 #include "vkt/gpu/texture_view.h"
 
-namespace vkt
+namespace jipu
 {
 
 RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
@@ -14,4 +14,4 @@ RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderP
 {
 }
 
-} // namespace vkt
+} // namespace jipu

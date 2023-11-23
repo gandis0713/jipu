@@ -1,6 +1,6 @@
 #include "vkt/gpu/physical_device.h"
 
-namespace vkt
+namespace jipu
 {
 
 PhysicalDevice::PhysicalDevice(Driver* driver, PhysicalDeviceDescriptor descriptor)
@@ -13,4 +13,4 @@ Driver* PhysicalDevice::getDriver() const
     return m_driver;
 }
 
-} // namespace vkt
+} // namespace jipu

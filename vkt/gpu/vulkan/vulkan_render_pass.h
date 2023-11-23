@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanColorAttachment
@@ -84,4 +84,4 @@ LoadOp ToVkAttachmentLoadOp(VkAttachmentLoadOp loadOp);
 VkAttachmentStoreOp ToVkAttachmentStoreOp(StoreOp storeOp);
 StoreOp ToStoreOp(VkAttachmentStoreOp storeOp);
 
-} // namespace vkt
+} // namespace jipu

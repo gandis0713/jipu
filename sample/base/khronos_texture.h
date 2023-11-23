@@ -4,7 +4,7 @@
 
 #include <ktx.h>
 
-namespace vkt
+namespace jipu
 {
 
 class KTX final
@@ -24,4 +24,4 @@ private:
     ktxTexture* m_texture = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

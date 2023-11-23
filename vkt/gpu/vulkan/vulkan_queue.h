@@ -4,7 +4,7 @@
 #include "vkt/gpu/queue.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -48,4 +48,4 @@ DOWN_CAST(VulkanQueue, Queue);
 VkQueueFlags ToVkQueueFlags(QueueFlags flags);
 QueueFlags ToQueueFlags(VkQueueFlags vkflags);
 
-} // namespace vkt
+} // namespace jipu

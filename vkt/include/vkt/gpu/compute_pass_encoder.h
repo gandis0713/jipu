@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct ComputePassEncoderDescriptor
@@ -34,4 +34,4 @@ protected:
     ComputePassEncoderDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

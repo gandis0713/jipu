@@ -1,7 +1,7 @@
 #include "vkt/gpu/buffer.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 Buffer::Buffer(Device* device, const BufferDescriptor& descriptor)
@@ -19,4 +19,4 @@ uint64_t Buffer::getSize() const
 {
     return m_descriptor.size;
 }
-} // namespace vkt
+} // namespace jipu

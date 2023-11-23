@@ -1,7 +1,7 @@
 #include "vkt/gpu/pipeline.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 // Pipeline
@@ -31,4 +31,4 @@ ComputePipeline::ComputePipeline(Device* device, const ComputePipelineDescriptor
     m_pipelineLayout = m_descriptor.layout;
 }
 
-} // namespace vkt
+} // namespace jipu

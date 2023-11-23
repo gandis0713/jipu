@@ -14,7 +14,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
@@ -186,4 +186,4 @@ CommandBuffer* VulkanCommandEncoder::finish()
     return m_commandBuffer;
 }
 
-} // namespace vkt
+} // namespace jipu

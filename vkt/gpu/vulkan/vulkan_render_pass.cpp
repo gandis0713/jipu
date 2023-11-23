@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassDescriptor descriptor)
@@ -143,7 +143,7 @@ VkRenderPass VulkanRenderPass::getVkRenderPass() const
 
 size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
 {
-    size_t hash = vkt::hash(descriptor.sampleCount);
+    size_t hash = jipu::hash(descriptor.sampleCount);
 
     for (auto colorAttachment : descriptor.colorAttachments)
     {
@@ -306,4 +306,4 @@ StoreOp ToStoreOp(VkAttachmentStoreOp storeOp)
     }
 }
 
-} // namespace vkt
+} // namespace jipu

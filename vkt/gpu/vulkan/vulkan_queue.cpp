@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
@@ -228,4 +228,4 @@ QueueFlags ToQueueFlags(VkQueueFlags vkflags)
     return flags;
 }
 
-} // namespace vkt
+} // namespace jipu

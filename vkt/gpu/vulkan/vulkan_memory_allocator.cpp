@@ -1,7 +1,7 @@
 #include "vulkan_memory_allocator.h"
 #include "vulkan_device.h"
 
-namespace vkt
+namespace jipu
 {
 
 VulkanMemoryAllocator::VulkanMemoryAllocator(VulkanDevice* device, const VulkanMemoryAllocatorDescriptor& descriptor)
@@ -9,4 +9,4 @@ VulkanMemoryAllocator::VulkanMemoryAllocator(VulkanDevice* device, const VulkanM
 {
 }
 
-} // namespace vkt
+} // namespace jipu

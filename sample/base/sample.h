@@ -3,7 +3,7 @@
 #include "window.h"
 #include <filesystem>
 
-namespace vkt
+namespace jipu
 {
 
 struct SampleDescriptor
@@ -24,4 +24,4 @@ protected:
     std::filesystem::path m_appDir;
 };
 
-} // namespace vkt
+} // namespace jipu

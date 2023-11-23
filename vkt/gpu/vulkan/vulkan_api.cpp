@@ -3,7 +3,7 @@
 #include "utils/dylib.h"
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 {
@@ -335,4 +335,4 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     return true;
 }
 
-} // namespace vkt
+} // namespace jipu

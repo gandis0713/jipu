@@ -4,7 +4,7 @@
 #include "vkt/gpu/texture_view.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanTexture;
@@ -29,4 +29,4 @@ TextureViewType ToTextureViewType(VkImageViewType type);
 VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags);
 TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags flags);
 
-} // namespace vkt
+} // namespace jipu

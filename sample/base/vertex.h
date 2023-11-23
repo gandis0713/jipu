@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace vkt
+namespace jipu
 {
 
 struct Vertex
@@ -14,4 +14,4 @@ struct Vertex
 
     bool operator==(const Vertex& other) const;
 };
-} // namespace vkt
+} // namespace jipu

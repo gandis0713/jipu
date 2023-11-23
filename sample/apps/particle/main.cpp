@@ -19,7 +19,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 namespace
@@ -641,7 +641,7 @@ void ParticleSample::updateUniformBuffer()
 
     m_previousTime = currentTime;
 }
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -658,12 +658,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Particle Sample", app },
         ""
     };
 
-    vkt::ParticleSample sample(descriptor);
+    jipu::ParticleSample sample(descriptor);
 
     sample.exec();
 }
@@ -674,12 +674,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Particle Sample", nullptr },
         argv[0]
     };
 
-    vkt::ParticleSample sample(descriptor);
+    jipu::ParticleSample sample(descriptor);
 
     return sample.exec();
 }

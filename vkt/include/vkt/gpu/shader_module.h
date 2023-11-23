@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace vkt
+namespace jipu
 {
 
 struct ShaderModuleDescriptor
@@ -23,4 +23,4 @@ protected:
     Device* m_device = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

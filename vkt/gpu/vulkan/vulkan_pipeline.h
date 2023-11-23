@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -66,4 +66,4 @@ VkBlendOp ToVkBlendOp(BlendOperation op);
 VkBlendFactor ToVkBlendFactor(BlendFactor factor);
 VkVertexInputRate ToVkVertexInputRate(VertexMode mode);
 
-} // namespace vkt
+} // namespace jipu

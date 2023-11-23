@@ -14,7 +14,7 @@
 #include <optional>
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
@@ -273,4 +273,4 @@ VkIndexType ToVkIndexType(IndexFormat format)
     return type;
 }
 
-} // namespace vkt
+} // namespace jipu

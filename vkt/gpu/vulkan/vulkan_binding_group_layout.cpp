@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
@@ -147,4 +147,4 @@ BindingStageFlags ToBindingStageFlags(VkShaderStageFlags vkFlags)
     return flags;
 }
 
-} // namespace vkt
+} // namespace jipu

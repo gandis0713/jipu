@@ -1,6 +1,6 @@
 #pragma once
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanMemoryAllocatorDescriptor
@@ -19,4 +19,4 @@ private:
     VulkanDevice* m_device;
 };
 
-} // namespace vkt
+} // namespace jipu

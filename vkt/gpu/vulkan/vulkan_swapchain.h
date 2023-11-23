@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -51,4 +51,4 @@ VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace);
 PresentMode ToPresentMode(VkPresentModeKHR mode);
 VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode);
 
-} // namespace vkt
+} // namespace jipu

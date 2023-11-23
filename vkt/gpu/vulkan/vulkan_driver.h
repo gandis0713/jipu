@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanDriverInfo : VulkanDriverKnobs
@@ -64,4 +64,4 @@ private:
 
 DOWN_CAST(VulkanDriver, Driver);
 
-} // namespace vkt
+} // namespace jipu

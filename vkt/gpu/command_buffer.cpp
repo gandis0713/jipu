@@ -1,7 +1,7 @@
 #include "vkt/gpu/command_buffer.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 CommandBuffer::CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor)
@@ -20,4 +20,4 @@ Device* CommandBuffer::getDevice() const
     return m_device;
 }
 
-} // namespace vkt
+} // namespace jipu

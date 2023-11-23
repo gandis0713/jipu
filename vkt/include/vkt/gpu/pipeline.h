@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class Device;
@@ -232,4 +232,4 @@ protected:
     const ComputePipelineDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

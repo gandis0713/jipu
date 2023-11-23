@@ -2,7 +2,7 @@
 
 #include "export.h"
 
-namespace vkt
+namespace jipu
 {
 
 struct SurfaceDescriptor
@@ -28,4 +28,4 @@ protected:
     void* m_windowHandle = nullptr;
 };
 
-}; // namespace vkt
+}; // namespace jipu

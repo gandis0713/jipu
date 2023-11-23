@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class Device;
@@ -76,4 +76,4 @@ protected:
     uint32_t m_height{ 0 };
 };
 
-} // namespace vkt
+} // namespace jipu

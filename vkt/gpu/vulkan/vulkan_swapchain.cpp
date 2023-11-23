@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDescriptor& descriptor) noexcept(false)
@@ -308,4 +308,4 @@ VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode)
     }
 }
 
-} // namespace vkt
+} // namespace jipu

@@ -2,7 +2,7 @@
 
 #include "window.h"
 
-namespace vkt
+namespace jipu
 {
 
 void Window::setWidth(uint32_t width)
@@ -30,4 +30,4 @@ bool Window::isInitialized() const
     return m_initialized;
 }
 
-} // namespace vkt
+} // namespace jipu

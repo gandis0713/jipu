@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 // Vulkan Compute Pipeline
@@ -473,4 +473,4 @@ VkVertexInputRate ToVkVertexInputRate(VertexMode mode)
     return inputRate;
 }
 
-} // namespace vkt
+} // namespace jipu

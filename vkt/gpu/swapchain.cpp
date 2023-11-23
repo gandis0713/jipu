@@ -4,7 +4,7 @@
 #include "vkt/gpu/queue.h"
 #include "vkt/gpu/surface.h"
 
-namespace vkt
+namespace jipu
 {
 
 Swapchain::Swapchain(Device* device, const SwapchainDescriptor& descriptor) noexcept
@@ -62,4 +62,4 @@ uint32_t Swapchain::getHeight() const
     return m_height;
 }
 
-} // namespace vkt
+} // namespace jipu

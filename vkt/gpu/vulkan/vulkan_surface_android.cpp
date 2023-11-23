@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 void VulkanSurface::createSurfaceKHR()
@@ -26,4 +26,4 @@ void VulkanSurface::createSurfaceKHR()
     }
 }
 
-} // namespace vkt
+} // namespace jipu

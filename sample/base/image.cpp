@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-namespace vkt
+namespace jipu
 {
 
 Image::Image(const std::filesystem::path& path)
@@ -62,4 +62,4 @@ int Image::getChannel() const
     return m_channel;
 }
 
-} // namespace vkt
+} // namespace jipu

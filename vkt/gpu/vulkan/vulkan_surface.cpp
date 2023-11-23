@@ -5,7 +5,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanSurface::VulkanSurface(VulkanDriver* driver, SurfaceDescriptor descriptor)
@@ -62,7 +62,6 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
         //                   static_cast<uint32_t>(format.format),
         //                   static_cast<uint32_t>(format.colorSpace));
         // }
-
     }
 
     // Surface present modes.
@@ -85,4 +84,4 @@ VulkanSurfaceInfo VulkanSurface::gatherSurfaceInfo(VkPhysicalDevice physicalDevi
     return surfaceInfo;
 }
 
-}; // namespace vkt
+}; // namespace jipu

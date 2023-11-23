@@ -33,7 +33,7 @@ const std::vector<const char*> getRequiredDeviceExtension()
     return requiredDeviceExtension;
 };
 
-namespace vkt
+namespace jipu
 {
 
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescriptor descriptor)
@@ -269,4 +269,4 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     }
 }
 
-} // namespace vkt
+} // namespace jipu

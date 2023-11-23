@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct QueueFlagBits
@@ -45,4 +45,4 @@ protected:
     QueueFlags m_flags = 0u;
 };
 
-} // namespace vkt
+} // namespace jipu

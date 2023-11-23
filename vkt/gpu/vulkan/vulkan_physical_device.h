@@ -4,7 +4,7 @@
 #include "vkt/gpu/physical_device.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanPhysicalDeviceInfo : VulkanDeviceKnobs
@@ -50,4 +50,4 @@ private:
 
 DOWN_CAST(VulkanPhysicalDevice, PhysicalDevice);
 
-} // namespace vkt
+} // namespace jipu

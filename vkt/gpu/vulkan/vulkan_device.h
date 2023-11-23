@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanPhysicalDevice;
@@ -72,4 +72,4 @@ private:
 
 DOWN_CAST(VulkanDevice, Device);
 
-} // namespace vkt
+} // namespace jipu

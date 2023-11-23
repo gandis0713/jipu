@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor)
@@ -33,4 +33,4 @@ VkShaderModule VulkanShaderModule::getVkShaderModule() const
     return m_shaderModule;
 }
 
-} // namespace vkt
+} // namespace jipu

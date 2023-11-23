@@ -4,7 +4,7 @@
 #include "vkt/gpu/pipeline_layout.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -23,4 +23,4 @@ private:
 
 DOWN_CAST(VulkanPipelineLayout, PipelineLayout);
 
-} // namespace vkt
+} // namespace jipu

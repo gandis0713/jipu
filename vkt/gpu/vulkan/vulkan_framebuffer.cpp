@@ -9,7 +9,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
@@ -65,7 +65,7 @@ uint32_t VulkanFrameBuffer::getHeight() const
 
 size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
 {
-    size_t hash = vkt::hash(reinterpret_cast<uint64_t>(descriptor.renderPass));
+    size_t hash = jipu::hash(reinterpret_cast<uint64_t>(descriptor.renderPass));
 
     for (const auto& textureView : descriptor.textureViews)
     {
@@ -121,4 +121,4 @@ void VulkanFrameBufferCache::clear()
     m_cache.clear();
 }
 
-} // namespace vkt
+} // namespace jipu

@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 
-namespace vkt
+namespace jipu
 {
 
 class DyLib
@@ -40,4 +40,4 @@ public:
 private:
     void* m_handle = nullptr;
 };
-} // namespace vkt
+} // namespace jipu

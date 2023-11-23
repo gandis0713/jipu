@@ -5,7 +5,7 @@
 
 #include "utils/cast.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -24,4 +24,4 @@ private:
 
 DOWN_CAST(VulkanShaderModule, ShaderModule);
 
-} // namespace vkt
+} // namespace jipu

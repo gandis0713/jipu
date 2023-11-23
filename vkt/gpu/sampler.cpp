@@ -1,6 +1,6 @@
 #include "vkt/gpu/sampler.h"
 
-namespace vkt
+namespace jipu
 {
 
 Sampler::Sampler(Device* device, const SamplerDescriptor& descriptor)
@@ -8,4 +8,4 @@ Sampler::Sampler(Device* device, const SamplerDescriptor& descriptor)
 {
 }
 
-} // namespace vkt
+} // namespace jipu

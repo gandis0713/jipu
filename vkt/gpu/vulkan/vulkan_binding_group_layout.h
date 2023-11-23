@@ -4,7 +4,7 @@
 #include "vkt/gpu/binding_group_layout.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -27,4 +27,4 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset =
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);
 BindingStageFlags ToBindingStageFlags(VkShaderStageFlags flags);
-} // namespace vkt
+} // namespace jipu

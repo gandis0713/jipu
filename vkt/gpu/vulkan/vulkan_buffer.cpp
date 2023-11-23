@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
@@ -268,4 +268,4 @@ VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
 
 //     return usages;
 // }
-} // namespace vkt
+} // namespace jipu

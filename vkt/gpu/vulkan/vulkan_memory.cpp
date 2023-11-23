@@ -5,7 +5,7 @@
 
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanMemory::VulkanMemory(VulkanDevice* device, const VulkanMemoryDescriptor& descriptor) noexcept(false)
@@ -40,4 +40,4 @@ VkDeviceMemory VulkanMemory::getVkDeviceMemory() const
     return m_deviceMemory;
 }
 
-} // namespace vkt
+} // namespace jipu

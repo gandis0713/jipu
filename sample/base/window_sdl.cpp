@@ -4,7 +4,7 @@
 #include <SDL_syswm.h>
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 Window::Window(const WindowDescriptor& descriptor)
@@ -85,4 +85,4 @@ int Window::exec()
     return 0;
 }
 
-} // namespace vkt
+} // namespace jipu

@@ -7,7 +7,7 @@
 #include "vulkan_api.h"
 #include "vulkan_render_pass.h"
 
-namespace vkt
+namespace jipu
 {
 
 struct VulkanFramebufferDescriptor
@@ -67,4 +67,4 @@ private:
     Cache m_cache{};
 };
 
-} // namespace vkt
+} // namespace jipu

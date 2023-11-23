@@ -6,7 +6,7 @@
 #include "vkt/gpu/texture.h"
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class Pipeline;
@@ -61,4 +61,4 @@ protected:
     CommandBuffer* m_commandBuffer = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

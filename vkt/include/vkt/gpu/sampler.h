@@ -1,6 +1,6 @@
 #pragma once
 
-namespace vkt
+namespace jipu
 {
 
 enum class AddressMode
@@ -46,4 +46,4 @@ protected:
     Device* m_device = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

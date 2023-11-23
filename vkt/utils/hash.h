@@ -2,7 +2,7 @@
 
 #include <functional>
 
-namespace vkt
+namespace jipu
 {
 
 template <typename T>
@@ -17,4 +17,4 @@ inline void combineHash(size_t& seed, const T& value) noexcept
     seed ^= std::hash<T>()(value) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
 }
 
-} // namespace vkt
+} // namespace jipu

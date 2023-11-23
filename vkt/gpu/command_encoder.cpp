@@ -3,7 +3,7 @@
 #include "vkt/gpu/texture.h"
 #include "vkt/gpu/texture_view.h"
 
-namespace vkt
+namespace jipu
 {
 
 CommandEncoder::CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
@@ -16,4 +16,4 @@ CommandBuffer* CommandEncoder::getCommandBuffer() const
     return m_commandBuffer;
 }
 
-} // namespace vkt
+} // namespace jipu

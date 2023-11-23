@@ -5,7 +5,7 @@
 #include <memory>
 #include <stdint.h>
 
-namespace vkt
+namespace jipu
 {
 
 struct Extent2D
@@ -92,4 +92,4 @@ protected:
     TextureDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

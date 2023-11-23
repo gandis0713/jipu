@@ -3,7 +3,7 @@
 #include "export.h"
 #include <stdint.h>
 
-namespace vkt
+namespace jipu
 {
 
 struct BufferUsageFlagBits
@@ -45,4 +45,4 @@ protected:
     BufferDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

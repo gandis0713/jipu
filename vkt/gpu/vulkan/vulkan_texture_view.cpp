@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescriptor descriptor)
@@ -135,4 +135,4 @@ TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags vkflags)
     return flags;
 }
 
-} // namespace vkt
+} // namespace jipu

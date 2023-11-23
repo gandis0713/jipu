@@ -1,7 +1,7 @@
 #include "vkt/gpu/compute_pass_encoder.h"
 #include "vkt/gpu/command_buffer.h"
 
-namespace vkt
+namespace jipu
 {
 
 ComputePassEncoder::ComputePassEncoder(CommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
@@ -10,4 +10,4 @@ ComputePassEncoder::ComputePassEncoder(CommandBuffer* commandBuffer, const Compu
 {
 }
 
-} // namespace vkt
+} // namespace jipu

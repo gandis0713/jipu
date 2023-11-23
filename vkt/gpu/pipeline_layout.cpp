@@ -2,11 +2,11 @@
 #include "vkt/gpu/binding_group_layout.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 PipelineLayout::PipelineLayout(Device* device, const PipelineLayoutDescriptor& descriptor)
     : m_device(device)
 {
 }
-} // namespace vkt
+} // namespace jipu

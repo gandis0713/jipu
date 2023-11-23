@@ -8,7 +8,7 @@
 
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
@@ -72,4 +72,4 @@ void VulkanComputePassEncoder::end()
     vulkanCommandBuffer->setSignalPipelineStage(flags);
 }
 
-} // namespace vkt
+} // namespace jipu

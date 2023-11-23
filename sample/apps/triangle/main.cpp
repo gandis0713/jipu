@@ -21,7 +21,7 @@
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 class TriangleSample : public Sample, public Im_Gui
@@ -465,7 +465,7 @@ void TriangleSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -482,12 +482,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Triangle", app },
         ""
     };
 
-    vkt::TriangleSample sample(descriptor);
+    jipu::TriangleSample sample(descriptor);
 
     sample.exec();
 }
@@ -498,12 +498,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Triangle", nullptr },
         argv[0]
     };
 
-    vkt::TriangleSample sample(descriptor);
+    jipu::TriangleSample sample(descriptor);
 
     return sample.exec();
 }

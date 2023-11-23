@@ -4,7 +4,7 @@
 #include "vkt/gpu/binding_group.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -21,4 +21,4 @@ private:
     VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
-} // namespace vkt
+} // namespace jipu

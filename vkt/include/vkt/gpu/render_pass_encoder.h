@@ -4,7 +4,7 @@
 #include <optional>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class Pipeline;
@@ -112,4 +112,4 @@ protected:
     RenderPassEncoderDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

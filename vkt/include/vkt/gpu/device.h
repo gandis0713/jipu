@@ -15,7 +15,7 @@
 
 #include <memory>
 
-namespace vkt
+namespace jipu
 {
 
 class PhysicalDevice;
@@ -55,4 +55,4 @@ protected:
     PhysicalDevice* m_physicalDevice = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

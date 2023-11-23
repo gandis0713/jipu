@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -42,4 +42,4 @@ VkPipelineStageFlags ToVkPipelineStageFlags(BufferUsageFlags usage);
 // TODO: remove or remain.
 // BufferUsageFlags ToBufferUsageFlags(VkAccessFlags vkflags);
 // BufferUsageFlags ToBufferUsageFlags(VkBufferUsageFlags usages);
-} // namespace vkt
+} // namespace jipu

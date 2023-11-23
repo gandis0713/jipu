@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor)
@@ -103,4 +103,4 @@ VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage u
     }
 }
 
-} // namespace vkt
+} // namespace jipu

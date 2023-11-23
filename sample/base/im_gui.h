@@ -17,7 +17,7 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/swapchain.h"
 
-namespace vkt
+namespace jipu
 {
 
 class Im_Gui
@@ -71,4 +71,4 @@ private:
     void updateFPS();
 };
 
-} // namespace vkt
+} // namespace jipu

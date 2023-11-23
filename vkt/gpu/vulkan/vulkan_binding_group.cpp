@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
@@ -144,4 +144,4 @@ VkDescriptorSet VulkanBindingGroup::getVkDescriptorSet() const
     return m_descriptorSet;
 }
 
-} // namespace vkt
+} // namespace jipu

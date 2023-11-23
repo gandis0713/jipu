@@ -6,7 +6,7 @@
 #import <Cocoa/Cocoa.h>
 #import <QuartzCore/CAMetalLayer.h>
 
-namespace vkt
+namespace jipu
 {
 
 void* Window::getWindowHandle()
@@ -17,4 +17,4 @@ void* Window::getWindowHandle()
     return [wmi.info.cocoa.window contentView];
 }
 
-} // namespace vkt
+} // namespace jipu

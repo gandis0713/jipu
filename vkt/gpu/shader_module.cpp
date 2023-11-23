@@ -1,7 +1,7 @@
 #include "vkt/gpu/shader_module.h"
 #include "vkt/gpu/device.h"
 
-namespace vkt
+namespace jipu
 {
 
 ShaderModule::ShaderModule(Device* device, const ShaderModuleDescriptor& descriptor)
@@ -9,4 +9,4 @@ ShaderModule::ShaderModule(Device* device, const ShaderModuleDescriptor& descrip
 {
 }
 
-} // namespace vkt
+} // namespace jipu

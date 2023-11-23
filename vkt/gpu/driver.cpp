@@ -9,7 +9,7 @@
 #endif
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
@@ -38,4 +38,4 @@ Driver::Driver(const DriverDescriptor& descriptor)
     spdlog::set_level(spdlog::level::trace);
 }
 
-} // namespace vkt
+} // namespace jipu

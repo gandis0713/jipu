@@ -1,7 +1,7 @@
 #include "vkt/gpu/surface.h"
 #include "vkt/gpu/driver.h"
 
-namespace vkt
+namespace jipu
 {
 
 Surface::Surface(Driver* driver, SurfaceDescriptor descriptor)
@@ -10,4 +10,4 @@ Surface::Surface(Driver* driver, SurfaceDescriptor descriptor)
 {
 }
 
-} // namespace vkt
+} // namespace jipu

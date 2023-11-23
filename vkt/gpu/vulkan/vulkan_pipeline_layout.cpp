@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor)
@@ -39,4 +39,4 @@ VkPipelineLayout VulkanPipelineLayout::getVkPipelineLayout() const
     return m_pipelineLayout;
 }
 
-} // namespace vkt
+} // namespace jipu

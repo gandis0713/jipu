@@ -28,7 +28,7 @@ const char kLayerKhronosValidation[] = "VK_LAYER_KHRONOS_validation";
 const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
 const char kExtensionNameExtDebugUtils[] = "VK_EXT_debug_utils";
 
-namespace vkt
+namespace jipu
 {
 
 VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
@@ -382,4 +382,4 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
     return requiredInstanceLayers;
 }
 
-} // namespace vkt
+} // namespace jipu

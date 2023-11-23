@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace vkt
+namespace jipu
 {
 
 enum class CommandBufferUsage
@@ -39,4 +39,4 @@ protected:
     Device* m_device = nullptr;
     CommandBufferDescriptor m_descriptor = {};
 };
-} // namespace vkt
+} // namespace jipu

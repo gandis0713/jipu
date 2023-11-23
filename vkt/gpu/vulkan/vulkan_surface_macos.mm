@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
@@ -82,4 +82,4 @@ void VulkanSurface::createSurfaceKHR()
 
 #endif
 
-} // namespace vkt
+} // namespace jipu

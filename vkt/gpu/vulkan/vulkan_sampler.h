@@ -4,7 +4,7 @@
 #include "vkt/gpu/sampler.h"
 #include "vulkan_api.h"
 
-namespace vkt
+namespace jipu
 {
 
 class VulkanDevice;
@@ -31,4 +31,4 @@ FilterMode ToFilterMode(VkFilter filter);
 VkSamplerMipmapMode ToVkSamplerMipmapMode(MipmapFilterMode mode);
 MipmapFilterMode ToMipmapFilterMode(VkSamplerMipmapMode mode);
 
-}; // namespace vkt
+}; // namespace jipu

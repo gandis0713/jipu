@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, PhysicalDeviceDescriptor descriptor)
@@ -146,4 +146,4 @@ bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
     return formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
 }
 
-} // namespace vkt
+} // namespace jipu

@@ -3,7 +3,7 @@
 #include "export.h"
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct BindingLayout;
@@ -65,4 +65,4 @@ protected:
     BindingGroupDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

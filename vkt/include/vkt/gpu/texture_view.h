@@ -3,7 +3,7 @@
 #include "export.h"
 #include <stdint.h>
 
-namespace vkt
+namespace jipu
 {
 
 enum class TextureViewType
@@ -54,4 +54,4 @@ protected:
     TextureViewDescriptor m_descriptor{};
 };
 
-} // namespace vkt
+} // namespace jipu

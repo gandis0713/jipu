@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 class Device;
@@ -25,4 +25,4 @@ protected:
     Device* m_device = nullptr;
 };
 
-} // namespace vkt
+} // namespace jipu

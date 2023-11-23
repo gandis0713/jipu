@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace vkt
+namespace jipu
 {
 
 enum class DriverType
@@ -40,4 +40,4 @@ public:
     virtual std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) = 0;
 };
 
-} // namespace vkt
+} // namespace jipu

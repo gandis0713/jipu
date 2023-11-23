@@ -30,7 +30,7 @@
 #include <spdlog/spdlog.h>
 #include <stddef.h>
 
-namespace vkt
+namespace jipu
 {
 
 class OBJModelSample : public Sample, public Im_Gui
@@ -710,7 +710,7 @@ void OBJModelSample::updateUniformBuffer()
     memcpy(m_uniformBufferMappedPointer, &ubo, sizeof(ubo));
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -727,12 +727,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "OBJModel", app },
         ""
     };
 
-    vkt::OBJModelSample sample(descriptor);
+    jipu::OBJModelSample sample(descriptor);
 
     sample.exec();
 }
@@ -743,12 +743,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "OBJModel", nullptr },
         argv[0]
     };
 
-    vkt::OBJModelSample sample(descriptor);
+    jipu::OBJModelSample sample(descriptor);
 
     return sample.exec();
 }
