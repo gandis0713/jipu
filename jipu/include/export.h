@@ -1,19 +1,19 @@
 #pragma once
 
-#if defined(VKT_SHARED_LIBRARY)
+#if defined(JIPU_SHARED_LIBRARY)
     #if defined(_WIN32)
-        #if defined(VKT_IMPLEMENTATION)
-            #define VKT_EXPORT __declspec(dllexport)
+        #if defined(JIPU_IMPLEMENTATION)
+            #define JIPU_EXPORT __declspec(dllexport)
         #else
-            #define VKT_EXPORT __declspec(dllimport)
+            #define JIPU_EXPORT __declspec(dllimport)
         #endif
     #else // defined(_WIN32)
-        #if defined(VKT_IMPLEMENTATION)
-            #define VKT_EXPORT __attribute__((visibility("default")))
+        #if defined(JIPU_IMPLEMENTATION)
+            #define JIPU_EXPORT __attribute__((visibility("default")))
         #else
-            #define VKT_EXPORT
+            #define JIPU_EXPORT
         #endif
     #endif // defined(_WIN32)
-#else      // defined(VKT_SHARED_LIBRARY)
-    #define VKT_EXPORT
-#endif // defined(VKT_SHARED_LIBRARY)
+#else      // defined(JIPU_SHARED_LIBRARY)
+    #define JIPU_EXPORT
+#endif // defined(JIPU_SHARED_LIBRARY)

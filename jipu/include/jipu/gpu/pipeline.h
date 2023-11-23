@@ -13,7 +13,7 @@ namespace jipu
 {
 
 class Device;
-class VKT_EXPORT Pipeline
+class JIPU_EXPORT Pipeline
 {
 public:
     Pipeline() = delete;
@@ -194,7 +194,7 @@ struct RenderPipelineDescriptor : PipelineDescriptor
     std::optional<DepthStencilStage> depthStencil = std::nullopt;
 };
 
-class VKT_EXPORT RenderPipeline : public Pipeline
+class JIPU_EXPORT RenderPipeline : public Pipeline
 {
 public:
     RenderPipeline() = delete;
@@ -218,7 +218,7 @@ struct ComputePipelineDescriptor : PipelineDescriptor
     ComputeStage compute{};
 };
 
-class VKT_EXPORT ComputePipeline : public Pipeline
+class JIPU_EXPORT ComputePipeline : public Pipeline
 {
 public:
     ComputePipeline() = delete;

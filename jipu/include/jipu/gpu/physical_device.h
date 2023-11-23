@@ -16,7 +16,7 @@ struct PhysicalDeviceDescriptor
 
 class Driver;
 
-class VKT_EXPORT PhysicalDevice
+class JIPU_EXPORT PhysicalDevice
 {
 public:
     PhysicalDevice() = delete;

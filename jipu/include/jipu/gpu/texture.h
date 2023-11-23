@@ -65,7 +65,7 @@ struct TextureDescriptor
 };
 
 class Device;
-class VKT_EXPORT Texture
+class JIPU_EXPORT Texture
 {
 public:
     Texture() = delete;

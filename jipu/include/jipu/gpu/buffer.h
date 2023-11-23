@@ -27,7 +27,7 @@ struct BufferDescriptor
 };
 
 class Device;
-class VKT_EXPORT Buffer
+class JIPU_EXPORT Buffer
 {
 public:
     Buffer() = delete;

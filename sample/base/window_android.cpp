@@ -16,7 +16,7 @@ static void onAppCmd(android_app* app, int32_t cmd)
         window->init();
         break;
     case APP_CMD_TERM_WINDOW:
-        // TODO: delete VKT
+        // TODO: delete JIPU
         break;
     default:
         break;

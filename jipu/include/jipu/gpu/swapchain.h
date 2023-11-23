@@ -39,7 +39,7 @@ struct SwapchainDescriptor
     Surface* surface = nullptr;
 };
 
-class VKT_EXPORT Swapchain
+class JIPU_EXPORT Swapchain
 {
 public:
     Swapchain() = delete;

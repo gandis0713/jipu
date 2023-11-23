@@ -22,7 +22,7 @@ struct DriverDescriptor
     DriverType type = DriverType::NONE;
 };
 
-class VKT_EXPORT Driver
+class JIPU_EXPORT Driver
 {
 public:
     static std::unique_ptr<Driver> create(const DriverDescriptor& descriptor);

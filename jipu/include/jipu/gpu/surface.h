@@ -11,7 +11,7 @@ struct SurfaceDescriptor
 };
 
 class Driver;
-class VKT_EXPORT Surface
+class JIPU_EXPORT Surface
 {
 public:
     Surface() = delete;

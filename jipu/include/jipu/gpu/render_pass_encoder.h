@@ -71,7 +71,7 @@ enum IndexFormat
     kUint32,
 };
 
-class VKT_EXPORT RenderPassEncoder
+class JIPU_EXPORT RenderPassEncoder
 {
 public:
     RenderPassEncoder() = delete;

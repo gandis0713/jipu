@@ -34,7 +34,7 @@ struct TextureViewDescriptor
 };
 
 class Texture;
-class VKT_EXPORT TextureView
+class JIPU_EXPORT TextureView
 {
 public:
     TextureView() = delete;

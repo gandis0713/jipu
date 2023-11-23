@@ -36,7 +36,7 @@ struct CommandEncoderDescriptor
 {
 };
 
-class VKT_EXPORT CommandEncoder
+class JIPU_EXPORT CommandEncoder
 {
 public:
     CommandEncoder() = delete;

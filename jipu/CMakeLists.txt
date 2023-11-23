@@ -178,13 +178,13 @@ endif()
 # compile definitions
 target_compile_definitions(jipu
   PRIVATE
-  "VKT_IMPLEMENTATION"
+  "JIPU_IMPLEMENTATION"
 )
 
 if(BUILD_SHARED_LIBS)
   target_compile_definitions(jipu
     PRIVATE
-    "VKT_SHARED_LIBRARY"
+    "JIPU_SHARED_LIBRARY"
   )
 endif()
 

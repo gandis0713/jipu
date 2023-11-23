@@ -20,7 +20,7 @@ struct CommandBufferDescriptor
 };
 
 class Device;
-class VKT_EXPORT CommandBuffer
+class JIPU_EXPORT CommandBuffer
 {
 public:
     CommandBuffer() = delete;

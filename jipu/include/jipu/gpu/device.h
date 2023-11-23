@@ -24,7 +24,7 @@ struct DeviceDescriptor
 {
 };
 
-class VKT_EXPORT Device
+class JIPU_EXPORT Device
 {
 public:
     Device() = delete;

@@ -26,7 +26,7 @@ struct QueueDescriptor
 };
 
 class Device;
-class VKT_EXPORT Queue
+class JIPU_EXPORT Queue
 {
 public:
     Queue() = delete;

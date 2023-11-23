@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 
 # set options.
-option(VKT_TEST "VKT Test" OFF)
-option(VKT_SAMPLE "VKT Sample" ON)
+option(JIPU_TEST "JIPU Test" OFF)
+option(JIPU_SAMPLE "JIPU Sample" ON)
 
 # TODO: move cmake/ directory.
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -39,11 +39,11 @@ endif()
 
 add_subdirectory(jipu)
 
-if(VKT_SAMPLE)
+if(JIPU_SAMPLE)
   add_subdirectory(sample)
 endif()
 
-if(VKT_TEST)
+if(JIPU_TEST)
   enable_testing()
   add_subdirectory(test)
   add_dependencies(test_jipu jipu::jipu)

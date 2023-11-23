@@ -44,7 +44,7 @@ struct BindingGroupDescriptor
 };
 
 class Device;
-class VKT_EXPORT BindingGroup
+class JIPU_EXPORT BindingGroup
 {
 public:
     BindingGroup() = delete;

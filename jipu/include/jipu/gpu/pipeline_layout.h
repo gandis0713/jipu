@@ -14,7 +14,7 @@ struct PipelineLayoutDescriptor
     std::vector<BindingGroupLayout*> layouts = {};
 };
 
-class VKT_EXPORT PipelineLayout
+class JIPU_EXPORT PipelineLayout
 {
 public:
     PipelineLayout() = delete;

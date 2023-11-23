@@ -52,7 +52,7 @@ struct BindingGroupLayoutDescriptor
 };
 
 class Device;
-class VKT_EXPORT BindingGroupLayout
+class JIPU_EXPORT BindingGroupLayout
 {
 public:
     BindingGroupLayout() = delete;
