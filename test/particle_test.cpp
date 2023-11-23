@@ -1,9 +1,9 @@
 #include "particle_test.h"
 
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/surface.h"
+#include "jipu/gpu/device.h"
+#include "jipu/gpu/driver.h"
+#include "jipu/gpu/physical_device.h"
+#include "jipu/gpu/surface.h"
 
 using namespace jipu;
 

@@ -5,17 +5,17 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
+#include "jipu/gpu/buffer.h"
+#include "jipu/gpu/command_buffer.h"
+#include "jipu/gpu/command_encoder.h"
+#include "jipu/gpu/device.h"
+#include "jipu/gpu/driver.h"
+#include "jipu/gpu/physical_device.h"
+#include "jipu/gpu/pipeline.h"
+#include "jipu/gpu/pipeline_layout.h"
+#include "jipu/gpu/queue.h"
+#include "jipu/gpu/surface.h"
+#include "jipu/gpu/swapchain.h"
 
 namespace jipu
 {

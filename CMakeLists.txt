@@ -37,7 +37,7 @@ elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
-add_subdirectory(vkt)
+add_subdirectory(jipu)
 
 if(VKT_SAMPLE)
   add_subdirectory(sample)
