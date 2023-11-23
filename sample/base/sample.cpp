@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 Sample::Sample(const SampleDescriptor& descriptor)
@@ -16,4 +16,4 @@ Sample::~Sample()
 {
 }
 
-} // namespace vkt
+} // namespace jipu

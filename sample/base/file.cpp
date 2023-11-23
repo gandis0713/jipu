@@ -55,7 +55,7 @@ std::vector<char> _readFile(const std::filesystem::path& filePath)
 #endif
 } // namespace
 
-namespace vkt::utils
+namespace jipu::utils
 {
 
 std::vector<char> readFile(const std::filesystem::path& filePath, void* platformContext)
@@ -68,4 +68,4 @@ std::vector<char> readFile(const std::filesystem::path& filePath, void* platform
 #endif
 }
 
-} // namespace vkt::utils
+} // namespace jipu::utils

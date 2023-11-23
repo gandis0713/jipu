@@ -3,7 +3,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 /*
@@ -512,4 +512,4 @@ void Im_Gui::updateFPS()
     }
 }
 
-} // namespace vkt
+} // namespace jipu

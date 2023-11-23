@@ -25,8 +25,8 @@ find_package(spdlog CONFIG REQUIRED)
 
 target_link_libraries(deferred
     PRIVATE
-    vkt::vkt
-    vkt::sample_base
+    jipu::jipu
+    jipu::sample_base
     spdlog::spdlog_header_only
 )
 

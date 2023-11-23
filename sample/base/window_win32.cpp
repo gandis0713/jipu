@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL_syswm.h>
 
-namespace vkt
+namespace jipu
 {
 
 void* Window::getWindowHandle()
@@ -14,4 +14,4 @@ void* Window::getWindowHandle()
     return static_cast<void*>(wmi.info.win.window);
 }
 
-} // namespace vkt
+} // namespace jipu

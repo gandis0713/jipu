@@ -2,7 +2,7 @@
 
 #include <game-activity/native_app_glue/android_native_app_glue.h>
 
-namespace vkt
+namespace jipu
 {
 
 static void onAppCmd(android_app* app, int32_t cmd)
@@ -16,7 +16,7 @@ static void onAppCmd(android_app* app, int32_t cmd)
         window->init();
         break;
     case APP_CMD_TERM_WINDOW:
-        // TODO: delete VKT
+        // TODO: delete JIPU
         break;
     default:
         break;
@@ -123,4 +123,4 @@ void* Window::getWindowHandle()
     return static_cast<void*>(app->window);
 }
 
-} // namespace vkt
+} // namespace jipu

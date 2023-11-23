@@ -5,17 +5,17 @@
 #include "im_gui.h"
 #include "sample.h"
 
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/pipeline.h"
+#include "jipu/pipeline_layout.h"
+#include "jipu/queue.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -26,7 +26,7 @@
 static const uint32_t VERTEX_SLOT = 0;
 static const uint32_t INSTANCING_SLOT = 1;
 
-namespace vkt
+namespace jipu
 {
 
 class InstancingSample : public Sample, public Im_Gui
@@ -825,7 +825,7 @@ void InstancingSample::createTransforms()
     }
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -842,12 +842,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Instancing", app },
         ""
     };
 
-    vkt::InstancingSample sample(descriptor);
+    jipu::InstancingSample sample(descriptor);
 
     sample.exec();
 }
@@ -858,12 +858,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Instancing", nullptr },
         argv[0]
     };
 
-    vkt::InstancingSample sample(descriptor);
+    jipu::InstancingSample sample(descriptor);
 
     return sample.exec();
 }

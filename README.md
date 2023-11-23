@@ -1,10 +1,10 @@
-# Vulkan Test
+# JIPU
 
-[![Build Status](https://github.com/gandis0713/vulkan-test/workflows/Android/badge.svg)](https://github.com/gandis0713/vulkan-test/workflows/Android/badge.svg)
-[![Build Status](https://github.com/gandis0713/vulkan-test/workflows/macOS/badge.svg)](https://github.com/gandis0713/vulkan-test/workflows/macOS/badge.svg)
-[![Build Status](https://github.com/gandis0713/vulkan-test/workflows/Windows/badge.svg)](https://github.com/gandis0713/vulkan-test/workflows/Windows/badge.svg)
+[![Build Status](https://github.com/gandis0713/jipu/workflows/Android/badge.svg)](https://github.com/gandis0713/jipu/workflows/Android/badge.svg)
+[![Build Status](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)
+[![Build Status](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)
 
-Vulkan test to abstract the graphics API.
+JIPU to abstract the modern graphics API.
 
 ## Requirement
 

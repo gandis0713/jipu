@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace vkt
+namespace jipu
 {
 
 class Camera
@@ -63,4 +63,4 @@ private:
     // double m_fov = 45.0f;
 };
 
-} // namespace vkt
+} // namespace jipu

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace vkt
+namespace jipu
 {
 
 struct WindowDescriptor
@@ -53,4 +53,4 @@ protected:
     int m_mouseX = 0;
     int m_mouseY = 0;
 };
-} // namespace vkt
+} // namespace jipu

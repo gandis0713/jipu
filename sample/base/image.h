@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace vkt
+namespace jipu
 {
 
 class Image
@@ -25,4 +25,4 @@ protected:
     int m_channel = 0;
 };
 
-} // namespace vkt
+} // namespace jipu

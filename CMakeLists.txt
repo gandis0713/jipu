@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 
 # set options.
-option(VKT_TEST "VKT Test" OFF)
-option(VKT_SAMPLE "VKT Sample" ON)
+option(JIPU_TEST "JIPU Test" OFF)
+option(JIPU_SAMPLE "JIPU Sample" ON)
 
 # TODO: move cmake/ directory.
 if(CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -20,9 +20,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
 endif()
 
 project(
-  vkt
+  jipu
   VERSION 0.0.1
-  DESCRIPTION "Vulkan Test"
+  DESCRIPTION "Abstract modern graphics API"
   LANGUAGES CXX
 )
 
@@ -37,21 +37,21 @@ elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
-add_subdirectory(vkt)
+add_subdirectory(jipu)
 
-if(VKT_SAMPLE)
+if(JIPU_SAMPLE)
   add_subdirectory(sample)
 endif()
 
-if(VKT_TEST)
+if(JIPU_TEST)
   enable_testing()
   add_subdirectory(test)
-  add_dependencies(test_vkt vkt::vkt)
+  add_dependencies(test_jipu jipu::jipu)
 endif()
 
 # TODO: runtime output
 if(WIN32 AND BUILD_SHARED_LIBS)
-  set_target_properties(vkt PROPERTIES
+  set_target_properties(jipu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/sample/apps/3d-model
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/sample/apps/3d-model
   )

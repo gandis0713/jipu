@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace vkt
+namespace jipu
 {
 
 class Light
@@ -22,4 +22,4 @@ protected:
     glm::vec3 m_color;
 };
 
-} // namespace vkt
+} // namespace jipu

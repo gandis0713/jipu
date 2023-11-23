@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace vkt
+namespace jipu
 {
 
 void Camera::lookAt(glm::vec3 eye, glm::vec3 center, glm::vec3 up)
@@ -57,4 +57,4 @@ PerspectiveCamera::PerspectiveCamera(float fov, float aspect,
     m_type = Type::kPerspective;
 }
 
-} // namespace vkt
+} // namespace jipu

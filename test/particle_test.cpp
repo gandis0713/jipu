@@ -1,11 +1,11 @@
 #include "particle_test.h"
 
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/surface.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/surface.h"
 
-using namespace vkt;
+using namespace jipu;
 
 TEST_F(ParticleTest, test)
 {

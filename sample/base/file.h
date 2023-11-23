@@ -3,9 +3,9 @@
 #include <filesystem>
 #include <vector>
 
-namespace vkt::utils
+namespace jipu::utils
 {
 
 std::vector<char> readFile(const std::filesystem::path& filePath, void* platformContext = nullptr);
 
-} // namespace vkt::utils
+} // namespace jipu::utils

@@ -5,23 +5,23 @@
 #include "im_gui.h"
 #include "sample.h"
 
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/pipeline.h"
+#include "jipu/pipeline_layout.h"
+#include "jipu/queue.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
 
-namespace vkt
+namespace jipu
 {
 
 class TriangleSample : public Sample, public Im_Gui
@@ -465,7 +465,7 @@ void TriangleSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -482,12 +482,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Triangle", app },
         ""
     };
 
-    vkt::TriangleSample sample(descriptor);
+    jipu::TriangleSample sample(descriptor);
 
     sample.exec();
 }
@@ -498,12 +498,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Triangle", nullptr },
         argv[0]
     };
 
-    vkt::TriangleSample sample(descriptor);
+    jipu::TriangleSample sample(descriptor);
 
     return sample.exec();
 }

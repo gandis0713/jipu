@@ -5,19 +5,19 @@
 #include <glm/glm.hpp>
 #include <imgui.h>
 
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/pipeline.h"
+#include "jipu/pipeline_layout.h"
+#include "jipu/queue.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
-namespace vkt
+namespace jipu
 {
 
 class Im_Gui
@@ -71,4 +71,4 @@ private:
     void updateFPS();
 };
 
-} // namespace vkt
+} // namespace jipu

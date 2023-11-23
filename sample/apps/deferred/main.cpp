@@ -6,18 +6,18 @@
 #include "model.h"
 #include "sample.h"
 
-#include "vkt/gpu/buffer.h"
-#include "vkt/gpu/command_buffer.h"
-#include "vkt/gpu/command_encoder.h"
-#include "vkt/gpu/device.h"
-#include "vkt/gpu/driver.h"
-#include "vkt/gpu/physical_device.h"
-#include "vkt/gpu/pipeline.h"
-#include "vkt/gpu/pipeline_layout.h"
-#include "vkt/gpu/queue.h"
-#include "vkt/gpu/render_pass_encoder.h"
-#include "vkt/gpu/surface.h"
-#include "vkt/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/pipeline.h"
+#include "jipu/pipeline_layout.h"
+#include "jipu/queue.h"
+#include "jipu/render_pass_encoder.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -26,7 +26,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 class DeferredSample : public Sample, public Im_Gui
@@ -1299,7 +1299,7 @@ void DeferredSample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-} // namespace vkt
+} // namespace jipu
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
@@ -1316,12 +1316,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 1000, 2000, "Deferred Sample", app },
         ""
     };
 
-    vkt::DeferredSample sample(descriptor);
+    jipu::DeferredSample sample(descriptor);
 
     sample.exec();
 }
@@ -1332,12 +1332,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    vkt::SampleDescriptor descriptor{
+    jipu::SampleDescriptor descriptor{
         { 800, 600, "Deferred Sample", nullptr },
         argv[0]
     };
 
-    vkt::DeferredSample sample(descriptor);
+    jipu::DeferredSample sample(descriptor);
 
     return sample.exec();
 }

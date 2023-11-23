@@ -17,15 +17,15 @@
 namespace
 {
 
-vkt::Polygon generatePolygonFromOBJ(const tinyobj::attrib_t& attrib, const std::vector<tinyobj::shape_t>& shapes)
+jipu::Polygon generatePolygonFromOBJ(const tinyobj::attrib_t& attrib, const std::vector<tinyobj::shape_t>& shapes)
 {
-    vkt::Polygon polygon{};
+    jipu::Polygon polygon{};
 
     for (const auto& shape : shapes)
     {
         for (const auto& index : shape.mesh.indices)
         {
-            vkt::Vertex vertex{};
+            jipu::Vertex vertex{};
 
             vertex.pos = {
                 attrib.vertices[3 * index.vertex_index + 0],
@@ -46,9 +46,9 @@ vkt::Polygon generatePolygonFromOBJ(const tinyobj::attrib_t& attrib, const std::
     return polygon;
 }
 
-vkt::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
+jipu::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinygltf::Mesh& mesh)
 {
-    vkt::Polygon polygon{};
+    jipu::Polygon polygon{};
 
     // Iterate through all primitives of this node's mesh
     for (size_t i = 0; i < mesh.primitives.size(); i++)
@@ -100,7 +100,7 @@ vkt::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinyglt
             // Append data to model's vertex buffer
             for (size_t v = 0; v < vertexCount; v++)
             {
-                vkt::Vertex vert{};
+                jipu::Vertex vert{};
                 vert.pos = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
                 vert.normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                 vert.tangent = glm::normalize(glm::vec4(tangentBuffer ? glm::make_vec4(&tangentBuffer[v * 4]) : glm::vec4(0.0f)));
@@ -157,7 +157,7 @@ vkt::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinyglt
 
 } // namespace
 
-namespace vkt
+namespace jipu
 {
 
 Polygon loadOBJ(const std::filesystem::path& path)
@@ -234,4 +234,4 @@ Polygon loadGLTF(void* buf, uint64_t len, const std::filesystem::path& baseDir)
     return generatePolygonFromGLTF(model, mesh);
 }
 
-} // namespace vkt
+} // namespace jipu

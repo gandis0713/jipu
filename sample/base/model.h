@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <vector>
 
-namespace vkt
+namespace jipu
 {
 
 struct Polygon
@@ -19,4 +19,4 @@ Polygon loadOBJ(void* buf, uint64_t len);
 Polygon loadGLTF(const std::filesystem::path& path);
 Polygon loadGLTF(void* buf, uint64_t len, const std::filesystem::path& baseDir);
 
-} // namespace vkt
+} // namespace jipu

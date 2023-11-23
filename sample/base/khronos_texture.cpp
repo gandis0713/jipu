@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-namespace vkt
+namespace jipu
 {
 
 KTX::KTX(const std::filesystem::path& path)
@@ -55,4 +55,4 @@ int KTX::getChannel() const
     return ktxTexture_GetElementSize(m_texture);
 }
 
-} // namespace vkt
+} // namespace jipu

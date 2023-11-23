@@ -22,7 +22,7 @@ android {
     ndkVersion androidNDKVersion
 
     defaultConfig {
-        applicationId "com.gandis.vulkan_test"
+        applicationId "com.gandis.jipu"
         minSdk 25
         targetSdk 33
         versionCode 1
@@ -74,7 +74,7 @@ android {
         viewBinding true
         prefab true // for game-activity
     }
-    namespace 'com.gandis.vulkan_test'
+    namespace 'com.gandis.jipu'
 }
 dependencies {
 
