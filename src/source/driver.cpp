@@ -1,6 +1,6 @@
 #include "jipu/driver.h"
 
-#include "jipu/vulkan/vulkan_driver.h"
+#include "source/vulkan/vulkan_driver.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
     #include "spdlog/sinks/android_sink.h"

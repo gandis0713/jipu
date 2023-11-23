@@ -5,75 +5,75 @@ find_package(Vulkan REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_api.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_binding_group_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_binding_group.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_command_buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_command_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_compute_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_framebuffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_memory.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_memory_allocator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_pipeline.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_physical_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_queue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_render_pass.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_render_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_shader_module.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_sampler.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_surface.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_swapchain.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_api.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_binding_group_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_binding_group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_compute_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory_allocator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sampler.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_swapchain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.cpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_api.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_binding_group_layout.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_binding_group.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_buffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_command_buffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_command_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_compute_pass_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_driver.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_framebuffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_memory.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_memory_allocator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_pipeline.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_pipeline_layout.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_physical_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_queue.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_render_pass.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_render_pass_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_sampler.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_shader_module.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_surface.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_texture.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_texture_view.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_api.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_binding_group_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_binding_group.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory_allocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sampler.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_shader_module.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_swapchain.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/binding_group_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/binding_group.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/command_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/command_buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/compute_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/pipeline.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/swapchain.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/queue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/render_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/physical_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/sampler.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/surface.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/jipu/shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/binding_group_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/binding_group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/command_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/compute_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/render_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/shader_module.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline_layout.h
@@ -106,15 +106,15 @@ set(SRC_FILES
 
 if(APPLE)
   list(APPEND SRC_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_surface_macos.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface_macos.mm
   )
 elseif(MSVC)
   list(APPEND SRC_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_surface_window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface_window.cpp
   )
 elseif(ANDROID)
   list(APPEND SRC_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/jipu/vulkan/vulkan_surface_android.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface_android.cpp
   )
 endif()
 
