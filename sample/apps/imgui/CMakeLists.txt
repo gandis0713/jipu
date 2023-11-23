@@ -27,8 +27,8 @@ find_package(glm CONFIG REQUIRED)
 target_link_libraries(imgui
     PRIVATE
     glm::glm
-    vkt::vkt
-    vkt::sample_base
+    jipu::jipu
+    jipu::sample_base
     spdlog::spdlog_header_only
 )
 

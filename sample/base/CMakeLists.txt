@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    vkt_sample_base
+    jipu_sample_base
     VERSION 0.1
-    DESCRIPTION "vkt sample base"
+    DESCRIPTION "jipu sample base"
     LANGUAGES CXX
 )
 
@@ -66,34 +66,34 @@ else()
     endif()
 endif()
 
-add_library(vkt_sample_base STATIC ${SRC_FILES})
-add_library(vkt::sample_base ALIAS vkt_sample_base)
+add_library(jipu_sample_base STATIC ${SRC_FILES})
+add_library(jipu::sample_base ALIAS jipu_sample_base)
 
-target_include_directories(vkt_sample_base
+target_include_directories(jipu_sample_base
     PRIVATE
     ${Stb_INCLUDE_DIR}
     ${TINYGLTF_INCLUDE}
 )
 
-target_link_libraries(vkt_sample_base
+target_link_libraries(jipu_sample_base
     PRIVATE
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
     glm::glm
     KTX::ktx
-    vkt::vkt
+    jipu::jipu
     imgui::imgui
 )
 
 if(NOT ANDROID)
-    target_link_libraries(vkt_sample_base
+    target_link_libraries(jipu_sample_base
         PUBLIC
         SDL2::SDL2 SDL2::SDL2main
     )
 else()
     find_package(game-activity REQUIRED CONFIG)
     find_library(log-lib log)
-    target_link_libraries(vkt_sample_base
+    target_link_libraries(jipu_sample_base
         PUBLIC
         game-activity::game-activity # game-activity::game-activity_static
         android
@@ -101,7 +101,7 @@ else()
     )
 endif()
 
-target_include_directories(vkt
+target_include_directories(jipu
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR} # for export
 )

@@ -20,7 +20,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
 endif()
 
 project(
-  vkt
+  jipu
   VERSION 0.0.1
   DESCRIPTION "Vulkan Test"
   LANGUAGES CXX
@@ -46,12 +46,12 @@ endif()
 if(VKT_TEST)
   enable_testing()
   add_subdirectory(test)
-  add_dependencies(test_vkt vkt::vkt)
+  add_dependencies(test_jipu jipu::jipu)
 endif()
 
 # TODO: runtime output
 if(WIN32 AND BUILD_SHARED_LIBS)
-  set_target_properties(vkt PROPERTIES
+  set_target_properties(jipu PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/sample/apps/3d-model
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/sample/apps/3d-model
   )

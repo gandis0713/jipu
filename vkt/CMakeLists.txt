@@ -124,14 +124,14 @@ if(BUILD_SHARED_LIBS)
   set(LIB_TYPE SHARED)
 endif()
 
-add_library(vkt
+add_library(jipu
   ${LIB_TYPE} # SHARED or STATIC
   ${SRC_FILES}
 )
-add_library(vkt::vkt ALIAS vkt)
+add_library(jipu::jipu ALIAS jipu)
 
 # include directories
-target_include_directories(vkt
+target_include_directories(jipu
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include # for export
   PRIVATE
@@ -139,7 +139,7 @@ target_include_directories(vkt
 )
 
 # link libraries
-target_link_libraries(vkt
+target_link_libraries(jipu
   PUBLIC
   Vulkan::Vulkan
   PRIVATE
@@ -147,7 +147,7 @@ target_link_libraries(vkt
 )
 
 if(APPLE)
-  target_link_libraries(vkt
+  target_link_libraries(jipu
     PRIVATE
     "-framework Cocoa"
   )
@@ -157,7 +157,7 @@ endif()
 if(MSVC)
 # TODO
 elseif(APPLE)
-  target_compile_options(vkt
+  target_compile_options(jipu
     PUBLIC
     -Wall
     -Werror
@@ -176,20 +176,20 @@ elseif(APPLE)
 endif()
 
 # compile definitions
-target_compile_definitions(vkt
+target_compile_definitions(jipu
   PRIVATE
   "VKT_IMPLEMENTATION"
 )
 
 if(BUILD_SHARED_LIBS)
-  target_compile_definitions(vkt
+  target_compile_definitions(jipu
     PRIVATE
     "VKT_SHARED_LIBRARY"
   )
 endif()
 
 if(MSVC)
-  target_compile_definitions(vkt
+  target_compile_definitions(jipu
     PRIVATE
     "NOMINMAX" # to undefine max, min macro
   )
@@ -198,7 +198,7 @@ endif()
 # install
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-install(TARGETS vkt
+install(TARGETS jipu
   INCLUDES DESTINATION ${CMAKE_INSTALL_PREFIX}/include
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib

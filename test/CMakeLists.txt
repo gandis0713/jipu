@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(PRJ_NAME test_vkt)
+set(PRJ_NAME test_jipu)
 
 find_package(Gtest CONFIG REQUIRED)
 find_package(sdl2 CONFIG REQUIRED)
@@ -24,7 +24,7 @@ elseif(WIN32)
 endif()
 
 add_executable(${PRJ_NAME} ${PRJ_SRCS})
-add_executable(vkt::test ALIAS test_vkt)
+add_executable(jipu::test ALIAS test_jipu)
 add_test(NAME ${PRJ_NAME} COMMAND ${PRJ_NAME})
 
 target_include_directories(${PRJ_NAME} PRIVATE
@@ -33,7 +33,7 @@ target_include_directories(${PRJ_NAME} PRIVATE
 
 target_link_libraries(${PRJ_NAME}
   PUBLIC
-  vkt::vkt
+  jipu::jipu
   GTest::gmock
   GTest::gtest
   GTest::gmock_main

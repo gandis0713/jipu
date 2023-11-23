@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-    vkt_sample
+    jipu_sample
     VERSION 0.1
-    DESCRIPTION "vkt sample"
+    DESCRIPTION "jipu sample"
     LANGUAGES CXX
 )
 
