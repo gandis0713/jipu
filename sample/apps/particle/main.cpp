@@ -3,13 +3,13 @@
 #include "im_gui.h"
 #include "sample.h"
 
-#include "jipu/gpu/buffer.h"
-#include "jipu/gpu/device.h"
-#include "jipu/gpu/driver.h"
-#include "jipu/gpu/physical_device.h"
-#include "jipu/gpu/shader_module.h"
-#include "jipu/gpu/surface.h"
-#include "jipu/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/shader_module.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
 #include <chrono>
 #include <cstdint>

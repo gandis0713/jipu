@@ -5,17 +5,17 @@
 #include "im_gui.h"
 #include "sample.h"
 
-#include "jipu/gpu/buffer.h"
-#include "jipu/gpu/command_buffer.h"
-#include "jipu/gpu/command_encoder.h"
-#include "jipu/gpu/device.h"
-#include "jipu/gpu/driver.h"
-#include "jipu/gpu/physical_device.h"
-#include "jipu/gpu/pipeline.h"
-#include "jipu/gpu/pipeline_layout.h"
-#include "jipu/gpu/queue.h"
-#include "jipu/gpu/surface.h"
-#include "jipu/gpu/swapchain.h"
+#include "jipu/buffer.h"
+#include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
+#include "jipu/device.h"
+#include "jipu/driver.h"
+#include "jipu/physical_device.h"
+#include "jipu/pipeline.h"
+#include "jipu/pipeline_layout.h"
+#include "jipu/queue.h"
+#include "jipu/surface.h"
+#include "jipu/swapchain.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
