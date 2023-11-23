@@ -37,7 +37,7 @@ elseif(APPLE)
   enable_language(OBJCXX)
 endif()
 
-add_subdirectory(jipu)
+add_subdirectory(src)
 
 if(JIPU_SAMPLE)
   add_subdirectory(sample)
