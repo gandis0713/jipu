@@ -42,12 +42,6 @@ jobs:
           buildPresetAdditionalArgs: "['--target install']"
           # TODO: enable test.
           # testPreset: x64-osx-ninja-release
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
-        with:
-          name: artifact for macos
-          path: "${{ github.workspace }}/install/arm64-osx-ninja/debug"
-          retention-days: 5
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
         uses: 8398a7/action-slack@v3.15.0
