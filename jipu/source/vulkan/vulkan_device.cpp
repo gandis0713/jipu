@@ -212,13 +212,15 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice->getInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
-        // set max value for per stage.
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, devicePropertyLimists.maxPerStageDescriptorUniformBuffers };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, devicePropertyLimists.maxPerStageDescriptorUniformBuffers };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxPerStageDescriptorSampledImages };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxPerStageDescriptorInputAttachments };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxPerStageDescriptorStorageBuffers };
-        if (vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool) != VK_SUCCESS)
+        // TODO: set correct max value.
+        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, devicePropertyLimists.maxBoundDescriptorSets };
+        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, devicePropertyLimists.maxBoundDescriptorSets };
+        poolSizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxBoundDescriptorSets };
+        poolSizes[3] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxBoundDescriptorSets };
+        poolSizes[4] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxBoundDescriptorSets };
+        
+        VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
+        if (result != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to create descriptor pool.");
         }

@@ -800,7 +800,7 @@ void InstancingSample::createCamera()
     auto halfHeight = m_swapchain->getHeight() / 2.0f;
     m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
                                                     -halfHeight, halfHeight,
-                                                    -1000, 1000);
+                                                    -1000.0f, 1000.0f);
     m_camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
