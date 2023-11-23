@@ -4,7 +4,7 @@
 [![Build Status](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)
 [![Build Status](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)
 
-Abstract the modern graphics API.
+JIPU to abstract the modern graphics API.
 
 ## Requirement
 
