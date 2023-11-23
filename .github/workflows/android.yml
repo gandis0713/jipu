@@ -1,4 +1,4 @@
-name: Build for android
+name: Android
 
 on:
   push:
