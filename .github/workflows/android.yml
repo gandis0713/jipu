@@ -1,0 +1,68 @@
+name: Build for android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: [ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v3
+
+      # https://github.com/actions/setup-java
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+
+      # https://github.com/marketplace/actions/setup-android-sdk-tools
+      # - name: Setup Android Environment
+      #   uses: android-actions/setup-android@v2
+      # - name: Install Android NDK
+      #   run: |
+      #     sdkmanager --install "cmake;3.22.1"
+      #     sdkmanager --install "ndk;25.1.8937393"
+      #     sdkmanager --install "ndk;25.2.9519653"
+
+      # https://github.com/nttld/setup-ndk
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25b
+          local-cache: true
+
+      # https://github.com/marketplace/actions/get-cmake
+      # - name: Setup CMake
+      #   uses: lukka/get-cmake@latest
+
+      # https://github.com/marketplace/actions/run-vcpkg
+      - name: Setup vcpkg and install them.
+        uses: lukka/run-vcpkg@v10
+        with:
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          vcpkgGitCommitId: "9edb1b8e590cc086563301d735cae4b6e732d2d2"
+          vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
+          runVcpkgInstall: false
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: sample/android
+      - run: ./gradlew clean assembleRelease
+        working-directory: sample/android
+        # env:
+        #   ANDROID_NDK_VERSION: "25.1.8937393" # r25b
+
+      # https://github.com/marketplace/actions/action-slack
+      - name: Send status of a job to slack.
+        uses: 8398a7/action-slack@v3.15.0
+        with:
+          status: ${{ job.status }} # TODO : please fix me.
+          author_name: ${{ env.AS_AUTHOR }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          # mention: "gandis0713"
+          # if_mention: "failure"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ failure() }} # always(), failure() # Pick up events even if the job fails or is canceled.
