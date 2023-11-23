@@ -22,7 +22,7 @@ endif()
 project(
   jipu
   VERSION 0.0.1
-  DESCRIPTION "Vulkan Test"
+  DESCRIPTION "Abstract modern graphics API"
   LANGUAGES CXX
 )
 

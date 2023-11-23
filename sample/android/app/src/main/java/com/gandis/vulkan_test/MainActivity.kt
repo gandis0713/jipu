@@ -1,4 +1,4 @@
-package com.gandis.vulkan_test
+package com.gandis.jipu
 
 import android.os.Bundle
 import com.google.androidgamesdk.GameActivity
