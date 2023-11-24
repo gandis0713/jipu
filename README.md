@@ -7,16 +7,17 @@
 JIPU to abstract the modern graphics API.
 
 ## Status
-|Graphics API| support |
-|-|-|
-|DirectX 12 | planed |
-|Vulkan| in progress |
-|Metal | Planed |
+|Graphics API| Support | Platform |
+|-|-|-|
+|DirectX 12 | planed | Windows |
+|Vulkan| in progress | Android, Linux, Windows |
+|Metal | Planed | macOS, iOS |
 
 ## Requirement
 
-- vcpkg
-- ninja (if you want to build as ninja)
+- vcpkg ( 2023.06.20 )
+- cmake ( 3.25 or higher )
+- ninja ( if you want to build as ninja )
 
 ## How to build
 ```shell
