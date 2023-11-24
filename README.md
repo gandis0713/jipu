@@ -6,6 +6,13 @@
 
 JIPU to abstract the modern graphics API.
 
+## Status
+|Graphics API| support |
+|-|-|
+|DirectX 12 | planed |
+|Vulkan| in progress |
+|Metal | Planed |
+
 ## Requirement
 
 - vcpkg
