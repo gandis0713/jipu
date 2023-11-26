@@ -43,6 +43,8 @@ endif()
 set(SHADERS
     offscreen.vert
     offscreen.frag
+    onscreen.vert
+    onscreen.frag
 )
 
 # convert shader to spirv
