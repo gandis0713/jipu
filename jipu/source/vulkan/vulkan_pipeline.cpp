@@ -241,6 +241,7 @@ void VulkanRenderPipeline::initialize()
         vulkanColorAttachment.format = target.format;
         vulkanColorAttachment.loadOp = LoadOp::kClear;
         vulkanColorAttachment.storeOp = StoreOp::kStore;
+        vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         vulkanColorAttachment.finalLayout = GenerateImageLayout(TextureUsageFlagBits::kColorAttachment);
     }
 
