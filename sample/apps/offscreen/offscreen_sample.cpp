@@ -573,10 +573,15 @@ void OffscreenSample::createOnscreenRenderPipeline()
         positionAttribute.offset = offsetof(OnscreenVertex, pos);
         positionAttribute.location = 0;
 
+        VertexAttribute texCoordAttribute{};
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
+        texCoordAttribute.location = 1;
+
         VertexInputLayout vertexInputLayout{};
         vertexInputLayout.mode = VertexMode::kVertex;
         vertexInputLayout.stride = sizeof(OnscreenVertex);
-        vertexInputLayout.attributes = { positionAttribute };
+        vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
         vertexStage.entryPoint = "main";
         vertexStage.shaderModule = vertexShaderModule.get();

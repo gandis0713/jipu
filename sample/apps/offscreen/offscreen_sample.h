@@ -126,13 +126,13 @@ private:
     struct OnscreenVertex
     {
         glm::vec3 pos;
+        glm::vec2 texCoord;
     };
-
     std::vector<OnscreenVertex> m_onscreenVertices{
-        { { -1.0, -1.0, 0.0 } },
-        { { -1.0, 1.0, 0.0 } },
-        { { 1.0, 1.0, 0.0 } },
-        { { 1.0, -1.0, 0.0 } },
+        { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+        { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
     };
     std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
