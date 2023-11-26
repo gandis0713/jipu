@@ -68,7 +68,7 @@ if(NOT ANDROID)
         endforeach(SHADER)
     else()
         function(copy_spv src dst)
-            file(COPY $${src}/${shader}.spv DESTINATION ${dst})
+            file(COPY $${src} DESTINATION ${dst})
         endfunction()
 
         foreach(SHADER ${SHADERS})
