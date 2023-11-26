@@ -231,8 +231,8 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
+    // Refer to render pass compatibility (https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility)
     VulkanRenderPassDescriptor renderPassDescriptor{};
-
     renderPassDescriptor.colorAttachments.resize(targetSize);
     for (auto i = 0; i < targetSize; ++i)
     {
