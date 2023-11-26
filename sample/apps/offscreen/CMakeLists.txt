@@ -50,15 +50,12 @@ set(SHADERS
 # convert shader to spirv
 find_program(GLSLC_EXE NAMES glslc)
 
-if(EXISTS ${GLSLC_EXE})
-    if(NOT ANDROID)
-        # define shader input
-        set(SHADERS_INPUT ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
+if(NOT ANDROID)
+    # copy spirv to output
+    set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
+    set(SHADER_DST ${BINARY_OUT})
 
-        # copy spirv to output
-        set(SHADER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/shaders/)
-        set(SHADER_DST ${BINARY_OUT})
-
+    if(EXISTS ${GLSLC_EXE})
         function(run_glslc target shader src dst)
             add_custom_command(TARGET ${target} POST_BUILD
                 COMMAND ${GLSLC_EXE} ${src}/${shader} -o ${dst}/${shader}.spv
@@ -68,6 +65,14 @@ if(EXISTS ${GLSLC_EXE})
         foreach(SHADER ${SHADERS})
             run_glslc(offscreen ${SHADER} ${SHADER_SRC} ${SHADER_DST})
             run_glslc(offscreen ${SHADER} ${SHADER_SRC} ${SHADER_SRC})
+        endforeach(SHADER)
+    else()
+        function(copy_spv shader src dst)
+            file(COPY $${src}/${shader}.spv DESTINATION ${dst}/${shader}.spv)
+        endfunction()
+
+        foreach(SHADER ${SHADERS})
+            copy_spv(${SHADER} ${SHADER_SRC} ${SHADER_DST})
         endforeach(SHADER)
     endif()
 endif()
