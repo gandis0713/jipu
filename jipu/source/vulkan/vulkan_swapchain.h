@@ -25,7 +25,6 @@ public:
 
     void present(Queue* queue) override;
     int acquireNextTexture() override;
-    TextureView* getTextureView(uint32_t index) override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;

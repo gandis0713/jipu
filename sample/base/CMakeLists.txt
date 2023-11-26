@@ -44,6 +44,8 @@ list(APPEND SRC_FILES
     khronos_texture.h
     image.cpp
     image.h
+    offscreen_swapchain.h
+    offscreen_swapchain.cpp
 )
 
 if(ANDROID)
