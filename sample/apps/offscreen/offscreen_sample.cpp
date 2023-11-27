@@ -35,10 +35,10 @@ OffscreenSample::~OffscreenSample()
     m_onscreen.vertexBuffer.reset();
     m_onscreen.indexBuffer.reset();
     m_onscreen.sampler.reset();
-    m_onscreen.swapchain.reset();
 
     m_queue.reset();
     m_commandBuffer.reset();
+    m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
     m_physicalDevice.reset();
@@ -74,7 +74,7 @@ void OffscreenSample::init()
 
     createCamera();
 
-    initImGui(m_device.get(), m_queue.get(), m_onscreen.swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
     m_initialized = true;
 }
@@ -115,8 +115,8 @@ void OffscreenSample::update()
 
 void OffscreenSample::draw()
 {
-    auto swapchainIndex = m_onscreen.swapchain->acquireNextTexture();
-    auto renderView = m_onscreen.swapchain->getTextureView(swapchainIndex);
+    auto swapchainIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->getTextureView(swapchainIndex);
 
     // offscreen pass
     {
@@ -175,7 +175,7 @@ void OffscreenSample::draw()
 
         drawImGui(commadEncoder.get(), renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, m_onscreen.swapchain.get());
+        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
     }
 }
 
@@ -274,7 +274,7 @@ void OffscreenSample::createOffscreenTexture()
     textureDescriptor.width = m_width;
     textureDescriptor.height = m_height;
     textureDescriptor.format = textureFormat;
-    textureDescriptor.usage = TextureUsageFlagBits::kColorAttachment;
+    textureDescriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
     textureDescriptor.type = TextureType::k2D;
     textureDescriptor.sampleCount = 1; // TODO: set from descriptor
     textureDescriptor.mipLevels = 1;   // TODO: set from descriptor
@@ -467,7 +467,7 @@ void OffscreenSample::createOnscreenSwapchain()
     descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
     descriptor.presentMode = PresentMode::kFifo;
 
-    m_onscreen.swapchain = m_device->createSwapchain(descriptor);
+    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void OffscreenSample::createOnscreenVertexBuffer()
@@ -611,7 +611,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     FragmentStage fragmentStage{};
     {
         FragmentStage::Target target{};
-        target.format = m_onscreen.swapchain->getTextureFormat();
+        target.format = m_swapchain->getTextureFormat();
 
         fragmentStage.targets = { target };
         fragmentStage.entryPoint = "main";

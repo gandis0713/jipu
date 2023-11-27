@@ -70,6 +70,7 @@ private:
     std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
 
@@ -88,7 +89,6 @@ private:
 
     struct
     {
-        std::unique_ptr<Swapchain> swapchain = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Sampler> sampler = nullptr;
