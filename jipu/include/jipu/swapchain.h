@@ -51,9 +51,9 @@ public:
 
     virtual void present(Queue* queue) = 0;
     virtual int acquireNextTexture() = 0;
-    virtual TextureView* getTextureView(uint32_t index) = 0;
 
     std::vector<Texture*> getTextures() const;
+    TextureView* getTextureView(uint32_t index);
     std::vector<TextureView*> getTextureViews() const;
 
     TextureFormat getTextureFormat() const;

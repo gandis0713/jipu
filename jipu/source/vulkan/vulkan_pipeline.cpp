@@ -231,8 +231,8 @@ void VulkanRenderPipeline::initialize()
 
     auto vulkanDevice = downcast(m_device);
 
+    // Refer to render pass compatibility (https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility)
     VulkanRenderPassDescriptor renderPassDescriptor{};
-
     renderPassDescriptor.colorAttachments.resize(targetSize);
     for (auto i = 0; i < targetSize; ++i)
     {
@@ -241,6 +241,7 @@ void VulkanRenderPipeline::initialize()
         vulkanColorAttachment.format = target.format;
         vulkanColorAttachment.loadOp = LoadOp::kClear;
         vulkanColorAttachment.storeOp = StoreOp::kStore;
+        vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         vulkanColorAttachment.finalLayout = GenerateImageLayout(TextureUsageFlagBits::kColorAttachment);
     }
 

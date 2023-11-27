@@ -23,7 +23,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
         colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        colorAttachmentDescription.initialLayout = colorAttachment.loadOp == LoadOp::kLoad ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachmentDescription.initialLayout = colorAttachment.initialLayout;
         colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
 
         attachments.push_back(colorAttachmentDescription);
@@ -221,6 +221,31 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
         return (it->second).get();
     }
 
+    // log
+    {
+        // auto colorAttanchmentSize = descriptor.colorAttachments.size();
+        // for (auto i = 0; i < colorAttanchmentSize; ++i)
+        // {
+        //     spdlog::trace("{} index color attachment for new renderpass.", i);
+        //     spdlog::trace("  loadOp {}", static_cast<uint32_t>(descriptor.colorAttachments[i].loadOp));
+        //     spdlog::trace("  storeOp {}", static_cast<uint32_t>(descriptor.colorAttachments[i].storeOp));
+        //     spdlog::trace("  format {}", static_cast<uint32_t>(descriptor.colorAttachments[i].format));
+        //     spdlog::trace("  finalLayout {}", static_cast<uint32_t>(descriptor.colorAttachments[i].finalLayout));
+        // }
+
+        // if (descriptor.depthStencilAttachment.has_value())
+        // {
+        //     auto lhsDepthStencilAttachment = descriptor.depthStencilAttachment.value();
+        //     spdlog::trace("depth/stencil attachment for new renderpass.");
+        //     spdlog::trace("  depthLoadOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.depthLoadOp));
+        //     spdlog::trace("  depthStoreOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.depthStoreOp));
+        //     spdlog::trace("  stencilLoadOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.stencilLoadOp));
+        //     spdlog::trace("  stencilStoreOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.stencilStoreOp));
+        //     spdlog::trace("  format {}", static_cast<uint32_t>(lhsDepthStencilAttachment.format));
+        // }
+    }
+
+    // create new renderpass
     auto renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
 
     // get raw pointer before moving.

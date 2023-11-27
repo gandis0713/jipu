@@ -17,6 +17,33 @@
 namespace jipu
 {
 
+namespace
+{
+
+VkImageLayout generateInitialLayout(const ColorAttachment& colorAttachment)
+{
+    // get initial layout from texture view owner if load operation type is kLoad.
+    VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    if (colorAttachment.loadOp == LoadOp::kLoad)
+    {
+        TextureOwner owner;
+        if (colorAttachment.resolveView)
+            owner = downcast(colorAttachment.resolveView->getTexture())->getTextureOwner();
+        else
+            owner = downcast(colorAttachment.renderView->getTexture())->getTextureOwner();
+
+        if (owner == TextureOwner::Internal)
+            initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        else
+            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    }
+
+    return initialLayout;
+}
+
+} // namespace
+
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
@@ -33,6 +60,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
         vulkanColorAttachment.storeOp = colorAttachment.storeOp;
+        vulkanColorAttachment.initialLayout = generateInitialLayout(colorAttachment);
         vulkanColorAttachment.finalLayout = downcast(texture)->getLayout();
     }
 

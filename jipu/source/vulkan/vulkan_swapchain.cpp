@@ -201,14 +201,6 @@ int VulkanSwapchain::acquireNextTexture()
     return m_acquiredImageIndex;
 }
 
-TextureView* VulkanSwapchain::getTextureView(uint32_t index)
-{
-    if (index >= m_textureViews.size())
-        return nullptr;
-
-    return m_textureViews[index].get();
-}
-
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 {
     return m_swapchain;

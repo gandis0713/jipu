@@ -30,6 +30,14 @@ std::vector<Texture*> Swapchain::getTextures() const
     return textures;
 }
 
+TextureView* Swapchain::getTextureView(uint32_t index)
+{
+    if (index >= m_textureViews.size())
+        return nullptr;
+
+    return m_textureViews[index].get();
+}
+
 std::vector<TextureView*> Swapchain::getTextureViews() const
 {
     std::vector<TextureView*> textureViews{};

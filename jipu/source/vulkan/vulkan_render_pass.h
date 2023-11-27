@@ -19,6 +19,8 @@ struct VulkanColorAttachment
     StoreOp storeOp = StoreOp::kDontCare;
 
     // TODO: custom type?
+    VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    // TODO: custom type?
     VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
