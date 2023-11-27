@@ -60,6 +60,9 @@ private:
 
     DyLib m_vulkanLib{};
     VulkanDriverInfo m_driverInfo{};
+#ifndef NDEBUG
+    VkDebugUtilsMessengerEXT m_debugUtilsMessenger = VK_NULL_HANDLE;
+#endif
 };
 
 DOWN_CAST(VulkanDriver, Driver);
