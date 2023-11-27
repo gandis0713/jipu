@@ -31,6 +31,34 @@ const char kExtensionNameExtDebugUtils[] = "VK_EXT_debug_utils";
 namespace jipu
 {
 
+VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+                                                           VkDebugUtilsMessageTypeFlagsEXT type,
+                                                           const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+                                                           void* userData)
+{
+    auto message = fmt::format("[{} {}]: {}", callbackData->messageIdNumber, callbackData->pMessageIdName, callbackData->pMessage);
+
+    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+    {
+        spdlog::trace(message);
+    }
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    {
+        spdlog::debug(message);
+    }
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        spdlog::warn(message);
+    }
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
+        spdlog::error(message);
+        assert_message(false, message);
+    }
+
+    return VK_FALSE;
+}
+
 VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
     : Driver(descriptor)
 {
@@ -78,12 +106,6 @@ void VulkanDriver::initialize() noexcept(false)
 
     createInstance();
 
-    VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
-    if (!vkAPI.loadInstanceProcs(m_instance, driverKnobs))
-    {
-        throw std::runtime_error(fmt::format("Failed to load instance prosc."));
-    }
-
     gatherPhysicalDevices();
 }
 
@@ -126,6 +148,9 @@ void VulkanDriver::createInstance() noexcept(false)
         instanceCreateInfo.pApplicationInfo = &applicationInfo;
     }
 
+    // vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
+    // vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+
     // TODO: Debug
     // if (enableDebugMessenger)
     // {
@@ -140,6 +165,25 @@ void VulkanDriver::createInstance() noexcept(false)
     {
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", static_cast<int32_t>(result)));
     }
+
+    VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
+    if (!vkAPI.loadInstanceProcs(m_instance, driverKnobs))
+    {
+        throw std::runtime_error(fmt::format("Failed to load instance prosc."));
+    }
+
+#ifndef NDEBUG
+    VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo{};
+    debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    debugUtilsMessengerCreateInfo.pfnUserCallback = debugUtilsMessengerCallback;
+    result = vkAPI.CreateDebugUtilsMessengerEXT(m_instance, &debugUtilsMessengerCreateInfo, nullptr, &m_debugUtilsMessenger);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to create debug util messager: {}", static_cast<int32_t>(result));
+    }
+#endif
 }
 
 void VulkanDriver::gatherPhysicalDevices() noexcept(false)
