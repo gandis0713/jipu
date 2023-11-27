@@ -9,6 +9,14 @@ if(APPLE)
 endif()
 
 function(configure_sample target)
+    cmake_minimum_required(VERSION 3.21)
+
+    project(
+        ${target}
+        VERSION 0.1
+        DESCRIPTION "${target} sample"
+        LANGUAGES CXX
+    )
     file(GLOB_RECURSE srcs "*.cpp" "*.h")
 
     if(ANDROID)
@@ -62,7 +70,7 @@ function(configure_sample target)
     if(NOT ANDROID)
         # copy spirv to output
         set(SHADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
-        file(GLOB_RECURSE shaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag")
+        file(GLOB_RECURSE shaders "${SHADER_DIR}/*.vert" "${SHADER_DIR}/*.frag" "${SHADER_DIR}/*.comp")
 
         if(EXISTS ${GLSLC_EXE})
             function(run_glslc tar shader_name src dst)
