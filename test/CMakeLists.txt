@@ -9,17 +9,17 @@ set(PRJ_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.h
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.h
 )
 
 if(APPLE)
   list(APPEND PRJ_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_cocoa.mm
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.h
   )
 elseif(WIN32)
   list(APPEND PRJ_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_win32.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.h
   )
 endif()
 
