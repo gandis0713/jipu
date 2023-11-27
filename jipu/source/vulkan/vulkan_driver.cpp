@@ -67,6 +67,12 @@ VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
 
 VulkanDriver::~VulkanDriver()
 {
+#ifndef NDEBUG
+    if (m_debugUtilsMessenger)
+    {
+        vkAPI.DestroyDebugUtilsMessengerEXT(m_instance, m_debugUtilsMessenger, nullptr);
+    }
+#endif
     vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
