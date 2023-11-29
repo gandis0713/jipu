@@ -42,7 +42,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
     , m_renderPassCache(this)
     , m_frameBufferCache(this)
 {
-    const VulkanPhysicalDeviceInfo& info = physicalDevice->getInfo();
+    const VulkanPhysicalDeviceInfo& info = physicalDevice->getVulkanPhysicalDeviceInfo();
 
     // GRAPHICS and COMPUTE imply TRANSFER
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
@@ -209,7 +209,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
                                                    .pPoolSizes = poolSizes.data() };
 
         auto vulkanPhysicalDevice = downcast(m_physicalDevice);
-        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice->getInfo();
+        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
         // TODO: set correct max value.
@@ -218,7 +218,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         poolSizes[2] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxBoundDescriptorSets };
         poolSizes[3] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxBoundDescriptorSets };
         poolSizes[4] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxBoundDescriptorSets };
-        
+
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)
         {
@@ -250,11 +250,11 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getInfo().physicalDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
     // TODO: check extension supported.
-    if (vulkanPhysicalDevice->getInfo().portabilitySubset)
+    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
     {
         // TODO: define "VK_KHR_portability_subset"
         requiredDeviceExtensions.push_back("VK_KHR_portability_subset");

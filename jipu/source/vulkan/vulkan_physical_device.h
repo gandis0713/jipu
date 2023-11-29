@@ -21,17 +21,25 @@ struct VulkanPhysicalDeviceInfo : VulkanDeviceKnobs
     std::vector<VkMemoryHeap> memoryHeaps;
 };
 
+struct VulkanPhysicalDeviceDescriptor
+{
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+};
+
 class VulkanDriver;
 class VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;
-    VulkanPhysicalDevice(VulkanDriver* driver, PhysicalDeviceDescriptor descriptor);
+    VulkanPhysicalDevice(VulkanDriver* driver, const VulkanPhysicalDeviceDescriptor& descriptor);
     ~VulkanPhysicalDevice() override;
 
     std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
 
-    const VulkanPhysicalDeviceInfo& getInfo() const;
+    PhysicalDeviceInfo getInfo() const override;
+
+public:
+    const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
 
     int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
     bool isDepthStencilSupported(VkFormat format) const;

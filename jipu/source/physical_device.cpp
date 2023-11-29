@@ -3,7 +3,7 @@
 namespace jipu
 {
 
-PhysicalDevice::PhysicalDevice(Driver* driver, PhysicalDeviceDescriptor descriptor)
+PhysicalDevice::PhysicalDevice(Driver* driver)
     : m_driver(driver)
 {
 }

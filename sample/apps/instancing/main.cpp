@@ -47,7 +47,7 @@ private:
 
 private:
     void createDevier();
-    void createPhysicalDevice();
+    void getPhysicalDevices();
     void createSurface();
     void createDevice();
     void createSwapchain();
@@ -114,7 +114,7 @@ private:
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
@@ -202,14 +202,14 @@ InstancingSample::~InstancingSample()
     m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
-    m_physicalDevice.reset();
+    m_physicalDevices.clear();
     m_driver.reset();
 }
 
 void InstancingSample::init()
 {
     createDevier();
-    createPhysicalDevice();
+    getPhysicalDevices();
     createSurface();
     createDevice();
     createSwapchain();
@@ -365,12 +365,9 @@ void InstancingSample::createDevier()
     m_driver = Driver::create(descriptor);
 }
 
-void InstancingSample::createPhysicalDevice()
+void InstancingSample::getPhysicalDevices()
 {
-    PhysicalDeviceDescriptor descriptor{};
-    descriptor.index = 0; // TODO: select device.
-
-    m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+    m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
 void InstancingSample::createDevice()
@@ -383,9 +380,11 @@ void InstancingSample::createDevice()
 
 void InstancingSample::createSurface()
 {
-    DeviceDescriptor descriptor{};
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
 
-    m_device = m_physicalDevice->createDevice(descriptor);
+    DeviceDescriptor descriptor;
+    m_device = physicalDevice->createDevice(descriptor);
 }
 
 void InstancingSample::createSwapchain()

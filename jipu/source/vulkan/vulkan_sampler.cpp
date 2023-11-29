@@ -24,7 +24,7 @@ VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& desc
     // check it from physical device features.
     {
         // createInfo.anisotropyEnable = VK_TRUE;
-        // createInfo.maxAnisotropy = downcast(m_device->getPhysicalDevice())->getInfo().physicalDeviceProperties.limits.maxSamplerAnisotropy;
+        // createInfo.maxAnisotropy = downcast(m_device->getPhysicalDevice())->getVulkanPhysicalDeviceInfo().physicalDeviceProperties.limits.maxSamplerAnisotropy;
     }
     createInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     createInfo.unnormalizedCoordinates = VK_FALSE;

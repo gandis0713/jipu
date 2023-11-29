@@ -15,7 +15,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 {
     VulkanPhysicalDevice* physicalDevice = downcast(m_device->getPhysicalDevice());
 
-    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getInfo();
+    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getVulkanPhysicalDeviceInfo();
 
     const uint64_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
     if (queueFamilyPropertiesSize <= 0)

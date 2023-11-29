@@ -36,7 +36,7 @@ public:
     Driver& operator=(const Driver&) = delete;
 
 public:
-    virtual std::unique_ptr<PhysicalDevice> createPhysicalDevice(const PhysicalDeviceDescriptor& descriptor) = 0;
+    virtual std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() = 0;
     virtual std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) = 0;
 };
 

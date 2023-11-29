@@ -89,7 +89,7 @@ private:
 
     // wrapper
     std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
 
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
@@ -166,7 +166,7 @@ OBJModelSample::~OBJModelSample()
     m_renderCommandBuffer.reset();
     m_swapchain.reset();
 
-    m_physicalDevice.reset();
+    m_physicalDevices.clear();
     m_device.reset();
 
     m_surface.reset();
@@ -189,14 +189,16 @@ void OBJModelSample::init()
 
     // create PhysicalDevice.
     {
-        PhysicalDeviceDescriptor descriptor{ .index = 0 };
-        m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+        m_physicalDevices = m_driver->getPhysicalDevices();
     }
 
     // create Device.
     {
-        DeviceDescriptor descriptor{};
-        m_device = m_physicalDevice->createDevice(descriptor);
+        // TODO: select suit device.
+        PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
+
+        DeviceDescriptor descriptor;
+        m_device = physicalDevice->createDevice(descriptor);
     }
 
     // create queue
