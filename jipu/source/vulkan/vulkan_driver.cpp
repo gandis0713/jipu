@@ -299,9 +299,19 @@ std::unique_ptr<Surface> VulkanDriver::createSurface(const SurfaceDescriptor& de
     return std::make_unique<VulkanSurface>(this, descriptor);
 }
 
-std::unique_ptr<PhysicalDevice> VulkanDriver::createPhysicalDevice(const PhysicalDeviceDescriptor& descriptor)
+std::vector<std::unique_ptr<PhysicalDevice>> VulkanDriver::getPhysicalDevices()
 {
-    return std::make_unique<VulkanPhysicalDevice>(this, descriptor);
+    std::vector<std::unique_ptr<PhysicalDevice>> physicalDevices{};
+    for (auto physicalDevice : m_physicalDevices)
+    {
+        VulkanPhysicalDeviceDescriptor descriptor{};
+        descriptor.physicalDevice = physicalDevice;
+
+        auto device = std::make_unique<VulkanPhysicalDevice>(this, descriptor);
+        physicalDevices.push_back(std::move(device));
+    }
+
+    return physicalDevices;
 }
 
 VkInstance VulkanDriver::getVkInstance() const

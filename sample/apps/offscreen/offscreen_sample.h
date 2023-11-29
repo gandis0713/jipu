@@ -39,7 +39,7 @@ private:
 
 private:
     void createDevier();
-    void createPhysicalDevice();
+    void getPhysicalDevices();
     void createSurface();
     void createDevice();
     void createSwapchain();
@@ -67,7 +67,7 @@ private:
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;

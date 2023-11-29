@@ -46,7 +46,7 @@ private:
 
 private:
     void createDriver();
-    void createPhysicalDevice();
+    void getPhysicalDevices();
     void createSurface();
     void createDevice();
     void createSwapchain();
@@ -87,7 +87,7 @@ private:
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
@@ -230,14 +230,14 @@ DeferredSample::~DeferredSample()
     m_device.reset();
 
     m_surface.reset();
-    m_physicalDevice.reset();
+    m_physicalDevices.clear();
     m_driver.reset();
 }
 
 void DeferredSample::init()
 {
     createDriver();
-    createPhysicalDevice();
+    getPhysicalDevices();
     createSurface();
     createDevice();
     createSwapchain();
@@ -462,11 +462,9 @@ void DeferredSample::createDriver()
     m_driver = Driver::create(descriptor);
 }
 
-void DeferredSample::createPhysicalDevice()
+void DeferredSample::getPhysicalDevices()
 {
-    PhysicalDeviceDescriptor descriptor;
-    descriptor.index = 0; // TODO: find index from driver.
-    m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+    m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
 void DeferredSample::createSurface()
@@ -500,8 +498,11 @@ void DeferredSample::createSwapchain()
 
 void DeferredSample::createDevice()
 {
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
+
     DeviceDescriptor descriptor;
-    m_device = m_physicalDevice->createDevice(descriptor);
+    m_device = physicalDevice->createDevice(descriptor);
 }
 
 void DeferredSample::createOffscreenPositionColorAttachmentTexture()

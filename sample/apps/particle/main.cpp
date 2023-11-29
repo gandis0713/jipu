@@ -49,7 +49,7 @@ private:
 
 private:
     void createDriver();
-    void createPhysicalDevice();
+    void getPhysicalDevices();
     void createDevice();
     void createSurface();
     void createSwapchain();
@@ -74,7 +74,7 @@ private:
     };
 
     std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
@@ -149,14 +149,14 @@ ParticleSample::~ParticleSample()
     m_surface.reset();
 
     m_device.reset();
-    m_physicalDevice.reset();
+    m_physicalDevices.clear();
     m_driver.reset();
 }
 
 void ParticleSample::init()
 {
     createDriver();
-    createPhysicalDevice();
+    getPhysicalDevices();
     createDevice();
 
     createSurface();
@@ -291,22 +291,18 @@ void ParticleSample::createDriver()
     m_driver = Driver::create(descriptor);
 }
 
-void ParticleSample::createPhysicalDevice()
+void ParticleSample::getPhysicalDevices()
 {
-    if (!m_driver)
-        throw std::runtime_error("The driver instance is null pointer for physical device.");
-
-    PhysicalDeviceDescriptor descriptor{ .index = 0 }; // TODO: use first physical device.
-    m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+    m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
 void ParticleSample::createDevice()
 {
-    if (!m_physicalDevice)
-        throw std::runtime_error("The physical device instance is null pointer.");
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
 
-    DeviceDescriptor descriptor{};
-    m_device = m_physicalDevice->createDevice(descriptor);
+    DeviceDescriptor descriptor;
+    m_device = physicalDevice->createDevice(descriptor);
 }
 
 void ParticleSample::createSurface()

@@ -29,7 +29,7 @@ public:
     VulkanDriver& operator=(const VulkanDriver&) = delete;
 
 public:
-    std::unique_ptr<PhysicalDevice> createPhysicalDevice(const PhysicalDeviceDescriptor& descriptor) override;
+    std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
     std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
 
 public: // vulkan

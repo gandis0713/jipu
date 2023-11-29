@@ -14,11 +14,10 @@ TEST_F(ParticleTest, test)
     auto driver = Driver::create(driverDescriptor);
     EXPECT_NE(nullptr, driver);
 
-    PhysicalDeviceDescriptor physicalDeviceDescriptor;
-    physicalDeviceDescriptor.index = 0; // TODO:
-    auto physicalDevice = driver->createPhysicalDevice(physicalDeviceDescriptor);
-    EXPECT_NE(nullptr, physicalDevice);
+    auto physicalDevices = driver->getPhysicalDevices();
+    EXPECT_NE(0, physicalDevices.size());
 
+    PhysicalDevice* physicalDevice = physicalDevices[0].get();
     DeviceDescriptor deviceDescriptor{};
     auto device = physicalDevice->createDevice(deviceDescriptor);
     EXPECT_NE(nullptr, device);

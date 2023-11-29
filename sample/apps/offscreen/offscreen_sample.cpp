@@ -41,14 +41,14 @@ OffscreenSample::~OffscreenSample()
     m_swapchain.reset();
     m_device.reset();
     m_surface.reset();
-    m_physicalDevice.reset();
+    m_physicalDevices.clear();
     m_driver.reset();
 }
 
 void OffscreenSample::init()
 {
     createDevier();
-    createPhysicalDevice();
+    getPhysicalDevices();
     createSurface();
     createDevice();
     createSwapchain();
@@ -204,12 +204,9 @@ void OffscreenSample::createDevier()
     m_driver = Driver::create(descriptor);
 }
 
-void OffscreenSample::createPhysicalDevice()
+void OffscreenSample::getPhysicalDevices()
 {
-    PhysicalDeviceDescriptor descriptor{};
-    descriptor.index = 0; // TODO: select device.
-
-    m_physicalDevice = m_driver->createPhysicalDevice(descriptor);
+    m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
 void OffscreenSample::createDevice()
@@ -222,9 +219,11 @@ void OffscreenSample::createDevice()
 
 void OffscreenSample::createSurface()
 {
-    DeviceDescriptor descriptor{};
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
 
-    m_device = m_physicalDevice->createDevice(descriptor);
+    DeviceDescriptor descriptor;
+    m_device = physicalDevice->createDevice(descriptor);
 }
 
 void OffscreenSample::createSwapchain()

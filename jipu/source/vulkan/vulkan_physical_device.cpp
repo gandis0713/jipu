@@ -9,10 +9,10 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, PhysicalDeviceDescriptor descriptor)
-    : PhysicalDevice(vulkanDriver, descriptor)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, const VulkanPhysicalDeviceDescriptor& descriptor)
+    : PhysicalDevice(vulkanDriver)
 {
-    m_physicalDevice = vulkanDriver->getVkPhysicalDevice(descriptor.index);
+    m_physicalDevice = descriptor.physicalDevice;
 
     // Gather device information.
     gatherPhysicalDeviceInfo();
@@ -28,6 +28,13 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(DeviceDescriptor desc
     return std::make_unique<VulkanDevice>(this, descriptor);
 }
 
+PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
+{
+    PhysicalDeviceInfo info{};
+    info.deviceName = m_Info.physicalDeviceProperties.deviceName;
+    return info;
+}
+
 VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
     return downcast(m_driver)->getVkInstance();
@@ -38,7 +45,7 @@ VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
     return m_physicalDevice;
 }
 
-const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getInfo() const
+const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInfo() const
 {
     return m_Info;
 }
