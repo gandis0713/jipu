@@ -6,20 +6,20 @@ find_package(Gtest CONFIG REQUIRED)
 find_package(sdl2 CONFIG REQUIRED)
 
 set(PRJ_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/queue_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/queue_test.h
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.h
 )
 
 if(APPLE)
   list(APPEND PRJ_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_cocoa.mm
+    ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test_cocoa.mm
   )
 elseif(WIN32)
   list(APPEND PRJ_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_win32.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test_win32.cpp
   )
 endif()
 
