@@ -40,8 +40,7 @@ jobs:
           configurePreset: x64-osx-ninja-release
           buildPreset: x64-osx-ninja-release
           buildPresetAdditionalArgs: "['--target install']"
-          # TODO: enable test.
-          # testPreset: x64-osx-ninja-release
+          testPreset: x64-osx-ninja-release
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.
         uses: 8398a7/action-slack@v3.15.0
