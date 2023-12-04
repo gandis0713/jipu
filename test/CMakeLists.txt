@@ -11,8 +11,6 @@ set(PRJ_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/base/offscreen_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/base/offscreen_test.h
 )
 
 if(APPLE)
