@@ -39,7 +39,7 @@ jobs:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
           configurePreset: x64-osx-ninja-release
           buildPreset: x64-osx-ninja-release
-          buildPresetAdditionalArgs: "['--target install']"
+          buildPresetAdditionalArgs: "['--target install', '-DOFFSCREEN_TEST=true']"
           testPreset: x64-osx-ninja-release
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.

@@ -11,6 +11,8 @@ set(PRJ_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/offscreen_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/offscreen_test.h
 )
 
 if(APPLE)
@@ -41,3 +43,10 @@ target_link_libraries(${PRJ_NAME}
   SDL2::SDL2
   SDL2::SDL2main
 )
+
+if(OFFSCREEN_TEST)
+  target_compile_definitions(${PRJ_NAME}
+    PRIVATE
+    "OFFSCREEN_TEST"
+  )
+endif()
