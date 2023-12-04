@@ -1,9 +1,12 @@
 #include "window_test.h"
 
-using namespace jipu;
+namespace jipu
+{
 
 void WindowTest::SetUp()
 {
+    Test::SetUp();
+
     m_width = 1280;
     m_height = 720;
     EXPECT_GT(SDL_Init(SDL_INIT_VIDEO), -1);
@@ -15,22 +18,9 @@ void WindowTest::SetUp()
                                 SDL_WINDOW_SHOWN);
     EXPECT_NE(nullptr, m_window);
 
-    DriverDescriptor driverDescriptor;
-    driverDescriptor.type = DriverType::VULKAN;
-    m_driver = Driver::create(driverDescriptor);
-    EXPECT_NE(nullptr, m_driver);
-
     SurfaceDescriptor surfaceDescriptor{ .windowHandle = handle() };
     m_surface = m_driver->createSurface(surfaceDescriptor);
     EXPECT_NE(nullptr, m_surface);
-
-    m_physicalDevices = m_driver->getPhysicalDevices();
-    EXPECT_NE(0, m_physicalDevices.size());
-
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-    DeviceDescriptor deviceDescriptor{};
-    m_device = physicalDevice->createDevice(deviceDescriptor);
-    EXPECT_NE(nullptr, m_device);
 
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -52,11 +42,12 @@ void WindowTest::SetUp()
 void WindowTest::TearDown()
 {
     m_swapchain.reset();
-    m_device.reset();
-    m_physicalDevices.clear();
     m_surface.reset();
-    m_driver.reset();
 
     SDL_DestroyWindow(m_window);
     SDL_Quit();
+
+    Test::TearDown();
 }
+
+} // namespace jipu
