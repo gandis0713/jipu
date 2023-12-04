@@ -8,7 +8,11 @@ find_package(sdl2 CONFIG REQUIRED)
 set(PRJ_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/copy_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/copy_test.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/submit_test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/submit_test.h
   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/test.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/base/test.h
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/base/window_test.h
 )

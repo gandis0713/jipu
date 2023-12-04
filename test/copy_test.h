@@ -1,9 +1,12 @@
 #pragma once
-#include "base/window_test.h"
+#include "base/test.h"
 
 #include "jipu/texture.h"
 
-class CopyTest : public WindowTest
+namespace jipu
+{
+
+class CopyTest : public Test
 {
 protected:
     void SetUp() override;
@@ -27,3 +30,5 @@ protected:
         std::vector<char> data{};
     } m_image;
 };
+
+} // namespace jipu

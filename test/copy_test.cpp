@@ -4,7 +4,7 @@ using namespace jipu;
 
 void CopyTest::SetUp()
 {
-    WindowTest::SetUp();
+    Test::SetUp();
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
@@ -24,7 +24,7 @@ void CopyTest::TearDown()
     m_imageBuffer.reset();
     m_imageTexture.reset();
 
-    WindowTest::TearDown();
+    Test::TearDown();
 }
 
 TEST_F(CopyTest, test_copyTextureToBuffer)
