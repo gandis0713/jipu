@@ -7,9 +7,9 @@
 #endif
 
 #if defined(OFFSCREEN_TEST)
-class QueueTest : public OffscreenTest
+class CopyTest : public OffscreenTest
 #else
-class QueueTest : public WindowTest
+class CopyTest : public WindowTest
 #endif
 {
 };

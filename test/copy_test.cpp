@@ -1,8 +1,8 @@
-#include "queue_test.h"
+#include "copy_test.h"
 
 using namespace jipu;
 
-TEST_F(QueueTest, test)
+TEST_F(CopyTest, test)
 {
     const uint64_t uniformBufferSize = sizeof(float);
 
