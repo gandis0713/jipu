@@ -30,7 +30,7 @@ public:
 public:
     Driver() = delete;
     Driver(const DriverDescriptor& descriptor);
-    virtual ~Driver() = default;
+    virtual ~Driver();
 
     Driver(const Driver&) = delete;
     Driver& operator=(const Driver&) = delete;
