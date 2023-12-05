@@ -2,6 +2,9 @@
 
 #include <SDL_syswm.h>
 
+namespace jipu
+{
+
 void* WindowTest::handle()
 {
     SDL_SysWMinfo wmi;
@@ -9,3 +12,5 @@ void* WindowTest::handle()
     SDL_GetWindowWMInfo(m_window, &wmi);
     return static_cast<void*>(wmi.info.win.window);
 }
+
+} // namespace jipu

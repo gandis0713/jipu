@@ -352,6 +352,7 @@ bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> 
 
         if (!extensionFound)
         {
+            spdlog::error("Instance extension is not found. {}", requiredInstanceExtension);
             return false;
         }
     }

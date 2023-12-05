@@ -38,4 +38,9 @@ Driver::Driver(const DriverDescriptor& descriptor)
     spdlog::set_level(spdlog::level::trace);
 }
 
+Driver::~Driver()
+{
+    spdlog::set_default_logger(nullptr);
+}
+
 } // namespace jipu

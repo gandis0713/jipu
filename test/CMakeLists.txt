@@ -1,43 +1,27 @@
 cmake_minimum_required(VERSION 3.21)
 
-set(PRJ_NAME test_jipu)
+add_subdirectory(base)
 
-find_package(Gtest CONFIG REQUIRED)
-find_package(sdl2 CONFIG REQUIRED)
-
-set(PRJ_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/particle_test.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test.h
-)
-
-if(APPLE)
-  list(APPEND PRJ_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_cocoa.mm
+function(configure_test name)
+  set(target ${name}_test)
+  set(srcs
+    ${CMAKE_CURRENT_SOURCE_DIR}/${name}_test_main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${name}_test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/${name}_test.h
   )
-elseif(WIN32)
-  list(APPEND PRJ_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/window/window_test_win32.cpp
+
+  add_executable(${target} ${srcs})
+  add_test(NAME ${target} COMMAND ${target})
+
+  target_include_directories(${target} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
   )
-endif()
 
-add_executable(${PRJ_NAME} ${PRJ_SRCS})
-add_executable(jipu::test ALIAS test_jipu)
-add_test(NAME ${PRJ_NAME} COMMAND ${PRJ_NAME})
+  target_link_libraries(${target}
+    PUBLIC
+    jipu::test_base
+  )
+endfunction()
 
-target_include_directories(${PRJ_NAME} PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(${PRJ_NAME}
-  PUBLIC
-  jipu::jipu
-  GTest::gmock
-  GTest::gtest
-  GTest::gmock_main
-  GTest::gtest_main
-  SDL2::SDL2
-  SDL2::SDL2main
-)
+configure_test(copy)
+configure_test(submit)
