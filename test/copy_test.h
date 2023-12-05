@@ -12,9 +12,12 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
+    void prepareStagingBuffer();
+    void prepareStagingTexture();
+
 protected:
-    std::unique_ptr<jipu::Buffer> m_imageBuffer = nullptr;
-    std::unique_ptr<jipu::Texture> m_imageTexture = nullptr;
+    std::unique_ptr<jipu::Buffer> m_stagingBuffer = nullptr;
+    std::unique_ptr<jipu::Texture> m_stagingTexture = nullptr;
     struct Image
     {
         Image()
