@@ -41,9 +41,11 @@ TEST_F(CopyTest, test_copyBufferToBuffer)
     commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    EXPECT_NE(nullptr, commandBuffer);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    EXPECT_NE(nullptr, commandEncoder);
 
     BlitBuffer srcBlitBuffer{};
     srcBlitBuffer.buffer = m_stagingBuffer.get();
@@ -54,19 +56,28 @@ TEST_F(CopyTest, test_copyBufferToBuffer)
     bufferDescriptor.usage = BufferUsageFlagBits::kCopyDst;
 
     auto dstBuffer = m_device->createBuffer(bufferDescriptor);
+    EXPECT_NE(nullptr, dstBuffer);
 
     BlitBuffer dstBlitBuffer{};
     dstBlitBuffer.buffer = dstBuffer.get();
     dstBlitBuffer.offset = 0;
 
     commandEncoder->copyBufferToBuffer(srcBlitBuffer, dstBlitBuffer, m_stagingBuffer->getSize());
-    commandEncoder->finish();
+    EXPECT_EQ(commandBuffer.get(), commandEncoder->finish());
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
+    EXPECT_NE(nullptr, queue);
     queue->submit({ commandBuffer.get() });
+
+    void* dstBufferPointer = dstBuffer->map();
+    EXPECT_NE(nullptr, dstBufferPointer);
+
+    char* dataPointer = static_cast<char*>(dstBufferPointer);
+    char firstData = *dataPointer;
+    EXPECT_EQ(firstData, m_image.data[0]);
 }
 
 TEST_F(CopyTest, test_copyBufferToTexture)
