@@ -100,6 +100,7 @@ TEST_F(CopyTest, test_copyBufferToTexture)
                               TextureUsageFlagBits::kTextureBinding;
 
     auto imageTexture = m_device->createTexture(textureDescriptor);
+    EXPECT_NE(nullptr, imageTexture);
 
     BlitTexture blitTexture{};
     blitTexture.texture = imageTexture.get();
@@ -113,9 +114,11 @@ TEST_F(CopyTest, test_copyBufferToTexture)
     commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    EXPECT_NE(nullptr, commandBuffer);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
     commandEncoder->finish();
@@ -124,6 +127,7 @@ TEST_F(CopyTest, test_copyBufferToTexture)
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
+    EXPECT_NE(nullptr, queue);
     queue->submit({ commandBuffer.get() });
 }
 

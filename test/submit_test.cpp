@@ -20,5 +20,6 @@ TEST_F(SubmitTest, test)
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
         auto buffer = m_device->createBuffer(bufferDescriptor);
+        EXPECT_NE(nullptr, buffer.get());
     }
 }
