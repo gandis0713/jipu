@@ -33,6 +33,17 @@ void CopyTest::prepareStagingBuffer()
 
 void CopyTest::prepareStagingTexture()
 {
+    TextureDescriptor textureDescriptor{};
+    textureDescriptor.type = TextureType::k2D;
+    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    textureDescriptor.mipLevels = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.width = m_image.width;
+    textureDescriptor.height = m_image.height;
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc;
+
+    m_stagingTexture = m_device->createTexture(textureDescriptor);
+    EXPECT_NE(nullptr, m_stagingTexture);
 }
 
 TEST_F(CopyTest, test_copyBufferToBuffer)
