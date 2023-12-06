@@ -108,50 +108,18 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
     // set Image Memory Barrier
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
+    barrier.pNext = VK_NULL_HANDLE;
+    barrier.srcAccessMask = GenerateAccessFlags(oldLayout);
+    barrier.dstAccessMask = GenerateAccessFlags(newLayout);
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
     barrier.image = m_image;
     barrier.subresourceRange = range;
 
-    VkPipelineStageFlags srcStage = 0u;
-    VkPipelineStageFlags dstStage = 0u;
-
-    // TODO: generate barrier and stages. please refer or check https://harrylovescode.gitbooks.io/vulkan-api/content/chap07/chap07.html
-    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-    {
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    else
-    {
-        throw std::invalid_argument("Unsupported layout transition.");
-    }
-
-    barrier.srcAccessMask = GenerateAccessFlags(oldLayout);
-    barrier.dstAccessMask = GenerateAccessFlags(newLayout);
+    VkPipelineStageFlags srcStage = GeneratePipelineStage(oldLayout);
+    VkPipelineStageFlags dstStage = GeneratePipelineStage(newLayout);
 
     vkAPI.CmdPipelineBarrier(
         commandBuffer,
@@ -168,7 +136,7 @@ VkImageLayout VulkanTexture::getLayout() const
 {
     VkImageLayout layout = m_layout;
 
-    if (layout == VK_IMAGE_LAYOUT_UNDEFINED)
+    if (m_layout == VK_IMAGE_LAYOUT_UNDEFINED)
     {
         if (m_owner == TextureOwner::Internal)
         {
@@ -391,6 +359,28 @@ VkAccessFlags GenerateAccessFlags(VkImageLayout layout)
     }
 
     return accessFlags;
+}
+
+VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout)
+{
+    VkPipelineStageFlags pipelineStage = 0x0u;
+
+    switch (layout)
+    {
+    default:
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        pipelineStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+    }
+
+    return pipelineStage;
 }
 
 } // namespace jipu
