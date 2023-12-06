@@ -65,5 +65,6 @@ VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
 
 // Utils
 VkImageLayout GenerateImageLayout(TextureUsageFlags usage);
+VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
 
 } // namespace jipu
