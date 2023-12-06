@@ -40,7 +40,7 @@ void CopyTest::prepareStagingTexture()
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = m_image.width;
     textureDescriptor.height = m_image.height;
-    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc;
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc | TextureUsageFlagBits::kCopyDst;
 
     m_stagingTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, m_stagingTexture);
@@ -93,12 +93,6 @@ TEST_F(CopyTest, test_copyBufferToBuffer)
 
 TEST_F(CopyTest, test_copyBufferToTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = m_stagingBuffer.get();
-    blitTextureBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
-    blitTextureBuffer.rowsPerTexture = m_image.height;
-    blitTextureBuffer.offset = 0;
-
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
     textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
@@ -106,12 +100,17 @@ TEST_F(CopyTest, test_copyBufferToTexture)
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = m_image.width;
     textureDescriptor.height = m_image.height;
-    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
-                              TextureUsageFlagBits::kCopyDst |
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc | TextureUsageFlagBits::kCopyDst |
                               TextureUsageFlagBits::kTextureBinding;
 
     auto imageTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, imageTexture);
+
+    BlitTextureBuffer blitTextureBuffer{};
+    blitTextureBuffer.buffer = m_stagingBuffer.get();
+    blitTextureBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
+    blitTextureBuffer.rowsPerTexture = m_image.height;
+    blitTextureBuffer.offset = 0;
 
     BlitTexture blitTexture{};
     blitTexture.texture = imageTexture.get();

@@ -24,7 +24,7 @@ protected:
             : width(256)
             , height(256)
             , channel(4)
-            , data(width * height * channel, static_cast<char>(0xff))
+            , data(width * height * channel, static_cast<char>(0xf0))
         {
         }
         int width = 0;
