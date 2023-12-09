@@ -76,7 +76,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
-    vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, range);
+    vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, range);
 
     // copy buffer to texture
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -129,7 +129,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
             }
 
             // layout transition for src image.
-            vulkanTexture->setLayout(commandBuffer, srcNewLayout, srcSubresourceRange);
+            vulkanTexture->setPipelineBarrier(commandBuffer, srcNewLayout, srcSubresourceRange);
 
             VkImageBlit blit{};
             blit.srcOffsets[0] = { 0, 0, 0 };
@@ -152,7 +152,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
                                VK_FILTER_LINEAR);
 
             // layout transition for src image.
-            vulkanTexture->setLayout(commandBuffer, srcOldLayout, srcSubresourceRange);
+            vulkanTexture->setPipelineBarrier(commandBuffer, srcOldLayout, srcSubresourceRange);
 
             width = std::max(width >> 1, 1);
             height = std::max(height >> 1, 1);
@@ -160,7 +160,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     }
 
     // layout transition to new layout
-    vulkanTexture->setLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
+    vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
 }
 
 void VulkanCommandEncoder::copyTextureToBuffer()

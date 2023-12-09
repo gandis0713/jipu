@@ -39,17 +39,17 @@ public:
     TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
-    void setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
+    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
+
     VkImageLayout getLayout() const;
 
 private:
     VkImage m_image = VK_NULL_HANDLE;
-    VkImageType m_type{};
-    VkFormat m_format{ VK_FORMAT_UNDEFINED };
-    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-
     std::unique_ptr<VulkanMemory> m_memory = nullptr;
     TextureOwner m_owner;
+
+private:
+    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
 DOWN_CAST(VulkanTexture, Texture);

@@ -11,8 +11,6 @@ namespace jipu
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
-    , m_type(ToVkImageType(descriptor.type))
-    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::External)
 {
     VkImageCreateInfo createInfo{};
@@ -59,8 +57,6 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_image(image)
-    , m_type(ToVkImageType(descriptor.type))
-    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::Internal)
 {
 }
@@ -91,8 +87,11 @@ TextureOwner VulkanTexture::getTextureOwner() const
     return m_owner;
 }
 
-void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
+void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
 {
+    if (commandBuffer == VK_NULL_HANDLE)
+        throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
+
     VkImageLayout oldLayout = m_layout;
     VkImageLayout newLayout = layout;
 
@@ -132,6 +131,7 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
     // set current layout.
     m_layout = layout;
 }
+
 VkImageLayout VulkanTexture::getLayout() const
 {
     VkImageLayout layout = m_layout;
