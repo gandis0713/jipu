@@ -144,7 +144,7 @@ VkImageLayout VulkanTexture::getLayout() const
         }
         else
         {
-            layout = GenerateImageLayout(m_descriptor.usage);
+            layout = GenerateFinalImageLayout(m_descriptor.usage);
         }
     }
 
@@ -307,7 +307,7 @@ VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
 
 // Utiles
 
-VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
+VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage)
 {
     if (usage & TextureUsageFlagBits::kTextureBinding)
     {
@@ -334,7 +334,7 @@ VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
         return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     }
 
-    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    return VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 VkAccessFlags GenerateAccessFlags(VkImageLayout layout)
