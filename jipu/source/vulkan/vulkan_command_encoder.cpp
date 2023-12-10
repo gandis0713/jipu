@@ -63,11 +63,14 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
 
 void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
 {
+    auto vulkanTexture = downcast(texture.texture);
+    if (!(vulkanTexture->getUsage() & TextureUsageFlagBits::kCopyDst))
+        throw std::runtime_error("The texture is not used for copy dst.");
+
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
 
     // layout transition to old layout
-    auto vulkanTexture = downcast(texture.texture);
 
     VkImageSubresourceRange range;
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -121,15 +124,8 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
             srcSubresourceRange.baseArrayLayer = 0;
             srcSubresourceRange.layerCount = 1;
 
-            VkImageLayout srcNewLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            VkImageLayout srcOldLayout = vulkanTexture->getLayout();
-            if (srcOldLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-            {
-                throw std::runtime_error("The src image layout must be TRANSFER_DST_OPTIMAL before transitioning to TRANSFER_SRC_OPTIMAL.");
-            }
-
-            // layout transition for src image.
-            vulkanTexture->setPipelineBarrier(commandBuffer, srcNewLayout, srcSubresourceRange);
+            // set pipeline barrier for src
+            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
 
             VkImageBlit blit{};
             blit.srcOffsets[0] = { 0, 0, 0 };
@@ -146,21 +142,22 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
             blit.dstSubresource.layerCount = 1;
 
             vkAPI.CmdBlitImage(commandBuffer,
-                               image, srcNewLayout,
-                               image, srcOldLayout,
+                               image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                               image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                1, &blit,
                                VK_FILTER_LINEAR);
 
-            // layout transition for src image.
-            vulkanTexture->setPipelineBarrier(commandBuffer, srcOldLayout, srcSubresourceRange);
+            // set pipeline barrier for dst
+            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
 
             width = std::max(width >> 1, 1);
             height = std::max(height >> 1, 1);
         }
     }
 
-    // layout transition to new layout
-    vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, range);
+    // set pipeline barrier for usage
+    auto finalImageLayout = GenerateFinalImageLayout(vulkanTexture->getUsage());
+    vulkanTexture->setPipelineBarrier(commandBuffer, finalImageLayout, range);
 }
 
 void VulkanCommandEncoder::copyTextureToBuffer()
