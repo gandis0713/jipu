@@ -61,7 +61,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
         vulkanColorAttachment.storeOp = colorAttachment.storeOp;
         vulkanColorAttachment.initialLayout = generateInitialLayout(colorAttachment);
-        vulkanColorAttachment.finalLayout = downcast(texture)->getLayout();
+        vulkanColorAttachment.finalLayout = downcast(texture)->getFinalLayout();
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())

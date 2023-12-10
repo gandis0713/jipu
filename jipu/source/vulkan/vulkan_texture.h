@@ -42,6 +42,7 @@ public:
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
 
     VkImageLayout getLayout() const;
+    VkImageLayout getFinalLayout() const;
 
 private:
     VkImage m_image = VK_NULL_HANDLE;

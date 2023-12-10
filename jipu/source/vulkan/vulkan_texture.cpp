@@ -134,21 +134,19 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
 
 VkImageLayout VulkanTexture::getLayout() const
 {
-    VkImageLayout layout = m_layout;
+    return m_layout;
+}
 
-    if (m_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+VkImageLayout VulkanTexture::getFinalLayout() const
+{
+    switch (m_owner)
     {
-        if (m_owner == TextureOwner::Internal)
-        {
-            layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        }
-        else
-        {
-            layout = GenerateFinalImageLayout(m_descriptor.usage);
-        }
+    case TextureOwner::Internal:
+        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    default:
+    case TextureOwner::External:
+        return GenerateFinalImageLayout(m_descriptor.usage);
     }
-
-    return layout;
 }
 
 // Convert Helper
