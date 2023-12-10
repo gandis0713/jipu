@@ -219,6 +219,10 @@ TEST_F(CopyTest, testCopy)
         auto queue = m_device->createQueue(queueDescriptor);
         EXPECT_NE(nullptr, queue);
         queue->submit({ commandBuffer.get() });
+
+        char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
+        char firstData = *dstBufferPointer;
+        EXPECT_EQ(firstData, m_image.data[0]);
     }
 
     // copy texture to texture
