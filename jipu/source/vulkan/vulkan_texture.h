@@ -41,7 +41,12 @@ public:
     /// @brief record pipeline barrier command, but not submitted.
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
 
+    /// @brief return current VkImageLayout if set pipeline barrier by layout and surbresource range.
+    /// @return VkImageLayout
     VkImageLayout getLayout() const;
+
+    /// @brief generate final layout and return it.
+    /// @return VKImageLayout
     VkImageLayout getFinalLayout() const;
 
 private:
