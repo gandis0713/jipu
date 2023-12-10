@@ -69,8 +69,8 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     VkCommandBuffer commandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
-
-    // layout transition to old layout
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkImageSubresourceRange range;
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -79,12 +79,11 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
+    // set pipeline barrier for dst
     vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, range);
 
     // copy buffer to texture
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanBuffer = downcast(textureBuffer.buffer);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
