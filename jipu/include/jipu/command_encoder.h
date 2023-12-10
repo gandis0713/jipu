@@ -30,6 +30,7 @@ struct BlitTextureBuffer : BlitBuffer
 struct BlitTexture
 {
     Texture* texture = nullptr;
+    TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 
 struct CommandEncoderDescriptor

@@ -114,6 +114,7 @@ TEST_F(CopyTest, test_copyBufferToTexture)
 
     BlitTexture blitTexture{};
     blitTexture.texture = imageTexture.get();
+    blitTexture.aspect = TextureAspectFlagBits::kColor;
 
     Extent3D extent{};
     extent.width = m_image.width;

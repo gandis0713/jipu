@@ -635,6 +635,7 @@ void DeferredSample::createOffscreenColorMapTexture()
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.colorMapTexture.get();
+        blitTexture.aspect = TextureAspectFlagBits::kColor;
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -703,6 +704,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.normalMapTexture.get();
+        blitTexture.aspect = TextureAspectFlagBits::kColor;
 
         Extent3D extent{};
         extent.width = ktx.getWidth();

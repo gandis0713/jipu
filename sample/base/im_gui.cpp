@@ -149,7 +149,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{ .texture = m_fontTexture.get() };
+        BlitTexture blitTexture{ .texture = m_fontTexture.get(), .aspect = TextureAspectFlagBits::kColor };
         Extent3D extent{};
         extent.width = m_fontTexture->getWidth();
         extent.height = m_fontTexture->getHeight();

@@ -679,7 +679,7 @@ void OBJModelSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
     blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
 
-    BlitTexture blitTexture{ .texture = imageTexture };
+    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture->getWidth();
     extent.height = imageTexture->getHeight();

@@ -73,7 +73,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     VkImageSubresourceRange range;
-    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    range.aspectMask = ToVkImageAspectFlags(texture.aspect);
     range.baseMipLevel = 0;
     range.levelCount = texture.texture->getMipLevels();
     range.baseArrayLayer = 0;
@@ -90,7 +90,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     region.bufferRowLength = 0;
     region.bufferImageHeight = 0;
 
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
     region.imageSubresource.layerCount = 1;
@@ -117,7 +117,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
         {
 
             VkImageSubresourceRange srcSubresourceRange{};
-            srcSubresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            srcSubresourceRange.aspectMask = ToVkImageAspectFlags(texture.aspect);
             srcSubresourceRange.baseMipLevel = i - 1;
             srcSubresourceRange.levelCount = 1;
             srcSubresourceRange.baseArrayLayer = 0;
@@ -129,13 +129,13 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
             VkImageBlit blit{};
             blit.srcOffsets[0] = { 0, 0, 0 };
             blit.srcOffsets[1] = { width, height, 1 };
-            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
             blit.srcSubresource.mipLevel = i - 1;
             blit.srcSubresource.baseArrayLayer = 0;
             blit.srcSubresource.layerCount = 1;
             blit.dstOffsets[0] = { 0, 0, 0 };
             blit.dstOffsets[1] = { width > 1 ? width / 2 : 1, height > 1 ? height / 2 : 1, 1 };
-            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.aspectMask = ToVkImageAspectFlags(texture.aspect);
             blit.dstSubresource.mipLevel = i;
             blit.dstSubresource.baseArrayLayer = 0;
             blit.dstSubresource.layerCount = 1;
