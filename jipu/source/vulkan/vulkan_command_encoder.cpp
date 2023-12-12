@@ -201,9 +201,66 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
     vulkanTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), vulkanTexture->getFinalLayout(), range);
 }
 
-void VulkanCommandEncoder::copyTextureToTexture()
+void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent)
 {
-    // TODO: not yet implemented
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    // set pipeline barrier to change image layout for src
+    VkImageSubresourceRange srcSubresourceRange{};
+    srcSubresourceRange.aspectMask = ToVkImageAspectFlags(src.aspect);
+    srcSubresourceRange.baseArrayLayer = 0;
+    srcSubresourceRange.layerCount = 1;
+    srcSubresourceRange.baseMipLevel = 0;
+    srcSubresourceRange.levelCount = 1;
+
+    auto srcTexture = downcast(src.texture);
+    srcTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
+
+    // set pipeline barrier to change image layout for dst
+    VkImageSubresourceRange dstSubresourceRange{};
+    dstSubresourceRange.aspectMask = ToVkImageAspectFlags(dst.aspect);
+    dstSubresourceRange.baseArrayLayer = 0;
+    dstSubresourceRange.layerCount = 1;
+    dstSubresourceRange.baseMipLevel = 0;
+    dstSubresourceRange.levelCount = 1;
+
+    auto dstTexture = downcast(dst.texture);
+    dstTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstSubresourceRange);
+
+    VkImageCopy copyRegion = {};
+    copyRegion.srcSubresource.aspectMask = ToVkImageAspectFlags(src.aspect);
+    copyRegion.srcSubresource.mipLevel = 0;
+    copyRegion.srcSubresource.baseArrayLayer = 0;
+    copyRegion.srcSubresource.layerCount = 1;
+
+    copyRegion.srcOffset = { 0, 0, 0 };
+
+    copyRegion.dstSubresource.aspectMask = ToVkImageAspectFlags(dst.aspect);
+    copyRegion.dstSubresource.mipLevel = 0;
+    copyRegion.dstSubresource.baseArrayLayer = 0;
+    copyRegion.dstSubresource.layerCount = 1;
+
+    copyRegion.dstOffset = { 0, 0, 0 };
+
+    copyRegion.extent.width = extent.width;
+    copyRegion.extent.height = extent.height;
+    copyRegion.extent.depth = extent.depth;
+
+    auto srcImage = srcTexture->getVkImage();
+    auto dstImage = dstTexture->getVkImage();
+    vkAPI.CmdCopyImage(vulkanCommandBuffer->getVkCommandBuffer(),
+                       srcImage,
+                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       dstImage,
+                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                       1,
+                       &copyRegion);
+
+    // set pipeline barrier to restore final layout.
+    srcTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), srcTexture->getFinalLayout(), srcSubresourceRange);
+    dstTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), dstTexture->getFinalLayout(), dstSubresourceRange);
 }
 
 CommandBuffer* VulkanCommandEncoder::finish()

@@ -50,7 +50,7 @@ public:
     virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
     virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
     virtual void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) = 0;
-    virtual void copyTextureToTexture() = 0; // TODO: not yet implemented
+    virtual void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) = 0;
 
     virtual CommandBuffer* finish() = 0;
 

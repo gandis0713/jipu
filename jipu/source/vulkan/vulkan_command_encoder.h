@@ -21,7 +21,7 @@ public:
     void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) override;
     void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
     void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) override;
-    void copyTextureToTexture() override;
+    void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) override;
 
     CommandBuffer* finish() override;
 };
