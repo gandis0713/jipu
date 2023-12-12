@@ -60,6 +60,7 @@ struct TextureDescriptor
     TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
+    uint32_t depth = 0;
     uint32_t mipLevels = 0;
     uint32_t sampleCount = 0;
 };
@@ -80,8 +81,10 @@ public:
 public:
     TextureType getType() const;
     TextureFormat getFormat() const;
+    TextureUsageFlags getUsage() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
+    uint32_t getDepth() const;
     uint32_t getMipLevels() const;
     uint32_t getSampleCount() const;
 

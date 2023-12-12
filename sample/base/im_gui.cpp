@@ -108,6 +108,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
         fontTextureDescriptor.width = fontTexWidth;
         fontTextureDescriptor.height = fontTexHeight;
+        fontTextureDescriptor.depth = 1;
         fontTextureDescriptor.mipLevels = 1;
         fontTextureDescriptor.sampleCount = 1;
         fontTextureDescriptor.usage = TextureUsageFlagBits::kCopyDst |
@@ -149,7 +150,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{ .texture = m_fontTexture.get() };
+        BlitTexture blitTexture{ .texture = m_fontTexture.get(), .aspect = TextureAspectFlagBits::kColor };
         Extent3D extent{};
         extent.width = m_fontTexture->getWidth();
         extent.height = m_fontTexture->getHeight();

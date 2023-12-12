@@ -12,19 +12,20 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
-    void prepareStagingBuffer();
-    void prepareStagingTexture();
+protected:
+    void copyTextureToBuffer(Texture* dstTexture);
 
 protected:
-    std::unique_ptr<jipu::Buffer> m_stagingBuffer = nullptr;
-    std::unique_ptr<jipu::Texture> m_stagingTexture = nullptr;
+    std::unique_ptr<Buffer> m_srcBuffer = nullptr;
+    std::unique_ptr<Texture> m_srcTexture = nullptr;
+    char m_value = 0x00;
     struct Image
     {
-        Image()
-            : width(256)
-            , height(256)
-            , channel(4)
-            , data(width * height * channel, static_cast<char>(0xff))
+        Image(int w = 256, int h = 256, int c = 4, char d = 0x00)
+            : width(w)
+            , height(h)
+            , channel(c)
+            , data(w * h * c, d)
         {
         }
         int width = 0;

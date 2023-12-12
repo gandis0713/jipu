@@ -19,10 +19,11 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandB
 
 void VulkanComputePassEncoder::setPipeline(Pipeline* pipeline)
 {
+    // TODO: receive ComputePipeline from parameter.
     m_pipeline = pipeline;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    VulkanComputePipeline* vulkanComputePipeline = downcast(static_cast<ComputePipeline*>(m_pipeline)); // TODO: downcasting to RenderPipeline.
+    VulkanComputePipeline* vulkanComputePipeline = downcast(static_cast<ComputePipeline*>(m_pipeline)); // TODO: not casting to ComputePipeline.
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
 

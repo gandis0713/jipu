@@ -11,8 +11,6 @@ namespace jipu
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     : Texture(device, descriptor)
-    , m_type(ToVkImageType(descriptor.type))
-    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::External)
 {
     VkImageCreateInfo createInfo{};
@@ -20,7 +18,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.imageType = ToVkImageType(descriptor.type);
     createInfo.extent.width = descriptor.width;
     createInfo.extent.height = descriptor.height;
-    createInfo.extent.depth = 1;
+    createInfo.extent.depth = descriptor.depth;
     createInfo.mipLevels = descriptor.mipLevels;
     createInfo.arrayLayers = 1;
     createInfo.format = ToVkFormat(descriptor.format);
@@ -59,8 +57,6 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
     : Texture(device, descriptor)
     , m_image(image)
-    , m_type(ToVkImageType(descriptor.type))
-    , m_format(ToVkFormat(descriptor.format))
     , m_owner(TextureOwner::Internal)
 {
 }
@@ -91,8 +87,11 @@ TextureOwner VulkanTexture::getTextureOwner() const
     return m_owner;
 }
 
-void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
+void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
 {
+    if (commandBuffer == VK_NULL_HANDLE)
+        throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
+
     VkImageLayout oldLayout = m_layout;
     VkImageLayout newLayout = layout;
 
@@ -108,61 +107,18 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
     // set Image Memory Barrier
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
+    barrier.pNext = VK_NULL_HANDLE;
+    barrier.srcAccessMask = GenerateAccessFlags(oldLayout);
+    barrier.dstAccessMask = GenerateAccessFlags(newLayout);
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.oldLayout = oldLayout;
+    barrier.newLayout = newLayout;
     barrier.image = m_image;
     barrier.subresourceRange = range;
 
-    VkPipelineStageFlags srcStage = 0u;
-    VkPipelineStageFlags dstStage = 0u;
-
-    // TODO: generate barrier and stages. please refer or check https://harrylovescode.gitbooks.io/vulkan-api/content/chap07/chap07.html
-    if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-        srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-    {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    }
-    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    {
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-        srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    }
-    else
-    {
-        throw std::invalid_argument("Unsupported layout transition.");
-    }
+    VkPipelineStageFlags srcStage = GeneratePipelineStage(oldLayout);
+    VkPipelineStageFlags dstStage = GeneratePipelineStage(newLayout);
 
     vkAPI.CmdPipelineBarrier(
         commandBuffer,
@@ -175,23 +131,22 @@ void VulkanTexture::setLayout(VkCommandBuffer commandBuffer, VkImageLayout layou
     // set current layout.
     m_layout = layout;
 }
+
 VkImageLayout VulkanTexture::getLayout() const
 {
-    VkImageLayout layout = m_layout;
+    return m_layout;
+}
 
-    if (layout == VK_IMAGE_LAYOUT_UNDEFINED)
+VkImageLayout VulkanTexture::getFinalLayout() const
+{
+    switch (m_owner)
     {
-        if (m_owner == TextureOwner::Internal)
-        {
-            layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        }
-        else
-        {
-            layout = GenerateImageLayout(m_descriptor.usage);
-        }
+    case TextureOwner::Internal:
+        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    default:
+    case TextureOwner::External:
+        return GenerateFinalImageLayout(m_descriptor.usage);
     }
-
-    return layout;
 }
 
 // Convert Helper
@@ -350,7 +305,7 @@ VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count)
 
 // Utiles
 
-VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
+VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage)
 {
     if (usage & TextureUsageFlagBits::kTextureBinding)
     {
@@ -377,7 +332,53 @@ VkImageLayout GenerateImageLayout(TextureUsageFlags usage)
         return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     }
 
-    return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    return VK_IMAGE_LAYOUT_UNDEFINED;
+}
+
+VkAccessFlags GenerateAccessFlags(VkImageLayout layout)
+{
+    VkAccessFlags accessFlags = 0x0u;
+
+    switch (layout)
+    {
+    default:
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        accessFlags = VK_ACCESS_NONE;
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        accessFlags = VK_ACCESS_TRANSFER_READ_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        accessFlags = VK_ACCESS_SHADER_READ_BIT;
+        break;
+    }
+
+    return accessFlags;
+}
+
+VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout)
+{
+    VkPipelineStageFlags pipelineStage = 0x0u;
+
+    switch (layout)
+    {
+    default:
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        pipelineStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+    }
+
+    return pipelineStage;
 }
 
 } // namespace jipu

@@ -397,6 +397,7 @@ void ParticleSample::createColorAttachmentTexture()
     descriptor.usage = TextureUsageFlagBits::kColorAttachment;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
 

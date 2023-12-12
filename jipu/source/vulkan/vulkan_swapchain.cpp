@@ -118,6 +118,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* vulkanDevice, const SwapchainDesc
                                              .usage = TextureUsageFlagBits::kColorAttachment,
                                              .width = m_width,
                                              .height = m_height,
+                                             .depth = 1,
                                              .mipLevels = 1,
                                              .sampleCount = 1 };
         std::unique_ptr<Texture> texture = std::make_unique<VulkanTexture>(vulkanDevice, image, textureDescriptor);

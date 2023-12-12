@@ -25,6 +25,11 @@ TextureFormat Texture::getFormat() const
     return m_descriptor.format;
 }
 
+TextureUsageFlags Texture::getUsage() const
+{
+    return m_descriptor.usage;
+}
+
 uint32_t Texture::getWidth() const
 {
     return m_descriptor.width;
@@ -32,6 +37,11 @@ uint32_t Texture::getWidth() const
 uint32_t Texture::getHeight() const
 {
     return m_descriptor.height;
+}
+
+uint32_t Texture::getDepth() const
+{
+    return m_descriptor.depth;
 }
 
 uint32_t Texture::getMipLevels() const

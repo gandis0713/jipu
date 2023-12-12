@@ -39,17 +39,23 @@ public:
     TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
-    void setLayout(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
+    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
+
+    /// @brief return current VkImageLayout if set pipeline barrier by layout and surbresource range.
+    /// @return VkImageLayout
     VkImageLayout getLayout() const;
+
+    /// @brief generate final layout and return it.
+    /// @return VKImageLayout
+    VkImageLayout getFinalLayout() const;
 
 private:
     VkImage m_image = VK_NULL_HANDLE;
-    VkImageType m_type{};
-    VkFormat m_format{ VK_FORMAT_UNDEFINED };
-    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-
     std::unique_ptr<VulkanMemory> m_memory = nullptr;
     TextureOwner m_owner;
+
+private:
+    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
 DOWN_CAST(VulkanTexture, Texture);
@@ -64,6 +70,8 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
 
 // Utils
-VkImageLayout GenerateImageLayout(TextureUsageFlags usage);
+VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
+VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
+VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout);
 
 } // namespace jipu

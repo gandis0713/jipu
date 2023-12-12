@@ -406,6 +406,7 @@ void OBJModelSample::createImageTexture()
                                                   TextureUsageFlagBits::kTextureBinding,
                                          .width = width,
                                          .height = height,
+                                         .depth = 1,
                                          .mipLevels = mipLevels,
                                          .sampleCount = 1 };
     m_imageTexture = m_device->createTexture(textureDescriptor);
@@ -434,6 +435,7 @@ void OBJModelSample::createColorAttachmentTexture()
                                          .usage = TextureUsageFlagBits::kColorAttachment,
                                          .width = m_swapchain->getWidth(),
                                          .height = m_swapchain->getHeight(),
+                                         .depth = 1,
                                          .mipLevels = 1,
                                          .sampleCount = m_sampleCount };
     m_colorAttachmentTexture = m_device->createTexture(textureDescriptor);
@@ -457,6 +459,7 @@ void OBJModelSample::createDepthStencilTexture()
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.sampleCount = m_sampleCount;
 
     m_depthStencilTexture = m_device->createTexture(descriptor);
@@ -679,7 +682,7 @@ void OBJModelSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Text
     blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
     blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
 
-    BlitTexture blitTexture{ .texture = imageTexture };
+    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture->getWidth();
     extent.height = imageTexture->getHeight();

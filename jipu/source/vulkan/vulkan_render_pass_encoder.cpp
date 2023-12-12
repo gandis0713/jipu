@@ -20,26 +20,18 @@ namespace jipu
 namespace
 {
 
-VkImageLayout generateInitialLayout(const ColorAttachment& colorAttachment)
+VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 {
-    // get initial layout from texture view owner if load operation type is kLoad.
-    VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     if (colorAttachment.loadOp == LoadOp::kLoad)
     {
-        TextureOwner owner;
-        if (colorAttachment.resolveView)
-            owner = downcast(colorAttachment.resolveView->getTexture())->getTextureOwner();
-        else
-            owner = downcast(colorAttachment.renderView->getTexture())->getTextureOwner();
+        auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
 
-        if (owner == TextureOwner::Internal)
-            initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        else
-            initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        layout = downcast(renderView->getTexture())->getFinalLayout();
     }
 
-    return initialLayout;
+    return layout;
 }
 
 } // namespace
@@ -60,8 +52,8 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
         vulkanColorAttachment.storeOp = colorAttachment.storeOp;
-        vulkanColorAttachment.initialLayout = generateInitialLayout(colorAttachment);
-        vulkanColorAttachment.finalLayout = downcast(texture)->getLayout();
+        vulkanColorAttachment.initialLayout = getInitialLayout(colorAttachment);
+        vulkanColorAttachment.finalLayout = downcast(texture)->getFinalLayout();
     }
 
     if (m_descriptor.depthStencilAttachment.has_value())
@@ -167,12 +159,13 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
 
 void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
 {
+    // TODO: receive RenderPipeline from parameter.
     m_pipeline = pipeline;
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: downcasting to RenderPipeline.
+    VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: not casting to RenderPipeline.
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline());
 }
 

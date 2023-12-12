@@ -514,6 +514,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
@@ -537,6 +538,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
@@ -560,6 +562,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
@@ -583,6 +586,7 @@ void DeferredSample::createOffscreenDepthStencilTexture()
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.usage = TextureUsageFlagBits::kDepthStencil;
 
     m_offscreen.depthStencilTexture = m_device->createTexture(descriptor);
@@ -610,6 +614,7 @@ void DeferredSample::createOffscreenColorMapTexture()
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = ktx.getWidth();
     textureDescriptor.height = ktx.getHeight();
+    textureDescriptor.depth = 1;
     textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
                               TextureUsageFlagBits::kCopyDst |
                               TextureUsageFlagBits::kTextureBinding,
@@ -635,6 +640,7 @@ void DeferredSample::createOffscreenColorMapTexture()
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.colorMapTexture.get();
+        blitTexture.aspect = TextureAspectFlagBits::kColor;
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -678,6 +684,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = ktx.getWidth();
     textureDescriptor.height = ktx.getHeight();
+    textureDescriptor.depth = 1;
     textureDescriptor.usage = TextureUsageFlagBits::kCopySrc |
                               TextureUsageFlagBits::kCopyDst |
                               TextureUsageFlagBits::kTextureBinding,
@@ -703,6 +710,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
 
         BlitTexture blitTexture{};
         blitTexture.texture = m_offscreen.normalMapTexture.get();
+        blitTexture.aspect = TextureAspectFlagBits::kColor;
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -991,6 +999,7 @@ void DeferredSample::createCompositionDepthStencilTexture()
     descriptor.usage = TextureUsageFlagBits::kDepthStencil;
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
 

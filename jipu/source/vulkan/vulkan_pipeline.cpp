@@ -242,7 +242,7 @@ void VulkanRenderPipeline::initialize()
         vulkanColorAttachment.loadOp = LoadOp::kClear;
         vulkanColorAttachment.storeOp = StoreOp::kStore;
         vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        vulkanColorAttachment.finalLayout = GenerateImageLayout(TextureUsageFlagBits::kColorAttachment);
+        vulkanColorAttachment.finalLayout = GenerateFinalImageLayout(TextureUsageFlagBits::kColorAttachment);
     }
 
     if (m_descriptor.depthStencil.has_value())
