@@ -13,6 +13,9 @@ protected:
     void TearDown() override;
 
 protected:
+    void copyTextureToBuffer(Texture* dstTexture);
+
+protected:
     std::unique_ptr<Buffer> m_srcBuffer = nullptr;
     std::unique_ptr<Texture> m_srcTexture = nullptr;
     char m_value = 0x00;

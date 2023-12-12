@@ -86,6 +86,55 @@ void CopyTest::TearDown()
     Test::TearDown();
 }
 
+void CopyTest::copyTextureToBuffer(Texture* srcTexture)
+{
+    BufferDescriptor dstBufferDescriptor{};
+    dstBufferDescriptor.size = m_srcBuffer->getSize(); // TODO: from src texture
+    dstBufferDescriptor.usage = BufferUsageFlagBits::kCopyDst;
+
+    auto dstBuffer = m_device->createBuffer(dstBufferDescriptor);
+    EXPECT_NE(nullptr, dstBuffer);
+
+    BlitTextureBuffer dstBlitBuffer{};
+    dstBlitBuffer.buffer = dstBuffer.get();
+    dstBlitBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
+    dstBlitBuffer.rowsPerTexture = m_image.height;
+    dstBlitBuffer.offset = 0;
+
+    BlitTexture srcBlitTexture{};
+    srcBlitTexture.texture = srcTexture;
+    srcBlitTexture.aspect = TextureAspectFlagBits::kColor;
+
+    Extent3D extent{};
+    extent.depth = 1;
+    extent.width = srcTexture->getWidth();
+    extent.height = srcTexture->getHeight();
+
+    CommandBufferDescriptor commandBufferDescriptor{};
+    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
+
+    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+    EXPECT_NE(nullptr, commandBuffer);
+
+    CommandEncoderDescriptor commandEncoderDescriptor{};
+    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    EXPECT_NE(nullptr, commandEncoder);
+
+    commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
+    commandEncoder->finish();
+
+    QueueDescriptor queueDescriptor{};
+    queueDescriptor.flags = QueueFlagBits::kTransfer;
+
+    auto queue = m_device->createQueue(queueDescriptor);
+    EXPECT_NE(nullptr, queue);
+    queue->submit({ commandBuffer.get() });
+
+    char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
+    char firstData = *dstBufferPointer;
+    EXPECT_EQ(firstData, m_value);
+}
+
 TEST_F(CopyTest, testBufferToBuffer)
 {
     CommandBufferDescriptor commandBufferDescriptor{};
@@ -141,7 +190,8 @@ TEST_F(CopyTest, testBufferToTexture)
     textureDescriptor.width = m_image.width;
     textureDescriptor.height = m_image.height;
     textureDescriptor.depth = 1;
-    textureDescriptor.usage = TextureUsageFlagBits::kCopyDst;
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc | // to check copied data by copying buffer.
+                              TextureUsageFlagBits::kCopyDst;
 
     auto texture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, texture);
@@ -180,26 +230,38 @@ TEST_F(CopyTest, testBufferToTexture)
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
     queue->submit({ commandBuffer.get() });
+
+    copyTextureToBuffer(texture.get()); // to check copied texture data.
 }
 
 TEST_F(CopyTest, testTextureToBuffer)
 {
-    BufferDescriptor dstBufferDescriptor{};
-    dstBufferDescriptor.size = m_srcBuffer->getSize(); // TODO: from texture
-    dstBufferDescriptor.usage = BufferUsageFlagBits::kCopyDst;
+    copyTextureToBuffer(m_srcTexture.get());
+}
 
-    auto dstBuffer = m_device->createBuffer(dstBufferDescriptor);
-    EXPECT_NE(nullptr, dstBuffer);
+TEST_F(CopyTest, testTextureToTexture)
+{
+    TextureDescriptor textureDescriptor{};
+    textureDescriptor.type = TextureType::k2D;
+    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    textureDescriptor.mipLevels = 1;
+    textureDescriptor.sampleCount = 1;
+    textureDescriptor.width = m_image.width;
+    textureDescriptor.height = m_image.height;
+    textureDescriptor.depth = 1;
+    textureDescriptor.usage = TextureUsageFlagBits::kCopySrc | // to check copied data by copying buffer.
+                              TextureUsageFlagBits::kCopyDst;
 
-    BlitTextureBuffer dstBlitBuffer{};
-    dstBlitBuffer.buffer = dstBuffer.get();
-    dstBlitBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
-    dstBlitBuffer.rowsPerTexture = m_image.height;
-    dstBlitBuffer.offset = 0;
+    auto dstTexture = m_device->createTexture(textureDescriptor);
+    EXPECT_NE(nullptr, dstTexture);
 
     BlitTexture srcBlitTexture{};
     srcBlitTexture.texture = m_srcTexture.get();
     srcBlitTexture.aspect = TextureAspectFlagBits::kColor;
+
+    BlitTexture dstBlitTexture{};
+    dstBlitTexture.texture = dstTexture.get();
+    dstBlitTexture.aspect = TextureAspectFlagBits::kColor;
 
     Extent3D extent{};
     extent.depth = 1;
@@ -216,8 +278,9 @@ TEST_F(CopyTest, testTextureToBuffer)
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
-    commandEncoder->finish();
+    commandEncoder->copyTextureToTexture(srcBlitTexture, dstBlitTexture, extent);
+    auto commandBufferPtr = commandEncoder->finish();
+    EXPECT_EQ(commandBufferPtr, commandBuffer.get());
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
@@ -226,12 +289,5 @@ TEST_F(CopyTest, testTextureToBuffer)
     EXPECT_NE(nullptr, queue);
     queue->submit({ commandBuffer.get() });
 
-    char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
-    char firstData = *dstBufferPointer;
-    EXPECT_EQ(firstData, m_value);
-}
-
-TEST_F(CopyTest, testTextureToTexture)
-{
-    // TODO
+    copyTextureToBuffer(dstTexture.get()); // to check copied texture data.
 }
