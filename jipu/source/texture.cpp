@@ -39,6 +39,11 @@ uint32_t Texture::getHeight() const
     return m_descriptor.height;
 }
 
+uint32_t Texture::getDepth() const
+{
+    return m_descriptor.depth;
+}
+
 uint32_t Texture::getMipLevels() const
 {
     return m_descriptor.mipLevels;
