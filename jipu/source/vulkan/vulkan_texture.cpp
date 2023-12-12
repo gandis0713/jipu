@@ -18,7 +18,7 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.imageType = ToVkImageType(descriptor.type);
     createInfo.extent.width = descriptor.width;
     createInfo.extent.height = descriptor.height;
-    createInfo.extent.depth = 1;
+    createInfo.extent.depth = descriptor.depth;
     createInfo.mipLevels = descriptor.mipLevels;
     createInfo.arrayLayers = 1;
     createInfo.format = ToVkFormat(descriptor.format);

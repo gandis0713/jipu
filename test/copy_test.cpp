@@ -36,6 +36,7 @@ void CopyTest::SetUp()
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = m_image.width;
     textureDescriptor.height = m_image.height;
+    textureDescriptor.depth = 1;
     textureDescriptor.usage = TextureUsageFlagBits::kCopySrc | TextureUsageFlagBits::kCopyDst;
 
     m_srcTexture = m_device->createTexture(textureDescriptor);
@@ -139,6 +140,7 @@ TEST_F(CopyTest, testBufferToTexture)
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = m_image.width;
     textureDescriptor.height = m_image.height;
+    textureDescriptor.depth = 1;
     textureDescriptor.usage = TextureUsageFlagBits::kCopyDst;
 
     auto texture = m_device->createTexture(textureDescriptor);

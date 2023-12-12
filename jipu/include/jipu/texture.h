@@ -60,6 +60,7 @@ struct TextureDescriptor
     TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
+    uint32_t depth = 0;
     uint32_t mipLevels = 0;
     uint32_t sampleCount = 0;
 };

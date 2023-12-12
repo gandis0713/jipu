@@ -108,6 +108,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
         fontTextureDescriptor.width = fontTexWidth;
         fontTextureDescriptor.height = fontTexHeight;
+        fontTextureDescriptor.depth = 1;
         fontTextureDescriptor.mipLevels = 1;
         fontTextureDescriptor.sampleCount = 1;
         fontTextureDescriptor.usage = TextureUsageFlagBits::kCopyDst |

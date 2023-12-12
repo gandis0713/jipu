@@ -272,6 +272,7 @@ void OffscreenSample::createOffscreenTexture()
     TextureDescriptor textureDescriptor;
     textureDescriptor.width = m_width;
     textureDescriptor.height = m_height;
+    textureDescriptor.depth = 1;
     textureDescriptor.format = textureFormat;
     textureDescriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
     textureDescriptor.type = TextureType::k2D;
