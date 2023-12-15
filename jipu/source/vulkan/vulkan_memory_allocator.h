@@ -22,9 +22,9 @@ public:
     ~VulkanMemoryAllocator();
 
 private:
-    VulkanDevice* m_device;
+    VulkanDevice* m_device = nullptr;
     VmaAllocator m_allocator = VK_NULL_HANDLE;
-    VmaVulkanFunctions m_vmaFunctions;
+    VmaVulkanFunctions m_vmaFunctions{};
 };
 
 } // namespace jipu
