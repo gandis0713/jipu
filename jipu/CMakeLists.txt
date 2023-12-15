@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # find package
 find_package(Vulkan REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
@@ -143,6 +144,7 @@ target_link_libraries(jipu
   PUBLIC
   Vulkan::Vulkan
   PRIVATE
+  GPUOpen::VulkanMemoryAllocator
   spdlog::spdlog_header_only
 )
 

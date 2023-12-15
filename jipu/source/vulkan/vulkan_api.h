@@ -133,6 +133,7 @@ struct VulkanAPI
 
     // ---------- Device procs
 
+#if defined(VK_VERSION_1_0)
     // Core Vulkan 1.0
     PFN_vkAllocateCommandBuffers AllocateCommandBuffers = nullptr;
     PFN_vkAllocateDescriptorSets AllocateDescriptorSets = nullptr;
@@ -253,6 +254,47 @@ struct VulkanAPI
     PFN_vkUnmapMemory UnmapMemory = nullptr;
     PFN_vkUpdateDescriptorSets UpdateDescriptorSets = nullptr;
     PFN_vkWaitForFences WaitForFences = nullptr;
+#endif // defined(VK_VERSION_1_0)
+
+#if defined(VK_VERSION_1_3)
+    PFN_vkCmdBeginRendering CmdBeginRendering = nullptr;
+    PFN_vkCmdBindVertexBuffers2 CmdBindVertexBuffers2 = nullptr;
+    PFN_vkCmdBlitImage2 CmdBlitImage2 = nullptr;
+    PFN_vkCmdCopyBuffer2 CmdCopyBuffer2 = nullptr;
+    PFN_vkCmdCopyBufferToImage2 CmdCopyBufferToImage2 = nullptr;
+    PFN_vkCmdCopyImage2 CmdCopyImage2 = nullptr;
+    PFN_vkCmdCopyImageToBuffer2 CmdCopyImageToBuffer2 = nullptr;
+    PFN_vkCmdEndRendering CmdEndRendering = nullptr;
+    PFN_vkCmdPipelineBarrier2 CmdPipelineBarrier2 = nullptr;
+    PFN_vkCmdResetEvent2 CmdResetEvent2 = nullptr;
+    PFN_vkCmdResolveImage2 CmdResolveImage2 = nullptr;
+    PFN_vkCmdSetCullMode CmdSetCullMode = nullptr;
+    PFN_vkCmdSetDepthBiasEnable CmdSetDepthBiasEnable = nullptr;
+    PFN_vkCmdSetDepthBoundsTestEnable CmdSetDepthBoundsTestEnable = nullptr;
+    PFN_vkCmdSetDepthCompareOp CmdSetDepthCompareOp = nullptr;
+    PFN_vkCmdSetDepthTestEnable CmdSetDepthTestEnable = nullptr;
+    PFN_vkCmdSetDepthWriteEnable CmdSetDepthWriteEnable = nullptr;
+    PFN_vkCmdSetEvent2 CmdSetEvent2 = nullptr;
+    PFN_vkCmdSetFrontFace CmdSetFrontFace = nullptr;
+    PFN_vkCmdSetPrimitiveRestartEnable CmdSetPrimitiveRestartEnable = nullptr;
+    PFN_vkCmdSetPrimitiveTopology CmdSetPrimitiveTopology = nullptr;
+    PFN_vkCmdSetRasterizerDiscardEnable CmdSetRasterizerDiscardEnable = nullptr;
+    PFN_vkCmdSetScissorWithCount CmdSetScissorWithCount = nullptr;
+    PFN_vkCmdSetStencilOp CmdSetStencilOp = nullptr;
+    PFN_vkCmdSetStencilTestEnable CmdSetStencilTestEnable = nullptr;
+    PFN_vkCmdSetViewportWithCount CmdSetViewportWithCount = nullptr;
+    PFN_vkCmdWaitEvents2 CmdWaitEvents2 = nullptr;
+    PFN_vkCmdWriteTimestamp2 CmdWriteTimestamp2 = nullptr;
+    PFN_vkCreatePrivateDataSlot CreatePrivateDataSlot = nullptr;
+    PFN_vkDestroyPrivateDataSlot DestroyPrivateDataSlot = nullptr;
+    PFN_vkGetDeviceBufferMemoryRequirements GetDeviceBufferMemoryRequirements = nullptr;
+    PFN_vkGetDeviceImageMemoryRequirements GetDeviceImageMemoryRequirements = nullptr;
+    PFN_vkGetDeviceImageSparseMemoryRequirements GetDeviceImageSparseMemoryRequirements = nullptr;
+    PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
+    PFN_vkGetPrivateData GetPrivateData = nullptr;
+    PFN_vkQueueSubmit2 QueueSubmit2 = nullptr;
+    PFN_vkSetPrivateData SetPrivateData = nullptr;
+#endif // defined(VK_VERSION_1_3)
 
     // VK_EXT_debug_marker
     PFN_vkCmdDebugMarkerBeginEXT CmdDebugMarkerBeginEXT = nullptr;

@@ -1,5 +1,9 @@
 #pragma once
 
+#include "vulkan_api.h" // should be included before 'vk_mem_alloc.h'
+
+#include "vk_mem_alloc.h"
+
 namespace jipu
 {
 
@@ -17,6 +21,8 @@ public:
 
 private:
     VulkanDevice* m_device;
+    VmaAllocator m_allocator = VK_NULL_HANDLE;
+    VmaVulkanFunctions m_vmaFunctions;
 };
 
 } // namespace jipu

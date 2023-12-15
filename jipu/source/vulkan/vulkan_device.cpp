@@ -69,6 +69,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
         m_queues[index] = queue;
     }
+
+    createMemoryAllocator();
 }
 
 VulkanDevice::~VulkanDevice()
@@ -152,6 +154,11 @@ VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& 
 VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
+}
+
+VulkanMemoryAllocator* VulkanDevice::getMemoryAllocator() const
+{
+    return m_memoryAllocator.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
@@ -269,6 +276,12 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     {
         throw std::runtime_error("failed to create logical device!");
     }
+}
+
+void VulkanDevice::createMemoryAllocator()
+{
+    VulkanMemoryAllocatorDescriptor descriptor{};
+    m_memoryAllocator = std::make_unique<VulkanMemoryAllocator>(this, descriptor);
 }
 
 } // namespace jipu

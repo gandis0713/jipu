@@ -170,6 +170,7 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
         return false;                                                               \
     }
 
+#if defined(VK_VERSION_1_0)
     GET_DEVICE_PROC(AllocateCommandBuffers);
     GET_DEVICE_PROC(AllocateDescriptorSets);
     GET_DEVICE_PROC(AllocateMemory);
@@ -289,6 +290,47 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     GET_DEVICE_PROC(UnmapMemory);
     GET_DEVICE_PROC(UpdateDescriptorSets);
     GET_DEVICE_PROC(WaitForFences);
+#endif
+
+#if defined(VK_VERSION_1_3)
+    GET_DEVICE_PROC(CmdBeginRendering);
+    GET_DEVICE_PROC(CmdBindVertexBuffers2);
+    GET_DEVICE_PROC(CmdBlitImage2);
+    GET_DEVICE_PROC(CmdCopyBuffer2);
+    GET_DEVICE_PROC(CmdCopyBufferToImage2);
+    GET_DEVICE_PROC(CmdCopyImage2);
+    GET_DEVICE_PROC(CmdCopyImageToBuffer2);
+    GET_DEVICE_PROC(CmdEndRendering);
+    GET_DEVICE_PROC(CmdPipelineBarrier2);
+    GET_DEVICE_PROC(CmdResetEvent2);
+    GET_DEVICE_PROC(CmdResolveImage2);
+    GET_DEVICE_PROC(CmdSetCullMode);
+    GET_DEVICE_PROC(CmdSetDepthBiasEnable);
+    GET_DEVICE_PROC(CmdSetDepthBoundsTestEnable);
+    GET_DEVICE_PROC(CmdSetDepthCompareOp);
+    GET_DEVICE_PROC(CmdSetDepthTestEnable);
+    GET_DEVICE_PROC(CmdSetDepthWriteEnable);
+    GET_DEVICE_PROC(CmdSetEvent2);
+    GET_DEVICE_PROC(CmdSetFrontFace);
+    GET_DEVICE_PROC(CmdSetPrimitiveRestartEnable);
+    GET_DEVICE_PROC(CmdSetPrimitiveTopology);
+    GET_DEVICE_PROC(CmdSetRasterizerDiscardEnable);
+    GET_DEVICE_PROC(CmdSetScissorWithCount);
+    GET_DEVICE_PROC(CmdSetStencilOp);
+    GET_DEVICE_PROC(CmdSetStencilTestEnable);
+    GET_DEVICE_PROC(CmdSetViewportWithCount);
+    GET_DEVICE_PROC(CmdWaitEvents2);
+    GET_DEVICE_PROC(CmdWriteTimestamp2);
+    GET_DEVICE_PROC(CreatePrivateDataSlot);
+    GET_DEVICE_PROC(DestroyPrivateDataSlot);
+    GET_DEVICE_PROC(GetDeviceBufferMemoryRequirements);
+    GET_DEVICE_PROC(GetDeviceImageMemoryRequirements);
+    GET_DEVICE_PROC(GetDeviceImageSparseMemoryRequirements);
+    GET_DEVICE_PROC(GetPhysicalDeviceToolProperties);
+    GET_DEVICE_PROC(GetPrivateData);
+    GET_DEVICE_PROC(QueueSubmit2);
+    GET_DEVICE_PROC(SetPrivateData);
+#endif // defined(VK_VERSION_1_3)
 
     // if (deviceKnobs.debugMarker)
     // {
