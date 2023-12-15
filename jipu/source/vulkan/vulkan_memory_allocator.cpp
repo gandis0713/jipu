@@ -1,5 +1,3 @@
-
-#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_IMPLEMENTATION
 #include "vulkan_memory_allocator.h"
 
@@ -19,15 +17,18 @@ VulkanMemoryAllocator::VulkanMemoryAllocator(VulkanDevice* device, const VulkanM
     auto physicalDevice = vulkanPhysicalDevice->getVkPhysicalDevice();
     auto instance = vulkanDriver->getVkInstance();
 
+#if defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
     m_vmaFunctions.vkGetInstanceProcAddr = vulkanDriver->vkAPI.GetInstanceProcAddr;
     m_vmaFunctions.vkGetDeviceProcAddr = m_device->vkAPI.GetDeviceProcAddr;
-    m_vmaFunctions.vkGetDeviceBufferMemoryRequirements = m_device->vkAPI.GetDeviceBufferMemoryRequirements;
+#else
+    // TODO: set functions
+#endif
 
     VmaAllocatorCreateInfo createInfo{};
     createInfo.instance = instance;
     createInfo.physicalDevice = physicalDevice;
     createInfo.device = m_device->getVkDevice();
-    // createInfo.vulkanApiVersion = vulkanDriver->getDriverInfo().apiVersion; // TODO: check
+    createInfo.vulkanApiVersion = vulkanDriver->getDriverInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 
     VkResult result = vmaCreateAllocator(&createInfo, &m_allocator);

@@ -154,18 +154,6 @@ void VulkanDriver::createInstance() noexcept(false)
         instanceCreateInfo.pApplicationInfo = &applicationInfo;
     }
 
-    // vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
-    // vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
-
-    // TODO: Debug
-    // if (enableDebugMessenger)
-    // {
-    //     instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(requiredValidationLayers.size());
-    //     instanceCreateInfo.ppEnabledLayerNames = requiredValidationLayers.data();
-    //     populateDefaultDebugUtilsMessengerCreateInfo(m_debugMessengerUtilsCreateInfo);
-    //     instanceCreateInfo.pNext = (const void*)&m_debugMessengerUtilsCreateInfo;
-    // }
-
     VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, nullptr, &m_instance);
     if (result != VK_SUCCESS)
     {

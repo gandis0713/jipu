@@ -290,10 +290,10 @@ struct VulkanAPI
     PFN_vkGetDeviceBufferMemoryRequirements GetDeviceBufferMemoryRequirements = nullptr;
     PFN_vkGetDeviceImageMemoryRequirements GetDeviceImageMemoryRequirements = nullptr;
     PFN_vkGetDeviceImageSparseMemoryRequirements GetDeviceImageSparseMemoryRequirements = nullptr;
-    PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
-    PFN_vkGetPrivateData GetPrivateData = nullptr;
-    PFN_vkQueueSubmit2 QueueSubmit2 = nullptr;
-    PFN_vkSetPrivateData SetPrivateData = nullptr;
+    // PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
+    // PFN_vkGetPrivateData GetPrivateData = nullptr;
+    // PFN_vkQueueSubmit2 QueueSubmit2 = nullptr;
+    // PFN_vkSetPrivateData SetPrivateData = nullptr;
 #endif // defined(VK_VERSION_1_3)
 
     // VK_EXT_debug_marker

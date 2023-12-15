@@ -326,10 +326,10 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     GET_DEVICE_PROC(GetDeviceBufferMemoryRequirements);
     GET_DEVICE_PROC(GetDeviceImageMemoryRequirements);
     GET_DEVICE_PROC(GetDeviceImageSparseMemoryRequirements);
-    GET_DEVICE_PROC(GetPhysicalDeviceToolProperties);
-    GET_DEVICE_PROC(GetPrivateData);
-    GET_DEVICE_PROC(QueueSubmit2);
-    GET_DEVICE_PROC(SetPrivateData);
+    // GET_DEVICE_PROC(GetPhysicalDeviceToolProperties);
+    // GET_DEVICE_PROC(GetPrivateData);
+    // GET_DEVICE_PROC(QueueSubmit2);
+    // GET_DEVICE_PROC(SetPrivateData);
 #endif // defined(VK_VERSION_1_3)
 
     // if (deviceKnobs.debugMarker)
