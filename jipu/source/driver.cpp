@@ -19,7 +19,8 @@ std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
     case DriverType::VULKAN:
         return std::make_unique<VulkanDriver>(descriptor);
     default:
-        break;
+        spdlog::error("Unsupported driver type requested");
+        return nullptr;
     }
 
     return nullptr;
