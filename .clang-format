@@ -4,7 +4,7 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 ---
 Language: Cpp
-ColumnLimit: 120
+ColumnLimit: 160
 PointerAlignment: Left
 
 BraceWrapping:
@@ -19,11 +19,8 @@ BraceWrapping:
   BeforeCatch:     true
   BeforeElse:      true
   IndentBraces:    true
-BreakBeforeBraces: Custom
 
 Cpp11BracedListStyle: false
-
-PointerAlignment: Left
 
 # class
 AccessModifierOffset: -4
@@ -52,7 +49,6 @@ AlwaysBreakTemplateDeclarations: Yes
 
 # operator
 BreakBeforeBinaryOperators: None
-ColumnLimit: 0
 
 ---
 Language: ObjC
@@ -71,11 +67,8 @@ BraceWrapping:
   BeforeCatch:     true
   BeforeElse:      true
   IndentBraces:    true
-BreakBeforeBraces: Custom
 
 Cpp11BracedListStyle: false
-
-PointerAlignment: Left
 
 # class
 AccessModifierOffset: -4
