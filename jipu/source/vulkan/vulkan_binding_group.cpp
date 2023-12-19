@@ -6,6 +6,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace jipu
@@ -42,7 +43,14 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < bufferSize; ++i)
     {
         const BufferBinding& buffer = descriptor.buffers[i];
-        const BufferBindingLayout bufferLayout = descriptor.layout->getBufferBindingLayout(buffer.index);
+        auto bufferLayoutOp = descriptor.layout->getBufferBindingLayout(buffer.index);
+        if (!bufferLayoutOp.has_value())
+        {
+            spdlog::error("There is no buffer binding layout for that index.");
+            continue;
+        }
+
+        const BufferBindingLayout bufferLayout = bufferLayoutOp.value();
 
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
@@ -72,7 +80,13 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < samplerSize; ++i)
     {
         const SamplerBinding& sampler = descriptor.samplers[i];
-        const SamplerBindingLayout samplerLayout = descriptor.layout->getSamplerBindingLayout(sampler.index);
+        auto samplerLayoutOp = descriptor.layout->getSamplerBindingLayout(sampler.index);
+        if (!samplerLayoutOp.has_value())
+        {
+            spdlog::error("There is no sampler binding layout for that index.");
+            continue;
+        }
+        const SamplerBindingLayout samplerLayout = samplerLayoutOp.value();
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
@@ -105,7 +119,14 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < textureSize; ++i)
     {
         const TextureBinding& texture = descriptor.textures[i];
-        const TextureBindingLayout textureLayout = descriptor.layout->getTextureBindingLayout(texture.index);
+        auto textureLayoutOp = descriptor.layout->getTextureBindingLayout(texture.index);
+        if (!textureLayoutOp.has_value())
+        {
+            spdlog::error("There is no texture binding layout for that index.");
+            continue;
+        }
+
+        const TextureBindingLayout textureLayout = textureLayoutOp.value();
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = downcast(texture.textureView->getTexture())->getFinalLayout();
