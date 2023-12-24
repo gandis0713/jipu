@@ -1,7 +1,7 @@
 #include "jipu/buffer.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
-#include "vulkan_memory.h"
+#include "vulkan_resource.h"
 
 #include <memory>
 
@@ -25,8 +25,9 @@ public:
     VkBuffer getVkBuffer() const;
 
 private:
-    VkBuffer m_buffer = VK_NULL_HANDLE;
-    std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    // VkBuffer m_buffer = VK_NULL_HANDLE;
+    // std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    VulkanBufferResource m_resource;
     VkPipelineStageFlags m_stageFlags = 0u;
 
     void* m_mappedPtr = nullptr;

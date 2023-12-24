@@ -70,12 +70,14 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
         m_queues[index] = queue;
     }
 
-    createMemoryAllocator();
+    createResourceAllocator();
 }
 
 VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
+
+    m_resourceAllocator.reset();
 
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
@@ -156,9 +158,9 @@ VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }
 
-VulkanMemoryAllocator* VulkanDevice::getMemoryAllocator() const
+VulkanResourceAllocator* VulkanDevice::getResourceAllocator() const
 {
-    return m_memoryAllocator.get();
+    return m_resourceAllocator.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
@@ -278,10 +280,10 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     }
 }
 
-void VulkanDevice::createMemoryAllocator()
+void VulkanDevice::createResourceAllocator()
 {
-    VulkanMemoryAllocatorDescriptor descriptor{};
-    m_memoryAllocator = std::make_unique<VulkanMemoryAllocator>(this, descriptor);
+    VulkanResourceAllocatorDescriptor descriptor{};
+    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, descriptor);
 }
 
 } // namespace jipu

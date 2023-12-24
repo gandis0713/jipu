@@ -2,6 +2,7 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
+#include "vulkan_resource_allocator.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -19,50 +20,66 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
     bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    const VulkanAPI& vkAPI = device->vkAPI;
-    VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &bufferCreateInfo, nullptr, &m_buffer);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
-    }
+    auto vulkanResourceAllocator = device->getResourceAllocator();
+    m_resource = vulkanResourceAllocator->createBuffer(bufferCreateInfo);
 
-    VkMemoryRequirements memoryRequirements{};
-    vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
+    // VkBufferCreateInfo bufferCreateInfo{};
+    // bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    // bufferCreateInfo.size = descriptor.size;
+    // bufferCreateInfo.flags = 0;
+    // bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
+    // bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    // TODO: memory optimization
-    VulkanMemoryDescriptor heapMemoryDescriptor{ .flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                                 .requirements = memoryRequirements };
-    m_memory = std::make_unique<VulkanMemory>(device, heapMemoryDescriptor);
+    // const VulkanAPI& vkAPI = device->vkAPI;
+    // VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &bufferCreateInfo, nullptr, &m_buffer);
+    // if (result != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
+    // }
 
-    result = vkAPI.BindBufferMemory(device->getVkDevice(), m_buffer, m_memory->getVkDeviceMemory(), 0);
-    if (result != VK_SUCCESS)
-    {
-        // TODO: delete VkBuffer resource automatically.
-        device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
-        throw std::runtime_error("Failed to bind memory");
-    }
+    // VkMemoryRequirements memoryRequirements{};
+    // vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
+
+    // // TODO: memory optimization
+    // VulkanMemoryDescriptor heapMemoryDescriptor{ .flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+    //                                              .requirements = memoryRequirements };
+    // m_memory = std::make_unique<VulkanMemory>(device, heapMemoryDescriptor);
+
+    // result = vkAPI.BindBufferMemory(device->getVkDevice(), m_buffer, m_memory->getVkDeviceMemory(), 0);
+    // if (result != VK_SUCCESS)
+    // {
+    //     // TODO: delete VkBuffer resource automatically.
+    //     device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
+    //     throw std::runtime_error("Failed to bind memory");
+    // }
 }
 
 VulkanBuffer::~VulkanBuffer()
 {
     unmap();
 
-    m_memory.reset();
+    auto vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
+    vulkanResourceAllocator->destroyBuffer(m_resource);
 
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
+    // m_memory.reset();
+
+    // auto vulkanDevice = downcast(m_device);
+    // vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
 }
 
 void* VulkanBuffer::map()
 {
     if (m_mappedPtr == nullptr)
     {
-        auto device = downcast(m_device);
-        VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_descriptor.size, 0, &m_mappedPtr);
-        if (result != VK_SUCCESS)
-        {
-            spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
-        }
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        m_mappedPtr = resourceAllocator->map(m_resource.allocation);
+
+        // auto device = downcast(m_device);
+        // VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_descriptor.size, 0, &m_mappedPtr);
+        // if (result != VK_SUCCESS)
+        // {
+        //     spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+        // }
     }
 
     return m_mappedPtr;
@@ -71,8 +88,10 @@ void VulkanBuffer::unmap()
 {
     if (m_mappedPtr)
     {
-        auto device = downcast(m_device);
-        device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
+        auto resourceAllocator = downcast(m_device)->getResourceAllocator();
+        resourceAllocator->unmap(m_resource.allocation);
+        // auto device = downcast(m_device);
+        // device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 
         m_mappedPtr = nullptr;
     }
@@ -91,23 +110,18 @@ void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, VkPipelineStageFl
     barrier.dstAccessMask = ToVkAccessFlags(m_descriptor.usage);
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.buffer = m_buffer;
+    barrier.buffer = m_resource.buffer;
     barrier.size = getSize();
     barrier.offset = 0;
 
-    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
-                             m_stageFlags, flags,
-                             0,
-                             0, nullptr,
-                             1, &barrier,
-                             0, nullptr);
+    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), m_stageFlags, flags, 0, 0, nullptr, 1, &barrier, 0, nullptr);
 
     m_stageFlags = flags;
 }
 
 VkBuffer VulkanBuffer::getVkBuffer() const
 {
-    return m_buffer;
+    return m_resource.buffer;
 }
 
 // Convert Helper
@@ -166,8 +180,7 @@ VkPipelineStageFlags ToVkPipelineStageFlags(BufferUsageFlags usage)
     if (usage & (BufferUsageFlagBits::kUniform | BufferUsageFlagBits::kStorage))
     {
         // TODO: set by shader stage.
-        flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT |
-                 VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        flags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
     }
 
     return flags;

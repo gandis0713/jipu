@@ -7,12 +7,12 @@ namespace jipu
 {
 bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 {
-#define GET_GLOBAL_PROC(name)                                                          \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
-    if (name == nullptr)                                                               \
-    {                                                                                  \
-        spdlog::error("Couldn't get driver proc vk{}", #name);                         \
-        return false;                                                                  \
+#define GET_GLOBAL_PROC(name)                                                                                                                                  \
+    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name));                                                                         \
+    if (name == nullptr)                                                                                                                                       \
+    {                                                                                                                                                          \
+        spdlog::error("Couldn't get driver proc vk{}", #name);                                                                                                 \
+        return false;                                                                                                                                          \
     }
 
     if (!vulkanLib->getProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr"))
@@ -31,15 +31,14 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
     return true;
 }
 
-bool VulkanAPI::loadInstanceProcs(VkInstance instance,
-                                  const VulkanDriverKnobs& driverKnobs)
+bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& driverKnobs)
 {
-#define GET_INSTANCE_PROC(name)                                                         \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \
-    if (name == nullptr)                                                                \
-    {                                                                                   \
-        spdlog::error("Couldn't get instance proc vk{}", #name);                        \
-        return false;                                                                   \
+#define GET_INSTANCE_PROC(name)                                                                                                                                \
+    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name));                                                                        \
+    if (name == nullptr)                                                                                                                                       \
+    {                                                                                                                                                          \
+        spdlog::error("Couldn't get instance proc vk{}", #name);                                                                                               \
+        return false;                                                                                                                                          \
     }
 
     if (GetInstanceProcAddr == nullptr)
@@ -162,12 +161,12 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance,
 
 bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs)
 {
-#define GET_DEVICE_PROC(name)                                                       \
-    name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name)); \
-    if (name == nullptr)                                                            \
-    {                                                                               \
-        spdlog::error("Couldn't get device proc vk{}", #name);                      \
-        return false;                                                               \
+#define GET_DEVICE_PROC(name)                                                                                                                                  \
+    name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name));                                                                            \
+    if (name == nullptr)                                                                                                                                       \
+    {                                                                                                                                                          \
+        spdlog::error("Couldn't get device proc vk{}", #name);                                                                                                 \
+        return false;                                                                                                                                          \
     }
 
 #if defined(VK_VERSION_1_0)
