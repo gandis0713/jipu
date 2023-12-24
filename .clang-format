@@ -1,93 +1,13 @@
 ---
 # ref : https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 IndentWidth: 4
----
-Language: Cpp
-ColumnLimit: 160
-PointerAlignment: Left
-
-BraceWrapping:
-  AfterClass:      true
-  AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  true
-  AfterObjCDeclaration: true
-  AfterStruct:     true
-  AfterUnion:      true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    true
-
-Cpp11BracedListStyle: false
+ColumnLimit: 0
 
 # class
 AccessModifierOffset: -4
+PackConstructorInitializers: Never
 BreakConstructorInitializers: BeforeComma
-# IndentAccessModifiers: false
-EmptyLineAfterAccessModifier: Never
-
-# 
-IndentCaseBlocks: false
-IndentCaseLabels: false
-BreakBeforeBraces: Allman
-
-# namespace
-NamespaceIndentation: None
-
-# bracket
-AlignAfterOpenBracket: Align
-
-#
-IndentPPDirectives: BeforeHash
-
-AllowShortFunctionsOnASingleLine: Empty
-
-# template
-AlwaysBreakTemplateDeclarations: Yes
-
-# operator
-BreakBeforeBinaryOperators: None
-
----
-Language: ObjC
-ColumnLimit: 160
-PointerAlignment: Left
-
-BraceWrapping:
-  AfterClass:      true
-  AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  true
-  AfterObjCDeclaration: true
-  AfterStruct:     true
-  AfterUnion:      true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    true
-
 Cpp11BracedListStyle: false
 
-# class
-AccessModifierOffset: -4
-BreakConstructorInitializers: BeforeComma
-# IndentAccessModifiers: false
-EmptyLineAfterAccessModifier: Never
-
-# 
-IndentCaseBlocks: false
-IndentCaseLabels: false
-BreakBeforeBraces: Allman
-
-# namespace
-NamespaceIndentation: None
-
-# bracket
-AlignAfterOpenBracket: Align
-
-#
-IndentPPDirectives: BeforeHash
-
-AllowShortFunctionsOnASingleLine: Empty
+PointerAlignment: Left
