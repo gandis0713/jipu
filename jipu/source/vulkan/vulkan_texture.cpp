@@ -32,46 +32,6 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
 
     auto vulkanResourceAllocator = device->getResourceAllocator();
     m_resource = vulkanResourceAllocator->createTexture(createInfo);
-
-    // VkImageCreateInfo createInfo{};
-    // createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    // createInfo.imageType = ToVkImageType(descriptor.type);
-    // createInfo.extent.width = descriptor.width;
-    // createInfo.extent.height = descriptor.height;
-    // createInfo.extent.depth = descriptor.depth;
-    // createInfo.mipLevels = descriptor.mipLevels;
-    // createInfo.arrayLayers = 1;
-    // createInfo.format = ToVkFormat(descriptor.format);
-    // createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    // createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // createInfo.usage = ToVkImageUsageFlags(descriptor.usage);
-    // createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    // createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-    // createInfo.flags = 0; // Optional
-
-    // const VulkanAPI& vkAPI = device->vkAPI;
-    // VkResult result = vkAPI.CreateImage(device->getVkDevice(), &createInfo, nullptr, &m_image);
-    // if (result != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error(fmt::format("Failed to create image. {}", static_cast<uint32_t>(result)));
-    // }
-
-    // VkMemoryRequirements memoryRequirements{};
-    // vkAPI.GetImageMemoryRequirements(device->getVkDevice(), m_image, &memoryRequirements);
-
-    // VulkanMemoryDescriptor memoryDescriptor{};
-    // memoryDescriptor.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: for only staging buffer.
-    // memoryDescriptor.requirements = memoryRequirements;
-
-    // m_memory = std::make_unique<VulkanMemory>(device, memoryDescriptor);
-
-    // result = vkAPI.BindImageMemory(device->getVkDevice(), m_image, m_memory->getVkDeviceMemory(), 0);
-    // if (result != VK_SUCCESS)
-    // {
-    //     // TODO: delete VkImage resource automatically.
-    //     device->vkAPI.DestroyImage(device->getVkDevice(), m_image, nullptr);
-    //     throw std::runtime_error(fmt::format("Failed to bind memory. {}", static_cast<int32_t>(result)));
-    // }
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
@@ -87,10 +47,6 @@ VulkanTexture::~VulkanTexture()
     {
         auto vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
         vulkanResourceAllocator->destroyTexture(m_resource);
-        // m_memory.reset();
-
-        // VulkanDevice* vulkanDevice = downcast(m_device);
-        // vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getVkDevice(), m_image, nullptr);
     }
 }
 

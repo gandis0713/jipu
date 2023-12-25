@@ -22,36 +22,6 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descrip
 
     auto vulkanResourceAllocator = device->getResourceAllocator();
     m_resource = vulkanResourceAllocator->createBuffer(bufferCreateInfo);
-
-    // VkBufferCreateInfo bufferCreateInfo{};
-    // bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    // bufferCreateInfo.size = descriptor.size;
-    // bufferCreateInfo.flags = 0;
-    // bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
-    // bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    // const VulkanAPI& vkAPI = device->vkAPI;
-    // VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &bufferCreateInfo, nullptr, &m_buffer);
-    // if (result != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
-    // }
-
-    // VkMemoryRequirements memoryRequirements{};
-    // vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), m_buffer, &memoryRequirements);
-
-    // // TODO: memory optimization
-    // VulkanMemoryDescriptor heapMemoryDescriptor{ .flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-    //                                              .requirements = memoryRequirements };
-    // m_memory = std::make_unique<VulkanMemory>(device, heapMemoryDescriptor);
-
-    // result = vkAPI.BindBufferMemory(device->getVkDevice(), m_buffer, m_memory->getVkDeviceMemory(), 0);
-    // if (result != VK_SUCCESS)
-    // {
-    //     // TODO: delete VkBuffer resource automatically.
-    //     device->vkAPI.DestroyBuffer(device->getVkDevice(), m_buffer, nullptr);
-    //     throw std::runtime_error("Failed to bind memory");
-    // }
 }
 
 VulkanBuffer::~VulkanBuffer()
@@ -60,11 +30,6 @@ VulkanBuffer::~VulkanBuffer()
 
     auto vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
     vulkanResourceAllocator->destroyBuffer(m_resource);
-
-    // m_memory.reset();
-
-    // auto vulkanDevice = downcast(m_device);
-    // vulkanDevice->vkAPI.DestroyBuffer(vulkanDevice->getVkDevice(), m_buffer, nullptr);
 }
 
 void* VulkanBuffer::map()
@@ -73,13 +38,6 @@ void* VulkanBuffer::map()
     {
         auto resourceAllocator = downcast(m_device)->getResourceAllocator();
         m_mappedPtr = resourceAllocator->map(m_resource.allocation);
-
-        // auto device = downcast(m_device);
-        // VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory(), 0, m_descriptor.size, 0, &m_mappedPtr);
-        // if (result != VK_SUCCESS)
-        // {
-        //     spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
-        // }
     }
 
     return m_mappedPtr;
@@ -90,8 +48,6 @@ void VulkanBuffer::unmap()
     {
         auto resourceAllocator = downcast(m_device)->getResourceAllocator();
         resourceAllocator->unmap(m_resource.allocation);
-        // auto device = downcast(m_device);
-        // device->vkAPI.UnmapMemory(device->getVkDevice(), m_memory->getVkDeviceMemory());
 
         m_mappedPtr = nullptr;
     }
