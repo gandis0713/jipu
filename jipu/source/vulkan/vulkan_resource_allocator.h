@@ -18,18 +18,22 @@ public:
     ~VulkanResourceAllocator();
 
     VulkanBufferResource createBuffer(const VkBufferCreateInfo& createInfo);
-    void destroyBuffer(const VulkanBufferResource& bufferMemory);
+    void destroyBuffer(const VulkanBufferResource& bufferResource);
 
     VulkanTextureResource createTexture(const VkImageCreateInfo& createInfo);
-    void destroyTexture(VulkanTextureResource textureMemory);
+    void destroyTexture(VulkanTextureResource textureResource);
 
-    void* map(VmaAllocation allocation);
-    void unmap(VmaAllocation allocation);
+    void* map(VulkanAllocation allocation);
+    void unmap(VulkanAllocation allocation);
 
 private:
     VulkanDevice* m_device = nullptr;
+#if defined(USE_VMA)
     VmaAllocator m_allocator = VK_NULL_HANDLE;
     VmaVulkanFunctions m_vmaFunctions{};
+#endif
 };
+
+//
 
 } // namespace jipu

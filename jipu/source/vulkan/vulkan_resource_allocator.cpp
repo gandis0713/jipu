@@ -8,13 +8,188 @@
 #include "vulkan_texture.h"
 
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 
 namespace jipu
 {
 
+namespace
+{
+#if defined(USE_VMA)
+VulkanBufferResource createBufferResource(VmaAllocator allocator, const VkBufferCreateInfo& createInfo)
+{
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU; // TODO : set usage from createInfo.
+
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VmaAllocation allocation;
+    VkResult result = vmaCreateBuffer(allocator, &createInfo, &allocInfo, &buffer, &allocation, nullptr);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
+    }
+
+    return { .buffer = buffer, .allocation = allocation };
+}
+void destroyBufferResource(VmaAllocator allocator, const VulkanBufferResource& bufferMemory)
+{
+    vmaDestroyBuffer(allocator, bufferMemory.buffer, bufferMemory.allocation);
+}
+
+VulkanTextureResource createTextureResource(VmaAllocator allocator, const VkImageCreateInfo& createInfo)
+{
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY; // TODO: set usage from createInfo.
+
+    VkImage image = VK_NULL_HANDLE;
+    VmaAllocation allocation;
+    VkResult result = vmaCreateImage(allocator, &createInfo, &allocInfo, &image, &allocation, nullptr);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create image. error: {}", static_cast<int32_t>(result)));
+    }
+
+    return { .image = image, .allocation = allocation };
+}
+void destroyTextureResource(VmaAllocator allocator, const VulkanTextureResource& textureResource)
+{
+    vmaDestroyImage(allocator, textureResource.image, textureResource.allocation);
+}
+void* mapResource(VmaAllocator allocator, VmaAllocation allocation)
+{
+    void* data = nullptr;
+    VkResult result = vmaMapMemory(allocator, allocation, &data);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+    }
+    return data;
+}
+void unmapResource(VmaAllocator allocator, VmaAllocation allocation)
+{
+    vmaUnmapMemory(allocator, allocation);
+}
+#else
+VulkanBufferResource createBufferResource(VulkanDevice* device, const VkBufferCreateInfo& createInfo)
+{
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkResult result = vkAPI.CreateBuffer(device->getVkDevice(), &createInfo, nullptr, &buffer);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
+    }
+
+    VkMemoryRequirements memoryRequirements{};
+    vkAPI.GetBufferMemoryRequirements(device->getVkDevice(), buffer, &memoryRequirements);
+
+    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT; // TODO: set memory property flags by create information.
+
+    int memoryTypeIndex = downcast(device->getPhysicalDevice())->findMemoryTypeIndex(memoryPropertyFlags);
+    if (memoryTypeIndex == -1)
+    {
+        throw std::runtime_error("Failed to find memory type index");
+    }
+
+    VkMemoryAllocateInfo memoryAllocateInfo{ .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                                             .allocationSize = memoryRequirements.size,
+                                             .memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex) };
+
+    VkDeviceMemory deviceMemory = VK_NULL_HANDLE;
+    result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to allocate memory");
+    }
+
+    result = vkAPI.BindBufferMemory(device->getVkDevice(), buffer, deviceMemory, 0);
+    if (result != VK_SUCCESS)
+    {
+        // TODO: delete VkBuffer resource automatically.
+        device->vkAPI.DestroyBuffer(device->getVkDevice(), buffer, nullptr);
+
+        throw std::runtime_error("Failed to bind memory");
+    }
+
+    return { .buffer = buffer, .allocation = deviceMemory };
+}
+
+void destroyBufferResource(VulkanDevice* device, const VulkanBufferResource& bufferResource)
+{
+    device->vkAPI.FreeMemory(device->getVkDevice(), bufferResource.allocation, nullptr);
+    device->vkAPI.DestroyBuffer(device->getVkDevice(), bufferResource.buffer, nullptr);
+}
+
+VulkanTextureResource createTextureResource(VulkanDevice* device, const VkImageCreateInfo& createInfo)
+{
+    const VulkanAPI& vkAPI = device->vkAPI;
+    VkImage image = VK_NULL_HANDLE;
+    VkResult result = vkAPI.CreateImage(device->getVkDevice(), &createInfo, nullptr, &image);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create image. error: {}", static_cast<int32_t>(result)));
+    }
+
+    VkMemoryRequirements memoryRequirements{};
+    vkAPI.GetImageMemoryRequirements(device->getVkDevice(), image, &memoryRequirements);
+
+    VkMemoryPropertyFlags memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: set memory property flags by create information.
+
+    int memoryTypeIndex = downcast(device->getPhysicalDevice())->findMemoryTypeIndex(memoryPropertyFlags);
+    if (memoryTypeIndex == -1)
+    {
+        throw std::runtime_error("Failed to find memory type index");
+    }
+
+    VkMemoryAllocateInfo memoryAllocateInfo{ .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+                                             .allocationSize = memoryRequirements.size,
+                                             .memoryTypeIndex = static_cast<uint32_t>(memoryTypeIndex) };
+
+    VkDeviceMemory deviceMemory = VK_NULL_HANDLE;
+    result = vkAPI.AllocateMemory(device->getVkDevice(), &memoryAllocateInfo, nullptr, &deviceMemory);
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to allocate memory");
+    }
+
+    result = vkAPI.BindImageMemory(device->getVkDevice(), image, deviceMemory, 0);
+    if (result != VK_SUCCESS)
+    {
+        // TODO: delete VkImage resource automatically.
+        device->vkAPI.DestroyImage(device->getVkDevice(), image, nullptr);
+
+        throw std::runtime_error(fmt::format("Failed to bind memory. {}", static_cast<int32_t>(result)));
+    }
+
+    return { .image = image, .allocation = deviceMemory };
+}
+void destroyTextureResource(VulkanDevice* device, const VulkanTextureResource& textureResource)
+{
+    device->vkAPI.FreeMemory(device->getVkDevice(), textureResource.allocation, nullptr);
+    device->vkAPI.DestroyImage(device->getVkDevice(), textureResource.image, nullptr);
+}
+void* mapResource(VulkanDevice* device, VulkanAllocation allocation)
+{
+    void* data = nullptr;
+    VkResult result = device->vkAPI.MapMemory(device->getVkDevice(), allocation, 0, VK_WHOLE_SIZE, 0, &data);
+    if (result != VK_SUCCESS)
+    {
+        spdlog::error("Failed to map to pointer. error: {}", static_cast<int32_t>(result));
+    }
+    return data;
+}
+void unmapResource(VulkanDevice* device, VkDeviceMemory memory)
+{
+    device->vkAPI.UnmapMemory(device->getVkDevice(), memory);
+}
+#endif
+
+} // namespace
+
 VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const VulkanResourceAllocatorDescriptor& descriptor)
     : m_device(device)
 {
+#if defined(USE_VMA)
     auto vulkanPhysicalDevice = downcast(m_device->getPhysicalDevice());
     auto vulkanDriver = downcast(vulkanPhysicalDevice->getDriver());
 
@@ -40,86 +215,68 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const Vul
     {
         throw std::runtime_error("Failed to create vma allocator");
     }
+#endif
 }
 
 VulkanResourceAllocator::~VulkanResourceAllocator()
 {
+#if defined(USE_VMA)
     vmaDestroyAllocator(m_allocator);
+#endif
 }
 
 VulkanBufferResource VulkanResourceAllocator::createBuffer(const VkBufferCreateInfo& createInfo)
 {
-    // VkBufferCreateInfo bufferCreateInfo{};
-    // bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    // bufferCreateInfo.size = descriptor.size;
-    // bufferCreateInfo.flags = 0;
-    // bufferCreateInfo.usage = ToVkBufferUsageFlags(descriptor.usage);
-    // bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    VmaAllocationCreateInfo allocInfo = {};
-    // allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-
-    VkBuffer buffer = VK_NULL_HANDLE;
-    VmaAllocation allocation;
-    VkResult result = vmaCreateBuffer(m_allocator, &createInfo, &allocInfo, &buffer, &allocation, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("Failed to create buffer. error: {}", static_cast<int32_t>(result)));
-    }
-
-    return { .buffer = buffer, .allocation = allocation };
+#if defined(USE_VMA)
+    return createBufferResource(m_allocator, createInfo);
+#else
+    return createBufferResource(m_device, createInfo);
+#endif
 }
 
-void VulkanResourceAllocator::destroyBuffer(const VulkanBufferResource& bufferMemory)
+void VulkanResourceAllocator::destroyBuffer(const VulkanBufferResource& bufferResource)
 {
-    vmaDestroyBuffer(m_allocator, bufferMemory.buffer, bufferMemory.allocation);
+#if defined(USE_VMA)
+    destroyBufferResource(m_allocator, bufferResource);
+#else
+    destroyBufferResource(m_device, bufferResource);
+#endif
 }
 
 VulkanTextureResource VulkanResourceAllocator::createTexture(const VkImageCreateInfo& createInfo)
 {
-    // VkImageCreateInfo imageCreateInfo{};
-    // imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    // imageCreateInfo.imageType = ToVkImageType(descriptor.type);
-    // imageCreateInfo.format = ToVkFormat(descriptor.format);
-    // imageCreateInfo.extent = { descriptor.width, descriptor.height, descriptor.depth };
-    // imageCreateInfo.mipLevels = descriptor.mipLevels;
-    // imageCreateInfo.arrayLayers = 1;
-    // imageCreateInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-    // imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    // imageCreateInfo.usage = ToVkImageUsageFlags(descriptor.usage);
-    // imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    // imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    VmaAllocationCreateInfo allocInfo = {};
-    allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
-    VkImage image = VK_NULL_HANDLE;
-    VmaAllocation allocation;
-    VkResult result = vmaCreateImage(m_allocator, &createInfo, &allocInfo, &image, &allocation, nullptr);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("Failed to create image. error: {}", static_cast<int32_t>(result)));
-    }
-
-    return { .image = image, .allocation = allocation };
+#if defined(USE_VMA)
+    return createTextureResource(m_allocator, createInfo);
+#else
+    return createTextureResource(m_device, createInfo);
+#endif
 }
 
-void VulkanResourceAllocator::destroyTexture(VulkanTextureResource textureMemory)
+void VulkanResourceAllocator::destroyTexture(VulkanTextureResource textureResource)
 {
-    vmaDestroyImage(m_allocator, textureMemory.image, textureMemory.allocation);
+#if defined(USE_VMA)
+    destroyTextureResource(m_allocator, textureResource);
+#else
+    destroyTextureResource(m_device, textureResource);
+#endif
 }
 
-void* VulkanResourceAllocator::map(VmaAllocation allocation)
+void* VulkanResourceAllocator::map(VulkanAllocation allocation)
 {
-    void* data = nullptr;
-    vmaMapMemory(m_allocator, allocation, &data);
-    return data;
+#if defined(USE_VMA)
+    return mapResource(m_allocator, allocation);
+#else
+    return mapResource(m_device, allocation);
+#endif
 }
 
-void VulkanResourceAllocator::unmap(VmaAllocation allocation)
+void VulkanResourceAllocator::unmap(VulkanAllocation allocation)
 {
-    vmaUnmapMemory(m_allocator, allocation);
+#if defined(USE_VMA)
+    unmapResource(m_allocator, allocation);
+#else
+    unmapResource(m_device, allocation);
+#endif
 }
 
 } // namespace jipu
