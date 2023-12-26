@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include <optional>
 #include <vector>
 
 namespace jipu
@@ -60,13 +61,13 @@ public:
     virtual ~BindingGroupLayout() = default;
 
     const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
-    BufferBindingLayout getBufferBindingLayout(uint32_t index) const;
+    std::optional<BufferBindingLayout> getBufferBindingLayout(uint32_t index) const;
 
     const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
-    SamplerBindingLayout getSamplerBindingLayout(uint32_t index) const;
+    std::optional<SamplerBindingLayout> getSamplerBindingLayout(uint32_t index) const;
 
     const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
-    TextureBindingLayout getTextureBindingLayout(uint32_t index) const;
+    std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
 
 protected:
     Device* m_device = nullptr;

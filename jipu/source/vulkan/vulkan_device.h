@@ -6,6 +6,7 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_render_pass.h"
+#include "vulkan_resource_allocator.h"
 
 #include <memory>
 #include <unordered_set>
@@ -43,6 +44,7 @@ public:
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanResourceAllocator* getResourceAllocator() const;
 
 public:
     VkDevice getVkDevice() const;
@@ -58,6 +60,7 @@ public:
 
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
+    void createResourceAllocator();
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;
@@ -68,6 +71,7 @@ private:
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFrameBufferCache m_frameBufferCache;
+    std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
 };
 
 DOWN_CAST(VulkanDevice, Device);

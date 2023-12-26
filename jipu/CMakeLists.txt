@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # find package
 find_package(Vulkan REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
@@ -15,8 +16,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory_allocator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.cpp
@@ -40,8 +40,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_memory_allocator.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.h
@@ -143,6 +143,7 @@ target_link_libraries(jipu
   PUBLIC
   Vulkan::Vulkan
   PRIVATE
+  GPUOpen::VulkanMemoryAllocator
   spdlog::spdlog_header_only
 )
 

@@ -1,6 +1,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
+#include "vulkan_resource_allocator.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -29,34 +30,13 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
     createInfo.flags = 0; // Optional
 
-    const VulkanAPI& vkAPI = device->vkAPI;
-    VkResult result = vkAPI.CreateImage(device->getVkDevice(), &createInfo, nullptr, &m_image);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error(fmt::format("Failed to create image. {}", static_cast<uint32_t>(result)));
-    }
-
-    VkMemoryRequirements memoryRequirements{};
-    vkAPI.GetImageMemoryRequirements(device->getVkDevice(), m_image, &memoryRequirements);
-
-    VulkanMemoryDescriptor memoryDescriptor{};
-    memoryDescriptor.flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT; // TODO: for only staging buffer.
-    memoryDescriptor.requirements = memoryRequirements;
-
-    m_memory = std::make_unique<VulkanMemory>(device, memoryDescriptor);
-
-    result = vkAPI.BindImageMemory(device->getVkDevice(), m_image, m_memory->getVkDeviceMemory(), 0);
-    if (result != VK_SUCCESS)
-    {
-        // TODO: delete VkImage resource automatically.
-        device->vkAPI.DestroyImage(device->getVkDevice(), m_image, nullptr);
-        throw std::runtime_error(fmt::format("Failed to bind memory. {}", static_cast<int32_t>(result)));
-    }
+    auto vulkanResourceAllocator = device->getResourceAllocator();
+    m_resource = vulkanResourceAllocator->createTexture(createInfo);
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
     : Texture(device, descriptor)
-    , m_image(image)
+    , m_resource{ image, VK_NULL_HANDLE }
     , m_owner(TextureOwner::Internal)
 {
 }
@@ -65,10 +45,8 @@ VulkanTexture::~VulkanTexture()
 {
     if (m_owner == TextureOwner::External)
     {
-        m_memory.reset();
-
-        VulkanDevice* vulkanDevice = downcast(m_device);
-        vulkanDevice->vkAPI.DestroyImage(vulkanDevice->getVkDevice(), m_image, nullptr);
+        auto vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
+        vulkanResourceAllocator->destroyTexture(m_resource);
     }
 }
 
@@ -79,7 +57,7 @@ std::unique_ptr<TextureView> VulkanTexture::createTextureView(const TextureViewD
 
 VkImage VulkanTexture::getVkImage() const
 {
-    return m_image;
+    return m_resource.image;
 }
 
 TextureOwner VulkanTexture::getTextureOwner() const
@@ -114,19 +92,13 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.oldLayout = oldLayout;
     barrier.newLayout = newLayout;
-    barrier.image = m_image;
+    barrier.image = m_resource.image;
     barrier.subresourceRange = range;
 
     VkPipelineStageFlags srcStage = GeneratePipelineStage(oldLayout);
     VkPipelineStageFlags dstStage = GeneratePipelineStage(newLayout);
 
-    vkAPI.CmdPipelineBarrier(
-        commandBuffer,
-        srcStage, dstStage,
-        0,
-        0, nullptr,
-        0, nullptr,
-        1, &barrier);
+    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
     // set current layout.
     m_layout = layout;

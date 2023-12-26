@@ -1,11 +1,14 @@
+#include <math.h>
+#include <spdlog/spdlog.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <random>
+#include <stdexcept>
+
 #include "camera.h"
 #include "file.h"
 #include "im_gui.h"
-#include "khronos_texture.h"
-#include "light.h"
-#include "model.h"
-#include "sample.h"
-
 #include "jipu/buffer.h"
 #include "jipu/command_buffer.h"
 #include "jipu/command_encoder.h"
@@ -18,13 +21,10 @@
 #include "jipu/render_pass_encoder.h"
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <math.h>
-#include <random>
-#include <spdlog/spdlog.h>
-#include <stdexcept>
+#include "khronos_texture.h"
+#include "light.h"
+#include "model.h"
+#include "sample.h"
 
 namespace jipu
 {
@@ -539,7 +539,8 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment |
+                       TextureUsageFlagBits::kTextureBinding;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -1313,15 +1314,15 @@ void DeferredSample::createQueue()
 
 #if defined(__ANDROID__) || defined(ANDROID)
 
-    // GameActivity's C/C++ code
-    #include <game-activity/GameActivity.cpp>
-    #include <game-text-input/gametextinput.cpp>
+// GameActivity's C/C++ code
+#include <game-activity/GameActivity.cpp>
+#include <game-text-input/gametextinput.cpp>
 
 // Glue from GameActivity to android_main()
 // Passing GameActivity event from main thread to app native thread.
 extern "C"
 {
-    #include <game-activity/native_app_glue/android_native_app_glue.c>
+#include <game-activity/native_app_glue/android_native_app_glue.c>
 }
 
 void android_main(struct android_app* app)

@@ -1,100 +1,13 @@
 ---
 # ref : https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 IndentWidth: 4
----
-Language: Cpp
-ColumnLimit: 120
-PointerAlignment: Left
-
-BraceWrapping:
-  AfterClass:      true
-  AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  true
-  AfterObjCDeclaration: true
-  AfterStruct:     true
-  AfterUnion:      true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    true
-BreakBeforeBraces: Custom
-
-Cpp11BracedListStyle: false
-
-PointerAlignment: Left
-
-# class
-AccessModifierOffset: -4
-BreakConstructorInitializers: BeforeComma
-# IndentAccessModifiers: false
-EmptyLineAfterAccessModifier: Never
-
-# 
-IndentCaseBlocks: false
-IndentCaseLabels: false
-BreakBeforeBraces: Allman
-
-# namespace
-NamespaceIndentation: None
-
-# bracket
-AlignAfterOpenBracket: Align
-
-#
-IndentPPDirectives: BeforeHash
-
-AllowShortFunctionsOnASingleLine: Empty
-
-# template
-AlwaysBreakTemplateDeclarations: Yes
-
-# operator
-BreakBeforeBinaryOperators: None
 ColumnLimit: 0
 
----
-Language: ObjC
-ColumnLimit: 160
-PointerAlignment: Left
-
-BraceWrapping:
-  AfterClass:      true
-  AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  true
-  AfterObjCDeclaration: true
-  AfterStruct:     true
-  AfterUnion:      true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    true
-BreakBeforeBraces: Custom
-
+# class
+AccessModifierOffset: -4
+PackConstructorInitializers: Never
+BreakConstructorInitializers: BeforeComma
 Cpp11BracedListStyle: false
 
 PointerAlignment: Left
-
-# class
-AccessModifierOffset: -4
-BreakConstructorInitializers: BeforeComma
-# IndentAccessModifiers: false
-EmptyLineAfterAccessModifier: Never
-
-# 
-IndentCaseBlocks: false
-IndentCaseLabels: false
-BreakBeforeBraces: Allman
-
-# namespace
-NamespaceIndentation: None
-
-# bracket
-AlignAfterOpenBracket: Align
-
-#
-IndentPPDirectives: BeforeHash
-
-AllowShortFunctionsOnASingleLine: Empty

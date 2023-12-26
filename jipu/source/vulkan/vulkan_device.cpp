@@ -69,11 +69,15 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
         m_queues[index] = queue;
     }
+
+    createResourceAllocator();
 }
 
 VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
+
+    m_resourceAllocator.reset();
 
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
@@ -152,6 +156,11 @@ VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& 
 VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
+}
+
+VulkanResourceAllocator* VulkanDevice::getResourceAllocator() const
+{
+    return m_resourceAllocator.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
@@ -269,6 +278,12 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     {
         throw std::runtime_error("failed to create logical device!");
     }
+}
+
+void VulkanDevice::createResourceAllocator()
+{
+    VulkanResourceAllocatorDescriptor descriptor{};
+    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, descriptor);
 }
 
 } // namespace jipu

@@ -49,11 +49,3 @@ if(JIPU_TEST)
 
   # add_dependencies(test_jipu jipu::jipu)
 endif()
-
-# TODO: runtime output
-if(WIN32 AND BUILD_SHARED_LIBS)
-  set_target_properties(jipu PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/sample/apps/triangle
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/sample/apps/triangle
-  )
-endif()

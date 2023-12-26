@@ -4,7 +4,7 @@
 #include "utils/assert.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
-#include "vulkan_memory.h"
+#include "vulkan_resource.h"
 #include "vulkan_texture_view.h"
 
 #include <fmt/format.h>
@@ -50,8 +50,9 @@ public:
     VkImageLayout getFinalLayout() const;
 
 private:
-    VkImage m_image = VK_NULL_HANDLE;
-    std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    // VkImage m_image = VK_NULL_HANDLE;
+    // std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    VulkanTextureResource m_resource;
     TextureOwner m_owner;
 
 private:
