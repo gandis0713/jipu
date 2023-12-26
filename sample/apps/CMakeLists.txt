@@ -29,7 +29,6 @@ function(configure_sample target)
         )
     endif()
 
-    find_package(spdlog CONFIG REQUIRED)
     find_package(glm CONFIG REQUIRED)
 
     target_link_libraries(${target}
@@ -37,7 +36,6 @@ function(configure_sample target)
         glm::glm
         jipu::jipu
         jipu::sample_base
-        spdlog::spdlog_header_only
     )
 
     # set compile options
