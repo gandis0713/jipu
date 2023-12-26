@@ -7,7 +7,7 @@ namespace jipu
 void Test::SetUp()
 {
     DriverDescriptor driverDescriptor;
-    driverDescriptor.type = DriverType::VULKAN;
+    driverDescriptor.type = DriverType::kVulkan;
     m_driver = Driver::create(driverDescriptor);
     EXPECT_NE(nullptr, m_driver);
 

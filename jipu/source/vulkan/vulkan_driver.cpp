@@ -270,6 +270,7 @@ void VulkanDriver::gatherDriverInfo()
             {
                 m_driverInfo.win32Surface = true;
             }
+#ifndef NDEBUG
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugReport, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
                 m_driverInfo.debugReport = true;
@@ -278,6 +279,7 @@ void VulkanDriver::gatherDriverInfo()
             {
                 m_driverInfo.debugUtils = true;
             }
+#endif
         }
     }
 }
@@ -361,11 +363,11 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #elif defined(_WIN32)
     requiredInstanceExtensions.push_back(kExtensionNameKhrWin32Surface);
 #elif defined(__APPLE__)
-    #if defined(VK_USE_PLATFORM_MACOS_MVK)
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
     requiredInstanceExtensions.push_back(kExtensionNameMvkMacosSurface);
-    #elif defined(VK_USE_PLATFORM_METAL_EXT)
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
     requiredInstanceExtensions.push_back(kExtensionNameExtMetalSurface);
-    #endif
+#endif
 #endif
 
 #ifndef NDEBUG

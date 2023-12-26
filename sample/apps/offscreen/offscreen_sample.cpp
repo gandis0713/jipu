@@ -199,7 +199,7 @@ void OffscreenSample::updateImGui()
 void OffscreenSample::createDevier()
 {
     DriverDescriptor descriptor{};
-    descriptor.type = DriverType::VULKAN;
+    descriptor.type = DriverType::kVulkan;
 
     m_driver = Driver::create(descriptor);
 }
