@@ -25,3 +25,4 @@ endfunction()
 
 configure_test(copy)
 configure_test(submit)
+configure_test(device)
