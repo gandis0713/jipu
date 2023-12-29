@@ -258,9 +258,10 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     // TODO: Layer.
 
     VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
-    if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+    VkResult result = vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device);
+    if (result != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create logical device!");
+        throw std::runtime_error(fmt::format("failed to create logical device. {}", static_cast<uint32_t>(result)));
     }
 }
 
@@ -282,7 +283,6 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
     {
         // TODO: define "VK_KHR_portability_subset"
         requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
-        // requiredDeviceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
 
     spdlog::info("Required Device extensions :");
