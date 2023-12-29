@@ -19,20 +19,6 @@
 
 extern const char kExtensionPortabilitySubset[];
 
-const std::vector<const char*> getRequiredDeviceExtension()
-{
-    std::vector<const char*> requiredDeviceExtension;
-
-    requiredDeviceExtension.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-    spdlog::info("Required Device extensions :");
-    for (const auto& extension : requiredDeviceExtension)
-    {
-        spdlog::info("{}{}", '\t', extension);
-    }
-    return requiredDeviceExtension;
-};
-
 namespace jipu
 {
 
@@ -264,13 +250,8 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
     deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
 
-    std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
-    // TODO: check extension supported.
-    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
-    {
-        // TODO: define "VK_KHR_portability_subset"
-        requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
-    }
+    std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtensions();
+
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 
@@ -288,5 +269,28 @@ void VulkanDevice::createResourceAllocator()
     VulkanResourceAllocatorDescriptor descriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, descriptor);
 }
+
+const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
+{
+    std::vector<const char*> requiredDeviceExtensions;
+
+    requiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+    // TODO: check extension supported.
+    auto vulkanPhysicalDevice = downcast(m_physicalDevice);
+    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
+    {
+        // TODO: define "VK_KHR_portability_subset"
+        requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
+        // requiredDeviceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    }
+
+    spdlog::info("Required Device extensions :");
+    for (const auto& extension : requiredDeviceExtensions)
+    {
+        spdlog::info("{}{}", '\t', extension);
+    }
+    return requiredDeviceExtensions;
+};
 
 } // namespace jipu

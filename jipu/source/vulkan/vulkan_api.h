@@ -1,17 +1,17 @@
 #pragma once
 
 #if defined(__ANDROID__) || defined(ANDROID)
-    #define VK_USE_PLATFORM_ANDROID_KHR
+#define VK_USE_PLATFORM_ANDROID_KHR
 #elif defined(__linux__)
-    #define VK_USE_PLATFORM_XCB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
 #elif defined(__APPLE__)
-    #define VK_USE_PLATFORM_METAL_EXT
+#define VK_USE_PLATFORM_METAL_EXT
 // #define VK_USE_PLATFORM_MACOS_MVK
 #elif defined(WIN32)
-    #define VK_USE_PLATFORM_WIN32_KHR
+#define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
-#define VK_NO_PROTOTYPES 1
+#define VK_NO_PROTOTYPES
 #include <vulkan/vulkan.h>
 
 namespace jipu
@@ -48,6 +48,7 @@ struct VulkanAPI
 
     // ---------- Driver procs
 
+#if defined(VK_VERSION_1_0)
     // Initial proc from which we can get all the others
     PFN_vkGetInstanceProcAddr GetInstanceProcAddr = nullptr;
 
@@ -57,14 +58,16 @@ struct VulkanAPI
     // DestroyInstance isn't technically a global proc but we want to be able to use it
     // before querying the instance procs in case we need to error out during initialization.
     PFN_vkDestroyInstance DestroyInstance = nullptr;
+#endif
 
-    // Core Vulkan 1.1
+#if defined(VK_VERSION_1_1)
     PFN_vkEnumerateInstanceVersion EnumerateInstanceVersion = nullptr;
+#endif
 
     // ---------- Instance procs
-
-    // Core Vulkan 1.0
+#if defined(VK_VERSION_1_0)
     PFN_vkCreateDevice CreateDevice = nullptr;
+    PFN_vkDestroyDevice DestroyDevice = nullptr;
     PFN_vkEnumerateDeviceExtensionProperties EnumerateDeviceExtensionProperties = nullptr;
     PFN_vkEnumerateDeviceLayerProperties EnumerateDeviceLayerProperties = nullptr;
     PFN_vkEnumeratePhysicalDevices EnumeratePhysicalDevices = nullptr;
@@ -76,9 +79,25 @@ struct VulkanAPI
     PFN_vkGetPhysicalDeviceProperties GetPhysicalDeviceProperties = nullptr;
     PFN_vkGetPhysicalDeviceQueueFamilyProperties GetPhysicalDeviceQueueFamilyProperties = nullptr;
     PFN_vkGetPhysicalDeviceSparseImageFormatProperties GetPhysicalDeviceSparseImageFormatProperties = nullptr;
-    // Not technically an instance proc but we want to be able to use it as soon as the
-    // device is created.
-    PFN_vkDestroyDevice DestroyDevice = nullptr;
+// Not technically an instance proc but we want to be able to use it as soon as the
+// device is created.
+#endif
+#if defined(VK_VERSION_1_1)
+    PFN_vkEnumeratePhysicalDeviceGroups EnumeratePhysicalDeviceGroups = nullptr;
+    PFN_vkGetPhysicalDeviceExternalBufferProperties GetPhysicalDeviceExternalBufferProperties = nullptr;
+    PFN_vkGetPhysicalDeviceExternalFenceProperties GetPhysicalDeviceExternalFenceProperties = nullptr;
+    PFN_vkGetPhysicalDeviceExternalSemaphoreProperties GetPhysicalDeviceExternalSemaphoreProperties = nullptr;
+    PFN_vkGetPhysicalDeviceFeatures2 GetPhysicalDeviceFeatures2 = nullptr;
+    PFN_vkGetPhysicalDeviceFormatProperties2 GetPhysicalDeviceFormatProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceImageFormatProperties2 GetPhysicalDeviceImageFormatProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceMemoryProperties2 GetPhysicalDeviceMemoryProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceProperties2 GetPhysicalDeviceProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties2 GetPhysicalDeviceQueueFamilyProperties2 = nullptr;
+    PFN_vkGetPhysicalDeviceSparseImageFormatProperties2 GetPhysicalDeviceSparseImageFormatProperties2 = nullptr;
+#endif
+#if defined(VK_VERSION_1_3)
+    PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
+#endif
 
     // VK_EXT_debug_report
     PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
@@ -255,7 +274,39 @@ struct VulkanAPI
     PFN_vkUpdateDescriptorSets UpdateDescriptorSets = nullptr;
     PFN_vkWaitForFences WaitForFences = nullptr;
 #endif // defined(VK_VERSION_1_0)
-
+#if defined(VK_VERSION_1_1)
+    PFN_vkBindBufferMemory2 BindBufferMemory2 = nullptr;
+    PFN_vkBindImageMemory2 BindImageMemory2 = nullptr;
+    PFN_vkCmdDispatchBase CmdDispatchBase = nullptr;
+    PFN_vkCmdSetDeviceMask CmdSetDeviceMask = nullptr;
+    PFN_vkCreateDescriptorUpdateTemplate CreateDescriptorUpdateTemplate = nullptr;
+    PFN_vkCreateSamplerYcbcrConversion CreateSamplerYcbcrConversion = nullptr;
+    PFN_vkDestroyDescriptorUpdateTemplate DestroyDescriptorUpdateTemplate = nullptr;
+    PFN_vkDestroySamplerYcbcrConversion DestroySamplerYcbcrConversion = nullptr;
+    PFN_vkGetBufferMemoryRequirements2 GetBufferMemoryRequirements2 = nullptr;
+    PFN_vkGetDescriptorSetLayoutSupport GetDescriptorSetLayoutSupport = nullptr;
+    PFN_vkGetDeviceGroupPeerMemoryFeatures GetDeviceGroupPeerMemoryFeatures = nullptr;
+    PFN_vkGetDeviceQueue2 GetDeviceQueue2 = nullptr;
+    PFN_vkGetImageMemoryRequirements2 GetImageMemoryRequirements2 = nullptr;
+    PFN_vkGetImageSparseMemoryRequirements2 GetImageSparseMemoryRequirements2 = nullptr;
+    PFN_vkTrimCommandPool TrimCommandPool = nullptr;
+    PFN_vkUpdateDescriptorSetWithTemplate UpdateDescriptorSetWithTemplate = nullptr;
+#endif // defined(VK_VERSION_1_1)
+#if defined(VK_VERSION_1_2)
+    PFN_vkCmdBeginRenderPass2 CmdBeginRenderPass2 = nullptr;
+    PFN_vkCmdDrawIndexedIndirectCount CmdDrawIndexedIndirectCount = nullptr;
+    PFN_vkCmdDrawIndirectCount CmdDrawIndirectCount = nullptr;
+    PFN_vkCmdEndRenderPass2 CmdEndRenderPass2 = nullptr;
+    PFN_vkCmdNextSubpass2 CmdNextSubpass2 = nullptr;
+    PFN_vkCreateRenderPass2 CreateRenderPass2 = nullptr;
+    PFN_vkGetBufferDeviceAddress GetBufferDeviceAddress = nullptr;
+    PFN_vkGetBufferOpaqueCaptureAddress GetBufferOpaqueCaptureAddress = nullptr;
+    PFN_vkGetDeviceMemoryOpaqueCaptureAddress GetDeviceMemoryOpaqueCaptureAddress = nullptr;
+    PFN_vkGetSemaphoreCounterValue GetSemaphoreCounterValue = nullptr;
+    PFN_vkResetQueryPool ResetQueryPool = nullptr;
+    PFN_vkSignalSemaphore SignalSemaphore = nullptr;
+    PFN_vkWaitSemaphores WaitSemaphores = nullptr;
+#endif // defined(VK_VERSION_1_2)
 #if defined(VK_VERSION_1_3)
     PFN_vkCmdBeginRendering CmdBeginRendering = nullptr;
     PFN_vkCmdBindVertexBuffers2 CmdBindVertexBuffers2 = nullptr;

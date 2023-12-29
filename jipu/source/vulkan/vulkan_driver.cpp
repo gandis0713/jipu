@@ -44,7 +44,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
     {
-        spdlog::debug(message);
+        spdlog::info(message);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
@@ -53,7 +53,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
         spdlog::error(message);
-        assert_message(false, message);
+    }
+    else
+    {
+        spdlog::debug(message);
     }
 
     return VK_FALSE;
@@ -83,7 +86,7 @@ void VulkanDriver::initialize() noexcept(false)
 #elif defined(__linux__)
     const char vulkanLibraryName[] = "libvulkan.so.1";
 #elif defined(__APPLE__)
-    const char vulkanLibraryName[] = "libvulkan.1.dylib";
+    const char vulkanLibraryName[] = "libvulkan.dylib";
 #elif defined(WIN32)
     const char vulkanLibraryName[] = "vulkan-1.dll";
 #endif

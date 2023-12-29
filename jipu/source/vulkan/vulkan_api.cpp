@@ -7,12 +7,12 @@ namespace jipu
 {
 bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 {
-#define GET_GLOBAL_PROC(name)                                                                                                                                  \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name));                                                                         \
-    if (name == nullptr)                                                                                                                                       \
-    {                                                                                                                                                          \
-        spdlog::error("Couldn't get driver proc vk{}", #name);                                                                                                 \
-        return false;                                                                                                                                          \
+#define GET_GLOBAL_PROC(name)                                                          \
+    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
+    if (name == nullptr)                                                               \
+    {                                                                                  \
+        spdlog::error("Couldn't get driver proc vk{}", #name);                         \
+        return false;                                                                  \
     }
 
     if (!vulkanLib->getProc(&GetInstanceProcAddr, "vkGetInstanceProcAddr"))
@@ -33,12 +33,12 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 
 bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& driverKnobs)
 {
-#define GET_INSTANCE_PROC(name)                                                                                                                                \
-    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name));                                                                        \
-    if (name == nullptr)                                                                                                                                       \
-    {                                                                                                                                                          \
-        spdlog::error("Couldn't get instance proc vk{}", #name);                                                                                               \
-        return false;                                                                                                                                          \
+#define GET_INSTANCE_PROC(name)                                                         \
+    name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \
+    if (name == nullptr)                                                                \
+    {                                                                                   \
+        spdlog::error("Couldn't get instance proc vk{}", #name);                        \
+        return false;                                                                   \
     }
 
     if (GetInstanceProcAddr == nullptr)
@@ -51,19 +51,38 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
     // GET_INSTANCE_PROC fails
     GET_INSTANCE_PROC(DestroyInstance);
 
-    GET_INSTANCE_PROC(CreateDevice);
+#if defined(VK_VERSION_1_0)
+    GET_INSTANCE_PROC(CreateDevice)
     GET_INSTANCE_PROC(DestroyDevice);
-    GET_INSTANCE_PROC(EnumerateDeviceExtensionProperties);
-    GET_INSTANCE_PROC(EnumerateDeviceLayerProperties);
-    GET_INSTANCE_PROC(EnumeratePhysicalDevices);
-    GET_INSTANCE_PROC(GetDeviceProcAddr);
-    GET_INSTANCE_PROC(GetPhysicalDeviceFeatures);
-    GET_INSTANCE_PROC(GetPhysicalDeviceFormatProperties);
-    GET_INSTANCE_PROC(GetPhysicalDeviceImageFormatProperties);
-    GET_INSTANCE_PROC(GetPhysicalDeviceMemoryProperties);
-    GET_INSTANCE_PROC(GetPhysicalDeviceProperties);
-    GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties);
-    GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties);
+    GET_INSTANCE_PROC(DestroyInstance)
+    GET_INSTANCE_PROC(EnumerateDeviceExtensionProperties)
+    GET_INSTANCE_PROC(EnumerateDeviceLayerProperties)
+    GET_INSTANCE_PROC(EnumeratePhysicalDevices)
+    GET_INSTANCE_PROC(GetDeviceProcAddr)
+    GET_INSTANCE_PROC(GetPhysicalDeviceFeatures)
+    GET_INSTANCE_PROC(GetPhysicalDeviceFormatProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceImageFormatProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceMemoryProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties)
+#endif /* defined(VK_VERSION_1_0) */
+#if defined(VK_VERSION_1_1)
+    GET_INSTANCE_PROC(EnumeratePhysicalDeviceGroups)
+    GET_INSTANCE_PROC(GetPhysicalDeviceExternalBufferProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceExternalFenceProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceExternalSemaphoreProperties)
+    GET_INSTANCE_PROC(GetPhysicalDeviceFeatures2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceFormatProperties2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceImageFormatProperties2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceMemoryProperties2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceProperties2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceQueueFamilyProperties2)
+    GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2)
+#endif /* defined(VK_VERSION_1_1) */
+#if defined(VK_VERSION_1_3)
+    GET_INSTANCE_PROC(GetPhysicalDeviceToolProperties)
+#endif /* defined(VK_VERSION_1_3) */
 
     if (driverKnobs.debugReport)
     {
@@ -138,7 +157,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
     if (driverKnobs.metalSurface)
     {
-        GET_INSTANCE_PROC(CreateMetalSurfaceEXT); // TODO: fix me. failed get proc.
+        GET_INSTANCE_PROC(CreateMetalSurfaceEXT);
     }
 #endif
 
@@ -161,12 +180,12 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
 
 bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs)
 {
-#define GET_DEVICE_PROC(name)                                                                                                                                  \
-    name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name));                                                                            \
-    if (name == nullptr)                                                                                                                                       \
-    {                                                                                                                                                          \
-        spdlog::error("Couldn't get device proc vk{}", #name);                                                                                                 \
-        return false;                                                                                                                                          \
+#define GET_DEVICE_PROC(name)                                                       \
+    name = reinterpret_cast<decltype(name)>(GetDeviceProcAddr(device, "vk" #name)); \
+    if (name == nullptr)                                                            \
+    {                                                                               \
+        spdlog::error("Couldn't get device proc vk{}", #name);                      \
+        return false;                                                               \
     }
 
 #if defined(VK_VERSION_1_0)
@@ -290,7 +309,39 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     GET_DEVICE_PROC(UpdateDescriptorSets);
     GET_DEVICE_PROC(WaitForFences);
 #endif
-
+#if defined(VK_VERSION_1_1)
+    GET_DEVICE_PROC(BindBufferMemory2)
+    GET_DEVICE_PROC(BindImageMemory2)
+    GET_DEVICE_PROC(CmdDispatchBase)
+    GET_DEVICE_PROC(CmdSetDeviceMask)
+    GET_DEVICE_PROC(CreateDescriptorUpdateTemplate)
+    GET_DEVICE_PROC(CreateSamplerYcbcrConversion)
+    GET_DEVICE_PROC(DestroyDescriptorUpdateTemplate)
+    GET_DEVICE_PROC(DestroySamplerYcbcrConversion)
+    GET_DEVICE_PROC(GetBufferMemoryRequirements2)
+    GET_DEVICE_PROC(GetDescriptorSetLayoutSupport)
+    GET_DEVICE_PROC(GetDeviceGroupPeerMemoryFeatures)
+    GET_DEVICE_PROC(GetDeviceQueue2)
+    GET_DEVICE_PROC(GetImageMemoryRequirements2)
+    GET_DEVICE_PROC(GetImageSparseMemoryRequirements2)
+    GET_DEVICE_PROC(TrimCommandPool)
+    GET_DEVICE_PROC(UpdateDescriptorSetWithTemplate)
+#endif /* defined(VK_VERSION_1_1) */
+#if defined(VK_VERSION_1_2)
+    GET_DEVICE_PROC(CmdBeginRenderPass2)
+    GET_DEVICE_PROC(CmdDrawIndexedIndirectCount)
+    GET_DEVICE_PROC(CmdDrawIndirectCount)
+    GET_DEVICE_PROC(CmdEndRenderPass2)
+    GET_DEVICE_PROC(CmdNextSubpass2)
+    GET_DEVICE_PROC(CreateRenderPass2)
+    GET_DEVICE_PROC(GetBufferDeviceAddress)
+    GET_DEVICE_PROC(GetBufferOpaqueCaptureAddress)
+    GET_DEVICE_PROC(GetDeviceMemoryOpaqueCaptureAddress)
+    GET_DEVICE_PROC(GetSemaphoreCounterValue)
+    GET_DEVICE_PROC(ResetQueryPool)
+    GET_DEVICE_PROC(SignalSemaphore)
+    GET_DEVICE_PROC(WaitSemaphores)
+#endif /* defined(VK_VERSION_1_2) */
 #if defined(VK_VERSION_1_3)
     GET_DEVICE_PROC(CmdBeginRendering);
     GET_DEVICE_PROC(CmdBindVertexBuffers2);
@@ -329,7 +380,7 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     // GET_DEVICE_PROC(GetPrivateData);
     // GET_DEVICE_PROC(QueueSubmit2);
     // GET_DEVICE_PROC(SetPrivateData);
-#endif // defined(VK_VERSION_1_3)
+#endif /* defined(VK_VERSION_1_3) */
 
     // if (deviceKnobs.debugMarker)
     // {
