@@ -78,7 +78,8 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "-g"
 			}
 		},
 		{
@@ -88,7 +89,8 @@
 			"binaryDir": "${sourceDir}/build/x64-osx-ninja/debug",
 			"installDir": "${sourceDir}/install/x64-osx-ninja/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "-g"
 			}
 		},
 		{
@@ -98,7 +100,8 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/release",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG"
 			}
 		},
 		{
@@ -108,7 +111,30 @@
 			"binaryDir": "${sourceDir}/build/x64-osx-ninja/release",
 			"installDir": "${sourceDir}/install/x64-osx-ninja/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG"
+			}
+		},
+		{
+			"name": "arm64-osx-ninja-relinfo",
+			"inherits": "base-arm64-osx-ninja",
+			"displayName": "arm64-osx-ninja-relinfo",
+			"binaryDir": "${sourceDir}/build/arm64-osx-ninja/relinfo",
+			"installDir": "${sourceDir}/install/arm64-osx-ninja/relinfo",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG"
+			}
+		},
+		{
+			"name": "x64-osx-ninja-relinfo",
+			"inherits": "base-x64-osx-ninja",
+			"displayName": "x64-osx-ninja-relinfo",
+			"binaryDir": "${sourceDir}/build/x64-osx-ninja/relinfo",
+			"installDir": "${sourceDir}/install/x64-osx-ninja/relinfo",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG"
 			}
 		},
 		{
@@ -118,7 +144,8 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "-g"
 			}
 		},
 		{
@@ -128,7 +155,8 @@
 			"binaryDir": "${sourceDir}/build/x64-osx-xcode/debug",
 			"installDir": "${sourceDir}/install/x64-osx-xcode/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug"
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "-g"
 			}
 		},
 		{
@@ -138,7 +166,8 @@
 			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/release",
 			"installDir": "${sourceDir}/install/arm64-osx-xcode/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG"
 			}
 		},
 		{
@@ -148,7 +177,30 @@
 			"binaryDir": "${sourceDir}/build/x64-osx-xcode/release",
 			"installDir": "${sourceDir}/install/x64-osx-xcode/release",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Release"
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG"
+			}
+		},
+		{
+			"name": "arm64-osx-xcode-relinfo",
+			"inherits": "base-arm64-osx-xcode",
+			"displayName": "arm64-osx-xcode-relinfo",
+			"binaryDir": "${sourceDir}/build/arm64-osx-xcode/relinfo",
+			"installDir": "${sourceDir}/install/arm64-osx-xcode/relinfo",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG"
+			}
+		},
+		{
+			"name": "x64-osx-xcode-relinfo",
+			"inherits": "base-x64-osx-xcode",
+			"displayName": "x64-osx-xcode-relinfo",
+			"binaryDir": "${sourceDir}/build/x64-osx-xcode/relinfo",
+			"installDir": "${sourceDir}/install/x64-osx-xcode/relinfo",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
+				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG"
 			}
 		},
 		{
@@ -289,6 +341,26 @@
 			"configuration": "Release"
 		},
 		{
+			"name": "arm64-osx-ninja-relinfo",
+			"configurePreset": "arm64-osx-ninja-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "x64-osx-ninja-relinfo",
+			"configurePreset": "x64-osx-ninja-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "arm64-osx-xcode-relinfo",
+			"configurePreset": "arm64-osx-xcode-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "x64-osx-xcode-relinfo",
+			"configurePreset": "x64-osx-xcode-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
 			"name": "x64-windows-vs2019-debug",
 			"configurePreset": "x64-windows-vs2019-debug",
 			"configuration": "Debug"
@@ -378,6 +450,30 @@
 			"inherits": "base",
 			"configurePreset": "x64-osx-xcode-release",
 			"configuration": "Release"
+		},
+		{
+			"name": "arm64-osx-ninja-relinfo",
+			"inherits": "base",
+			"configurePreset": "arm64-osx-ninja-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "x64-osx-ninja-relinfo",
+			"inherits": "base",
+			"configurePreset": "x64-osx-ninja-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "arm64-osx-xcode-relinfo",
+			"inherits": "base",
+			"configurePreset": "arm64-osx-xcode-relinfo",
+			"configuration": "RelWithDebInfo"
+		},
+		{
+			"name": "x64-osx-xcode-relinfo",
+			"inherits": "base",
+			"configurePreset": "x64-osx-xcode-relinfo",
+			"configuration": "RelWithDebInfo"
 		},
 		{
 			"name": "x64-windows-vs2019-debug",
