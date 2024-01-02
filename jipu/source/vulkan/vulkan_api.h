@@ -35,6 +35,8 @@ struct VulkanDriverKnobs
 
 struct VulkanDeviceKnobs
 {
+    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
+
     bool swapchain = false;
     bool portabilitySubset = false;
 };
