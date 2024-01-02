@@ -1,10 +1,10 @@
 #include "utils/dylib.h"
 
 #if defined(__linux__) || defined(__APPLE__)
-    #include <dlfcn.h>
+#include <dlfcn.h>
 #elif defined(WIN32)
-    // TODO: other header include
-    #include <windows.h>
+// TODO: other header include
+#include <windows.h>
 #endif
 #include <spdlog/spdlog.h>
 
@@ -35,7 +35,7 @@ bool DyLib::isValid() const
 bool DyLib::open(const std::string& filename)
 {
 #if defined(__linux__) || defined(__APPLE__)
-    m_handle = dlopen(filename.c_str(), RTLD_NOW);
+    m_handle = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
 
     if (m_handle == nullptr)
     {
