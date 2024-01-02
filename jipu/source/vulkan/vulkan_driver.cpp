@@ -21,12 +21,18 @@ const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
 // swapchain
 const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 
+#ifndef NDEBUG
 // layer
 const char kLayerKhronosValidation[] = "VK_LAYER_KHRONOS_validation";
+// const char kLayerKhronosSynchronization2[] = "VK_LAYER_KHRONOS_synchronization2";
+// const char kLayerKhronosShaderObject[] = "VK_LAYER_KHRONOS_shader_object";
+// const char kLayerKhronosProfiles[] = "VK_LAYER_KHRONOS_profiles";
+// const char kLayerKhronosAPIDump[] = "VK_LAYER_LUNARG_api_dump";
 
 // debug
 const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
 const char kExtensionNameExtDebugUtils[] = "VK_EXT_debug_utils";
+#endif
 
 namespace jipu
 {
@@ -120,9 +126,17 @@ void VulkanDriver::initialize() noexcept(false)
 
 void VulkanDriver::createInstance() noexcept(false)
 {
+    // Application Information.
+    VkApplicationInfo applicationInfo{};
+    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    // applicationInfo.apiVersion = m_driverInfo.apiVersion;
+    applicationInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 2, 0); // TODO: check required version.
+
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    instanceCreateInfo.pApplicationInfo = &applicationInfo;
+
 #if VK_HEADER_VERSION >= 216
     if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
     {
@@ -147,15 +161,6 @@ void VulkanDriver::createInstance() noexcept(false)
     instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
     instanceCreateInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
     instanceCreateInfo.pNext = nullptr;
-
-    // Application Information.
-    {
-        VkApplicationInfo applicationInfo{};
-        applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        applicationInfo.apiVersion = m_driverInfo.apiVersion;
-
-        instanceCreateInfo.pApplicationInfo = &applicationInfo;
-    }
 
     VkResult result = vkAPI.CreateInstance(&instanceCreateInfo, nullptr, &m_instance);
     if (result != VK_SUCCESS)
