@@ -107,16 +107,6 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to load driver prosc in vulkan library: {}", vulkanLibraryName));
     }
 
-    if (vkAPI.EnumerateInstanceVersion != nullptr)
-    {
-        vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
-    }
-
-    spdlog::info("Vulkan API Version: {}.{}.{}",
-                 VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
-                 VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
-                 VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
-
     gatherDriverInfo();
 
     createInstance();
@@ -129,7 +119,6 @@ void VulkanDriver::createInstance() noexcept(false)
     // Application Information.
     VkApplicationInfo applicationInfo{};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    // applicationInfo.apiVersion = m_driverInfo.apiVersion;
     applicationInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 2, 0); // TODO: check required version.
 
     // Create Vulkan instance.
@@ -168,7 +157,7 @@ void VulkanDriver::createInstance() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", static_cast<int32_t>(result)));
     }
 
-    VulkanDriverKnobs& driverKnobs = static_cast<VulkanDriverKnobs&>(m_driverInfo);
+    const VulkanDriverKnobs& driverKnobs = static_cast<const VulkanDriverKnobs&>(m_driverInfo);
     if (!vkAPI.loadInstanceProcs(m_instance, driverKnobs))
     {
         throw std::runtime_error(fmt::format("Failed to load instance prosc."));
@@ -209,6 +198,16 @@ void VulkanDriver::gatherPhysicalDevices() noexcept(false)
 
 void VulkanDriver::gatherDriverInfo()
 {
+    if (vkAPI.EnumerateInstanceVersion != nullptr)
+    {
+        vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
+    }
+
+    spdlog::info("Vulkan Loader API Version: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
+                 VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
+                 VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
+
     // Gather instance layer properties.
     {
         uint32_t instanceLayerCount = 0;

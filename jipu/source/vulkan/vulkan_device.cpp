@@ -44,7 +44,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
 
     createDevice(queueFamilyIndices);
 
-    VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
+    const VulkanDeviceKnobs& deviceKnobs = static_cast<const VulkanDeviceKnobs&>(info);
     if (!vkAPI.loadDeviceProcs(m_device, deviceKnobs))
     {
         throw std::runtime_error("Failed to load device procs.");
