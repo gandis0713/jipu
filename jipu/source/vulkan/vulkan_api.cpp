@@ -25,8 +25,10 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
     GET_GLOBAL_PROC(EnumerateInstanceExtensionProperties);
     GET_GLOBAL_PROC(EnumerateInstanceLayerProperties);
 
+#if defined(VK_VERSION_1_1)
     // Is not available in Vulkan 1.0, so allow nullptr
     EnumerateInstanceVersion = reinterpret_cast<decltype(EnumerateInstanceVersion)>(GetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
+#endif
 
     return true;
 }
