@@ -21,7 +21,7 @@ class DyLib;
 
 struct VulkanDriverKnobs
 {
-    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
+    uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 1, 0); // Require 1.1 or higher.
 
     // TODO: use bitset instead of bool type.
     bool debugReport = false;
@@ -31,12 +31,12 @@ struct VulkanDriverKnobs
     bool macosSurface = false;
     bool metalSurface = false;
     bool win32Surface = false;
+
+    bool portabilityEnum = false;
 };
 
 struct VulkanDeviceKnobs
 {
-    uint32_t apiVersion = VK_MAKE_VERSION(1, 0, 0);
-
     bool swapchain = false;
     bool portabilitySubset = false;
 };
@@ -344,9 +344,9 @@ struct VulkanAPI
     PFN_vkGetDeviceImageMemoryRequirements GetDeviceImageMemoryRequirements = nullptr;
     PFN_vkGetDeviceImageSparseMemoryRequirements GetDeviceImageSparseMemoryRequirements = nullptr;
     // PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
-    // PFN_vkGetPrivateData GetPrivateData = nullptr;
-    // PFN_vkQueueSubmit2 QueueSubmit2 = nullptr;
-    // PFN_vkSetPrivateData SetPrivateData = nullptr;
+    PFN_vkGetPrivateData GetPrivateData = nullptr;
+    PFN_vkQueueSubmit2 QueueSubmit2 = nullptr;
+    PFN_vkSetPrivateData SetPrivateData = nullptr;
 #endif // defined(VK_VERSION_1_3)
 
     // VK_EXT_debug_marker

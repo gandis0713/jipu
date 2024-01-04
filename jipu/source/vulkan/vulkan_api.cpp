@@ -312,87 +312,88 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     GET_DEVICE_PROC(WaitForFences);
 #endif
 #if defined(VK_VERSION_1_1)
-    if (VK_API_VERSION_1_1 <= deviceKnobs.apiVersion)
-    {
-        GET_DEVICE_PROC(BindBufferMemory2)
-        GET_DEVICE_PROC(BindImageMemory2)
-        GET_DEVICE_PROC(CmdDispatchBase)
-        GET_DEVICE_PROC(CmdSetDeviceMask)
-        GET_DEVICE_PROC(CreateDescriptorUpdateTemplate)
-        GET_DEVICE_PROC(CreateSamplerYcbcrConversion)
-        GET_DEVICE_PROC(DestroyDescriptorUpdateTemplate)
-        GET_DEVICE_PROC(DestroySamplerYcbcrConversion)
-        GET_DEVICE_PROC(GetBufferMemoryRequirements2)
-        GET_DEVICE_PROC(GetDescriptorSetLayoutSupport)
-        GET_DEVICE_PROC(GetDeviceGroupPeerMemoryFeatures)
-        GET_DEVICE_PROC(GetDeviceQueue2)
-        GET_DEVICE_PROC(GetImageMemoryRequirements2)
-        GET_DEVICE_PROC(GetImageSparseMemoryRequirements2)
-        GET_DEVICE_PROC(TrimCommandPool)
-        GET_DEVICE_PROC(UpdateDescriptorSetWithTemplate)
-    }
+    GET_DEVICE_PROC(BindBufferMemory2)
+    GET_DEVICE_PROC(BindImageMemory2)
+    GET_DEVICE_PROC(CmdDispatchBase)
+    GET_DEVICE_PROC(CmdSetDeviceMask)
+    GET_DEVICE_PROC(CreateDescriptorUpdateTemplate)
+    GET_DEVICE_PROC(CreateSamplerYcbcrConversion)
+    GET_DEVICE_PROC(DestroyDescriptorUpdateTemplate)
+    GET_DEVICE_PROC(DestroySamplerYcbcrConversion)
+    GET_DEVICE_PROC(GetBufferMemoryRequirements2)
+    GET_DEVICE_PROC(GetDescriptorSetLayoutSupport)
+    GET_DEVICE_PROC(GetDeviceGroupPeerMemoryFeatures)
+    GET_DEVICE_PROC(GetDeviceQueue2)
+    GET_DEVICE_PROC(GetImageMemoryRequirements2)
+    GET_DEVICE_PROC(GetImageSparseMemoryRequirements2)
+    GET_DEVICE_PROC(TrimCommandPool)
+    GET_DEVICE_PROC(UpdateDescriptorSetWithTemplate)
+
 #endif /* defined(VK_VERSION_1_1) */
 #if defined(VK_VERSION_1_2)
-    if (VK_API_VERSION_1_2 <= deviceKnobs.apiVersion)
-    {
-        GET_DEVICE_PROC(CmdBeginRenderPass2)
-        GET_DEVICE_PROC(CmdDrawIndexedIndirectCount)
-        GET_DEVICE_PROC(CmdDrawIndirectCount)
-        GET_DEVICE_PROC(CmdEndRenderPass2)
-        GET_DEVICE_PROC(CmdNextSubpass2)
-        GET_DEVICE_PROC(CreateRenderPass2)
-        GET_DEVICE_PROC(GetBufferDeviceAddress)
-        GET_DEVICE_PROC(GetBufferOpaqueCaptureAddress)
-        GET_DEVICE_PROC(GetDeviceMemoryOpaqueCaptureAddress)
-        GET_DEVICE_PROC(GetSemaphoreCounterValue)
-        GET_DEVICE_PROC(ResetQueryPool)
-        GET_DEVICE_PROC(SignalSemaphore)
-        GET_DEVICE_PROC(WaitSemaphores)
-    }
+    // GET_DEVICE_PROC(CmdBeginRenderPass2)
+    // GET_DEVICE_PROC(CmdDrawIndexedIndirectCount)
+    // GET_DEVICE_PROC(CmdDrawIndirectCount)
+    // GET_DEVICE_PROC(CmdEndRenderPass2)
+    // GET_DEVICE_PROC(CmdNextSubpass2)
+    // GET_DEVICE_PROC(CreateRenderPass2)
+    // GET_DEVICE_PROC(GetBufferDeviceAddress)
+    // GET_DEVICE_PROC(GetBufferOpaqueCaptureAddress)
+    // GET_DEVICE_PROC(GetDeviceMemoryOpaqueCaptureAddress)
+    // GET_DEVICE_PROC(GetSemaphoreCounterValue)
+    // GET_DEVICE_PROC(ResetQueryPool)
+    // GET_DEVICE_PROC(SignalSemaphore)
+    // GET_DEVICE_PROC(WaitSemaphores)
+
 #endif /* defined(VK_VERSION_1_2) */
 #if defined(VK_VERSION_1_3)
-    if (VK_API_VERSION_1_3 <= deviceKnobs.apiVersion)
-    {
-        GET_DEVICE_PROC(CmdBeginRendering);
-        GET_DEVICE_PROC(CmdBindVertexBuffers2);
-        GET_DEVICE_PROC(CmdBlitImage2);
-        GET_DEVICE_PROC(CmdCopyBuffer2);
-        GET_DEVICE_PROC(CmdCopyBufferToImage2);
-        GET_DEVICE_PROC(CmdCopyImage2);
-        GET_DEVICE_PROC(CmdCopyImageToBuffer2);
-        GET_DEVICE_PROC(CmdEndRendering);
-        GET_DEVICE_PROC(CmdPipelineBarrier2);
-        GET_DEVICE_PROC(CmdResetEvent2);
-        GET_DEVICE_PROC(CmdResolveImage2);
-        GET_DEVICE_PROC(CmdSetCullMode);
-        GET_DEVICE_PROC(CmdSetDepthBiasEnable);
-        GET_DEVICE_PROC(CmdSetDepthBoundsTestEnable);
-        GET_DEVICE_PROC(CmdSetDepthCompareOp);
-        GET_DEVICE_PROC(CmdSetDepthTestEnable);
-        GET_DEVICE_PROC(CmdSetDepthWriteEnable);
-        GET_DEVICE_PROC(CmdSetEvent2);
-        GET_DEVICE_PROC(CmdSetFrontFace);
-        GET_DEVICE_PROC(CmdSetPrimitiveRestartEnable);
-        GET_DEVICE_PROC(CmdSetPrimitiveTopology);
-        GET_DEVICE_PROC(CmdSetRasterizerDiscardEnable);
-        GET_DEVICE_PROC(CmdSetScissorWithCount);
-        GET_DEVICE_PROC(CmdSetStencilOp);
-        GET_DEVICE_PROC(CmdSetStencilTestEnable);
-        GET_DEVICE_PROC(CmdSetViewportWithCount);
-        GET_DEVICE_PROC(CmdWaitEvents2);
-        GET_DEVICE_PROC(CmdWriteTimestamp2);
-        GET_DEVICE_PROC(CreatePrivateDataSlot);
-        GET_DEVICE_PROC(DestroyPrivateDataSlot);
-        GET_DEVICE_PROC(GetDeviceBufferMemoryRequirements);
-        GET_DEVICE_PROC(GetDeviceImageMemoryRequirements);
-        GET_DEVICE_PROC(GetDeviceImageSparseMemoryRequirements);
-        // GET_DEVICE_PROC(GetPhysicalDeviceToolProperties);
-        // GET_DEVICE_PROC(GetPrivateData);
-        // GET_DEVICE_PROC(QueueSubmit2);
-        // GET_DEVICE_PROC(SetPrivateData);
-    }
+    // GET_DEVICE_PROC(CmdBeginRendering);
+    // GET_DEVICE_PROC(CmdBindVertexBuffers2);
+    // GET_DEVICE_PROC(CmdBlitImage2);
+    // GET_DEVICE_PROC(CmdCopyBuffer2);
+    // GET_DEVICE_PROC(CmdCopyBufferToImage2);
+    // GET_DEVICE_PROC(CmdCopyImage2);
+    // GET_DEVICE_PROC(CmdCopyImageToBuffer2);
+    // GET_DEVICE_PROC(CmdEndRendering);
+    // GET_DEVICE_PROC(CmdPipelineBarrier2);
+    // GET_DEVICE_PROC(CmdResetEvent2);
+    // GET_DEVICE_PROC(CmdResolveImage2);
+    // GET_DEVICE_PROC(CmdSetCullMode);
+    // GET_DEVICE_PROC(CmdSetDepthBiasEnable);
+    // GET_DEVICE_PROC(CmdSetDepthBoundsTestEnable);
+    // GET_DEVICE_PROC(CmdSetDepthCompareOp);
+    // GET_DEVICE_PROC(CmdSetDepthTestEnable);
+    // GET_DEVICE_PROC(CmdSetDepthWriteEnable);
+    // GET_DEVICE_PROC(CmdSetEvent2);
+    // GET_DEVICE_PROC(CmdSetFrontFace);
+    // GET_DEVICE_PROC(CmdSetPrimitiveRestartEnable);
+    // GET_DEVICE_PROC(CmdSetPrimitiveTopology);
+    // GET_DEVICE_PROC(CmdSetRasterizerDiscardEnable);
+    // GET_DEVICE_PROC(CmdSetScissorWithCount);
+    // GET_DEVICE_PROC(CmdSetStencilOp);
+    // GET_DEVICE_PROC(CmdSetStencilTestEnable);
+    // GET_DEVICE_PROC(CmdSetViewportWithCount);
+    // GET_DEVICE_PROC(CmdWaitEvents2);
+    // GET_DEVICE_PROC(CmdWriteTimestamp2);
+    // GET_DEVICE_PROC(CreatePrivateDataSlot);
+    // GET_DEVICE_PROC(DestroyPrivateDataSlot);
+    // GET_DEVICE_PROC(GetDeviceBufferMemoryRequirements);
+    // GET_DEVICE_PROC(GetDeviceImageMemoryRequirements);
+    // GET_DEVICE_PROC(GetDeviceImageSparseMemoryRequirements);
+    // GET_DEVICE_PROC(GetPhysicalDeviceToolProperties);
+    // GET_DEVICE_PROC(GetPrivateData);
+    // GET_DEVICE_PROC(QueueSubmit2);
+    // GET_DEVICE_PROC(SetPrivateData);
 #endif /* defined(VK_VERSION_1_3) */
 
+    if (deviceKnobs.swapchain)
+    {
+        GET_DEVICE_PROC(CreateSwapchainKHR);
+        GET_DEVICE_PROC(DestroySwapchainKHR);
+        GET_DEVICE_PROC(GetSwapchainImagesKHR);
+        GET_DEVICE_PROC(AcquireNextImageKHR);
+        GET_DEVICE_PROC(QueuePresentKHR);
+    }
     // if (deviceKnobs.debugMarker)
     // {
     //     GET_DEVICE_PROC(CmdDebugMarkerBeginEXT);
@@ -425,15 +426,6 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     //         GET_DEVICE_PROC(GetSemaphoreZirconHandleFUCHSIA);
     //     }
     // #endif
-
-    if (deviceKnobs.swapchain)
-    {
-        GET_DEVICE_PROC(CreateSwapchainKHR);
-        GET_DEVICE_PROC(DestroySwapchainKHR);
-        GET_DEVICE_PROC(GetSwapchainImagesKHR);
-        GET_DEVICE_PROC(AcquireNextImageKHR);
-        GET_DEVICE_PROC(QueuePresentKHR);
-    }
 
     return true;
 }
