@@ -17,8 +17,6 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-extern const char kExtensionPortabilitySubset[];
-
 namespace jipu
 {
 
