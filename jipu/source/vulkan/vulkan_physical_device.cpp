@@ -56,12 +56,11 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
-    m_info.apiVersion = m_info.physicalDeviceProperties.apiVersion;
 
     spdlog::info("Vulkan Device API Version: {}.{}.{}",
-                 VK_API_VERSION_MAJOR(m_info.apiVersion),
-                 VK_API_VERSION_MINOR(m_info.apiVersion),
-                 VK_API_VERSION_PATCH(m_info.apiVersion));
+                 VK_API_VERSION_MAJOR(m_info.physicalDeviceProperties.apiVersion),
+                 VK_API_VERSION_MINOR(m_info.physicalDeviceProperties.apiVersion),
+                 VK_API_VERSION_PATCH(m_info.physicalDeviceProperties.apiVersion));
 
     vkAPI.GetPhysicalDeviceFeatures(m_physicalDevice, &m_info.physicalDeviceFeatures);
 

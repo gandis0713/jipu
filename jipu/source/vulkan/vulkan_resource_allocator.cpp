@@ -207,7 +207,7 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice* device, const Vul
     createInfo.instance = instance;
     createInfo.physicalDevice = physicalDevice;
     createInfo.device = m_device->getVkDevice();
-    createInfo.vulkanApiVersion = vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().apiVersion;
+    createInfo.vulkanApiVersion = vulkanDriver->getDriverInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 
     VkResult result = vmaCreateAllocator(&createInfo, &m_allocator);

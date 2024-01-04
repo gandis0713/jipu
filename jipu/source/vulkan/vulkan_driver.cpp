@@ -119,19 +119,18 @@ void VulkanDriver::createInstance() noexcept(false)
     // Application Information.
     VkApplicationInfo applicationInfo{};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 2, 0); // TODO: check required version.
+    applicationInfo.apiVersion = m_driverInfo.apiVersion;
 
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
-#if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
+    if (m_driverInfo.portabilityEnum)
     {
         instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
-#endif
+
     const std::vector<const char*> requiredInstanceLayers = getRequiredInstanceLayers();
     if (!checkInstanceLayerSupport(requiredInstanceLayers))
     {
@@ -198,15 +197,16 @@ void VulkanDriver::gatherPhysicalDevices() noexcept(false)
 
 void VulkanDriver::gatherDriverInfo()
 {
+    uint32_t apiVersion = 0u;
     if (vkAPI.EnumerateInstanceVersion != nullptr)
     {
-        vkAPI.EnumerateInstanceVersion(&m_driverInfo.apiVersion);
+        vkAPI.EnumerateInstanceVersion(&apiVersion);
     }
 
     spdlog::info("Vulkan Loader API Version: {}.{}.{}",
-                 VK_API_VERSION_MAJOR(m_driverInfo.apiVersion),
-                 VK_API_VERSION_MINOR(m_driverInfo.apiVersion),
-                 VK_API_VERSION_PATCH(m_driverInfo.apiVersion));
+                 VK_API_VERSION_MAJOR(apiVersion),
+                 VK_API_VERSION_MINOR(apiVersion),
+                 VK_API_VERSION_PATCH(apiVersion));
 
     // Gather instance layer properties.
     {
@@ -287,6 +287,10 @@ void VulkanDriver::gatherDriverInfo()
                 m_driverInfo.debugUtils = true;
             }
 #endif
+            if (strncmp(extensionProperty.extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.portabilityEnum = true;
+            }
         }
     }
 }
@@ -384,12 +388,10 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
         requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
 #endif
 
-#if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.apiVersion >= VK_MAKE_VERSION(1, 3, 216))
+    if (m_driverInfo.portabilityEnum)
     {
         requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     }
-#endif
 
     spdlog::info("Required Instance extensions :");
     for (const auto& extension : requiredInstanceExtensions)
