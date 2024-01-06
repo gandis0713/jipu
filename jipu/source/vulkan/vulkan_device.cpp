@@ -17,22 +17,6 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-extern const char kExtensionPortabilitySubset[];
-
-const std::vector<const char*> getRequiredDeviceExtension()
-{
-    std::vector<const char*> requiredDeviceExtension;
-
-    requiredDeviceExtension.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-    spdlog::info("Required Device extensions :");
-    for (const auto& extension : requiredDeviceExtension)
-    {
-        spdlog::info("{}{}", '\t', extension);
-    }
-    return requiredDeviceExtension;
-};
-
 namespace jipu
 {
 
@@ -58,8 +42,11 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescripto
 
     createDevice(queueFamilyIndices);
 
-    VulkanDeviceKnobs deviceKnobs{ true }; // TODO: generate deviceKnobs.
-    vkAPI.loadDeviceProcs(m_device, deviceKnobs);
+    const VulkanDeviceKnobs& deviceKnobs = static_cast<const VulkanDeviceKnobs&>(info);
+    if (!vkAPI.loadDeviceProcs(m_device, deviceKnobs))
+    {
+        throw std::runtime_error("Failed to load device procs.");
+    }
 
     // get queues.
     m_queues.resize(queueFamilyIndices.size());
@@ -261,22 +248,18 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
     deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
 
-    std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtension();
-    // TODO: check extension supported.
-    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
-    {
-        // TODO: define "VK_KHR_portability_subset"
-        requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
-    }
+    std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtensions();
+
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
 
     // TODO: Layer.
 
     VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
-    if (vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device) != VK_SUCCESS)
+    VkResult result = vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device);
+    if (result != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create logical device!");
+        throw std::runtime_error(fmt::format("failed to create logical device. {}", static_cast<uint32_t>(result)));
     }
 }
 
@@ -285,5 +268,27 @@ void VulkanDevice::createResourceAllocator()
     VulkanResourceAllocatorDescriptor descriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, descriptor);
 }
+
+const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
+{
+    std::vector<const char*> requiredDeviceExtensions;
+
+    requiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+    // TODO: check extension supported.
+    auto vulkanPhysicalDevice = downcast(m_physicalDevice);
+    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
+    {
+        // TODO: define "VK_KHR_portability_subset"
+        requiredDeviceExtensions.push_back("VK_KHR_portability_subset");
+    }
+
+    spdlog::info("Required Device extensions :");
+    for (const auto& extension : requiredDeviceExtensions)
+    {
+        spdlog::info("{}{}", '\t', extension);
+    }
+    return requiredDeviceExtensions;
+};
 
 } // namespace jipu

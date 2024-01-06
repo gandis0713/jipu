@@ -11,15 +11,15 @@ namespace jipu
 
 enum class DriverType
 {
-    NONE,
-    VULKAN,
-    METAL,
-    D3D12
+    kNone,
+    kVulkan,
+    kMetal,
+    kD3D12
 };
 
 struct DriverDescriptor
 {
-    DriverType type = DriverType::NONE;
+    DriverType type = DriverType::kNone;
 };
 
 class JIPU_EXPORT Driver

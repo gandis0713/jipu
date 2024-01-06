@@ -135,7 +135,7 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     EXPECT_EQ(firstData, m_value);
 }
 
-TEST_F(CopyTest, testBufferToBuffer)
+TEST_F(CopyTest, test_BufferToBuffer)
 {
     CommandBufferDescriptor commandBufferDescriptor{};
     commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
@@ -180,7 +180,7 @@ TEST_F(CopyTest, testBufferToBuffer)
     EXPECT_EQ(firstData, m_value);
 }
 
-TEST_F(CopyTest, testBufferToTexture)
+TEST_F(CopyTest, test_BufferToTexture)
 {
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
@@ -234,12 +234,12 @@ TEST_F(CopyTest, testBufferToTexture)
     copyTextureToBuffer(texture.get()); // to check copied texture data.
 }
 
-TEST_F(CopyTest, testTextureToBuffer)
+TEST_F(CopyTest, test_TextureToBuffer)
 {
     copyTextureToBuffer(m_srcTexture.get());
 }
 
-TEST_F(CopyTest, testTextureToTexture)
+TEST_F(CopyTest, test_TextureToTexture)
 {
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;

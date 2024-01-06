@@ -53,7 +53,7 @@ private:
 
 private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-    VulkanPhysicalDeviceInfo m_Info{};
+    VulkanPhysicalDeviceInfo m_info{};
 };
 
 DOWN_CAST(VulkanPhysicalDevice, PhysicalDevice);

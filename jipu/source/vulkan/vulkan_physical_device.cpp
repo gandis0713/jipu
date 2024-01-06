@@ -31,7 +31,7 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(DeviceDescriptor desc
 PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
 {
     PhysicalDeviceInfo info{};
-    info.deviceName = m_Info.physicalDeviceProperties.deviceName;
+    info.deviceName = m_info.physicalDeviceProperties.deviceName;
     return info;
 }
 
@@ -47,7 +47,7 @@ VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
 
 const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInfo() const
 {
-    return m_Info;
+    return m_info;
 }
 
 void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
@@ -55,16 +55,22 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
     const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
 
     // Gather physical device properties and features.
-    vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_Info.physicalDeviceProperties);
-    vkAPI.GetPhysicalDeviceFeatures(m_physicalDevice, &m_Info.physicalDeviceFeatures);
+    vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
+
+    spdlog::info("Vulkan Device API Version: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(m_info.physicalDeviceProperties.apiVersion),
+                 VK_API_VERSION_MINOR(m_info.physicalDeviceProperties.apiVersion),
+                 VK_API_VERSION_PATCH(m_info.physicalDeviceProperties.apiVersion));
+
+    vkAPI.GetPhysicalDeviceFeatures(m_physicalDevice, &m_info.physicalDeviceFeatures);
 
     // Gather device memory properties.
     {
         VkPhysicalDeviceMemoryProperties memoryProperties{};
         vkAPI.GetPhysicalDeviceMemoryProperties(m_physicalDevice, &memoryProperties);
 
-        m_Info.memoryTypes.assign(memoryProperties.memoryTypes, memoryProperties.memoryTypes + memoryProperties.memoryTypeCount);
-        m_Info.memoryHeaps.assign(memoryProperties.memoryHeaps, memoryProperties.memoryHeaps + memoryProperties.memoryHeapCount);
+        m_info.memoryTypes.assign(memoryProperties.memoryTypes, memoryProperties.memoryTypes + memoryProperties.memoryTypeCount);
+        m_info.memoryHeaps.assign(memoryProperties.memoryHeaps, memoryProperties.memoryHeaps + memoryProperties.memoryHeapCount);
     }
 
     // Gather queue Family Properties.
@@ -72,8 +78,8 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
         uint32_t queueFamilyCount = 0;
         vkAPI.GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
 
-        m_Info.queueFamilyProperties.resize(queueFamilyCount);
-        vkAPI.GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, m_Info.queueFamilyProperties.data());
+        m_info.queueFamilyProperties.resize(queueFamilyCount);
+        vkAPI.GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, m_info.queueFamilyProperties.data());
     }
 
     // Gather device layer properties.
@@ -85,14 +91,14 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
-        m_Info.layerProperties.resize(deviceLayerCount);
-        result = vkAPI.EnumerateDeviceLayerProperties(m_physicalDevice, &deviceLayerCount, m_Info.layerProperties.data());
+        m_info.layerProperties.resize(deviceLayerCount);
+        result = vkAPI.EnumerateDeviceLayerProperties(m_physicalDevice, &deviceLayerCount, m_info.layerProperties.data());
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceLayerProperties. Error: {}", static_cast<int32_t>(result)));
         }
 
-        for (const auto& layerProperty : m_Info.layerProperties)
+        for (const auto& layerProperty : m_info.layerProperties)
         {
             spdlog::info("Device Layer Name: {}", layerProperty.layerName);
         }
@@ -107,21 +113,26 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties to get count. Error: {}", static_cast<int32_t>(result)));
         }
 
-        m_Info.extensionProperties.resize(deviceExtensionCount);
-        result = vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, m_Info.extensionProperties.data());
+        m_info.extensionProperties.resize(deviceExtensionCount);
+        result = vkAPI.EnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionCount, m_info.extensionProperties.data());
         if (result != VK_SUCCESS)
         {
             throw std::runtime_error(fmt::format("Failure EnumerateDeviceExtensionProperties. Error: {}", static_cast<int32_t>(result)));
         }
 
-        for (const auto& extensionProperty : m_Info.extensionProperties)
+        for (const auto& extensionProperty : m_info.extensionProperties)
         {
             spdlog::info("Device Extention Name: {}", extensionProperty.extensionName);
 
             // TODO: define "VK_KHR_portability_subset"
             if (strncmp(extensionProperty.extensionName, "VK_KHR_portability_subset", VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_Info.portabilitySubset = true;
+                m_info.portabilitySubset = true;
+            }
+
+            if (strncmp(extensionProperty.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_info.swapchain = true;
             }
         }
     }
@@ -130,9 +141,9 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 {
     int memoryTypeIndex = -1;
-    for (int i = 0u; i < m_Info.memoryTypes.size(); ++i)
+    for (int i = 0u; i < m_info.memoryTypes.size(); ++i)
     {
-        const auto& memoryType = m_Info.memoryTypes[i];
+        const auto& memoryType = m_info.memoryTypes[i];
         if ((memoryType.propertyFlags & flags) == flags)
         {
             memoryTypeIndex = i;

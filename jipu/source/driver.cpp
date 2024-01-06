@@ -3,9 +3,9 @@
 #include "source/vulkan/vulkan_driver.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
-    #include "spdlog/sinks/android_sink.h"
+#include "spdlog/sinks/android_sink.h"
 #else
-    #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 #endif
 #include <spdlog/spdlog.h>
 
@@ -16,7 +16,7 @@ std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
 {
     switch (descriptor.type)
     {
-    case DriverType::VULKAN:
+    case DriverType::kVulkan:
         return std::make_unique<VulkanDriver>(descriptor);
     default:
         spdlog::error("Unsupported driver type requested");

@@ -458,7 +458,7 @@ void DeferredSample::draw()
 void DeferredSample::createDriver()
 {
     DriverDescriptor descriptor;
-    descriptor.type = DriverType::VULKAN;
+    descriptor.type = DriverType::kVulkan;
     m_driver = Driver::create(descriptor);
 }
 

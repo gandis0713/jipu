@@ -61,6 +61,7 @@ public:
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
     void createResourceAllocator();
+    const std::vector<const char*> getRequiredDeviceExtensions();
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;

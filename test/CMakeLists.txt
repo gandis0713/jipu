@@ -25,3 +25,6 @@ endfunction()
 
 configure_test(copy)
 configure_test(submit)
+configure_test(buffer)
+configure_test(texture)
+configure_test(device)
