@@ -171,6 +171,8 @@ VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
         vkUsages |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     }
 
+    // TODO: kMapRead, kMapWrite
+
     return vkUsages;
 }
 
