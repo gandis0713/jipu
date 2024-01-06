@@ -24,6 +24,16 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
         throw std::runtime_error("Texture usage must not be undefined.");
     }
 
+    if (descriptor.type == TextureType::kUndefined)
+    {
+        throw std::runtime_error("Texture type must not be undefined.");
+    }
+
+    if (descriptor.format == TextureFormat::kUndefined)
+    {
+        throw std::runtime_error("Texture format must not be undefined.");
+    }
+
     VkImageCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.imageType = ToVkImageType(descriptor.type);
