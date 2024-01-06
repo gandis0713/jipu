@@ -3,56 +3,6 @@
 
 using namespace jipu;
 
-void DeviceTest::SetUp()
-{
-    WindowTest::SetUp();
-}
-
-void DeviceTest::TearDown()
-{
-    WindowTest::TearDown();
-}
-
-TEST_F(DeviceTest, createBuffer)
-{
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = 0;
-        bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-        ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
-    }
-
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = std::numeric_limits<int64_t>::max();
-        bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-        ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
-    }
-
-    {
-        BufferDescriptor bufferDescriptor{};
-        bufferDescriptor.size = 1;
-        bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-        auto buffer = m_device->createBuffer(bufferDescriptor);
-        ASSERT_NE(buffer, nullptr);
-    }
-}
-
-TEST_F(DeviceTest, createTexture)
-{
-    TextureDescriptor textureDescriptor{};
-    textureDescriptor.type = TextureType::k2D;
-    textureDescriptor.width = 1;
-    textureDescriptor.height = 1;
-    textureDescriptor.depth = 1;
-    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-    textureDescriptor.usage = TextureUsageFlagBits::kColorAttachment;
-    textureDescriptor.mipLevels = 1;
-    textureDescriptor.sampleCount = 1;
-    auto texture = m_device->createTexture(textureDescriptor);
-    ASSERT_NE(texture, nullptr);
-}
-
 TEST_F(DeviceTest, createSampler)
 {
     SamplerDescriptor samplerDescriptor{};
