@@ -13,6 +13,16 @@ namespace jipu
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
     : Buffer(device, descriptor)
 {
+    if (descriptor.size == 0)
+    {
+        throw std::runtime_error("Buffer size must be greater than 0.");
+    }
+
+    if (descriptor.usage == BufferUsageFlagBits::kUndefined)
+    {
+        throw std::runtime_error("Buffer usage must not be undefined.");
+    }
+
     VkBufferCreateInfo bufferCreateInfo{};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferCreateInfo.size = descriptor.size;

@@ -55,10 +55,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
         spdlog::warn(message);
+        assert_message(false, message);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
         spdlog::error(message);
+        assert_message(false, message);
     }
     else
     {
