@@ -10,9 +10,6 @@ class DeviceTest : public WindowTest
 protected:
     void SetUp() override;
     void TearDown() override;
-
-protected:
-    Device* device = nullptr;
 };
 
 } // namespace jipu
