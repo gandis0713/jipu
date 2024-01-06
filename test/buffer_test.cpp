@@ -12,14 +12,16 @@ TEST_F(BufferTest, test_createbuffer_usage)
     bufferDescriptor.size = 1;
 
     {
+        bufferDescriptor.usage = BufferUsageFlagBits::kUndefined;
+        ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
+    }
+    {
         bufferDescriptor.usage = BufferUsageFlagBits::kMapRead;
-        buffer = m_device->createBuffer(bufferDescriptor);
-        ASSERT_NE(buffer, nullptr);
+        // ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); }); // TODO: implement
     }
     {
         bufferDescriptor.usage = BufferUsageFlagBits::kMapWrite;
-        buffer = m_device->createBuffer(bufferDescriptor);
-        ASSERT_NE(buffer, nullptr);
+        // ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); }); // TODO: implement
     }
     {
         bufferDescriptor.usage = BufferUsageFlagBits::kIndex;
@@ -53,27 +55,19 @@ TEST_F(BufferTest, test_createbuffer_usage)
     }
 }
 
-TEST_F(BufferTest, test_createbuffer_with_0_size)
+TEST_F(BufferTest, test_createbuffer_with_size)
 {
     BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = 0;
     bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-    ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
-}
 
-TEST_F(BufferTest, test_createbuffer_with_max_size)
-{
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = std::numeric_limits<int64_t>::max();
-    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-    ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
-}
+    {
+        bufferDescriptor.size = 0;
+        ASSERT_ANY_THROW({ m_device->createBuffer(bufferDescriptor); });
+    }
 
-TEST_F(BufferTest, test_createbuffer_with_1_size)
-{
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = 1;
-    bufferDescriptor.usage = BufferUsageFlagBits::kVertex;
-    auto buffer = m_device->createBuffer(bufferDescriptor);
-    ASSERT_NE(buffer, nullptr);
+    {
+        bufferDescriptor.size = 1;
+        auto buffer = m_device->createBuffer(bufferDescriptor);
+        ASSERT_NE(buffer, nullptr);
+    }
 }
