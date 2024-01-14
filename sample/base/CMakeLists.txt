@@ -103,5 +103,5 @@ endif()
 
 target_include_directories(jipu
     PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR} # for export
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
