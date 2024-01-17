@@ -134,15 +134,16 @@ add_library(jipu::jipu ALIAS jipu)
 target_include_directories(jipu
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 # link libraries
 target_link_libraries(jipu
-  PRIVATE
+  PUBLIC
   Vulkan::Vulkan
+  PRIVATE
   GPUOpen::VulkanMemoryAllocator
   spdlog::spdlog_header_only
 )
