@@ -123,6 +123,11 @@ void VulkanDriver::createInstance() noexcept(false)
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.apiVersion = m_driverInfo.apiVersion;
 
+    spdlog::info("Required Vulkan API Version in Application: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(applicationInfo.apiVersion),
+                 VK_API_VERSION_MINOR(applicationInfo.apiVersion),
+                 VK_API_VERSION_PATCH(applicationInfo.apiVersion));
+
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -167,15 +172,18 @@ void VulkanDriver::createInstance() noexcept(false)
     }
 
 #ifndef NDEBUG
-    VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo{};
-    debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-    debugUtilsMessengerCreateInfo.pfnUserCallback = debugUtilsMessengerCallback;
-    result = vkAPI.CreateDebugUtilsMessengerEXT(m_instance, &debugUtilsMessengerCreateInfo, nullptr, &m_debugUtilsMessenger);
-    if (result != VK_SUCCESS)
+    if (driverKnobs.debugUtils)
     {
-        spdlog::error("Failed to create debug util messager: {}", static_cast<int32_t>(result));
+        VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo{};
+        debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        debugUtilsMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debugUtilsMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+        debugUtilsMessengerCreateInfo.pfnUserCallback = debugUtilsMessengerCallback;
+        result = vkAPI.CreateDebugUtilsMessengerEXT(m_instance, &debugUtilsMessengerCreateInfo, nullptr, &m_debugUtilsMessenger);
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to create debug util messager: {}", static_cast<int32_t>(result));
+        }
     }
 #endif
 }

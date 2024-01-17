@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.26)
 
 # find package
 find_package(Vulkan REQUIRED)
@@ -133,9 +133,10 @@ add_library(jipu::jipu ALIAS jipu)
 # include directories
 target_include_directories(jipu
   PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/include # for export
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
   PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 # link libraries
@@ -159,7 +160,7 @@ if(MSVC)
 # TODO
 elseif(APPLE)
   target_compile_options(jipu
-    PUBLIC
+    PRIVATE
     -Wall
     -Werror
     -Wshorten-64-to-32
@@ -171,21 +172,15 @@ elseif(APPLE)
     -fvisibility=hidden
     -fvisibility-inlines-hidden
 
-    PRIVATE
     -fno-rtti # -fno-exceptions
   )
 endif()
-
-# compile definitions
-target_compile_definitions(jipu
-  PRIVATE
-  "JIPU_IMPLEMENTATION"
-)
 
 if(BUILD_SHARED_LIBS)
   target_compile_definitions(jipu
     PRIVATE
     "JIPU_SHARED_LIBRARY"
+    "JIPU_IMPLEMENTATION"
   )
 endif()
 
@@ -196,12 +191,12 @@ if(MSVC)
   )
 endif()
 
-# install
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${CMAKE_INSTALL_PREFIX})
-
 install(TARGETS jipu
-  INCLUDES DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+  EXPORT ${PROJECT_NAME}-config
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
   LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
   ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
+  DESTINATION ${CMAKE_INSTALL_PREFIX})
