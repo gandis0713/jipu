@@ -86,6 +86,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
     GET_INSTANCE_PROC(GetPhysicalDeviceToolProperties)
 #endif /* defined(VK_VERSION_1_3) */
 
+#ifndef NDEBUG
     if (driverKnobs.debugReport)
     {
         GET_INSTANCE_PROC(CreateDebugReportCallbackEXT);
@@ -107,6 +108,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
         GET_INSTANCE_PROC(SetDebugUtilsObjectTagEXT);
         GET_INSTANCE_PROC(SubmitDebugUtilsMessageEXT);
     }
+#endif
 
     // // Vulkan 1.1 is not required to report promoted extensions from 1.0
     // if (driverKnobs.externalMemoryCapabilities ||
