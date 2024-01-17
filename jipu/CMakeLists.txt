@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.26)
 
 # find package
 find_package(Vulkan REQUIRED)
@@ -135,16 +135,14 @@ target_include_directories(jipu
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
-
   PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 # link libraries
 target_link_libraries(jipu
-  PUBLIC
-  Vulkan::Vulkan
   PRIVATE
+  Vulkan::Vulkan
   GPUOpen::VulkanMemoryAllocator
   spdlog::spdlog_header_only
 )
