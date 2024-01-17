@@ -101,6 +101,7 @@ struct VulkanAPI
     PFN_vkGetPhysicalDeviceToolProperties GetPhysicalDeviceToolProperties = nullptr;
 #endif
 
+#ifndef NDEBUG
     // VK_EXT_debug_report
     PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallbackEXT = nullptr;
     PFN_vkDebugReportMessageEXT DebugReportMessageEXT = nullptr;
@@ -118,6 +119,7 @@ struct VulkanAPI
     PFN_vkSetDebugUtilsObjectNameEXT SetDebugUtilsObjectNameEXT = nullptr;
     PFN_vkSetDebugUtilsObjectTagEXT SetDebugUtilsObjectTagEXT = nullptr;
     PFN_vkSubmitDebugUtilsMessageEXT SubmitDebugUtilsMessageEXT = nullptr;
+#endif // NDEBUG
 
     // VK_KHR_surface
     PFN_vkDestroySurfaceKHR DestroySurfaceKHR = nullptr;

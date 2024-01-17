@@ -160,7 +160,7 @@ if(MSVC)
 # TODO
 elseif(APPLE)
   target_compile_options(jipu
-    PUBLIC
+    PRIVATE
     -Wall
     -Werror
     -Wshorten-64-to-32
@@ -172,21 +172,15 @@ elseif(APPLE)
     -fvisibility=hidden
     -fvisibility-inlines-hidden
 
-    PRIVATE
     -fno-rtti # -fno-exceptions
   )
 endif()
-
-# compile definitions
-target_compile_definitions(jipu
-  PRIVATE
-  "JIPU_IMPLEMENTATION"
-)
 
 if(BUILD_SHARED_LIBS)
   target_compile_definitions(jipu
     PRIVATE
     "JIPU_SHARED_LIBRARY"
+    "JIPU_IMPLEMENTATION"
   )
 endif()
 
