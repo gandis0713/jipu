@@ -123,6 +123,11 @@ void VulkanDriver::createInstance() noexcept(false)
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.apiVersion = m_driverInfo.apiVersion;
 
+    spdlog::info("Required Vulkan API Version in Application: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(applicationInfo.apiVersion),
+                 VK_API_VERSION_MINOR(applicationInfo.apiVersion),
+                 VK_API_VERSION_PATCH(applicationInfo.apiVersion));
+
     // Create Vulkan instance.
     VkInstanceCreateInfo instanceCreateInfo{};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
