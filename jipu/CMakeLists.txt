@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 
 # find package
-find_package(Vulkan REQUIRED)
+find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
@@ -141,9 +141,8 @@ target_include_directories(jipu
 
 # link libraries
 target_link_libraries(jipu
-  PUBLIC
-  Vulkan::Vulkan
   PRIVATE
+  Vulkan::Headers
   GPUOpen::VulkanMemoryAllocator
   spdlog::spdlog_header_only
 )

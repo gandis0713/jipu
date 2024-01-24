@@ -75,7 +75,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -87,7 +92,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/obj_model/obj_model",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -99,7 +109,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/particle/particle",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -111,7 +126,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred/deferred",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -123,7 +143,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/imgui/imgui",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -135,7 +160,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/instancing/instancing",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
@@ -147,7 +177,12 @@
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/offscreen/offscreen",
             "args": [],
             "stopAtEntry": false,
-            "environment": [],
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
