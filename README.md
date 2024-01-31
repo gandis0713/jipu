@@ -15,9 +15,9 @@ JIPU to abstract the modern graphics API.
 
 ## Requirement
 
+- vulkan ( currently, only support vulkan )
 - vcpkg ( 2023.06.20 )
 - cmake ( 3.25 or higher )
-- vulkan ( if you want to use vulkan )
 - ninja ( if you want to build as ninja )
 
 ## How to build
