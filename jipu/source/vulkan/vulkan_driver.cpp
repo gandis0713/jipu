@@ -242,6 +242,12 @@ void VulkanDriver::gatherDriverInfo()
         {
             // TODO: set driver knobs for layer
             spdlog::info("Instance Layer Name: {}", layerProperty.layerName);
+#ifndef NDEBUG
+            if (strncmp(layerProperty.layerName, kLayerKhronosValidation, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_driverInfo.validation = true;
+            }
+#endif
         }
     }
 
@@ -446,7 +452,8 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
     std::vector<const char*> requiredInstanceLayers{};
 
 #ifndef NDEBUG
-    requiredInstanceLayers.push_back(kLayerKhronosValidation);
+    if (m_driverInfo.validation)
+        requiredInstanceLayers.push_back(kLayerKhronosValidation);
 #endif
 
     spdlog::info("Required Instance layers :");

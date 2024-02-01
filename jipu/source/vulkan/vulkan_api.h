@@ -24,6 +24,10 @@ struct VulkanDriverKnobs
     uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 1, 0); // Require 1.1 or higher.
 
     // TODO: use bitset instead of bool type.
+    // layer
+    bool validation = false;
+
+    // extension
     bool debugReport = false;
     bool debugUtils = false;
     bool surface = false;
