@@ -1265,6 +1265,7 @@ void DeferredSample::createCompositionUniformBuffer()
 
     BufferDescriptor descriptor{};
     descriptor.size = lightSize + cameraPositionSize;
+    descriptor.size += sizeof(int) * 3; // padding
     descriptor.usage = BufferUsageFlagBits::kUniform;
 
     m_composition.uniformBuffer = m_device->createBuffer(descriptor);
@@ -1291,7 +1292,7 @@ void DeferredSample::createCompositionVertexBuffer()
     auto& vertexBuffer = m_composition.vertexBuffer;
     void* mappedPointer = vertexBuffer->map();
     memcpy(mappedPointer, m_composition.vertices.data(), descriptor.size);
-    // vertexBuffer->unmap();
+    vertexBuffer->unmap();
 }
 
 void DeferredSample::createCommandBuffer()
