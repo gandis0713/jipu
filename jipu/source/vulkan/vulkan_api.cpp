@@ -83,7 +83,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
     GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2)
 #endif /* defined(VK_VERSION_1_1) */
 #if defined(VK_VERSION_1_3)
-    GET_INSTANCE_PROC(GetPhysicalDeviceToolProperties)
+    // GET_INSTANCE_PROC(GetPhysicalDeviceToolProperties)
 #endif /* defined(VK_VERSION_1_3) */
 
 #ifndef NDEBUG
