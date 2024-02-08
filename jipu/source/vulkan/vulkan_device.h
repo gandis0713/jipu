@@ -44,7 +44,7 @@ public:
 
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
-    VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
     VulkanResourceAllocator* getResourceAllocator() const;
 
 public:
@@ -72,7 +72,7 @@ private:
     std::vector<VkQueue> m_queues{};
 
     VulkanRenderPassCache m_renderPassCache;
-    VulkanFrameBufferCache m_frameBufferCache;
+    VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
 };
 

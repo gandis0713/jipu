@@ -19,12 +19,12 @@ struct VulkanFramebufferDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanFrameBuffer
+class JIPU_EXPERIMENTAL_EXPORT VulkanFramebuffer
 {
 public:
-    VulkanFrameBuffer() = delete;
-    VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
-    ~VulkanFrameBuffer();
+    VulkanFramebuffer() = delete;
+    VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
+    ~VulkanFramebuffer();
 
     VkFramebuffer getVkFrameBuffer() const;
 
@@ -41,14 +41,14 @@ private:
     uint32_t m_height = 0;
 };
 
-class JIPU_EXPERIMENTAL_EXPORT VulkanFrameBufferCache final
+class JIPU_EXPERIMENTAL_EXPORT VulkanFramebufferCache final
 {
 
 public:
-    VulkanFrameBufferCache(VulkanDevice* device);
-    ~VulkanFrameBufferCache() = default;
+    VulkanFramebufferCache(VulkanDevice* device);
+    ~VulkanFramebufferCache() = default;
 
-    VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
     void clear();
 
@@ -63,7 +63,7 @@ private:
         // equal
         bool operator()(const VulkanFramebufferDescriptor& lhs, const VulkanFramebufferDescriptor& rhs) const;
     };
-    using Cache = std::unordered_map<VulkanFramebufferDescriptor, std::unique_ptr<VulkanFrameBuffer>, Functor, Functor>;
+    using Cache = std::unordered_map<VulkanFramebufferDescriptor, std::unique_ptr<VulkanFramebuffer>, Functor, Functor>;
 
     Cache m_cache{};
 };

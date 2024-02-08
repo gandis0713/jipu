@@ -140,7 +140,7 @@ VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& 
     return m_renderPassCache.getRenderPass(descriptor);
 }
 
-VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }

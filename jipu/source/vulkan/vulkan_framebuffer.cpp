@@ -12,7 +12,7 @@
 namespace jipu
 {
 
-VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
 {
     if (descriptor.textureViews.empty())
@@ -43,27 +43,27 @@ VulkanFrameBuffer::VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebuff
     }
 }
 
-VulkanFrameBuffer::~VulkanFrameBuffer()
+VulkanFramebuffer::~VulkanFramebuffer()
 {
     m_device->vkAPI.DestroyFramebuffer(m_device->getVkDevice(), m_framebuffer, nullptr);
 }
 
-VkFramebuffer VulkanFrameBuffer::getVkFrameBuffer() const
+VkFramebuffer VulkanFramebuffer::getVkFrameBuffer() const
 {
     return m_framebuffer;
 }
 
-uint32_t VulkanFrameBuffer::getWidth() const
+uint32_t VulkanFramebuffer::getWidth() const
 {
     return m_width;
 }
 
-uint32_t VulkanFrameBuffer::getHeight() const
+uint32_t VulkanFramebuffer::getHeight() const
 {
     return m_height;
 }
 
-size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
+size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
 {
     size_t hash = jipu::hash(reinterpret_cast<uint64_t>(descriptor.renderPass));
 
@@ -75,7 +75,7 @@ size_t VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescri
     return hash;
 }
 
-bool VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescriptor& lhs,
+bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& lhs,
                                                  const VulkanFramebufferDescriptor& rhs) const
 {
     if (lhs.renderPass == rhs.renderPass &&
@@ -93,13 +93,13 @@ bool VulkanFrameBufferCache::Functor::operator()(const VulkanFramebufferDescript
     return false;
 }
 
-VulkanFrameBufferCache::VulkanFrameBufferCache(VulkanDevice* device)
+VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice* device)
     : m_device(device)
 {
     // TODO
 }
 
-VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer* VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
@@ -107,16 +107,16 @@ VulkanFrameBuffer* VulkanFrameBufferCache::getFrameBuffer(const VulkanFramebuffe
         return (it->second).get();
     }
 
-    auto framebuffer = std::make_unique<VulkanFrameBuffer>(m_device, descriptor);
+    auto framebuffer = std::make_unique<VulkanFramebuffer>(m_device, descriptor);
 
     // get raw pointer before moving.
-    VulkanFrameBuffer* framebufferPtr = framebuffer.get();
+    VulkanFramebuffer* framebufferPtr = framebuffer.get();
     m_cache.emplace(descriptor, std::move(framebuffer));
 
     return framebufferPtr;
 }
 
-void VulkanFrameBufferCache::clear()
+void VulkanFramebufferCache::clear()
 {
     m_cache.clear();
 }
