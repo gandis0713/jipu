@@ -107,4 +107,6 @@ add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
 # experimental
-add_subdirectory(deferred2)
+if(ENABLE_EXPERIMENTAL)
+    add_subdirectory(deferred2)
+endif()
