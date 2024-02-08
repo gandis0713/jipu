@@ -39,7 +39,7 @@ std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const
     return std::make_unique<VulkanComputePassEncoder>(downcast(m_commandBuffer), descriptor);
 }
 
-std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassEncoderDescriptor& descriptor)
+std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassDescriptor& descriptor)
 {
     return std::make_unique<VulkanRenderPassEncoder>(downcast(m_commandBuffer), descriptor);
 }

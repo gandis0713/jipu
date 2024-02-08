@@ -16,7 +16,7 @@ public:
     ~VulkanCommandEncoder() override = default;
 
     std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassDescriptor& descriptor) override;
-    std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) override;
+    std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassDescriptor& descriptor) override;
 
     void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) override;
     void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;

@@ -45,7 +45,7 @@ public:
     virtual ~CommandEncoder() = default;
 
     virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassDescriptor& descriptor) = 0;
 
     virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
     virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
