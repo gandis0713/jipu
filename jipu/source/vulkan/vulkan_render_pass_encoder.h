@@ -4,17 +4,20 @@
 
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
-#include "vulkan_render_pass.h"
 
 namespace jipu
 {
 
+class VulkanDevice;
+class VulkanRenderPass;
+class VulkanFramebuffer;
 class VulkanCommandBuffer;
 class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
     VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(Pipeline* pipeline) override;
@@ -43,7 +46,8 @@ public:
 };
 
 // Generate Helper
-VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
+VulkanRenderPass* JIPU_EXPERIMENTAL_EXPORT getVulkanRenderPass(VulkanDevice*, const RenderPassEncoderDescriptor&);
+VulkanFramebuffer* JIPU_EXPERIMENTAL_EXPORT getVulkanFramebuffer(VulkanDevice*, VulkanRenderPass*, const RenderPassEncoderDescriptor&);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

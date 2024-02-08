@@ -7,6 +7,7 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -38,41 +39,11 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
-    VulkanRenderPassDescriptor renderPassDescriptor = generateVulkanRenderPassDescriptor(descriptor);
-
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
 
-    // get framebuffer
-    VulkanFramebufferDescriptor framebufferDescriptor{};
-    framebufferDescriptor.renderPass = vulkanRenderPass;
-
-    uint32_t colorAttachmentSize = static_cast<uint32_t>(descriptor.colorAttachments.size());
-
-    auto& textureViews = framebufferDescriptor.textureViews;
-    for (auto i = 0; i < colorAttachmentSize; ++i)
-    {
-        const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        textureViews.push_back(colorAttachment.renderView);
-    }
-
-    if (descriptor.sampleCount > 1)
-    {
-        for (auto i = 0; i < colorAttachmentSize; ++i)
-        {
-            const auto& colorAttachment = m_descriptor.colorAttachments[i];
-            textureViews.push_back(colorAttachment.resolveView);
-        }
-    }
-
-    if (m_descriptor.depthStencilAttachment.has_value())
-    {
-        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
-        textureViews.push_back(depthStencilAttachment.textureView);
-    }
-
-    auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
+    auto vulkanRenderPass = getVulkanRenderPass(vulkanDevice, descriptor);
+    auto vulkanFrameBuffer = getVulkanFramebuffer(vulkanDevice, vulkanRenderPass, descriptor);
 
     // get clear color
     auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments) {
@@ -121,6 +92,11 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     renderPassInfo.pClearValues = clearValues.data();
 
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassEncoderDescriptor>& descriptors)
+    : RenderPassEncoder(commandBuffer, descriptors)
+{
 }
 
 void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
@@ -243,7 +219,7 @@ void VulkanRenderPassEncoder::end()
 }
 
 // Generate Helper
-VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor)
+VulkanRenderPass* getVulkanRenderPass(VulkanDevice* vulkanDevice, const RenderPassEncoderDescriptor& descriptor)
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -279,7 +255,39 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
 
     renderPassDescriptor.sampleCount = descriptor.sampleCount;
 
-    return renderPassDescriptor;
+    return vulkanDevice->getRenderPass(renderPassDescriptor);
+}
+
+VulkanFramebuffer* getVulkanFramebuffer(VulkanDevice* vulkanDevice, VulkanRenderPass* vulkanRenderPass, const RenderPassEncoderDescriptor& descriptor)
+{
+    VulkanFramebufferDescriptor framebufferDescriptor{};
+    framebufferDescriptor.renderPass = vulkanRenderPass;
+
+    uint32_t colorAttachmentSize = static_cast<uint32_t>(descriptor.colorAttachments.size());
+
+    auto& textureViews = framebufferDescriptor.textureViews;
+    for (auto i = 0; i < colorAttachmentSize; ++i)
+    {
+        const auto& colorAttachment = descriptor.colorAttachments[i];
+        textureViews.push_back(colorAttachment.renderView);
+    }
+
+    if (descriptor.sampleCount > 1)
+    {
+        for (auto i = 0; i < colorAttachmentSize; ++i)
+        {
+            const auto& colorAttachment = descriptor.colorAttachments[i];
+            textureViews.push_back(colorAttachment.resolveView);
+        }
+    }
+
+    if (descriptor.depthStencilAttachment.has_value())
+    {
+        const DepthStencilAttachment depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        textureViews.push_back(depthStencilAttachment.textureView);
+    }
+
+    return vulkanDevice->getFrameBuffer(framebufferDescriptor);
 }
 
 // Convert Helper
