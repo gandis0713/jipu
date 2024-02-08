@@ -4,6 +4,7 @@
 
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
+#include "vulkan_render_pass.h"
 
 namespace jipu
 {
@@ -40,6 +41,9 @@ public:
 
     void end() override;
 };
+
+// Generate Helper
+VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

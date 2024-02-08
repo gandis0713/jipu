@@ -7,7 +7,6 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
-#include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -39,41 +38,7 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
-    // get render pass
-    VulkanRenderPassDescriptor renderPassDescriptor{};
-
-    uint32_t colorAttachmentSize = static_cast<uint32_t>(m_descriptor.colorAttachments.size());
-    renderPassDescriptor.colorAttachments.resize(colorAttachmentSize);
-    for (auto i = 0; i < colorAttachmentSize; ++i)
-    {
-        const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        const auto texture = colorAttachment.renderView->getTexture();
-        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
-        vulkanColorAttachment.format = texture->getFormat();
-        vulkanColorAttachment.loadOp = colorAttachment.loadOp;
-        vulkanColorAttachment.storeOp = colorAttachment.storeOp;
-        vulkanColorAttachment.initialLayout = getInitialLayout(colorAttachment);
-        vulkanColorAttachment.finalLayout = downcast(texture)->getFinalLayout();
-    }
-
-    if (m_descriptor.depthStencilAttachment.has_value())
-    {
-        const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
-        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
-        vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
-        vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
-        vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
-        vulkanDepthStencilAttachment.stencilStoreOp = depthStencilAttachment.stencilStoreOp;
-
-        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
-    }
-
-    if (m_descriptor.colorAttachments.empty())
-        throw std::runtime_error("Failed to create vulkan render pass encoder due to empty color attachment.");
-
-    const auto sampleCount = descriptor.sampleCount;
-    renderPassDescriptor.sampleCount = sampleCount;
+    VulkanRenderPassDescriptor renderPassDescriptor = generateVulkanRenderPassDescriptor(descriptor);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -83,6 +48,8 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     VulkanFramebufferDescriptor framebufferDescriptor{};
     framebufferDescriptor.renderPass = vulkanRenderPass;
 
+    uint32_t colorAttachmentSize = static_cast<uint32_t>(descriptor.colorAttachments.size());
+
     auto& textureViews = framebufferDescriptor.textureViews;
     for (auto i = 0; i < colorAttachmentSize; ++i)
     {
@@ -90,7 +57,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
         textureViews.push_back(colorAttachment.renderView);
     }
 
-    if (sampleCount > 1)
+    if (descriptor.sampleCount > 1)
     {
         for (auto i = 0; i < colorAttachmentSize; ++i)
         {
@@ -126,7 +93,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
 
     std::vector<VkClearValue> clearValues{};
     addColorClearValue(clearValues, m_descriptor.colorAttachments);
-    if (sampleCount > 1)
+    if (descriptor.sampleCount > 1)
     {
         addColorClearValue(clearValues, m_descriptor.colorAttachments);
     }
@@ -273,6 +240,46 @@ void VulkanRenderPassEncoder::end()
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     vulkanCommandBuffer->setSignalPipelineStage(flags);
+}
+
+// Generate Helper
+VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor)
+{
+    VulkanRenderPassDescriptor renderPassDescriptor{};
+
+    uint32_t colorAttachmentSize = static_cast<uint32_t>(descriptor.colorAttachments.size());
+    renderPassDescriptor.colorAttachments.resize(colorAttachmentSize);
+    for (auto i = 0; i < colorAttachmentSize; ++i)
+    {
+        const auto& colorAttachment = descriptor.colorAttachments[i];
+        const auto texture = colorAttachment.renderView->getTexture();
+        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
+        vulkanColorAttachment.format = texture->getFormat();
+        vulkanColorAttachment.loadOp = colorAttachment.loadOp;
+        vulkanColorAttachment.storeOp = colorAttachment.storeOp;
+        vulkanColorAttachment.initialLayout = getInitialLayout(colorAttachment);
+        vulkanColorAttachment.finalLayout = downcast(texture)->getFinalLayout();
+    }
+
+    if (descriptor.depthStencilAttachment.has_value())
+    {
+        const DepthStencilAttachment depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
+        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
+        vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
+        vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
+        vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
+        vulkanDepthStencilAttachment.stencilStoreOp = depthStencilAttachment.stencilStoreOp;
+
+        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+    }
+
+    if (descriptor.colorAttachments.empty())
+        throw std::runtime_error("Failed to create vulkan render pass encoder due to empty color attachment.");
+
+    renderPassDescriptor.sampleCount = descriptor.sampleCount;
+
+    return renderPassDescriptor;
 }
 
 // Convert Helper
