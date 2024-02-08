@@ -46,8 +46,8 @@ public:
 };
 
 // Generate Helper
-VulkanRenderPass* JIPU_EXPERIMENTAL_EXPORT getVulkanRenderPass(VulkanDevice*, const RenderPassEncoderDescriptor&);
-VulkanFramebuffer* JIPU_EXPERIMENTAL_EXPORT getVulkanFramebuffer(VulkanDevice*, VulkanRenderPass*, const RenderPassEncoderDescriptor&);
+VulkanRenderPass* JIPU_EXPERIMENTAL_EXPORT getVulkanRenderPass(VulkanDevice*, const RenderPassDescriptor&);
+VulkanFramebuffer* JIPU_EXPERIMENTAL_EXPORT getVulkanFramebuffer(VulkanDevice*, VulkanRenderPass*, const RenderPassDescriptor&);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

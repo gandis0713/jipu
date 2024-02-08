@@ -94,7 +94,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassEncoderDescriptor>& descriptors)
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors)
     : RenderPassEncoder(commandBuffer, descriptors)
 {
 }
@@ -219,7 +219,7 @@ void VulkanRenderPassEncoder::end()
 }
 
 // Generate Helper
-VulkanRenderPass* getVulkanRenderPass(VulkanDevice* vulkanDevice, const RenderPassEncoderDescriptor& descriptor)
+VulkanRenderPass* getVulkanRenderPass(VulkanDevice* vulkanDevice, const RenderPassDescriptor& descriptor)
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -258,7 +258,7 @@ VulkanRenderPass* getVulkanRenderPass(VulkanDevice* vulkanDevice, const RenderPa
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer* getVulkanFramebuffer(VulkanDevice* vulkanDevice, VulkanRenderPass* vulkanRenderPass, const RenderPassEncoderDescriptor& descriptor)
+VulkanFramebuffer* getVulkanFramebuffer(VulkanDevice* vulkanDevice, VulkanRenderPass* vulkanRenderPass, const RenderPassDescriptor& descriptor)
 {
     VulkanFramebufferDescriptor framebufferDescriptor{};
     framebufferDescriptor.renderPass = vulkanRenderPass;
