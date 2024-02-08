@@ -300,13 +300,11 @@
 		},
 		{
 			"name": "arm64-osx-ninja-debug-experimental",
-			"inherits": "base-arm64-osx-ninja",
+			"inherits": "arm64-osx-ninja-debug",
 			"displayName": "arm64-osx-ninja-debug-experimental",
 			"binaryDir": "${sourceDir}/build/arm64-osx-ninja-experimental/debug",
 			"installDir": "${sourceDir}/install/arm64-osx-ninja-experimental/debug",
 			"cacheVariables": {
-				"CMAKE_BUILD_TYPE": "Debug",
-				"CMAKE_CXX_FLAGS_DEBUG": "-g",
 				"ENABLE_EXPERIMENTAL": true
 			}
 		}
@@ -530,9 +528,8 @@
 		},
 		{
 			"name": "arm64-osx-ninja-debug-experimental",
-			"inherits": "base",
-			"configurePreset": "arm64-osx-ninja-debug-experimental",
-			"configuration": "Debug"
+			"inherits": "arm64-osx-ninja-debug",
+			"configurePreset": "arm64-osx-ninja-debug-experimental"
 		}
 	]
 }
