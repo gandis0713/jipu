@@ -304,8 +304,6 @@ void Deferred2Sample::createDriver()
     DriverDescriptor descriptor;
     descriptor.type = DriverType::kVulkan;
     m_driver = Driver::create(descriptor);
-
-    auto driver = std::make_unique<VulkanDriver>(descriptor);
 }
 
 void Deferred2Sample::getPhysicalDevices()
