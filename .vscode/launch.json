@@ -191,7 +191,7 @@
             "name": "Experimental [windows x64] Deferred2",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/deferred2/deferred2.exe",
+            "program": "${workspaceFolder}/build/x64-windows-ninja-experimental/debug/sample/apps/deferred2/deferred2.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
@@ -200,7 +200,7 @@
             "name": "Experimental [arm64 osx] Deferred2",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred2/deferred2",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja-experimental/debug/sample/apps/deferred2/deferred2",
             "args": [],
             "stopAtEntry": false,
             "environment": [
