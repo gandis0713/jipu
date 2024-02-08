@@ -229,7 +229,7 @@ void ParticleSample::draw()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        ComputePassEncoderDescriptor computePassEncoderDescriptor{};
+        ComputePassDescriptor computePassEncoderDescriptor{};
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
         computePassEncoder->setPipeline(m_computePipeline.get());
         computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
