@@ -14,4 +14,10 @@ RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const RenderP
 {
 }
 
+RenderPassEncoder::RenderPassEncoder(CommandBuffer* commandBuffer, const std::vector<RenderPassEncoderDescriptor>& descriptors)
+    : m_commandBuffer(commandBuffer)
+    , m_descriptors(descriptors)
+{
+}
+
 } // namespace jipu

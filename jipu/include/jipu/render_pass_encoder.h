@@ -75,6 +75,7 @@ class JIPU_EXPORT RenderPassEncoder
 public:
     RenderPassEncoder() = delete;
     RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
+    RenderPassEncoder(CommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors);
     virtual ~RenderPassEncoder() = default;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
@@ -109,6 +110,7 @@ protected:
     Pipeline* m_pipeline = nullptr;
 
     RenderPassDescriptor m_descriptor{};
+    std::vector<RenderPassDescriptor> m_descriptors{};
 };
 
 } // namespace jipu
