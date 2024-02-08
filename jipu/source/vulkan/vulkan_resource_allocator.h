@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "vulkan_resource.h"
 
 namespace jipu
@@ -10,7 +12,7 @@ struct VulkanResourceAllocatorDescriptor
 };
 
 class VulkanDevice;
-class VulkanResourceAllocator final
+class JIPU_EXPERIMENTAL_EXPORT VulkanResourceAllocator final
 {
 public:
     VulkanResourceAllocator() = delete;

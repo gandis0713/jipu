@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/pipeline_layout.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -8,7 +10,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanPipelineLayout : public PipelineLayout
+class JIPU_EXPERIMENTAL_EXPORT VulkanPipelineLayout : public PipelineLayout
 {
 public:
     VulkanPipelineLayout() = delete;

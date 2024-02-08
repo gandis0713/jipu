@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/device.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -16,8 +18,7 @@ namespace jipu
 {
 
 class VulkanPhysicalDevice;
-
-class VulkanDevice : public Device
+class JIPU_EXPERIMENTAL_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -17,8 +19,7 @@ struct VulkanFramebufferDescriptor
 };
 
 class VulkanDevice;
-
-class VulkanFrameBuffer
+class JIPU_EXPERIMENTAL_EXPORT VulkanFrameBuffer
 {
 public:
     VulkanFrameBuffer() = delete;
@@ -40,7 +41,7 @@ private:
     uint32_t m_height = 0;
 };
 
-class VulkanFrameBufferCache final
+class JIPU_EXPERIMENTAL_EXPORT VulkanFrameBufferCache final
 {
 
 public:

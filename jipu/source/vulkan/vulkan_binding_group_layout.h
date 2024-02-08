@@ -8,7 +8,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanBindingGroupLayout : public BindingGroupLayout
+class JIPU_EXPERIMENTAL_EXPORT VulkanBindingGroupLayout : public BindingGroupLayout
 {
 public:
     VulkanBindingGroupLayout() = delete;

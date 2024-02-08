@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
 
@@ -7,7 +9,7 @@ namespace jipu
 {
 
 class VulkanCommandBuffer;
-class VulkanRenderPassEncoder : public RenderPassEncoder
+class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;

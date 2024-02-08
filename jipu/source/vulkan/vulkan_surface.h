@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/surface.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -18,7 +20,7 @@ struct VulkanSurfaceInfo
 };
 
 class VulkanDriver;
-class VulkanSurface : public Surface
+class JIPU_EXPERIMENTAL_EXPORT VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;

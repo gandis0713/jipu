@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/physical_device.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -27,7 +29,7 @@ struct VulkanPhysicalDeviceDescriptor
 };
 
 class VulkanDriver;
-class VulkanPhysicalDevice : public PhysicalDevice
+class JIPU_EXPERIMENTAL_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;

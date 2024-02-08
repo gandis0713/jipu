@@ -1,12 +1,14 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/compute_pass_encoder.h"
 
 namespace jipu
 {
 
 class VulkanCommandBuffer;
-class VulkanComputePassEncoder : public ComputePassEncoder
+class JIPU_EXPERIMENTAL_EXPORT VulkanComputePassEncoder : public ComputePassEncoder
 {
 public:
     VulkanComputePassEncoder() = delete;

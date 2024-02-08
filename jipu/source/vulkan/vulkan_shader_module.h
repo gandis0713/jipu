@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/shader_module.h"
 #include "vulkan_api.h"
 
@@ -9,7 +11,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanShaderModule : public ShaderModule
+class JIPU_EXPERIMENTAL_EXPORT VulkanShaderModule : public ShaderModule
 {
 public:
     VulkanShaderModule() = delete;

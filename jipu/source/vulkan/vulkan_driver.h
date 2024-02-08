@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/driver.h"
 #include "utils/cast.h"
 #include "utils/dylib.h"
@@ -17,7 +19,7 @@ struct VulkanDriverInfo : VulkanDriverKnobs
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class VulkanDriver : public Driver
+class JIPU_EXPERIMENTAL_EXPORT VulkanDriver : public Driver
 {
 
 public:

@@ -1,3 +1,7 @@
+#pragma once
+
+#include "export.h"
+
 #include "jipu/buffer.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -10,7 +14,7 @@ namespace jipu
 
 class VulkanDevice;
 class CommandBuffer;
-class VulkanBuffer : public Buffer
+class JIPU_EXPERIMENTAL_EXPORT VulkanBuffer : public Buffer
 {
 public:
     VulkanBuffer() = delete;

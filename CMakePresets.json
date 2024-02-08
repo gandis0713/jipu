@@ -36,6 +36,18 @@
 			}
 		},
 		{
+			"name": "base-windows",
+			"inherits": "base",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
+			"cacheVariables": {
+				"BUILD_SHARED_LIBS": false
+			}
+		},
+		{
 			"name": "base-x64-osx",
 			"inherits": "base-osx",
 			"cacheVariables": {
@@ -70,6 +82,29 @@
 			"name": "base-x64-osx-xcode",
 			"inherits": "base-x64-osx",
 			"generator": "Xcode"
+		},
+		{
+			"name": "base-x64-windows",
+			"inherits": "base-windows",
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-windows",
+				"CMAKE_OSX_ARCHITECTURES": "x64"
+			}
+		},
+		{
+			"name": "base-x64-windows-vs2019",
+			"inherits": "base-x64-windows",
+			"generator": "Visual Studio 16 2019"
+		},
+		{
+			"name": "base-x64-windows-vs2022",
+			"inherits": "base-x64-windows",
+			"generator": "Visual Studio 17 2022"
+		},
+		{
+			"name": "base-x64-windows-ninja",
+			"inherits": "base-x64-windows",
+			"generator": "Ninja"
 		},
 		{
 			"name": "arm64-osx-ninja-debug",
@@ -204,41 +239,6 @@
 			}
 		},
 		{
-			"name": "base-windows",
-			"inherits": "base",
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Windows"
-			},
-			"cacheVariables": {
-				"BUILD_SHARED_LIBS": false
-			}
-		},
-		{
-			"name": "base-x64-windows",
-			"inherits": "base-windows",
-			"cacheVariables": {
-				"VCPKG_TARGET_TRIPLET": "x64-windows",
-				"CMAKE_OSX_ARCHITECTURES": "x64"
-			}
-		},
-		{
-			"name": "base-x64-windows-vs2019",
-			"inherits": "base-x64-windows",
-			"generator": "Visual Studio 16 2019"
-		},
-		{
-			"name": "base-x64-windows-vs2022",
-			"inherits": "base-x64-windows",
-			"generator": "Visual Studio 17 2022"
-		},
-		{
-			"name": "base-x64-windows-ninja",
-			"inherits": "base-x64-windows",
-			"generator": "Ninja"
-		},
-		{
 			"name": "x64-windows-vs2019-debug",
 			"inherits": "base-x64-windows-vs2019",
 			"displayName": "x64-windows-vs2019-debug",
@@ -296,6 +296,18 @@
 			"installDir": "${sourceDir}/install/x64-window-ninja/release",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "arm64-osx-ninja-debug-experimental",
+			"inherits": "base-arm64-osx-ninja",
+			"displayName": "arm64-osx-ninja-debug-experimental",
+			"binaryDir": "${sourceDir}/build/arm64-osx-ninja-experimental/debug",
+			"installDir": "${sourceDir}/install/arm64-osx-ninja-experimental/debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_CXX_FLAGS_DEBUG": "-g",
+				"ENABLE_EXPERIMENTAL": true
 			}
 		}
 	],
@@ -389,6 +401,11 @@
 			"name": "x64-windows-ninja-release",
 			"configurePreset": "x64-windows-ninja-release",
 			"configuration": "Release"
+		},
+		{
+			"name": "arm64-osx-ninja-debug-experimental",
+			"configurePreset": "arm64-osx-ninja-debug-experimental",
+			"configuration": "Debug"
 		}
 	],
 	"testPresets": [
@@ -510,6 +527,12 @@
 			"inherits": "base",
 			"configurePreset": "x64-windows-ninja-release",
 			"configuration": "Release"
+		},
+		{
+			"name": "arm64-osx-ninja-debug-experimental",
+			"inherits": "base",
+			"configurePreset": "arm64-osx-ninja-debug-experimental",
+			"configuration": "Debug"
 		}
 	]
 }

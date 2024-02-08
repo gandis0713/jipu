@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/texture.h"
 #include "utils/assert.h"
 #include "utils/cast.h"
@@ -19,7 +21,7 @@ enum class TextureOwner
 };
 
 class VulkanDevice;
-class VulkanTexture : public Texture
+class JIPU_EXPERIMENTAL_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;

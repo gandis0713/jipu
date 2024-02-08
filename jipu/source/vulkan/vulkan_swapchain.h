@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/swapchain.h"
 #include "vulkan_api.h"
 
@@ -12,8 +14,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-
-class VulkanSwapchain : public Swapchain
+class JIPU_EXPERIMENTAL_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;

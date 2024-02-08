@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include "jipu/pipeline.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
@@ -14,7 +16,7 @@ namespace jipu
 class VulkanDevice;
 
 // Vulkan Compute Pipeline
-class VulkanComputePipeline : public ComputePipeline
+class JIPU_EXPERIMENTAL_EXPORT VulkanComputePipeline : public ComputePipeline
 {
 public:
     VulkanComputePipeline() = delete;
@@ -37,7 +39,7 @@ DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 class VulkanRenderPass;
 
 // Vulkan Render Pipeline
-class VulkanRenderPipeline : public RenderPipeline
+class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;

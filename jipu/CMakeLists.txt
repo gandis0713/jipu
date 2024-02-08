@@ -139,6 +139,14 @@ target_include_directories(jipu
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
+if(ENABLE_EXPERIMENTAL)
+  target_include_directories(jipu
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  )
+endif()
+
 # link libraries
 target_link_libraries(jipu
   PRIVATE
@@ -181,6 +189,13 @@ if(BUILD_SHARED_LIBS)
     "JIPU_SHARED_LIBRARY"
     "JIPU_IMPLEMENTATION"
   )
+
+  if(ENABLE_EXPERIMENTAL)
+    target_compile_definitions(jipu
+      PRIVATE
+      "EXPERIMENTAL"
+    )
+  endif()
 endif()
 
 if(MSVC)
