@@ -105,3 +105,6 @@ add_subdirectory(deferred)
 add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
+
+# experimental
+add_subdirectory(deferred2)
