@@ -42,6 +42,15 @@
             "environment": [],
         },
         {
+            "name": "[windows x64] Deferred2",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/deferred2/deferred2.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "[windows x64] ImGui",
             "type": "cppvsdbg",
             "request": "launch",
@@ -124,6 +133,23 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred/deferred",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[arm64 osx] Deferred2",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/deferred2/deferred2",
             "args": [],
             "stopAtEntry": false,
             "environment": [
