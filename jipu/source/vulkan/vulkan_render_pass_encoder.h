@@ -43,11 +43,12 @@ public:
                      uint32_t firstInstance) override;
 
     void end() override;
-};
 
-// Generate Helper
-VulkanRenderPass* JIPU_EXPERIMENTAL_EXPORT getVulkanRenderPass(VulkanDevice*, const RenderPassDescriptor&);
-VulkanFramebuffer* JIPU_EXPERIMENTAL_EXPORT getVulkanFramebuffer(VulkanDevice*, VulkanRenderPass*, const RenderPassDescriptor&);
+private:
+    void initialize(const std::vector<RenderPassDescriptor>& descriptors);
+    VulkanRenderPass* getVulkanRenderPass(const RenderPassDescriptor& descriptor);
+    VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const RenderPassDescriptor& descriptor);
+};
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

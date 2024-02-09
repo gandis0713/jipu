@@ -26,6 +26,9 @@ public:
     void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) override;
 
     CommandBuffer* finish() override;
+
+public:
+    std::unique_ptr<RenderPassEncoder> beginRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
 };
 
 } // namespace jipu
