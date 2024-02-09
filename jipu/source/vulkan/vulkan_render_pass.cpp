@@ -12,126 +12,13 @@ namespace jipu
 VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, const VulkanRenderPassDescriptor& descriptor)
     : m_device(vulkanDevice)
 {
-    std::vector<VkAttachmentDescription> attachments{};
-
-    for (auto colorAttachment : descriptor.colorAttachments)
-    {
-        VkAttachmentDescription colorAttachmentDescription{};
-        colorAttachmentDescription.format = ToVkFormat(colorAttachment.format);
-        colorAttachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
-        colorAttachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-        colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        colorAttachmentDescription.initialLayout = colorAttachment.initialLayout;
-        colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
-
-        attachments.push_back(colorAttachmentDescription);
-    }
-
-    if (descriptor.sampleCount > 1)
-    {
-        for (auto colorAttachment : descriptor.colorAttachments)
-        {
-            VkAttachmentDescription attachmentDescription{};
-            attachmentDescription.format = ToVkFormat(colorAttachment.format);
-            attachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
-            attachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-            attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
-            attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-            attachments.push_back(attachmentDescription);
-        }
-    }
-
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
-        VkAttachmentDescription depthAttachmentDescription{};
-        depthAttachmentDescription.format = ToVkFormat(depthStencilAttachment.format);
-        depthAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        depthAttachmentDescription.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
-        depthAttachmentDescription.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
-        depthAttachmentDescription.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
-        depthAttachmentDescription.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
-        depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachments.push_back(depthAttachmentDescription);
-    }
-
-    VkSubpassDescription subpassDescription{};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
-    // color attachments
-    uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.colorAttachments.size());
-    std::vector<VkAttachmentReference> colorAttachmentReferences{};
-    for (auto i = 0; i < colorAttachmentCount; ++i)
-    {
-        // attachment references
-        VkAttachmentReference colorAttachmentReference{};
-        colorAttachmentReference.attachment = i;
-        colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        colorAttachmentReferences.push_back(colorAttachmentReference);
-    }
-    subpassDescription.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
-    subpassDescription.pColorAttachments = colorAttachmentReferences.data();
-
-    std::vector<VkAttachmentReference> resolveAttachmentReferences{};
-    if (descriptor.sampleCount > 1)
-    {
-        // resolve attachments
-        for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
-        {
-            VkAttachmentReference resolveAttachmentReference{};
-            resolveAttachmentReference.attachment = i;
-            resolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            resolveAttachmentReferences.push_back(resolveAttachmentReference);
-        }
-        subpassDescription.pResolveAttachments = resolveAttachmentReferences.data();
-    }
-
-    VkAttachmentReference depthAttachment{};
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        depthAttachment.attachment = static_cast<uint32_t>(colorAttachmentReferences.size() + resolveAttachmentReferences.size());
-        depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        subpassDescription.pDepthStencilAttachment = &depthAttachment;
-    }
-
-    VkSubpassDependency subpassDependency{};
-    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependency.dstSubpass = 0;
-    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.srcAccessMask = 0;
-    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    if (descriptor.depthStencilAttachment.has_value())
-        subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    VkRenderPassCreateInfo renderPassCreateInfo{};
-    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassCreateInfo.pAttachments = attachments.data();
-    renderPassCreateInfo.subpassCount = 1;
-    renderPassCreateInfo.pSubpasses = &subpassDescription;
-    renderPassCreateInfo.dependencyCount = 1;
-    renderPassCreateInfo.pDependencies = &subpassDependency;
-
-    if (vulkanDevice->vkAPI.CreateRenderPass(vulkanDevice->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create render pass!");
-    }
+    initialize({ descriptor });
 }
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, const std::vector<VulkanRenderPassDescriptor>& descriptors)
     : m_device(vulkanDevice)
 {
+    initialize(descriptors);
 }
 
 VulkanRenderPass::~VulkanRenderPass()
@@ -139,6 +26,131 @@ VulkanRenderPass::~VulkanRenderPass()
     auto vulkanDevice = downcast(m_device);
 
     vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
+}
+
+void VulkanRenderPass::initialize(const std::vector<VulkanRenderPassDescriptor>& descriptors)
+{
+    auto vulkanDevice = downcast(m_device);
+
+    for (auto i = 0; i < descriptors.size(); ++i)
+    {
+        const auto& descriptor = descriptors[i];
+        std::vector<VkAttachmentDescription> attachments{};
+
+        for (auto colorAttachment : descriptor.colorAttachments)
+        {
+            VkAttachmentDescription colorAttachmentDescription{};
+            colorAttachmentDescription.format = ToVkFormat(colorAttachment.format);
+            colorAttachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
+            colorAttachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
+            colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+            colorAttachmentDescription.initialLayout = colorAttachment.initialLayout;
+            colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
+
+            attachments.push_back(colorAttachmentDescription);
+        }
+
+        if (descriptor.sampleCount > 1)
+        {
+            for (auto colorAttachment : descriptor.colorAttachments)
+            {
+                VkAttachmentDescription attachmentDescription{};
+                attachmentDescription.format = ToVkFormat(colorAttachment.format);
+                attachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
+                attachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
+                attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
+                attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+                attachments.push_back(attachmentDescription);
+            }
+        }
+
+        if (descriptor.depthStencilAttachment.has_value())
+        {
+            auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+            VkAttachmentDescription depthAttachmentDescription{};
+            depthAttachmentDescription.format = ToVkFormat(depthStencilAttachment.format);
+            depthAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+            depthAttachmentDescription.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
+            depthAttachmentDescription.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
+            depthAttachmentDescription.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
+            depthAttachmentDescription.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
+            depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            attachments.push_back(depthAttachmentDescription);
+        }
+
+        VkSubpassDescription subpassDescription{};
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+
+        // color attachments
+        uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.colorAttachments.size());
+        std::vector<VkAttachmentReference> colorAttachmentReferences{};
+        for (auto i = 0; i < colorAttachmentCount; ++i)
+        {
+            // attachment references
+            VkAttachmentReference colorAttachmentReference{};
+            colorAttachmentReference.attachment = i;
+            colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            colorAttachmentReferences.push_back(colorAttachmentReference);
+        }
+        subpassDescription.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
+        subpassDescription.pColorAttachments = colorAttachmentReferences.data();
+
+        std::vector<VkAttachmentReference> resolveAttachmentReferences{};
+        if (descriptor.sampleCount > 1)
+        {
+            // resolve attachments
+            for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
+            {
+                VkAttachmentReference resolveAttachmentReference{};
+                resolveAttachmentReference.attachment = i;
+                resolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                resolveAttachmentReferences.push_back(resolveAttachmentReference);
+            }
+            subpassDescription.pResolveAttachments = resolveAttachmentReferences.data();
+        }
+
+        VkAttachmentReference depthAttachment{};
+        if (descriptor.depthStencilAttachment.has_value())
+        {
+            depthAttachment.attachment = static_cast<uint32_t>(colorAttachmentReferences.size() + resolveAttachmentReferences.size());
+            depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            subpassDescription.pDepthStencilAttachment = &depthAttachment;
+        }
+
+        VkSubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependency.dstSubpass = 0;
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.srcAccessMask = 0;
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        if (descriptor.depthStencilAttachment.has_value())
+            subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        VkRenderPassCreateInfo renderPassCreateInfo{};
+        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassCreateInfo.pAttachments = attachments.data();
+        renderPassCreateInfo.subpassCount = 1;
+        renderPassCreateInfo.pSubpasses = &subpassDescription;
+        renderPassCreateInfo.dependencyCount = 1;
+        renderPassCreateInfo.pDependencies = &subpassDependency;
+
+        if (vulkanDevice->vkAPI.CreateRenderPass(vulkanDevice->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create render pass!");
+        }
+    }
 }
 
 VkRenderPass VulkanRenderPass::getVkRenderPass() const

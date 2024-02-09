@@ -226,8 +226,10 @@ VkPipeline VulkanRenderPipeline::getVkPipeline(uint32_t index) const
 
 void VulkanRenderPipeline::initialize(const std::vector<RenderPipelineDescriptor>& descriptors)
 {
-    for (const auto& descriptor : descriptors)
+    for (auto i = 0; i < descriptors.size(); ++i)
     {
+        const auto& descriptor = descriptors[i];
+
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{};
         inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         inputAssemblyStateCreateInfo.topology = ToVkPrimitiveTopology(descriptor.inputAssembly.topology);

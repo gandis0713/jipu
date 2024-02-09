@@ -52,6 +52,9 @@ public:
     VkRenderPass getVkRenderPass() const;
 
 private:
+    void initialize(const std::vector<VulkanRenderPassDescriptor>& descriptors);
+
+private:
     VulkanDevice* m_device = nullptr;
 
 private:
