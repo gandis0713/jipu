@@ -67,7 +67,7 @@ private:
     void createOffscreenBindingGroupLayout();
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
-    void createOffscreenPipeline();
+    RenderPipelineDescriptor createOffscreenRenderPipelineDescriptor();
     void updateOffscreenUniformBuffer();
 
     void createCompositionDepthStencilTexture();
@@ -75,10 +75,12 @@ private:
     void createCompositionBindingGroupLayout();
     void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
-    void createCompositionPipeline();
+    RenderPipelineDescriptor createCompositionRenderPipelineDescriptor();
     void createCompositionUniformBuffer();
     void createCompositionVertexBuffer();
     void updateCompositionUniformBuffer();
+
+    void createPipeline();
 
     void createCommandBuffer();
     void createQueue();
@@ -134,6 +136,8 @@ private:
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
@@ -155,6 +159,8 @@ private:
         std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<Sampler> albedoSampler = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;

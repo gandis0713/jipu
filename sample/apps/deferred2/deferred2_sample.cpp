@@ -33,6 +33,8 @@ Deferred2Sample::~Deferred2Sample()
     clearImGui();
 
     m_composition.pipeline.reset();
+    m_composition.vertexShaderModule.reset();
+    m_composition.fragmentShaderModule.reset();
     m_composition.pipelineLayout.reset();
     m_composition.bindingGroupLayout.reset();
     m_composition.bindingGroup.reset();
@@ -45,6 +47,8 @@ Deferred2Sample::~Deferred2Sample()
     m_composition.depthStencilTexture.reset();
 
     m_offscreen.pipeline.reset();
+    m_offscreen.vertexShaderModule.reset();
+    m_offscreen.fragmentShaderModule.reset();
     m_offscreen.pipelineLayout.reset();
     m_offscreen.bindingGroupLayout.reset();
     m_offscreen.bindingGroup.reset();
@@ -107,7 +111,6 @@ void Deferred2Sample::init()
     createOffscreenBindingGroupLayout();
     createOffscreenBindingGroup();
     createOffscreenPipelineLayout();
-    createOffscreenPipeline();
 
     createCompositionDepthStencilTexture();
     createCompositionDepthStencilTextureView();
@@ -116,7 +119,8 @@ void Deferred2Sample::init()
     createCompositionBindingGroupLayout();
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
-    createCompositionPipeline();
+
+    createPipeline();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
@@ -729,14 +733,13 @@ void Deferred2Sample::createOffscreenPipelineLayout()
     m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
-void Deferred2Sample::createOffscreenPipeline()
+RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescriptor()
 {
     // Input Assembly
     InputAssemblyStage inputAssembly{};
     inputAssembly.topology = PrimitiveTopology::kTriangleList;
 
     // shader module
-    std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
         std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
 
@@ -744,7 +747,7 @@ void Deferred2Sample::createOffscreenPipeline()
         shaderModuleDescriptor.code = vertexSource.data();
         shaderModuleDescriptor.codeSize = vertexSource.size();
 
-        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_offscreen.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
     // Vertex Shader
     VertexStage vertexShage{};
@@ -781,7 +784,7 @@ void Deferred2Sample::createOffscreenPipeline()
 
         vertexShage.layouts = { inputLayout };
 
-        vertexShage.shaderModule = vertexShaderModule.get();
+        vertexShage.shaderModule = m_offscreen.vertexShaderModule.get();
     }
 
     // Rasterization
@@ -791,7 +794,6 @@ void Deferred2Sample::createOffscreenPipeline()
     rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
     // shader module
-    std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
         std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
 
@@ -799,7 +801,7 @@ void Deferred2Sample::createOffscreenPipeline()
         shaderModuleDescriptor.code = fragmentSource.data();
         shaderModuleDescriptor.codeSize = fragmentSource.size();
 
-        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_offscreen.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
 
     // Fragment Shader
@@ -819,7 +821,7 @@ void Deferred2Sample::createOffscreenPipeline()
         albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
 
         fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-        fragmentStage.shaderModule = fragmentShaderModule.get();
+        fragmentStage.shaderModule = m_offscreen.fragmentShaderModule.get();
     }
 
     DepthStencilStage depthStencil{};
@@ -833,10 +835,7 @@ void Deferred2Sample::createOffscreenPipeline()
     renderPipelineDescriptor.depthStencil = depthStencil;
     renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
 
-    auto vulkanDevice = downcast(m_device.get());
-
-    std::vector<RenderPipelineDescriptor> descriptors = { renderPipelineDescriptor };
-    m_offscreen.pipeline = vulkanDevice->createRenderPipeline(renderPipelineDescriptor);
+    return renderPipelineDescriptor;
 }
 
 void Deferred2Sample::createCompositionDepthStencilTexture()
@@ -976,15 +975,13 @@ void Deferred2Sample::createCompositionPipelineLayout()
     m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
-void Deferred2Sample::createCompositionPipeline()
+RenderPipelineDescriptor Deferred2Sample::createCompositionRenderPipelineDescriptor()
 {
     // Input Assembly
     InputAssemblyStage inputAssemblyStage{};
     inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
 
     // Vertex
-    std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-
     VertexStage vertexStage{};
     vertexStage.entryPoint = "main";
     { // vertex layout
@@ -1017,9 +1014,9 @@ void Deferred2Sample::createCompositionPipeline()
         ShaderModuleDescriptor shaderModuleDescriptor{};
         shaderModuleDescriptor.code = vertexSource.data();
         shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
-        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_composition.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
-        vertexStage.shaderModule = vertexShaderModule.get();
+        vertexStage.shaderModule = m_composition.vertexShaderModule.get();
     }
 
     // Rasterization
@@ -1029,8 +1026,6 @@ void Deferred2Sample::createCompositionPipeline()
     rasterizationStage.sampleCount = m_sampleCount;
 
     // Fragment
-    std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-
     FragmentStage fragmentStage{};
     fragmentStage.entryPoint = "main";
     { // fragment shader targets
@@ -1046,9 +1041,9 @@ void Deferred2Sample::createCompositionPipeline()
         ShaderModuleDescriptor shaderModuleDescriptor{};
         shaderModuleDescriptor.code = fragmentShaderSource.data();
         shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
-        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_composition.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
-        fragmentStage.shaderModule = fragmentShaderModule.get();
+        fragmentStage.shaderModule = m_composition.fragmentShaderModule.get();
     }
 
     // DepthStencil
@@ -1063,7 +1058,7 @@ void Deferred2Sample::createCompositionPipeline()
     renderPipelineDescriptor.depthStencil = depthStencilStage;
     renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
 
-    m_composition.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+    return renderPipelineDescriptor;
 }
 
 void Deferred2Sample::createCompositionUniformBuffer()
@@ -1140,6 +1135,19 @@ void Deferred2Sample::createCompositionVertexBuffer()
     void* mappedPointer = vertexBuffer->map();
     memcpy(mappedPointer, m_composition.vertices.data(), descriptor.size);
     vertexBuffer->unmap();
+}
+
+void Deferred2Sample::createPipeline()
+{
+    auto vulkanDevice = downcast(m_device.get());
+
+    RenderPipelineDescriptor offscreenRenderPipelineDescriptor = createOffscreenRenderPipelineDescriptor();
+
+    m_offscreen.pipeline = vulkanDevice->createRenderPipeline(offscreenRenderPipelineDescriptor);
+
+    RenderPipelineDescriptor compositionRenderPipelineDescriptor = createCompositionRenderPipelineDescriptor();
+
+    m_composition.pipeline = vulkanDevice->createRenderPipeline(compositionRenderPipelineDescriptor);
 }
 
 void Deferred2Sample::createCommandBuffer()
