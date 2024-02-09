@@ -833,7 +833,10 @@ void Deferred2Sample::createOffscreenPipeline()
     renderPipelineDescriptor.depthStencil = depthStencil;
     renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
 
-    m_offscreen.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+    auto vulkanDevice = downcast(m_device.get());
+
+    std::vector<RenderPipelineDescriptor> descriptors = { renderPipelineDescriptor };
+    m_offscreen.pipeline = vulkanDevice->createRenderPipeline(renderPipelineDescriptor);
 }
 
 void Deferred2Sample::createCompositionDepthStencilTexture()
