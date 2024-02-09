@@ -95,7 +95,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
 }
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors)
-    : RenderPassEncoder(commandBuffer, descriptors)
+    : RenderPassEncoder(commandBuffer, {})
 {
 }
 

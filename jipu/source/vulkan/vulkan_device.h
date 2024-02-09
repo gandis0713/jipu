@@ -43,6 +43,9 @@ public:
     std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
 
 public:
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const std::vector<RenderPipelineDescriptor>& descriptors);
+
+public:
     VulkanRenderPass* getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors);
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
     VulkanResourceAllocator* getResourceAllocator() const;

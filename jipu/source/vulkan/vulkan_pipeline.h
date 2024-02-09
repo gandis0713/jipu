@@ -5,6 +5,7 @@
 #include "jipu/pipeline.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_shader_module.h"
 
 #include <string>
@@ -44,18 +45,26 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPipeline : public RenderPipeline
 public:
     VulkanRenderPipeline() = delete;
     VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const std::vector<RenderPipelineDescriptor>& descriptors);
     ~VulkanRenderPipeline() override;
 
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
     VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
-    VkPipeline getVkPipeline() const;
+    VkPipeline getVkPipeline(uint32_t index = 0) const;
 
 private:
     void initialize();
 
+    std::array<VkPipelineShaderStageCreateInfo, 2> generateShaderStageCreateInfo();
+    std::vector<VkVertexInputBindingDescription> generateVertexInputBindingDescription();
+    std::vector<VkVertexInputAttributeDescription> generateVertexInputAttributeDescription();
+    std::vector<VkPipelineColorBlendAttachmentState> generateColorBlendAttachmentState();
+
+    VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor();
+
 private:
-    VkPipeline m_pipeline = VK_NULL_HANDLE;
+    std::vector<VkPipeline> m_pipelines{};
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
 
