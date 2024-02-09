@@ -255,7 +255,7 @@ VulkanRenderPass* getVulkanRenderPass(VulkanDevice* vulkanDevice, const RenderPa
 
     renderPassDescriptor.sampleCount = descriptor.sampleCount;
 
-    return vulkanDevice->getRenderPass(renderPassDescriptor);
+    return vulkanDevice->getRenderPass({ renderPassDescriptor });
 }
 
 VulkanFramebuffer* getVulkanFramebuffer(VulkanDevice* vulkanDevice, VulkanRenderPass* vulkanRenderPass, const RenderPassDescriptor& descriptor)

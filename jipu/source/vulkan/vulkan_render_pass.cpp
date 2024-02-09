@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassDescriptor descriptor)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, const VulkanRenderPassDescriptor& descriptor)
     : m_device(vulkanDevice)
 {
     std::vector<VkAttachmentDescription> attachments{};
@@ -129,6 +129,11 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassD
     }
 }
 
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, const std::vector<VulkanRenderPassDescriptor>& descriptors)
+    : m_device(vulkanDevice)
+{
+}
+
 VulkanRenderPass::~VulkanRenderPass()
 {
     auto vulkanDevice = downcast(m_device);
@@ -141,56 +146,71 @@ VkRenderPass VulkanRenderPass::getVkRenderPass() const
     return m_renderPass;
 }
 
-size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
+size_t VulkanRenderPassCache::Functor::operator()(const std::vector<VulkanRenderPassDescriptor>& descriptors) const
 {
-    size_t hash = jipu::hash(descriptor.sampleCount);
+    size_t hash = 0;
 
-    for (auto colorAttachment : descriptor.colorAttachments)
+    for (const auto& descriptor : descriptors)
     {
-        combineHash(hash, colorAttachment.loadOp);
-        combineHash(hash, colorAttachment.storeOp);
-        combineHash(hash, colorAttachment.format);
-        combineHash(hash, colorAttachment.finalLayout);
-    }
+        combineHash(hash, descriptor.sampleCount);
 
-    if (descriptor.depthStencilAttachment)
-    {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        for (auto colorAttachment : descriptor.colorAttachments)
+        {
+            combineHash(hash, colorAttachment.loadOp);
+            combineHash(hash, colorAttachment.storeOp);
+            combineHash(hash, colorAttachment.format);
+            combineHash(hash, colorAttachment.finalLayout);
+        }
 
-        combineHash(hash, depthStencilAttachment.depthLoadOp);
-        combineHash(hash, depthStencilAttachment.depthStoreOp);
-        combineHash(hash, depthStencilAttachment.stencilLoadOp);
-        combineHash(hash, depthStencilAttachment.stencilStoreOp);
-        combineHash(hash, depthStencilAttachment.format);
+        if (descriptor.depthStencilAttachment)
+        {
+            auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+
+            combineHash(hash, depthStencilAttachment.depthLoadOp);
+            combineHash(hash, depthStencilAttachment.depthStoreOp);
+            combineHash(hash, depthStencilAttachment.stencilLoadOp);
+            combineHash(hash, depthStencilAttachment.stencilStoreOp);
+            combineHash(hash, depthStencilAttachment.format);
+        }
     }
 
     return hash;
 }
 
-bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
-                                                const VulkanRenderPassDescriptor& rhs) const
+bool VulkanRenderPassCache::Functor::operator()(const std::vector<VulkanRenderPassDescriptor>& lhs,
+                                                const std::vector<VulkanRenderPassDescriptor>& rhs) const
 {
+    if (lhs.size() != rhs.size())
+        return false;
 
-    if (lhs.colorAttachments.size() == rhs.colorAttachments.size() &&
-        lhs.depthStencilAttachment.has_value() == rhs.depthStencilAttachment.has_value() &&
-        lhs.sampleCount == rhs.sampleCount)
+    for (auto i = 0; i < lhs.size(); ++i)
     {
-        auto colorAttanchmentSize = lhs.colorAttachments.size();
+        const auto& lhsd = lhs[i];
+        const auto& rhsd = rhs[i];
+
+        if (lhsd.colorAttachments.size() != rhsd.colorAttachments.size() ||
+            lhsd.depthStencilAttachment.has_value() != rhsd.depthStencilAttachment.has_value() ||
+            lhsd.sampleCount != rhsd.sampleCount)
+        {
+            return false;
+        }
+
+        auto colorAttanchmentSize = lhsd.colorAttachments.size();
         for (auto i = 0; i < colorAttanchmentSize; ++i)
         {
-            if (lhs.colorAttachments[i].loadOp != rhs.colorAttachments[i].loadOp ||
-                lhs.colorAttachments[i].storeOp != rhs.colorAttachments[i].storeOp ||
-                lhs.colorAttachments[i].format != rhs.colorAttachments[i].format ||
-                lhs.colorAttachments[i].finalLayout != rhs.colorAttachments[i].finalLayout)
+            if (lhsd.colorAttachments[i].loadOp != rhsd.colorAttachments[i].loadOp ||
+                lhsd.colorAttachments[i].storeOp != rhsd.colorAttachments[i].storeOp ||
+                lhsd.colorAttachments[i].format != rhsd.colorAttachments[i].format ||
+                lhsd.colorAttachments[i].finalLayout != rhsd.colorAttachments[i].finalLayout)
             {
                 return false;
             }
         }
 
-        if (lhs.depthStencilAttachment.has_value() && rhs.depthStencilAttachment.has_value())
+        if (lhsd.depthStencilAttachment.has_value() && rhsd.depthStencilAttachment.has_value())
         {
-            auto lhsDepthStencilAttachment = lhs.depthStencilAttachment.value();
-            auto rhsDepthStencilAttachment = rhs.depthStencilAttachment.value();
+            auto lhsDepthStencilAttachment = lhsd.depthStencilAttachment.value();
+            auto rhsDepthStencilAttachment = rhsd.depthStencilAttachment.value();
 
             if (lhsDepthStencilAttachment.depthLoadOp != rhsDepthStencilAttachment.depthLoadOp ||
                 lhsDepthStencilAttachment.depthStoreOp != rhsDepthStencilAttachment.depthStoreOp ||
@@ -201,11 +221,9 @@ bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor
                 return false;
             }
         }
-
-        return true; // return true
     }
 
-    return false;
+    return true;
 }
 
 VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
@@ -213,9 +231,9 @@ VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
 {
 }
 
-VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)
 {
-    auto it = m_cache.find(descriptor);
+    auto it = m_cache.find(descriptors);
     if (it != m_cache.end())
     {
         return (it->second).get();
@@ -246,11 +264,13 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
     }
 
     // create new renderpass
-    auto renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
+    std::unique_ptr<VulkanRenderPass> renderPass = descriptors.size() == 1
+                                                       ? std::make_unique<VulkanRenderPass>(m_device, descriptors[0])
+                                                       : std::make_unique<VulkanRenderPass>(m_device, descriptors);
 
     // get raw pointer before moving.
     VulkanRenderPass* renderPassPtr = renderPass.get();
-    m_cache.emplace(descriptor, std::move(renderPass));
+    auto result = m_cache.emplace(descriptors, std::move(renderPass));
 
     return renderPassPtr;
 }

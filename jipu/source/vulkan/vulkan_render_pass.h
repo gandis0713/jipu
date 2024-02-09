@@ -45,7 +45,8 @@ class VulkanDevice;
 class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPass
 {
 public:
-    VulkanRenderPass(VulkanDevice* device, VulkanRenderPassDescriptor descriptor);
+    VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor);
+    VulkanRenderPass(VulkanDevice* device, const std::vector<VulkanRenderPassDescriptor>& descriptors);
     ~VulkanRenderPass();
 
     VkRenderPass getVkRenderPass() const;
@@ -64,7 +65,7 @@ public:
     VulkanRenderPassCache(VulkanDevice* device);
     ~VulkanRenderPassCache() = default;
 
-    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
+    VulkanRenderPass* getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors);
 
     void clear();
 
@@ -74,10 +75,10 @@ private:
 private:
     struct Functor
     {
-        size_t operator()(const VulkanRenderPassDescriptor& descriptor) const;
-        bool operator()(const VulkanRenderPassDescriptor& lhs, const VulkanRenderPassDescriptor& rhs) const;
+        size_t operator()(const std::vector<VulkanRenderPassDescriptor>& descriptors) const;
+        bool operator()(const std::vector<VulkanRenderPassDescriptor>& lhs, const std::vector<VulkanRenderPassDescriptor>& rhs) const;
     };
-    using Cache = std::unordered_map<VulkanRenderPassDescriptor, std::unique_ptr<VulkanRenderPass>, Functor, Functor>;
+    using Cache = std::unordered_map<std::vector<VulkanRenderPassDescriptor>, std::unique_ptr<VulkanRenderPass>, Functor, Functor>;
 
     Cache m_cache{};
 };

@@ -259,7 +259,7 @@ void VulkanRenderPipeline::initialize()
     }
 
     renderPassDescriptor.sampleCount = m_descriptor.rasterization.sampleCount;
-    VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
+    VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass({ renderPassDescriptor });
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
 

@@ -135,9 +135,9 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& de
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass* VulkanDevice::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)
 {
-    return m_renderPassCache.getRenderPass(descriptor);
+    return m_renderPassCache.getRenderPass(descriptors);
 }
 
 VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
