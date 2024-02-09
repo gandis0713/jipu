@@ -54,14 +54,7 @@ public:
     VkPipeline getVkPipeline(uint32_t index = 0) const;
 
 private:
-    void initialize();
-
-    std::array<VkPipelineShaderStageCreateInfo, 2> generateShaderStageCreateInfo();
-    std::vector<VkVertexInputBindingDescription> generateVertexInputBindingDescription();
-    std::vector<VkVertexInputAttributeDescription> generateVertexInputAttributeDescription();
-    std::vector<VkPipelineColorBlendAttachmentState> generateColorBlendAttachmentState();
-
-    VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor();
+    void initialize(const std::vector<RenderPipelineDescriptor>& descriptors);
 
 private:
     std::vector<VkPipeline> m_pipelines{};
