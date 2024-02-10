@@ -23,11 +23,10 @@ public:
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    PipelineLayout* getPipelineLayout() const;
+    virtual PipelineLayout* getPipelineLayout(uint32_t index = 0) const = 0;
 
 protected:
     Device* m_device = nullptr;
-    PipelineLayout* m_pipelineLayout = nullptr;
 };
 
 struct ProgrammableStage
@@ -165,7 +164,8 @@ struct FragmentStage : ProgrammableStage
 {
     struct Target
     {
-        TextureFormat format;
+        TextureFormat format = TextureFormat::kUndefined;
+        // TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
         std::optional<BlendState> blend = std::nullopt;
     };
 
@@ -199,13 +199,16 @@ class JIPU_EXPORT RenderPipeline : public Pipeline
 public:
     RenderPipeline() = delete;
     RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor);
+    RenderPipeline(Device* device, const std::vector<RenderPipelineDescriptor>& descriptors);
     virtual ~RenderPipeline() = default;
 
     RenderPipeline(const RenderPipeline&) = delete;
     RenderPipeline& operator=(const RenderPipeline&) = delete;
 
+    PipelineLayout* getPipelineLayout(uint32_t index = 0) const override;
+
 protected:
-    const RenderPipelineDescriptor m_descriptor{};
+    const std::vector<RenderPipelineDescriptor> m_descriptors{};
 };
 
 // Compute Shader Stage
@@ -227,6 +230,8 @@ public:
 
     ComputePipeline(const ComputePipeline&) = delete;
     ComputePipeline& operator=(const ComputePipeline&) = delete;
+
+    PipelineLayout* getPipelineLayout(uint32_t index = 0) const override;
 
 protected:
     const ComputePipelineDescriptor m_descriptor{};

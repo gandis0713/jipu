@@ -30,9 +30,10 @@ Deferred2Sample::Deferred2Sample(const SampleDescriptor& descriptor)
 
 Deferred2Sample::~Deferred2Sample()
 {
-    clearImGui();
+    //    clearImGui();
 
-    m_composition.pipeline.reset();
+    m_pipeline.reset();
+
     m_composition.vertexShaderModule.reset();
     m_composition.fragmentShaderModule.reset();
     m_composition.pipelineLayout.reset();
@@ -46,7 +47,6 @@ Deferred2Sample::~Deferred2Sample()
     m_composition.depthStencilTextureView.reset();
     m_composition.depthStencilTexture.reset();
 
-    m_offscreen.pipeline.reset();
     m_offscreen.vertexShaderModule.reset();
     m_offscreen.fragmentShaderModule.reset();
     m_offscreen.pipelineLayout.reset();
@@ -122,7 +122,7 @@ void Deferred2Sample::init()
 
     createPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    //    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
     m_initialized = true;
 }
@@ -132,8 +132,8 @@ void Deferred2Sample::update()
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
-    updateImGui();
-    buildImGui();
+    //    updateImGui();
+    //    buildImGui();
 }
 
 void Deferred2Sample::updateOffscreenUniformBuffer()
@@ -218,8 +218,13 @@ void Deferred2Sample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto vulkanCommandEncoder = downcast(commandEncoder.get());
+
+    int targetIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->getTextureViews()[targetIndex];
 
     // first pass
+    std::vector<RenderPassDescriptor> renderPassDescriptors{};
     {
         ColorAttachment positionColorAttachment{};
         positionColorAttachment.loadOp = LoadOp::kClear;
@@ -253,21 +258,10 @@ void Deferred2Sample::draw()
         renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
         renderPassDescriptor.sampleCount = m_sampleCount;
 
-        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
-        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
-        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-        renderPassEncoder->setScissor(0, 0, m_width, m_height);
-        renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
-        renderPassEncoder->end();
+        renderPassDescriptors.push_back(renderPassDescriptor);
     }
     // second pass
     {
-        int targetIndex = m_swapchain->acquireNextTexture();
-        auto renderView = m_swapchain->getTextureViews()[targetIndex];
-
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
@@ -286,19 +280,31 @@ void Deferred2Sample::draw()
         renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
         renderPassDescriptor.sampleCount = m_sampleCount;
 
-        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_composition.pipeline.get());
-        renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-        renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
-        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
-        renderPassEncoder->setScissor(0, 0, m_width, m_height);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
-        renderPassEncoder->end();
-
-        drawImGui(commandEncoder.get(), renderView);
-
-        // renderPassEncoder->end();
+        renderPassDescriptors.push_back(renderPassDescriptor);
     }
+
+    auto renderPassEncoder = vulkanCommandEncoder->beginRenderPass(renderPassDescriptors);
+    VulkanRenderPassEncoder* vulkanRenderPassEncoder = downcast(renderPassEncoder.get());
+    vulkanRenderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
+    vulkanRenderPassEncoder->setScissor(0, 0, m_width, m_height);
+
+    // first pass
+    vulkanRenderPassEncoder->setPipeline(m_pipeline.get());
+    vulkanRenderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
+    vulkanRenderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
+    vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
+    vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
+
+    // second pass
+    vulkanRenderPassEncoder->nextPass();
+    vulkanRenderPassEncoder->setPipeline(m_pipeline.get());
+    vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
+    vulkanRenderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
+    vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+
+    vulkanRenderPassEncoder->end();
+
+    //    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
@@ -363,7 +369,8 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    // descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -387,8 +394,10 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment |
-                       TextureUsageFlagBits::kTextureBinding;
+    // descriptor.usage = TextureUsageFlagBits::kColorAttachment |
+    //                    TextureUsageFlagBits::kTextureBinding |
+    //                    TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -412,7 +421,8 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    // descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -869,17 +879,17 @@ void Deferred2Sample::createCompositionBindingGroupLayout()
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
     positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    positionSamplerBindingLayout.withTexture = true;
+    // positionSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 1;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    normalSamplerBindingLayout.withTexture = true;
+    // normalSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout albedoSamplerBindingLayout{};
     albedoSamplerBindingLayout.index = 2;
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    albedoSamplerBindingLayout.withTexture = true;
+    // albedoSamplerBindingLayout.withTexture = true;
 
     BufferBindingLayout uniformBufferBindingLayout{};
     uniformBufferBindingLayout.index = 3;
@@ -1142,12 +1152,9 @@ void Deferred2Sample::createPipeline()
     auto vulkanDevice = downcast(m_device.get());
 
     RenderPipelineDescriptor offscreenRenderPipelineDescriptor = createOffscreenRenderPipelineDescriptor();
-
-    m_offscreen.pipeline = vulkanDevice->createRenderPipeline(offscreenRenderPipelineDescriptor);
-
     RenderPipelineDescriptor compositionRenderPipelineDescriptor = createCompositionRenderPipelineDescriptor();
 
-    m_composition.pipeline = vulkanDevice->createRenderPipeline(compositionRenderPipelineDescriptor);
+    m_pipeline = vulkanDevice->createRenderPipeline({ offscreenRenderPipelineDescriptor, compositionRenderPipelineDescriptor });
 }
 
 void Deferred2Sample::createCommandBuffer()

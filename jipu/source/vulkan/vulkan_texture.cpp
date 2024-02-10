@@ -254,6 +254,10 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
     {
         flags |= TextureUsageFlagBits::kColorAttachment;
     }
+    if (usages & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)
+    {
+        flags |= TextureUsageFlagBits::kInputAttachment;
+    }
 
     return flags;
 }
@@ -286,6 +290,10 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     {
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
+    if (usages & TextureUsageFlagBits::kInputAttachment)
+    {
+        flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    }
 
     return flags;
 }
@@ -305,6 +313,8 @@ VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage)
     }
     if (usage & TextureUsageFlagBits::kColorAttachment)
     {
+        if (usage & TextureUsageFlagBits::kInputAttachment)
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
     if (usage & TextureUsageFlagBits::kStorageBinding)

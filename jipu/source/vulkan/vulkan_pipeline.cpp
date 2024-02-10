@@ -152,40 +152,47 @@ std::vector<VkPipelineColorBlendAttachmentState> generateColorBlendAttachmentSta
     return colorBlendAttachmentStates;
 }
 
-VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor)
+std::vector<VulkanRenderPassDescriptor> generateVulkanRenderPassDescriptor(const std::vector<RenderPipelineDescriptor>& descriptors)
 {
     // Refer to render pass compatibility (https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility)
-    VulkanRenderPassDescriptor renderPassDescriptor{};
 
-    uint32_t targetSize = static_cast<uint32_t>(descriptor.fragment.targets.size());
-    renderPassDescriptor.colorAttachments.resize(targetSize);
-    for (auto i = 0; i < targetSize; ++i)
+    std::vector<VulkanRenderPassDescriptor> renderPassDescriptors{};
+    for (const auto& descriptor : descriptors)
     {
-        const auto& target = descriptor.fragment.targets[i];
-        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
-        vulkanColorAttachment.format = target.format;
-        vulkanColorAttachment.loadOp = LoadOp::kClear;
-        vulkanColorAttachment.storeOp = StoreOp::kStore;
-        vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        vulkanColorAttachment.finalLayout = GenerateFinalImageLayout(TextureUsageFlagBits::kColorAttachment);
+        VulkanRenderPassDescriptor renderPassDescriptor{};
+
+        uint32_t targetSize = static_cast<uint32_t>(descriptor.fragment.targets.size());
+        renderPassDescriptor.colorAttachments.resize(targetSize);
+        for (auto i = 0; i < targetSize; ++i)
+        {
+            const auto& target = descriptor.fragment.targets[i];
+            VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
+            vulkanColorAttachment.format = target.format;
+            vulkanColorAttachment.loadOp = LoadOp::kClear;
+            vulkanColorAttachment.storeOp = StoreOp::kStore;
+            vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            vulkanColorAttachment.finalLayout = GenerateFinalImageLayout(TextureUsageFlagBits::kColorAttachment);
+        }
+
+        if (descriptor.depthStencil.has_value())
+        {
+            const DepthStencilStage depthStencilStage = descriptor.depthStencil.value();
+            VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
+            vulkanDepthStencilAttachment.format = depthStencilStage.format;
+            vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;
+            vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;
+            vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;
+            vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare;
+
+            renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+        }
+
+        renderPassDescriptor.sampleCount = descriptor.rasterization.sampleCount;
+
+        renderPassDescriptors.push_back(renderPassDescriptor);
     }
 
-    if (descriptor.depthStencil.has_value())
-    {
-        const DepthStencilStage depthStencilStage = descriptor.depthStencil.value();
-        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilStage.format;
-        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;
-        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;
-        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;
-        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare;
-
-        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
-    }
-
-    renderPassDescriptor.sampleCount = descriptor.rasterization.sampleCount;
-
-    return renderPassDescriptor;
+    return renderPassDescriptors;
 }
 
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
@@ -195,7 +202,7 @@ VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const Ren
 }
 
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const std::vector<RenderPipelineDescriptor>& descriptors)
-    : RenderPipeline(vulkanDevice, {})
+    : RenderPipeline(vulkanDevice, descriptors)
 {
     initialize(descriptors);
 }
@@ -226,6 +233,11 @@ VkPipeline VulkanRenderPipeline::getVkPipeline(uint32_t index) const
 
 void VulkanRenderPipeline::initialize(const std::vector<RenderPipelineDescriptor>& descriptors)
 {
+    auto vulkanDevice = downcast(m_device);
+
+    std::vector<VulkanRenderPassDescriptor> renderPassDescriptors = generateVulkanRenderPassDescriptor(descriptors);
+    VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptors);
+
     for (auto i = 0; i < descriptors.size(); ++i)
     {
         const auto& descriptor = descriptors[i];
@@ -315,11 +327,6 @@ void VulkanRenderPipeline::initialize(const std::vector<RenderPipelineDescriptor
         dynamicStateCreateInfo.dynamicStateCount = dynamicStates.size();
         dynamicStateCreateInfo.pDynamicStates = dynamicStates.data();
 
-        auto vulkanDevice = downcast(m_device);
-
-        VulkanRenderPassDescriptor renderPassDescriptor = generateVulkanRenderPassDescriptor(descriptor);
-        VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass({ renderPassDescriptor });
-
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = shaderStages.size();
@@ -334,7 +341,7 @@ void VulkanRenderPipeline::initialize(const std::vector<RenderPipelineDescriptor
         pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
         pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
         pipelineInfo.renderPass = vulkanRenderPass->getVkRenderPass();
-        pipelineInfo.subpass = 0;
+        pipelineInfo.subpass = i;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
         pipelineInfo.basePipelineIndex = -1;              // Optional
 

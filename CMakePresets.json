@@ -307,6 +307,16 @@
 			"cacheVariables": {
 				"ENABLE_EXPERIMENTAL": true
 			}
+		},
+		{
+			"name": "arm64-osx-xcode-debug-experimental",
+			"inherits": "arm64-osx-xcode-debug",
+			"displayName": "arm64-osx-xcode-debug-experimental",
+			"binaryDir": "${sourceDir}/build/arm64-osx-xcode-experimental/debug",
+			"installDir": "${sourceDir}/install/arm64-osx-xcode-experimental/debug",
+			"cacheVariables": {
+				"ENABLE_EXPERIMENTAL": true
+			}
 		}
 	],
 	"buildPresets": [
@@ -403,6 +413,11 @@
 		{
 			"name": "arm64-osx-ninja-debug-experimental",
 			"configurePreset": "arm64-osx-ninja-debug-experimental",
+			"configuration": "Debug"
+		},
+		{
+			"name": "arm64-osx-xcode-debug-experimental",
+			"configurePreset": "arm64-osx-xcode-debug-experimental",
 			"configuration": "Debug"
 		}
 	],
@@ -530,6 +545,11 @@
 			"name": "arm64-osx-ninja-debug-experimental",
 			"inherits": "arm64-osx-ninja-debug",
 			"configurePreset": "arm64-osx-ninja-debug-experimental"
+		},
+		{
+			"name": "arm64-osx-xcode-debug-experimental",
+			"inherits": "arm64-osx-xcode-debug",
+			"configurePreset": "arm64-osx-xcode-debug-experimental"
 		}
 	]
 }

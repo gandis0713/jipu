@@ -10,17 +10,24 @@ Pipeline::Pipeline(Device* device)
 {
 }
 
-PipelineLayout* Pipeline::getPipelineLayout() const
-{
-    return m_pipelineLayout;
-}
+
 
 // RenderPipeline
 RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor)
     : Pipeline(device)
-    , m_descriptor(descriptor)
+    , m_descriptors{descriptor}
 {
-    m_pipelineLayout = m_descriptor.layout;
+}
+
+RenderPipeline::RenderPipeline(Device* device, const std::vector<RenderPipelineDescriptor>& descriptors)
+    : Pipeline(device)
+    , m_descriptors(descriptors)
+{
+}
+
+PipelineLayout* RenderPipeline::getPipelineLayout(uint32_t index) const
+{
+    return m_descriptors[index].layout;
 }
 
 // ComputePipeline
@@ -28,7 +35,11 @@ ComputePipeline::ComputePipeline(Device* device, const ComputePipelineDescriptor
     : Pipeline(device)
     , m_descriptor(descriptor)
 {
-    m_pipelineLayout = m_descriptor.layout;
+}
+
+PipelineLayout* ComputePipeline::getPipelineLayout(uint32_t index) const
+{
+    return m_descriptor.layout;
 }
 
 } // namespace jipu

@@ -139,7 +139,6 @@ private:
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -161,7 +160,6 @@ private:
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-        std::unique_ptr<Pipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
@@ -177,6 +175,7 @@ private:
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
+    std::unique_ptr<Pipeline> m_pipeline = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 10000;

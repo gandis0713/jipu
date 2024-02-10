@@ -5,6 +5,8 @@
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
 
+#include "utils/cast.h"
+
 namespace jipu
 {
 
@@ -44,11 +46,18 @@ public:
 
     void end() override;
 
+public:
+    void nextPass();
+
 private:
     void initialize(const std::vector<RenderPassDescriptor>& descriptors);
     VulkanRenderPass* getVulkanRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
     VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const std::vector<RenderPassDescriptor>& descriptors);
+
+private:
+    uint32_t m_passIndex = 0;
 };
+DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

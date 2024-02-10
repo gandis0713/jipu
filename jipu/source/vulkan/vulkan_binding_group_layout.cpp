@@ -31,7 +31,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     {
         const auto& sampler = descriptor.samplers[i];
         layoutBindings[bufferSize + i] = { .binding = sampler.index,
-                                           .descriptorType = sampler.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLER,
+                                           .descriptorType = sampler.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
                                            .descriptorCount = 1,
                                            .stageFlags = ToVkShaderStageFlags(sampler.stages),
                                            .pImmutableSamplers = nullptr };
@@ -74,8 +74,7 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
 {
     switch (type)
     {
-    case BufferBindingType::kUniform:
-    {
+    case BufferBindingType::kUniform: {
         if (dynamicOffset)
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         else

@@ -4,6 +4,7 @@
 
 #include "jipu/command_encoder.h"
 #include "jipu/render_pass_encoder.h"
+#include "utils/cast.h"
 #include "vulkan_api.h"
 
 namespace jipu
@@ -30,5 +31,6 @@ public:
 public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
 };
+DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 
 } // namespace jipu

@@ -34,34 +34,38 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
     return layout;
 }
 
-std::vector<VkClearValue> generateClearColor(const RenderPassDescriptor& descriptor)
+std::vector<VkClearValue> generateClearColor(const std::vector<RenderPassDescriptor>& descriptors)
 {
-    auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments) {
-        for (auto i = 0; i < colorAttachments.size(); ++i)
-        {
-            const auto& colorAttachment = colorAttachments[i];
-            if (colorAttachment.loadOp == LoadOp::kClear)
-            {
-                VkClearValue colorClearValue{};
-                for (uint32_t i = 0; i < 4; ++i)
-                {
-                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
-                }
-                clearValues.push_back(colorClearValue);
-            }
-        }
-    };
-
     std::vector<VkClearValue> clearValues{};
-    addColorClearValue(clearValues, descriptor.colorAttachments);
-    if (descriptor.sampleCount > 1)
+    
+    for(const auto& descriptor: descriptors)
     {
-        addColorClearValue(clearValues, descriptor.colorAttachments);
-    }
+        auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments) {
+            for (auto i = 0; i < colorAttachments.size(); ++i)
+            {
+                const auto& colorAttachment = colorAttachments[i];
+                if (colorAttachment.loadOp == LoadOp::kClear)
+                {
+                    VkClearValue colorClearValue{};
+                    for (uint32_t i = 0; i < 4; ++i)
+                    {
+                        colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
+                    }
+                    clearValues.push_back(colorClearValue);
+                }
+            }
+        };
 
-    if (descriptor.depthStencilAttachment.has_value())
+        addColorClearValue(clearValues, descriptor.colorAttachments);
+        if (descriptor.sampleCount > 1)
+        {
+            addColorClearValue(clearValues, descriptor.colorAttachments);
+        }
+    }
+    
+    if (descriptors[0].depthStencilAttachment.has_value())
     {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        auto depthStencilAttachment = descriptors[0].depthStencilAttachment.value();
         if (depthStencilAttachment.depthLoadOp == LoadOp::kClear || depthStencilAttachment.stencilLoadOp == LoadOp::kClear)
         {
             VkClearValue depthStencilClearValue{};
@@ -98,14 +102,14 @@ void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: not casting to RenderPipeline.
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline());
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline(m_passIndex));
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout(m_passIndex));
     auto vulkanBindingGroup = downcast(bindingGroup);
     VkDescriptorSet set = vulkanBindingGroup->getVkDescriptorSet();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
@@ -208,11 +212,20 @@ void VulkanRenderPassEncoder::end()
     vulkanCommandBuffer->setSignalPipelineStage(flags);
 }
 
+void VulkanRenderPassEncoder::nextPass()
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+
+    vulkanDevice->vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
+    ++m_passIndex;
+}
+
 void VulkanRenderPassEncoder::initialize(const std::vector<RenderPassDescriptor>& descriptors)
 {
     auto vulkanRenderPass = getVulkanRenderPass(descriptors);
     auto vulkanFrameBuffer = getVulkanFramebuffer(vulkanRenderPass, descriptors);
-    std::vector<VkClearValue> clearValues = generateClearColor(m_descriptor);
+    std::vector<VkClearValue> clearValues = generateClearColor(descriptors);
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
