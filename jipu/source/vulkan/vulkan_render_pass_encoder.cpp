@@ -36,7 +36,7 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 
 } // namespace
 
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
     : RenderPassEncoder(commandBuffer, descriptor)
 {
     // get render pass
@@ -108,8 +108,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     auto vulkanFrameBuffer = vulkanDevice->getFrameBuffer(framebufferDescriptor);
 
     // get clear color
-    auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments)
-    {
+    auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments) {
         for (auto i = 0; i < colorAttachments.size(); ++i)
         {
             const auto& colorAttachment = colorAttachments[i];

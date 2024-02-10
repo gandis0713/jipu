@@ -26,8 +26,7 @@ enum class StoreOp : uint8_t
     kStore,
 };
 
-union ColorClearValue
-{
+union ColorClearValue {
     float float32[4];
     int32_t int32[4];
     uint32_t uint32[4];
@@ -58,7 +57,7 @@ struct DepthStencilAttachment
     DepthStencilClearValue clearValue{};
 };
 
-struct RenderPassEncoderDescriptor
+struct RenderPassDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
@@ -75,7 +74,7 @@ class JIPU_EXPORT RenderPassEncoder
 {
 public:
     RenderPassEncoder() = delete;
-    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
     virtual ~RenderPassEncoder() = default;
 
     virtual void setPipeline(Pipeline* pipeline) = 0;
@@ -109,7 +108,7 @@ protected:
     CommandBuffer* m_commandBuffer = nullptr;
     Pipeline* m_pipeline = nullptr;
 
-    RenderPassEncoderDescriptor m_descriptor{};
+    RenderPassDescriptor m_descriptor{};
 };
 
 } // namespace jipu

@@ -229,8 +229,8 @@ void ParticleSample::draw()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        ComputePassEncoderDescriptor computePassEncoderDescriptor{};
-        std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassEncoderDescriptor);
+        ComputePassDescriptor computePassDescriptor{};
+        std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
         computePassEncoder->setPipeline(m_computePipeline.get());
         computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
         computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
@@ -259,11 +259,11 @@ void ParticleSample::draw()
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
+        RenderPassDescriptor renderPassDescriptor{};
+        renderPassDescriptor.colorAttachments = { colorAttachment };
+        renderPassDescriptor.sampleCount = m_sampleCount;
 
-        std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.

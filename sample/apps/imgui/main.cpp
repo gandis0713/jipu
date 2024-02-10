@@ -116,7 +116,7 @@ void ImGuiSample::draw()
         attachment.renderView = renderView;
         attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
+        RenderPassDescriptor renderPassDescriptor;
         renderPassDescriptor.sampleCount = m_sampleCount;
         renderPassDescriptor.colorAttachments = { attachment };
 

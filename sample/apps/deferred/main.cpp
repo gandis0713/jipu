@@ -400,12 +400,12 @@ void DeferredSample::draw()
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment };
-        renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
-        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
+        RenderPassDescriptor renderPassDescriptor{};
+        renderPassDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment };
+        renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
+        renderPassDescriptor.sampleCount = m_sampleCount;
 
-        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
         renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
@@ -433,12 +433,12 @@ void DeferredSample::draw()
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-        renderPassEncoderDescriptor.depthStencilAttachment = depthStencilAttachment;
-        renderPassEncoderDescriptor.sampleCount = m_sampleCount;
+        RenderPassDescriptor renderPassDescriptor{};
+        renderPassDescriptor.colorAttachments = { colorAttachment };
+        renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
+        renderPassDescriptor.sampleCount = m_sampleCount;
 
-        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_composition.pipeline.get());
         renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
         renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());

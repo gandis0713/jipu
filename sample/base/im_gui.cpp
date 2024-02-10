@@ -439,11 +439,11 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.colorAttachments = { colorAttachment };
-        renderPassEncoderDescriptor.sampleCount = 1;
+        RenderPassDescriptor renderPassDescriptor{};
+        renderPassDescriptor.colorAttachments = { colorAttachment };
+        renderPassDescriptor.sampleCount = 1;
 
-        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_pipeline.get());
         renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);

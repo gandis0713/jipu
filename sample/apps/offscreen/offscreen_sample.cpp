@@ -127,7 +127,7 @@ void OffscreenSample::draw()
         attachment.renderView = m_offscreen.renderTextureView.get();
         attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
+        RenderPassDescriptor renderPassDescriptor;
         renderPassDescriptor.sampleCount = m_sampleCount;
         renderPassDescriptor.colorAttachments = { attachment };
 
@@ -156,7 +156,7 @@ void OffscreenSample::draw()
         attachment.renderView = renderView;
         attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
+        RenderPassDescriptor renderPassDescriptor;
         renderPassDescriptor.sampleCount = m_sampleCount;
         renderPassDescriptor.colorAttachments = { attachment };
 

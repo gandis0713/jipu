@@ -296,11 +296,11 @@ void OBJModelSample::draw()
                                                    .stencilStoreOp = StoreOp::kDontCare,
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
-    RenderPassEncoderDescriptor renderPassEncoderDescriptor{ .colorAttachments = colorAttachments,
-                                                             .depthStencilAttachment = depthStencilAttachment,
-                                                             .sampleCount = m_sampleCount };
+    RenderPassDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
+                                               .depthStencilAttachment = depthStencilAttachment,
+                                               .sampleCount = m_sampleCount };
 
-    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassEncoderDescriptor);
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
     renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
