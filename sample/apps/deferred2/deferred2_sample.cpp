@@ -369,8 +369,7 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    // descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
-    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -394,10 +393,7 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    // descriptor.usage = TextureUsageFlagBits::kColorAttachment |
-    //                    TextureUsageFlagBits::kTextureBinding |
-    //                    TextureUsageFlagBits::kInputAttachment;
-    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -421,8 +417,7 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    // descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
-    descriptor.usage = TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
 
     m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
 }
@@ -879,17 +874,17 @@ void Deferred2Sample::createCompositionBindingGroupLayout()
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
     positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    // positionSamplerBindingLayout.withTexture = true;
+    positionSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 1;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    // normalSamplerBindingLayout.withTexture = true;
+    normalSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout albedoSamplerBindingLayout{};
     albedoSamplerBindingLayout.index = 2;
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    // albedoSamplerBindingLayout.withTexture = true;
+    albedoSamplerBindingLayout.withTexture = true;
 
     BufferBindingLayout uniformBufferBindingLayout{};
     uniformBufferBindingLayout.index = 3;

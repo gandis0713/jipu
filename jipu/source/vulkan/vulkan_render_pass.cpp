@@ -109,9 +109,9 @@ void VulkanRenderPass::initialize(const std::vector<VulkanRenderPassDescriptor>&
         subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
         // color attachments
-        firstPassColorAttachmentReferences[0] = { 0, attachmentDescriptions[0].finalLayout };
-        firstPassColorAttachmentReferences[1] = { 1, attachmentDescriptions[0].finalLayout };
-        firstPassColorAttachmentReferences[2] = { 2, attachmentDescriptions[0].finalLayout };
+        firstPassColorAttachmentReferences[0] = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        firstPassColorAttachmentReferences[1] = { 1, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        firstPassColorAttachmentReferences[2] = { 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
 
         // if (descriptors[0].sampleCount > 1)
         // {
@@ -156,12 +156,9 @@ void VulkanRenderPass::initialize(const std::vector<VulkanRenderPassDescriptor>&
 
         VkAttachmentReference depthAttachment{ 4, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
-        secondPassInputAttachmentReferences[0] = { 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-        secondPassInputAttachmentReferences[1] = { 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-        secondPassInputAttachmentReferences[2] = { 3, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-        // secondPassInputAttachmentReferences[0] = { 0, VK_IMAGE_LAYOUT_GENERAL }; // TODO: fix me
-        // secondPassInputAttachmentReferences[1] = { 1, VK_IMAGE_LAYOUT_GENERAL };
-        // secondPassInputAttachmentReferences[2] = { 2, VK_IMAGE_LAYOUT_GENERAL };
+        secondPassInputAttachmentReferences[0] = { 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+        secondPassInputAttachmentReferences[1] = { 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+        secondPassInputAttachmentReferences[2] = { 2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 
         subpassDescription.colorAttachmentCount = static_cast<uint32_t>(secondPassColorAttachmentReferences.size());
         subpassDescription.pColorAttachments = secondPassColorAttachmentReferences.data();

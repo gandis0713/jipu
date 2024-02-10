@@ -103,7 +103,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = sampler.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = samplerLayout.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        descriptorWrite.descriptorType = samplerLayout.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLER;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
@@ -139,7 +139,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = texture.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE | VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
