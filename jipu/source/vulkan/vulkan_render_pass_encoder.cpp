@@ -37,8 +37,8 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 std::vector<VkClearValue> generateClearColor(const std::vector<RenderPassDescriptor>& descriptors)
 {
     std::vector<VkClearValue> clearValues{};
-    
-    for(const auto& descriptor: descriptors)
+
+    for (const auto& descriptor : descriptors)
     {
         auto addColorClearValue = [](std::vector<VkClearValue>& clearValues, const std::vector<ColorAttachment>& colorAttachments) {
             for (auto i = 0; i < colorAttachments.size(); ++i)
@@ -62,7 +62,7 @@ std::vector<VkClearValue> generateClearColor(const std::vector<RenderPassDescrip
             addColorClearValue(clearValues, descriptor.colorAttachments);
         }
     }
-    
+
     if (descriptors[0].depthStencilAttachment.has_value())
     {
         auto depthStencilAttachment = descriptors[0].depthStencilAttachment.value();
@@ -316,14 +316,14 @@ VulkanFramebuffer* VulkanRenderPassEncoder::getVulkanFramebuffer(VulkanRenderPas
         }
     }
 
-    for (const auto& descriptor : descriptors) // TODO: fix me
+    for (const auto& descriptor : descriptors) // TODO: fix for subpass
     {
         if (descriptor.depthStencilAttachment.has_value())
         {
             const DepthStencilAttachment depthStencilAttachment = descriptor.depthStencilAttachment.value();
             textureViews.push_back(depthStencilAttachment.textureView);
 
-            spdlog::debug("added texture views for framebuffer.");
+            // spdlog::debug("added texture views for framebuffer.");
 
             break;
         }

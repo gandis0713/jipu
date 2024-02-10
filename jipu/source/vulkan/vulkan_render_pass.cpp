@@ -71,7 +71,7 @@ void VulkanRenderPass::initialize(const std::vector<VulkanRenderPassDescriptor>&
         }
     }
 
-    for (auto i = 0; i < descriptors.size(); ++i) // TODO: fix me
+    for (auto i = 0; i < descriptors.size(); ++i) // TODO: fix for subpass
     {
         const auto& descriptor = descriptors[i];
 
@@ -89,7 +89,7 @@ void VulkanRenderPass::initialize(const std::vector<VulkanRenderPassDescriptor>&
             depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             attachmentDescriptions.push_back(depthAttachmentDescription);
 
-            spdlog::debug("create depth render pass in render pass.");
+            // spdlog::debug("create depth render pass in render pass.");
             break;
         }
     }
