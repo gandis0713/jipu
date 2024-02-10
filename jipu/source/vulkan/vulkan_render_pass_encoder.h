@@ -46,8 +46,8 @@ public:
 
 private:
     void initialize(const std::vector<RenderPassDescriptor>& descriptors);
-    VulkanRenderPass* getVulkanRenderPass(const RenderPassDescriptor& descriptor);
-    VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const RenderPassDescriptor& descriptor);
+    VulkanRenderPass* getVulkanRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
+    VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const std::vector<RenderPassDescriptor>& descriptors);
 };
 
 // Convert Helper
