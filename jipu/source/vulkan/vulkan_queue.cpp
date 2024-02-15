@@ -95,10 +95,12 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
 
     swapchain->present(this);
 }
+
 VkQueue VulkanQueue::getVkQueue() const
 {
     return m_queue;
 }
+
 std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);
