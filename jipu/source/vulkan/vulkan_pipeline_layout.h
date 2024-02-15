@@ -18,6 +18,9 @@ public:
     VkPipelineLayout getVkPipelineLayout() const;
 
 private:
+    VulkanDevice* m_device = nullptr;
+
+private:
     VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
 };
 

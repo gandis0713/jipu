@@ -8,7 +8,7 @@ namespace jipu
 {
 
 VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor)
-    : PipelineLayout(device, descriptor)
+    : m_device(device)
 {
     std::vector<VkDescriptorSetLayout> layouts{};
     layouts.resize(descriptor.layouts.size());
