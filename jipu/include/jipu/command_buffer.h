@@ -23,20 +23,11 @@ class Device;
 class JIPU_EXPORT CommandBuffer
 {
 public:
-    CommandBuffer() = delete;
-    CommandBuffer(Device* device, const CommandBufferDescriptor& descriptor);
     virtual ~CommandBuffer() = default;
 
     virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
 
 public:
-    CommandBufferUsage getUsage() const;
-
-public:
-    Device* getDevice() const;
-
-protected:
-    Device* m_device = nullptr;
-    CommandBufferDescriptor m_descriptor = {};
+    virtual CommandBufferUsage getUsage() const = 0;
 };
 } // namespace jipu
