@@ -13,7 +13,7 @@ void VulkanSurface::createSurfaceKHR()
         .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
         .pNext = nullptr,
         .flags = 0,
-        .window = static_cast<ANativeWindow*>(m_windowHandle)
+        .window = static_cast<ANativeWindow*>(m_descriptor.windowHandle)
     };
 
     VulkanDriver* driver = downcast(m_driver);

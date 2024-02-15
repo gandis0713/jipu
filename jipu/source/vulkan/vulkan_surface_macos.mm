@@ -15,7 +15,7 @@ void VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {
-        NSView* nsView = (__bridge NSView*)m_windowHandle;
+        NSView* nsView = (__bridge NSView*)m_descriptor.windowHandle;
         if (nsView == nil)
         {
             throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
@@ -50,7 +50,7 @@ void VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool
     {
-        NSView* nsView = (__bridge NSView*)m_windowHandle;
+        NSView* nsView = (__bridge NSView*)m_descriptor.windowHandle;
         if (nsView == nil)
         {
             throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
