@@ -56,8 +56,6 @@ class Device;
 class JIPU_EXPORT BindingGroupLayout
 {
 public:
-    BindingGroupLayout() = delete;
-    BindingGroupLayout(Device* device, const BindingGroupLayoutDescriptor& descriptor);
     virtual ~BindingGroupLayout() = default;
 };
 

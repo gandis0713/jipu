@@ -48,8 +48,6 @@ class Device;
 class JIPU_EXPORT BindingGroup
 {
 public:
-    BindingGroup() = delete;
-    BindingGroup(Device* device, const BindingGroupDescriptor& descriptor);
     virtual ~BindingGroup() = default;
 };
 

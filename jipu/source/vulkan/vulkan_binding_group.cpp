@@ -13,8 +13,7 @@ namespace jipu
 {
 
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
-    : BindingGroup(device, descriptor)
-    , m_device(device)
+    : m_device(device)
     , m_descriptor(descriptor)
 {
     auto vulkanDevice = downcast(device);

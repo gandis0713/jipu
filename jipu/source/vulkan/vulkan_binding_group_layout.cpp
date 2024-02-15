@@ -8,8 +8,7 @@ namespace jipu
 {
 
 VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
-    : BindingGroupLayout(device, descriptor)
-    , m_device(device)
+    : m_device(device)
     , m_descriptor(descriptor)
 {
 
