@@ -28,12 +28,13 @@ public:
     static std::unique_ptr<Driver> create(const DriverDescriptor& descriptor);
 
 public:
-    Driver() = delete;
-    Driver(const DriverDescriptor& descriptor);
     virtual ~Driver();
 
     Driver(const Driver&) = delete;
     Driver& operator=(const Driver&) = delete;
+
+protected:
+    Driver();
 
 public:
     virtual std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() = 0;
