@@ -19,6 +19,9 @@ public:
     VkShaderModule getVkShaderModule() const;
 
 private:
+    VulkanDevice* m_device = nullptr;
+
+private:
     VkShaderModule m_shaderModule = VK_NULL_HANDLE;
 };
 
