@@ -417,8 +417,7 @@ void DeferredSample::draw()
     }
     // second pass
     {
-        int targetIndex = m_swapchain->acquireNextTexture();
-        auto renderView = m_swapchain->getTextureViews()[targetIndex];
+        auto renderView = m_swapchain->acquireNextTexture();
 
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;

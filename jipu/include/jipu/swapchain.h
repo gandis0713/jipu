@@ -42,38 +42,21 @@ struct SwapchainDescriptor
 class JIPU_EXPORT Swapchain
 {
 public:
-    Swapchain() = delete;
-    Swapchain(Device* device, const SwapchainDescriptor& descriptor) noexcept;
     virtual ~Swapchain() noexcept = default;
 
     Swapchain(const Swapchain&) = delete;
     Swapchain& operator=(const Swapchain&) = delete;
 
-    virtual void present(Queue* queue) = 0;
-    virtual int acquireNextTexture() = 0;
-
-    std::vector<Texture*> getTextures() const;
-    TextureView* getTextureView(uint32_t index);
-    std::vector<TextureView*> getTextureViews() const;
-
-    TextureFormat getTextureFormat() const;
-    PresentMode getPresentMode() const;
-
-    uint32_t getWidth() const;
-    uint32_t getHeight() const;
-
 protected:
-    Device* m_device = nullptr;
-    Surface* m_surface = nullptr;
+    Swapchain() = default;
 
-    std::vector<std::unique_ptr<Texture>> m_textures{};
-    std::vector<std::unique_ptr<TextureView>> m_textureViews{};
+public:
+    virtual TextureFormat getTextureFormat() const = 0;
+    virtual uint32_t getWidth() const = 0;
+    virtual uint32_t getHeight() const = 0;
 
-    TextureFormat m_textureFormat{ TextureFormat::kUndefined };
-    PresentMode m_presentMode{ PresentMode::kUndefined };
-    ColorSpace m_colorSpace{ ColorSpace::kUndefined };
-    uint32_t m_width{ 0 };
-    uint32_t m_height{ 0 };
+    virtual void present(Queue* queue) = 0;
+    virtual TextureView* acquireNextTexture() = 0;
 };
 
 } // namespace jipu

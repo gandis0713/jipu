@@ -277,15 +277,14 @@ void OBJModelSample::updateImGui()
 
 void OBJModelSample::draw()
 {
-    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
-    int nextImageIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
-                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
+                            .resolveView = m_sampleCount > 1 ? renderView : nullptr,
                             .loadOp = LoadOp::kClear,
                             .storeOp = StoreOp::kStore,
                             .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -310,7 +309,7 @@ void OBJModelSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), swapchainTextureViews[nextImageIndex]);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
