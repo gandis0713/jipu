@@ -13,8 +13,9 @@ namespace jipu
 {
 
 // Vulkan Compute Pipeline
-VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const ComputePipelineDescriptor& descriptor)
-    : ComputePipeline(vulkanDevice, descriptor)
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
 {
     initialize();
 }
@@ -23,6 +24,11 @@ VulkanComputePipeline::~VulkanComputePipeline()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+}
+
+PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
+{
+    return m_descriptor.layout;
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -58,16 +64,21 @@ void VulkanComputePipeline::initialize()
 }
 
 // Vulkan Render Pipeline
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
-    : RenderPipeline(vulkanDevice, descriptor)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
 {
     initialize();
 }
 
 VulkanRenderPipeline::~VulkanRenderPipeline()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+    m_device->vkAPI.DestroyPipeline(m_device->getVkDevice(), m_pipeline, nullptr);
+}
+
+PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
+{
+    return m_descriptor.layout;
 }
 
 VkPipeline VulkanRenderPipeline::getVkPipeline() const
@@ -229,8 +240,6 @@ void VulkanRenderPipeline::initialize()
     dynamicStateCreateInfo.dynamicStateCount = sizeof(dynamicStates) / sizeof(dynamicStates[0]);
     dynamicStateCreateInfo.pDynamicStates = dynamicStates;
 
-    auto vulkanDevice = downcast(m_device);
-
     // Refer to render pass compatibility (https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility)
     VulkanRenderPassDescriptor renderPassDescriptor{};
     renderPassDescriptor.colorAttachments.resize(targetSize);
@@ -259,7 +268,7 @@ void VulkanRenderPipeline::initialize()
     }
 
     renderPassDescriptor.sampleCount = m_descriptor.rasterization.sampleCount;
-    VulkanRenderPass* vulkanRenderPass = vulkanDevice->getRenderPass(renderPassDescriptor);
+    VulkanRenderPass* vulkanRenderPass = m_device->getRenderPass(renderPassDescriptor);
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertexStageInfo, fragmentStageInfo };
 
@@ -281,7 +290,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1;              // Optional
 
-    if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
+    if (m_device->vkAPI.CreateGraphicsPipelines(m_device->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }

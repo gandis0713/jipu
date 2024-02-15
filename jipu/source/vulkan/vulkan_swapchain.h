@@ -1,7 +1,10 @@
 #pragma once
 
 #include "jipu/swapchain.h"
+
 #include "vulkan_api.h"
+#include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include "utils/cast.h"
 
@@ -12,7 +15,8 @@ namespace jipu
 {
 
 class VulkanDevice;
-
+class VulkanTexture;
+class VulkanTextureView;
 class VulkanSwapchain : public Swapchain
 {
 public:
@@ -23,8 +27,12 @@ public:
     VulkanSwapchain(const Swapchain&) = delete;
     VulkanSwapchain& operator=(const Swapchain&) = delete;
 
+    TextureFormat getTextureFormat() const override;
+    uint32_t getWidth() const override;
+    uint32_t getHeight() const override;
+
     void present(Queue* queue) override;
-    int acquireNextTexture() override;
+    TextureView* acquireNextTexture() override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
@@ -34,6 +42,16 @@ public:
 
 private:
     VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha);
+
+private:
+    VulkanDevice* m_device = nullptr;
+    const SwapchainDescriptor m_descriptor{};
+
+    std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
+    std::vector<std::unique_ptr<VulkanTextureView>> m_textureViews{};
+
+    uint32_t m_width = 0;
+    uint32_t m_height = 0;
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;

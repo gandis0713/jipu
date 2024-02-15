@@ -69,30 +69,26 @@ class Device;
 class JIPU_EXPORT Texture
 {
 public:
-    Texture() = delete;
-    Texture(Device* device, TextureDescriptor descriptor);
     virtual ~Texture() = default;
 
     Texture(const Texture&) = delete;
     Texture& operator=(const Texture&) = delete;
 
+protected:
+    Texture() = default;
+
+public:
     virtual std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) = 0;
 
 public:
-    TextureType getType() const;
-    TextureFormat getFormat() const;
-    TextureUsageFlags getUsage() const;
-    uint32_t getWidth() const;
-    uint32_t getHeight() const;
-    uint32_t getDepth() const;
-    uint32_t getMipLevels() const;
-    uint32_t getSampleCount() const;
-
-    Device* getDevice() const;
-
-protected:
-    Device* m_device = nullptr;
-    TextureDescriptor m_descriptor{};
+    virtual TextureType getType() const = 0;
+    virtual TextureFormat getFormat() const = 0;
+    virtual TextureUsageFlags getUsage() const = 0;
+    virtual uint32_t getWidth() const = 0;
+    virtual uint32_t getHeight() const = 0;
+    virtual uint32_t getDepth() const = 0;
+    virtual uint32_t getMipLevels() const = 0;
+    virtual uint32_t getSampleCount() const = 0;
 };
 
 } // namespace jipu

@@ -37,21 +37,17 @@ class Texture;
 class JIPU_EXPORT TextureView
 {
 public:
-    TextureView() = delete;
-    TextureView(Texture* texture, TextureViewDescriptor descriptor);
     virtual ~TextureView() = default;
 
-    Texture* getTexture() const;
-
-    TextureViewType getType() const;
-    uint32_t getWidth() const;
-    uint32_t getHeight() const;
-    uint32_t getMipLevels() const;
-    uint32_t getSampleCount() const;
-
 protected:
-    Texture* m_texture = nullptr;
-    TextureViewDescriptor m_descriptor{};
+    TextureView() = default;
+
+public:
+    virtual TextureViewType getType() const = 0;
+    virtual TextureAspectFlags getAspect() const = 0;
+    virtual uint32_t getWidth() const = 0;
+    virtual uint32_t getHeight() const = 0;
+    virtual uint32_t getDepth() const = 0;
 };
 
 } // namespace jipu

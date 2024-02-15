@@ -16,6 +16,10 @@ public:
     ~VulkanCommandBuffer() override;
 
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
+    CommandBufferUsage getUsage() const override;
+
+public:
+    VulkanDevice* getDevice() const;
 
 public:
     VkCommandBuffer getVkCommandBuffer() const;
@@ -25,6 +29,10 @@ public:
 
     void injectWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags stage);
     std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> ejectWaitSemaphores();
+
+private:
+    VulkanDevice* m_device = nullptr;
+    const CommandBufferDescriptor m_descriptor{};
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;

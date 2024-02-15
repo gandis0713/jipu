@@ -55,25 +55,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/binding_group_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/binding_group.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/command_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/command_buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/compute_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/render_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/physical_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/surface.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/jipu/driver.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline_layout.h

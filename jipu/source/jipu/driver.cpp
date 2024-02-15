@@ -26,9 +26,8 @@ std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
     return nullptr;
 }
 
-Driver::Driver(const DriverDescriptor& descriptor)
+Driver::Driver()
 {
-
 #if defined(__ANDROID__) || defined(ANDROID)
     std::string tag = "spdlog-android";
     auto logger = spdlog::android_logger_mt("jipu");

@@ -71,7 +71,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
 }
 
 VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
-    : Driver(descriptor)
 {
     initialize();
 }

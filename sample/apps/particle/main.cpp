@@ -244,11 +244,7 @@ void ParticleSample::draw()
 
     // encode render command
     {
-        auto swapchainImageIndex = m_swapchain->acquireNextTexture();
-        auto renderView = m_swapchain->getTextureView(swapchainImageIndex);
-
-        if (swapchainImageIndex < 0)
-            spdlog::error("swap chain: {}", swapchainImageIndex);
+        auto renderView = m_swapchain->acquireNextTexture();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);

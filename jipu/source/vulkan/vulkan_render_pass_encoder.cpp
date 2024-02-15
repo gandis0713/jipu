@@ -28,7 +28,7 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
     {
         auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
 
-        layout = downcast(renderView->getTexture())->getFinalLayout();
+        layout = downcast(renderView)->getTexture()->getFinalLayout();
     }
 
     return layout;
@@ -37,7 +37,8 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 } // namespace
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
-    : RenderPassEncoder(commandBuffer, descriptor)
+    : m_commandBuffer(commandBuffer)
+    , m_descriptor(descriptor)
 {
     // get render pass
     VulkanRenderPassDescriptor renderPassDescriptor{};
@@ -47,7 +48,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     for (auto i = 0; i < colorAttachmentSize; ++i)
     {
         const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        const auto texture = colorAttachment.renderView->getTexture();
+        const auto texture = downcast(colorAttachment.renderView)->getTexture();
         VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
         vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
@@ -60,7 +61,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     {
         const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
         VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
+        vulkanDepthStencilAttachment.format = downcast(depthStencilAttachment.textureView)->getTexture()->getFormat();
         vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
         vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
         vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
@@ -156,16 +157,14 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
+void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
-    // TODO: receive RenderPipeline from parameter.
-    m_pipeline = pipeline;
+    m_pipeline = static_cast<VulkanRenderPipeline*>(pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: not casting to RenderPipeline.
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline());
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)

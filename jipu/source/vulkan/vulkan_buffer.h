@@ -20,17 +20,23 @@ public:
     void* map() override;
     void unmap() override;
 
+    BufferUsageFlags getUsage() const override;
+    uint64_t getSize() const override;
+
+public:
     void setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags);
 
     VkBuffer getVkBuffer() const;
 
 private:
-    // VkBuffer m_buffer = VK_NULL_HANDLE;
-    // std::unique_ptr<VulkanMemory> m_memory = nullptr;
     VulkanBufferResource m_resource;
     VkPipelineStageFlags m_stageFlags = 0u;
 
     void* m_mappedPtr = nullptr;
+
+private:
+    Device* m_device = nullptr;
+    BufferDescriptor m_descriptor{};
 };
 
 DOWN_CAST(VulkanBuffer, Buffer);

@@ -11,7 +11,7 @@ void VulkanSurface::createSurfaceKHR()
 {
     VkWin32SurfaceCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-    createInfo.hwnd = (HWND)m_windowHandle;
+    createInfo.hwnd = (HWND)m_descriptor.windowHandle;
     createInfo.hinstance = GetModuleHandle(nullptr);
 
     VulkanDriver* driver = downcast(m_driver);

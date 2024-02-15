@@ -268,8 +268,7 @@ void InstancingSample::update()
 
 void InstancingSample::draw()
 {
-    auto swapchainIndex = m_swapchain->acquireNextTexture();
-    auto renderView = m_swapchain->getTextureView(swapchainIndex);
+    auto renderView = m_swapchain->acquireNextTexture();
     {
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);

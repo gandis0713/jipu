@@ -8,7 +8,8 @@ namespace jipu
 {
 
 VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
-    : BindingGroupLayout(device, descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
 {
 
     const uint64_t bufferSize = descriptor.buffers.size();
@@ -64,6 +65,51 @@ VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
     vulkanDevice->vkAPI.DestroyDescriptorSetLayout(vulkanDevice->getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
+const std::vector<BufferBindingLayout>& VulkanBindingGroupLayout::getBufferBindingLayouts() const
+{
+    return m_descriptor.buffers;
+}
+
+std::optional<BufferBindingLayout> VulkanBindingGroupLayout::getBufferBindingLayout(uint32_t index) const
+{
+    for (const auto& buffer : m_descriptor.buffers)
+    {
+        if (buffer.index == index)
+            return buffer;
+    }
+    return std::nullopt;
+}
+
+const std::vector<SamplerBindingLayout>& VulkanBindingGroupLayout::getSamplerBindingLayouts() const
+{
+    return m_descriptor.samplers;
+}
+
+std::optional<SamplerBindingLayout> VulkanBindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
+{
+    for (const auto& sampler : m_descriptor.samplers)
+    {
+        if (sampler.index == index)
+            return sampler;
+    }
+    return std::nullopt;
+}
+
+const std::vector<TextureBindingLayout>& VulkanBindingGroupLayout::getTextureBindingLayouts() const
+{
+    return m_descriptor.textures;
+}
+
+std::optional<TextureBindingLayout> VulkanBindingGroupLayout::getTextureBindingLayout(uint32_t index) const
+{
+    for (const auto& texture : m_descriptor.textures)
+    {
+        if (texture.index == index)
+            return texture;
+    }
+    return std::nullopt;
+}
+
 VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const
 {
     return m_descriptorSetLayout;
@@ -74,8 +120,7 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
 {
     switch (type)
     {
-    case BufferBindingType::kUniform:
-    {
+    case BufferBindingType::kUniform: {
         if (dynamicOffset)
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         else

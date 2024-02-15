@@ -25,24 +25,17 @@ struct QueueDescriptor
     QueueFlags flags;
 };
 
-class Device;
 class JIPU_EXPORT Queue
 {
 public:
-    Queue() = delete;
-    Queue(Device* device, const QueueDescriptor& descriptor);
     virtual ~Queue() = default;
 
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) = 0;
+protected:
+    Queue() = default;
 
 public:
-    QueueFlags getFlags() const;
-
-protected:
-    Device* m_device;
-
-    QueueFlags m_flags = 0u;
+    virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
+    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) = 0;
 };
 
 } // namespace jipu

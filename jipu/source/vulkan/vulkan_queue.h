@@ -21,6 +21,9 @@ public:
 public:
     VkQueue getVkQueue() const;
 
+protected:
+    Device* m_device;
+
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
     VkFence m_fence = VK_NULL_HANDLE;
