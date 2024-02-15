@@ -12,8 +12,7 @@ namespace jipu
 {
 
 class VulkanDevice;
-
-// Vulkan Compute Pipeline
+class VulkanPipelineLayout;
 class VulkanComputePipeline : public ComputePipeline
 {
 public:
@@ -24,10 +23,19 @@ public:
     VulkanComputePipeline(const VulkanComputePipeline&) = delete;
     VulkanComputePipeline& operator=(const VulkanComputePipeline&) = delete;
 
+public:
+    PipelineLayout* getPipelineLayout() const override;
+
+public:
     VkPipeline getVkPipeline() const;
 
 private:
     void initialize();
+
+private:
+    VulkanDevice* m_device = nullptr;
+
+    const ComputePipelineDescriptor m_descriptor{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
@@ -47,10 +55,19 @@ public:
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
     VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
+public:
+    PipelineLayout* getPipelineLayout() const override;
+
+public:
     VkPipeline getVkPipeline() const;
 
 private:
     void initialize();
+
+private:
+    VulkanDevice* m_device = nullptr;
+
+    const RenderPipelineDescriptor m_descriptor{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
