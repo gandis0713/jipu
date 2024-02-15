@@ -40,8 +40,6 @@ struct CommandEncoderDescriptor
 class JIPU_EXPORT CommandEncoder
 {
 public:
-    CommandEncoder() = delete;
-    CommandEncoder(CommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     virtual ~CommandEncoder() = default;
 
     virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassDescriptor& descriptor) = 0;
@@ -53,12 +51,6 @@ public:
     virtual void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) = 0;
 
     virtual CommandBuffer* finish() = 0;
-
-public:
-    CommandBuffer* getCommandBuffer() const;
-
-protected:
-    CommandBuffer* m_commandBuffer = nullptr;
 };
 
 } // namespace jipu

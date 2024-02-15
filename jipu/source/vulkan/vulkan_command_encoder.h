@@ -24,6 +24,12 @@ public:
     void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) override;
 
     CommandBuffer* finish() override;
+
+public:
+    VulkanCommandBuffer* getCommandBuffer() const;
+
+private:
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
 };
 
 } // namespace jipu
