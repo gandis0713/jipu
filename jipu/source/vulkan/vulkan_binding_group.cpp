@@ -14,10 +14,13 @@ namespace jipu
 
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
     : BindingGroup(device, descriptor)
+    , m_device(device)
+    , m_descriptor(descriptor)
 {
-    auto descriptorSetLayout = downcast(descriptor.layout)->getVkDescriptorSetLayout();
     auto vulkanDevice = downcast(device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto vulkanBindingGroupLayout = downcast(descriptor.layout);
+    auto descriptorSetLayout = vulkanBindingGroupLayout->getVkDescriptorSetLayout();
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -43,7 +46,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < bufferSize; ++i)
     {
         const BufferBinding& buffer = descriptor.buffers[i];
-        auto bufferLayoutOp = descriptor.layout->getBufferBindingLayout(buffer.index);
+        auto bufferLayoutOp = vulkanBindingGroupLayout->getBufferBindingLayout(buffer.index);
         if (!bufferLayoutOp.has_value())
         {
             spdlog::error("There is no buffer binding layout for that index.");
@@ -80,7 +83,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < samplerSize; ++i)
     {
         const SamplerBinding& sampler = descriptor.samplers[i];
-        auto samplerLayoutOp = descriptor.layout->getSamplerBindingLayout(sampler.index);
+        auto samplerLayoutOp = vulkanBindingGroupLayout->getSamplerBindingLayout(sampler.index);
         if (!samplerLayoutOp.has_value())
         {
             spdlog::error("There is no sampler binding layout for that index.");
@@ -119,7 +122,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < textureSize; ++i)
     {
         const TextureBinding& texture = descriptor.textures[i];
-        auto textureLayoutOp = descriptor.layout->getTextureBindingLayout(texture.index);
+        auto textureLayoutOp = vulkanBindingGroupLayout->getTextureBindingLayout(texture.index);
         if (!textureLayoutOp.has_value())
         {
             spdlog::error("There is no texture binding layout for that index.");

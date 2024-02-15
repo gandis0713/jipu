@@ -514,40 +514,22 @@ void OBJModelSample::createBindingGroupLayout()
 
 void OBJModelSample::createBindingGroup()
 {
-    const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
-    std::vector<BufferBinding> bufferBindings{};
-    bufferBindings.resize(bufferBindingLayouts.size());
-    for (auto i = 0; i < bufferBindings.size(); ++i)
-    {
-        BufferBinding bufferBinding{};
-        bufferBinding.index = bufferBindingLayouts[i].index;
-        bufferBinding.buffer = m_uniformBuffer.get();
-        bufferBinding.offset = 0;
-        bufferBinding.size = sizeof(UniformBufferObject);
+    BufferBinding bufferBinding{};
+    bufferBinding.index = 0;
+    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.offset = 0;
+    bufferBinding.size = sizeof(UniformBufferObject);
 
-        bufferBindings[i] = bufferBinding;
-    }
-
-    const std::vector<SamplerBindingLayout>& samplerBindingLayouts = m_bindingGroupLayout->getSamplerBindingLayouts();
-    std::vector<SamplerBinding> samplerBindings{};
-    samplerBindings.resize(samplerBindingLayouts.size());
-    for (auto i = 0; i < samplerBindings.size(); ++i)
-    {
-        SamplerBinding samplerBinding{};
-        samplerBinding.index = samplerBindingLayouts[i].index;
-        samplerBinding.sampler = m_imageSampler.get();
-        samplerBinding.textureView = m_imageTextureView.get();
-
-        samplerBindings[i] = samplerBinding;
-    }
-
-    std::vector<TextureBinding> textureBindings{};
+    SamplerBinding samplerBinding{};
+    samplerBinding.index = 1;
+    samplerBinding.sampler = m_imageSampler.get();
+    samplerBinding.textureView = m_imageTextureView.get();
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
-    descriptor.buffers = bufferBindings;
-    descriptor.samplers = samplerBindings;
-    descriptor.textures = textureBindings;
+    descriptor.buffers = { bufferBinding };
+    descriptor.samplers = { samplerBinding };
+    descriptor.textures = {};
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }

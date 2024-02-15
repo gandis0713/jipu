@@ -51,19 +51,6 @@ public:
     BindingGroup() = delete;
     BindingGroup(Device* device, const BindingGroupDescriptor& descriptor);
     virtual ~BindingGroup() = default;
-
-    const std::vector<BufferBinding>& getBufferBindings() const;
-    std::optional<BufferBinding> getBufferBinding(uint32_t index) const;
-
-    const std::vector<SamplerBinding>& getSamplerBindings() const;
-    std::optional<SamplerBinding> getSamplerBinding(uint32_t index) const;
-
-    const std::vector<TextureBinding>& getTextureBindings() const;
-    std::optional<TextureBinding> getTextureBinding(uint32_t index) const;
-
-protected:
-    Device* m_device = nullptr;
-    BindingGroupDescriptor m_descriptor{};
 };
 
 } // namespace jipu

@@ -15,10 +15,23 @@ public:
     VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor);
     ~VulkanBindingGroupLayout() override;
 
+    const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
+    std::optional<BufferBindingLayout> getBufferBindingLayout(uint32_t index) const;
+
+    const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
+    std::optional<SamplerBindingLayout> getSamplerBindingLayout(uint32_t index) const;
+
+    const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
+    std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
+
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
 
 private:
     VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
+
+private:
+    VulkanDevice* m_device = nullptr;
+    const BindingGroupLayoutDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
