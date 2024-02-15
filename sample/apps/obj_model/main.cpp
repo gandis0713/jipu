@@ -612,7 +612,7 @@ void OBJModelSample::createRenderPipeline()
     // Depth/Stencil stage
     DepthStencilStage depthStencilStage;
     {
-        depthStencilStage.format = m_depthStencilTextureView->getTexture()->getFormat();
+        depthStencilStage.format = m_depthStencilTexture->getFormat();
     }
 
     RenderPipelineDescriptor descriptor;

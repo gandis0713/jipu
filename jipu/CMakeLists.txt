@@ -55,9 +55,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/jipu/driver.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline_layout.h

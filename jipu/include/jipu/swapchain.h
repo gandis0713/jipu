@@ -10,10 +10,6 @@
 namespace jipu
 {
 
-class Device;
-class Surface;
-class Queue;
-
 enum class PresentMode
 {
     kUndefined = 0,
@@ -29,6 +25,7 @@ enum class ColorSpace
     kSRGBLinear,
 };
 
+class Surface;
 struct SwapchainDescriptor
 {
     TextureFormat textureFormat = TextureFormat::kUndefined;
@@ -39,6 +36,7 @@ struct SwapchainDescriptor
     Surface* surface = nullptr;
 };
 
+class Queue;
 class JIPU_EXPORT Swapchain
 {
 public:

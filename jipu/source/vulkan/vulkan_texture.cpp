@@ -10,8 +10,9 @@
 namespace jipu
 {
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
-    : Texture(device, descriptor)
+VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
     , m_owner(TextureOwner::External)
 {
     if (descriptor.width == 0 || descriptor.height == 0 || descriptor.depth == 0)
@@ -54,8 +55,9 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor)
     m_resource = vulkanResourceAllocator->createTexture(createInfo);
 }
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor)
-    : Texture(device, descriptor)
+VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, const TextureDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
     , m_resource{ image, VK_NULL_HANDLE }
     , m_owner(TextureOwner::Internal)
 {
@@ -73,6 +75,51 @@ VulkanTexture::~VulkanTexture()
 std::unique_ptr<TextureView> VulkanTexture::createTextureView(const TextureViewDescriptor& descriptor)
 {
     return std::make_unique<VulkanTextureView>(this, descriptor);
+}
+
+TextureType VulkanTexture::getType() const
+{
+    return m_descriptor.type;
+}
+
+TextureFormat VulkanTexture::getFormat() const
+{
+    return m_descriptor.format;
+}
+
+TextureUsageFlags VulkanTexture::getUsage() const
+{
+    return m_descriptor.usage;
+}
+
+uint32_t VulkanTexture::getWidth() const
+{
+    return m_descriptor.width;
+}
+
+uint32_t VulkanTexture::getHeight() const
+{
+    return m_descriptor.height;
+}
+
+uint32_t VulkanTexture::getDepth() const
+{
+    return m_descriptor.depth;
+}
+
+uint32_t VulkanTexture::getMipLevels() const
+{
+    return m_descriptor.mipLevels;
+}
+
+uint32_t VulkanTexture::getSampleCount() const
+{
+    return m_descriptor.sampleCount;
+}
+
+VulkanDevice* VulkanTexture::getDevice() const
+{
+    return m_device;
 }
 
 VkImage VulkanTexture::getVkImage() const

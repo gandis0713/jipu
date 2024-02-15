@@ -28,7 +28,7 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
     {
         auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
 
-        layout = downcast(renderView->getTexture())->getFinalLayout();
+        layout = downcast(renderView)->getTexture()->getFinalLayout();
     }
 
     return layout;
@@ -48,7 +48,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     for (auto i = 0; i < colorAttachmentSize; ++i)
     {
         const auto& colorAttachment = m_descriptor.colorAttachments[i];
-        const auto texture = colorAttachment.renderView->getTexture();
+        const auto texture = downcast(colorAttachment.renderView)->getTexture();
         VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
         vulkanColorAttachment.format = texture->getFormat();
         vulkanColorAttachment.loadOp = colorAttachment.loadOp;
@@ -61,7 +61,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     {
         const DepthStencilAttachment depthStencilAttachment = m_descriptor.depthStencilAttachment.value();
         VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
+        vulkanDepthStencilAttachment.format = downcast(depthStencilAttachment.textureView)->getTexture()->getFormat();
         vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
         vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
         vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;
