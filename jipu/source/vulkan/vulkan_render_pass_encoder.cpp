@@ -28,7 +28,7 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
     {
         auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
 
-        layout = downcast(renderView->getTexture())->getFinalLayout();
+        layout = downcast(renderView)->getTexture()->getFinalLayout();
     }
 
     return layout;
@@ -82,21 +82,22 @@ std::vector<VkClearValue> generateClearColor(const std::vector<RenderPassDescrip
 } // namespace
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
-    : RenderPassEncoder(commandBuffer, descriptor)
+    : m_commandBuffer(commandBuffer)
+    , m_descriptors{ descriptor }
 {
     initialize({ descriptor });
 }
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors)
-    : RenderPassEncoder(commandBuffer, {})
+    : m_commandBuffer(commandBuffer)
+    , m_descriptors(descriptors)
 {
     initialize(descriptors);
 }
 
-void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
+void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
-    // TODO: receive RenderPipeline from parameter.
-    m_pipeline = pipeline;
+    m_pipeline = static_cast<VulkanRenderPipeline*>(pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -255,7 +256,7 @@ VulkanRenderPass* VulkanRenderPassEncoder::getVulkanRenderPass(const std::vector
         for (auto i = 0; i < colorAttachmentSize; ++i)
         {
             const auto& colorAttachment = descriptor.colorAttachments[i];
-            const auto texture = colorAttachment.renderView->getTexture();
+            const auto texture = downcast(colorAttachment.renderView)->getTexture();
             VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
             vulkanColorAttachment.format = texture->getFormat();
             vulkanColorAttachment.loadOp = colorAttachment.loadOp;
@@ -268,7 +269,7 @@ VulkanRenderPass* VulkanRenderPassEncoder::getVulkanRenderPass(const std::vector
         {
             const DepthStencilAttachment depthStencilAttachment = descriptor.depthStencilAttachment.value();
             VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-            vulkanDepthStencilAttachment.format = depthStencilAttachment.textureView->getTexture()->getFormat();
+            vulkanDepthStencilAttachment.format = downcast(depthStencilAttachment.textureView)->getTexture()->getFormat();
             vulkanDepthStencilAttachment.depthLoadOp = depthStencilAttachment.depthLoadOp;
             vulkanDepthStencilAttachment.depthStoreOp = depthStencilAttachment.depthStoreOp;
             vulkanDepthStencilAttachment.stencilLoadOp = depthStencilAttachment.stencilLoadOp;

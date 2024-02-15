@@ -24,7 +24,7 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanDriver* driver, SurfaceDescriptor descriptor);
+    VulkanSurface(VulkanDriver* driver, const SurfaceDescriptor& descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getSurfaceKHR() const;
@@ -32,6 +32,11 @@ public:
 
 private:
     void createSurfaceKHR();
+
+private:
+    VulkanDriver* m_driver = nullptr;
+
+    const SurfaceDescriptor m_descriptor{};
 
 private:
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;

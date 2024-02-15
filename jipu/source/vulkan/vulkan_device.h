@@ -22,7 +22,7 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
-    VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescriptor descriptor);
+    VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor);
     ~VulkanDevice() override;
 
     VulkanDevice(const VulkanDevice&) = delete;
@@ -51,6 +51,9 @@ public:
     VulkanResourceAllocator* getResourceAllocator() const;
 
 public:
+    VulkanPhysicalDevice* getPhysicalDevice() const;
+
+public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
 
@@ -66,6 +69,9 @@ private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
     void createResourceAllocator();
     const std::vector<const char*> getRequiredDeviceExtensions();
+
+private:
+    VulkanPhysicalDevice* m_physicalDevice = nullptr;
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;

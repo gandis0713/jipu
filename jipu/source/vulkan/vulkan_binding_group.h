@@ -21,6 +21,10 @@ public:
 
 private:
     VkDescriptorSet m_descriptorSet = VK_NULL_HANDLE;
+
+private:
+    VulkanDevice* m_device = nullptr;
+    const BindingGroupDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
 } // namespace jipu

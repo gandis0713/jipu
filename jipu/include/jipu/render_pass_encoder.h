@@ -70,14 +70,17 @@ enum IndexFormat
     kUint32,
 };
 
+class RenderPipeline;
 class JIPU_EXPORT RenderPassEncoder
 {
 public:
-    RenderPassEncoder() = delete;
-    RenderPassEncoder(CommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
     virtual ~RenderPassEncoder() = default;
 
-    virtual void setPipeline(Pipeline* pipeline) = 0;
+protected:
+    RenderPassEncoder() = default;
+
+public:
+    virtual void setPipeline(RenderPipeline* pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
 
     virtual void setVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
@@ -103,12 +106,6 @@ public:
                              uint32_t firstInstance) = 0;
 
     virtual void end() = 0;
-
-protected:
-    CommandBuffer* m_commandBuffer = nullptr;
-    Pipeline* m_pipeline = nullptr;
-
-    const RenderPassDescriptor m_descriptor{};
 };
 
 } // namespace jipu

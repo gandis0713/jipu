@@ -41,6 +41,9 @@ public:
     PhysicalDeviceInfo getInfo() const override;
 
 public:
+    VulkanDriver* getDriver() const;
+
+public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
 
     int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
@@ -52,6 +55,9 @@ public:
 
 private:
     void gatherPhysicalDeviceInfo();
+
+protected:
+    VulkanDriver* m_driver = nullptr;
 
 private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;

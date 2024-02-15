@@ -30,6 +30,12 @@ public:
 
 public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
+
+public:
+    VulkanCommandBuffer* getCommandBuffer() const;
+
+private:
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

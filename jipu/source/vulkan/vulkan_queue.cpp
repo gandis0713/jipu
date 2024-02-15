@@ -11,9 +11,9 @@ namespace jipu
 {
 
 VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
-    : Queue(device, descriptor)
+    : m_device(device)
 {
-    VulkanPhysicalDevice* physicalDevice = downcast(m_device->getPhysicalDevice());
+    VulkanPhysicalDevice* physicalDevice = device->getPhysicalDevice();
 
     const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getVulkanPhysicalDeviceInfo();
 

@@ -220,8 +220,7 @@ void Deferred2Sample::draw()
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-    int targetIndex = m_swapchain->acquireNextTexture();
-    auto renderView = m_swapchain->getTextureViews()[targetIndex];
+    auto renderView = m_swapchain->acquireNextTexture();
 
     // first pass
     std::vector<RenderPassDescriptor> renderPassDescriptors{};

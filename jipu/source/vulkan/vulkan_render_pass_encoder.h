@@ -13,6 +13,7 @@ namespace jipu
 class VulkanDevice;
 class VulkanRenderPass;
 class VulkanFramebuffer;
+class VulkanRenderPipeline;
 class VulkanCommandBuffer;
 class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
@@ -22,7 +23,7 @@ public:
     VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors);
     ~VulkanRenderPassEncoder() override = default;
 
-    void setPipeline(Pipeline* pipeline) override;
+    void setPipeline(RenderPipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
     void setVertexBuffer(uint32_t slot, Buffer* buffer) override;
     void setIndexBuffer(Buffer* buffer, IndexFormat format) override;
@@ -55,7 +56,12 @@ private:
     VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const std::vector<RenderPassDescriptor>& descriptors);
 
 private:
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanRenderPipeline* m_pipeline = nullptr;
+
     uint32_t m_passIndex = 0;
+
+    const std::vector<RenderPassDescriptor> m_descriptors{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 

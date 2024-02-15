@@ -189,8 +189,7 @@ void TriangleSample::update()
 
 void TriangleSample::draw()
 {
-    auto swapchainIndex = m_swapchain->acquireNextTexture();
-    auto renderView = m_swapchain->getTextureView(swapchainIndex);
+    auto renderView = m_swapchain->acquireNextTexture();
     {
         ColorAttachment attachment{};
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };

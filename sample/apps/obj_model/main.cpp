@@ -277,15 +277,14 @@ void OBJModelSample::updateImGui()
 
 void OBJModelSample::draw()
 {
-    std::vector<TextureView*> swapchainTextureViews = m_swapchain->getTextureViews();
-    int nextImageIndex = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
     std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : swapchainTextureViews[nextImageIndex],
-                            .resolveView = m_sampleCount > 1 ? swapchainTextureViews[nextImageIndex] : nullptr,
+    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
+                            .resolveView = m_sampleCount > 1 ? renderView : nullptr,
                             .loadOp = LoadOp::kClear,
                             .storeOp = StoreOp::kStore,
                             .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
@@ -310,7 +309,7 @@ void OBJModelSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), swapchainTextureViews[nextImageIndex]);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
@@ -514,40 +513,22 @@ void OBJModelSample::createBindingGroupLayout()
 
 void OBJModelSample::createBindingGroup()
 {
-    const std::vector<BufferBindingLayout>& bufferBindingLayouts = m_bindingGroupLayout->getBufferBindingLayouts();
-    std::vector<BufferBinding> bufferBindings{};
-    bufferBindings.resize(bufferBindingLayouts.size());
-    for (auto i = 0; i < bufferBindings.size(); ++i)
-    {
-        BufferBinding bufferBinding{};
-        bufferBinding.index = bufferBindingLayouts[i].index;
-        bufferBinding.buffer = m_uniformBuffer.get();
-        bufferBinding.offset = 0;
-        bufferBinding.size = sizeof(UniformBufferObject);
+    BufferBinding bufferBinding{};
+    bufferBinding.index = 0;
+    bufferBinding.buffer = m_uniformBuffer.get();
+    bufferBinding.offset = 0;
+    bufferBinding.size = sizeof(UniformBufferObject);
 
-        bufferBindings[i] = bufferBinding;
-    }
-
-    const std::vector<SamplerBindingLayout>& samplerBindingLayouts = m_bindingGroupLayout->getSamplerBindingLayouts();
-    std::vector<SamplerBinding> samplerBindings{};
-    samplerBindings.resize(samplerBindingLayouts.size());
-    for (auto i = 0; i < samplerBindings.size(); ++i)
-    {
-        SamplerBinding samplerBinding{};
-        samplerBinding.index = samplerBindingLayouts[i].index;
-        samplerBinding.sampler = m_imageSampler.get();
-        samplerBinding.textureView = m_imageTextureView.get();
-
-        samplerBindings[i] = samplerBinding;
-    }
-
-    std::vector<TextureBinding> textureBindings{};
+    SamplerBinding samplerBinding{};
+    samplerBinding.index = 1;
+    samplerBinding.sampler = m_imageSampler.get();
+    samplerBinding.textureView = m_imageTextureView.get();
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
-    descriptor.buffers = bufferBindings;
-    descriptor.samplers = samplerBindings;
-    descriptor.textures = textureBindings;
+    descriptor.buffers = { bufferBinding };
+    descriptor.samplers = { samplerBinding };
+    descriptor.textures = {};
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
@@ -631,7 +612,7 @@ void OBJModelSample::createRenderPipeline()
     // Depth/Stencil stage
     DepthStencilStage depthStencilStage;
     {
-        depthStencilStage.format = m_depthStencilTextureView->getTexture()->getFormat();
+        depthStencilStage.format = m_depthStencilTexture->getFormat();
     }
 
     RenderPipelineDescriptor descriptor;

@@ -12,8 +12,9 @@ namespace jipu
 {
 
 // Vulkan Compute Pipeline
-VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* vulkanDevice, const ComputePipelineDescriptor& descriptor)
-    : ComputePipeline(vulkanDevice, descriptor)
+VulkanComputePipeline::VulkanComputePipeline(VulkanDevice* device, const ComputePipelineDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
 {
     initialize();
 }
@@ -22,6 +23,11 @@ VulkanComputePipeline::~VulkanComputePipeline()
 {
     auto vulkanDevice = downcast(m_device);
     vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), m_pipeline, nullptr);
+}
+
+PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
+{
+    return m_descriptor.layout;
 }
 
 VkPipeline VulkanComputePipeline::getVkPipeline() const
@@ -195,14 +201,16 @@ std::vector<VulkanRenderPassDescriptor> generateVulkanRenderPassDescriptor(const
     return renderPassDescriptors;
 }
 
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const RenderPipelineDescriptor& descriptor)
-    : RenderPipeline(vulkanDevice, descriptor)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptors{ descriptor }
 {
     initialize({ descriptor });
 }
 
-VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* vulkanDevice, const std::vector<RenderPipelineDescriptor>& descriptors)
-    : RenderPipeline(vulkanDevice, descriptors)
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const std::vector<RenderPipelineDescriptor>& descriptors)
+    : m_device(device)
+    , m_descriptors(descriptors)
 {
     initialize(descriptors);
 }
@@ -214,6 +222,22 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
     {
         vulkanDevice->vkAPI.DestroyPipeline(vulkanDevice->getVkDevice(), pipeline, nullptr);
     }
+}
+
+PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
+{
+    if (m_descriptors.empty())
+        return nullptr;
+
+    return m_descriptors[0].layout;
+}
+
+PipelineLayout* VulkanRenderPipeline::getPipelineLayout(uint32_t index) const
+{
+    if (m_descriptors.empty())
+        return nullptr;
+
+    return m_descriptors[index].layout;
 }
 
 VkPipeline VulkanRenderPipeline::getVkPipeline(uint32_t index) const

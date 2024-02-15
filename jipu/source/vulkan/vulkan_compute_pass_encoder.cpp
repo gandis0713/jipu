@@ -12,30 +12,26 @@ namespace jipu
 {
 
 VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor)
-    : ComputePassEncoder(commandBuffer, descriptor)
+    : m_commandBuffer(commandBuffer)
 {
     // do nothing.
 }
 
-void VulkanComputePassEncoder::setPipeline(Pipeline* pipeline)
+void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
 {
-    // TODO: receive ComputePipeline from parameter.
-    m_pipeline = pipeline;
+    m_pipeline = static_cast<VulkanComputePipeline*>(pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    VulkanComputePipeline* vulkanComputePipeline = downcast(static_cast<ComputePipeline*>(m_pipeline)); // TODO: not casting to ComputePipeline.
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
 
     vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(),
                           VK_PIPELINE_BIND_POINT_COMPUTE,
-                          vulkanComputePipeline->getVkPipeline());
+                          m_pipeline->getVkPipeline());
 }
 
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
-    m_bindingGroups[index] = bindingGroup;
-
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());

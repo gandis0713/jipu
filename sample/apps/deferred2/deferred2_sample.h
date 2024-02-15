@@ -175,7 +175,7 @@ private:
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 10000;

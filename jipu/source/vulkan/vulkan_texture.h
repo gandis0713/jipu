@@ -25,16 +25,29 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice* device, TextureDescriptor descriptor);
+    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
 
     /**
      * @brief Construct a new Vulkan Texture object.
      *        Have not VkImage ownership.
      */
-    VulkanTexture(VulkanDevice* device, VkImage image, TextureDescriptor descriptor);
+    VulkanTexture(VulkanDevice* device, VkImage image, const TextureDescriptor& descriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
+
+public:
+    TextureType getType() const override;
+    TextureFormat getFormat() const override;
+    TextureUsageFlags getUsage() const override;
+    uint32_t getWidth() const override;
+    uint32_t getHeight() const override;
+    uint32_t getDepth() const override;
+    uint32_t getMipLevels() const override;
+    uint32_t getSampleCount() const override;
+
+public:
+    VulkanDevice* getDevice() const;
 
 public:
     VkImage getVkImage() const;
@@ -52,8 +65,10 @@ public:
     VkImageLayout getFinalLayout() const;
 
 private:
-    // VkImage m_image = VK_NULL_HANDLE;
-    // std::unique_ptr<VulkanMemory> m_memory = nullptr;
+    VulkanDevice* m_device = nullptr;
+    const TextureDescriptor m_descriptor{};
+
+private:
     VulkanTextureResource m_resource;
     TextureOwner m_owner;
 

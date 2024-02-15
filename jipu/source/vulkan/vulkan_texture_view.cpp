@@ -7,8 +7,9 @@
 namespace jipu
 {
 
-VulkanTextureView::VulkanTextureView(VulkanTexture* texture, TextureViewDescriptor descriptor)
-    : TextureView(texture, descriptor)
+VulkanTextureView::VulkanTextureView(VulkanTexture* texture, const TextureViewDescriptor& descriptor)
+    : m_texture(texture)
+    , m_descriptor(descriptor)
 {
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -38,6 +39,36 @@ VulkanTextureView::~VulkanTextureView()
 {
     auto vulkanDevice = downcast(m_texture->getDevice());
     vulkanDevice->vkAPI.DestroyImageView(vulkanDevice->getVkDevice(), m_imageView, nullptr);
+}
+
+TextureViewType VulkanTextureView::getType() const
+{
+    return m_descriptor.type;
+}
+
+TextureAspectFlags VulkanTextureView::getAspect() const
+{
+    return m_descriptor.aspect;
+}
+
+uint32_t VulkanTextureView::getWidth() const
+{
+    return m_texture->getWidth();
+}
+
+uint32_t VulkanTextureView::getHeight() const
+{
+    return m_texture->getHeight();
+}
+
+uint32_t VulkanTextureView::getDepth() const
+{
+    return m_texture->getDepth();
+}
+
+VulkanTexture* VulkanTextureView::getTexture() const
+{
+    return m_texture;
 }
 
 VkImageView VulkanTextureView::getVkImageView() const

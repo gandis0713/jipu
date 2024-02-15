@@ -17,12 +17,10 @@ struct PipelineLayoutDescriptor
 class JIPU_EXPORT PipelineLayout
 {
 public:
-    PipelineLayout() = delete;
-    PipelineLayout(Device* device, const PipelineLayoutDescriptor& descriptor);
     virtual ~PipelineLayout() = default;
 
 protected:
-    Device* m_device = nullptr;
+    PipelineLayout() = default;
 };
 
 } // namespace jipu

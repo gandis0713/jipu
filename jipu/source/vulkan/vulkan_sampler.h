@@ -20,6 +20,9 @@ public:
     VkSampler getVkSampler() const;
 
 private:
+    VulkanDevice* m_device = nullptr;
+
+private:
     VkSampler m_sampler = VK_NULL_HANDLE;
 };
 

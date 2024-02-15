@@ -12,21 +12,20 @@
 namespace jipu
 {
 
-class Device;
+class PipelineLayout;
 class JIPU_EXPORT Pipeline
 {
 public:
-    Pipeline() = delete;
-    Pipeline(Device* device);
     virtual ~Pipeline() = default;
 
     Pipeline(const Pipeline&) = delete;
     Pipeline& operator=(const Pipeline&) = delete;
 
-    virtual PipelineLayout* getPipelineLayout(uint32_t index = 0) const = 0;
-
 protected:
-    Device* m_device = nullptr;
+    Pipeline() = default;
+
+public:
+    virtual PipelineLayout* getPipelineLayout() const = 0;
 };
 
 struct ProgrammableStage
@@ -194,21 +193,17 @@ struct RenderPipelineDescriptor : PipelineDescriptor
     std::optional<DepthStencilStage> depthStencil = std::nullopt;
 };
 
+class Device;
 class JIPU_EXPORT RenderPipeline : public Pipeline
 {
 public:
-    RenderPipeline() = delete;
-    RenderPipeline(Device* device, const RenderPipelineDescriptor& descriptor);
-    RenderPipeline(Device* device, const std::vector<RenderPipelineDescriptor>& descriptors);
     virtual ~RenderPipeline() = default;
 
     RenderPipeline(const RenderPipeline&) = delete;
     RenderPipeline& operator=(const RenderPipeline&) = delete;
 
-    PipelineLayout* getPipelineLayout(uint32_t index = 0) const override;
-
 protected:
-    const std::vector<RenderPipelineDescriptor> m_descriptors{};
+    RenderPipeline() = default;
 };
 
 // Compute Shader Stage
@@ -224,17 +219,13 @@ struct ComputePipelineDescriptor : PipelineDescriptor
 class JIPU_EXPORT ComputePipeline : public Pipeline
 {
 public:
-    ComputePipeline() = delete;
-    ComputePipeline(Device* device, const ComputePipelineDescriptor& descriptor);
     virtual ~ComputePipeline() = default;
 
     ComputePipeline(const ComputePipeline&) = delete;
     ComputePipeline& operator=(const ComputePipeline&) = delete;
 
-    PipelineLayout* getPipelineLayout(uint32_t index = 0) const override;
-
 protected:
-    const ComputePipelineDescriptor m_descriptor{};
+    ComputePipeline() = default;
 };
 
 } // namespace jipu

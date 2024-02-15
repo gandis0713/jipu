@@ -18,7 +18,7 @@ namespace jipu
 {
 
 VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor)
-    : CommandEncoder(commandBuffer, descriptor)
+    : m_commandBuffer(commandBuffer)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
 
@@ -278,6 +278,11 @@ CommandBuffer* VulkanCommandEncoder::finish()
         throw std::runtime_error("Failed to end command buffer.");
     }
 
+    return m_commandBuffer;
+}
+
+VulkanCommandBuffer* VulkanCommandEncoder::getCommandBuffer() const
+{
     return m_commandBuffer;
 }
 
