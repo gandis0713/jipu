@@ -32,8 +32,6 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
 
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
-    m_bindingGroups[index] = static_cast<VulkanBindingGroup*>(bindingGroup);
-
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());

@@ -56,7 +56,7 @@ private:
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
-    std::unique_ptr<Pipeline> m_pipeline = nullptr;
+    std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
 
 protected:
     void debugWindow();

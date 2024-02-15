@@ -137,7 +137,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<RenderPipeline> pipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -157,7 +157,7 @@ private:
         std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<Sampler> albedoSampler = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<Pipeline> pipeline = nullptr;
+        std::unique_ptr<RenderPipeline> pipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};

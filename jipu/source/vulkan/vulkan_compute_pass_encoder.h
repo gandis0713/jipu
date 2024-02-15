@@ -24,7 +24,6 @@ public:
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanComputePipeline* m_pipeline = nullptr;
-    std::unordered_map<uint32_t, VulkanBindingGroup*> m_bindingGroups{};
 };
 
 } // namespace jipu

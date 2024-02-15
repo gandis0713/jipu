@@ -6,6 +6,7 @@
 namespace jipu
 {
 
+class VulkanRenderPipeline;
 class VulkanCommandBuffer;
 class VulkanRenderPassEncoder : public RenderPassEncoder
 {
@@ -14,7 +15,7 @@ public:
     VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
-    void setPipeline(Pipeline* pipeline) override;
+    void setPipeline(RenderPipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
     void setVertexBuffer(uint32_t slot, Buffer* buffer) override;
     void setIndexBuffer(Buffer* buffer, IndexFormat format) override;
@@ -37,6 +38,12 @@ public:
                      uint32_t firstInstance) override;
 
     void end() override;
+
+private:
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanRenderPipeline* m_pipeline = nullptr;
+
+    const RenderPassDescriptor m_descriptor{};
 };
 
 // Convert Helper

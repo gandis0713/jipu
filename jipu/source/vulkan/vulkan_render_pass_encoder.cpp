@@ -37,7 +37,8 @@ VkImageLayout getInitialLayout(const ColorAttachment& colorAttachment)
 } // namespace
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor)
-    : RenderPassEncoder(commandBuffer, descriptor)
+    : m_commandBuffer(commandBuffer)
+    , m_descriptor(descriptor)
 {
     // get render pass
     VulkanRenderPassDescriptor renderPassDescriptor{};
@@ -156,16 +157,14 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuf
     vulkanDevice->vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void VulkanRenderPassEncoder::setPipeline(Pipeline* pipeline)
+void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
-    // TODO: receive RenderPipeline from parameter.
-    m_pipeline = pipeline;
+    m_pipeline = static_cast<VulkanRenderPipeline*>(pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: not casting to RenderPipeline.
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline());
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
