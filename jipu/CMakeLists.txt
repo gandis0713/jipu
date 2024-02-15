@@ -59,7 +59,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp

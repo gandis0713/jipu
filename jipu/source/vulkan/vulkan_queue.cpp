@@ -11,7 +11,7 @@ namespace jipu
 {
 
 VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
-    : Queue(device, descriptor)
+    : m_device(device)
 {
     VulkanPhysicalDevice* physicalDevice = device->getPhysicalDevice();
 
@@ -95,12 +95,10 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
 
     swapchain->present(this);
 }
-
 VkQueue VulkanQueue::getVkQueue() const
 {
     return m_queue;
 }
-
 std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);
