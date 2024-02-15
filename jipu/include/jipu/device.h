@@ -18,8 +18,6 @@
 namespace jipu
 {
 
-class PhysicalDevice;
-
 struct DeviceDescriptor
 {
 };
@@ -27,12 +25,13 @@ struct DeviceDescriptor
 class JIPU_EXPORT Device
 {
 public:
-    Device() = delete;
-    Device(PhysicalDevice* physicalDevice, DeviceDescriptor descriptor);
     virtual ~Device() = default;
 
     Device(const Device&) = delete;
     Device& operator=(const Device&) = delete;
+
+protected:
+    Device() = default;
 
 public:
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
@@ -47,12 +46,6 @@ public:
     virtual std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) = 0;
-
-public:
-    PhysicalDevice* getPhysicalDevice() const;
-
-protected:
-    PhysicalDevice* m_physicalDevice = nullptr;
 };
 
 } // namespace jipu

@@ -57,7 +57,6 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp

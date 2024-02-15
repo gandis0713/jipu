@@ -20,9 +20,9 @@
 namespace jipu
 {
 
-VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, DeviceDescriptor descriptor)
-    : Device(physicalDevice, descriptor)
-    , vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
+VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor)
+    : vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
+    , m_physicalDevice(physicalDevice)
     , m_renderPassCache(this)
     , m_frameBufferCache(this)
 {
@@ -148,6 +148,11 @@ VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
 VulkanResourceAllocator* VulkanDevice::getResourceAllocator() const
 {
     return m_resourceAllocator.get();
+}
+
+VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
+{
+    return m_physicalDevice;
 }
 
 VkDevice VulkanDevice::getVkDevice() const
