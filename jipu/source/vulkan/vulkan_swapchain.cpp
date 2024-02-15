@@ -1,6 +1,3 @@
-#include "vulkan_texture.h"
-#include "vulkan_texture_view.h"
-
 #include "vulkan_swapchain.h"
 
 #include "vulkan_device.h"

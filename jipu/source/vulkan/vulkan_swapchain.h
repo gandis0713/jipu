@@ -1,7 +1,10 @@
 #pragma once
 
 #include "jipu/swapchain.h"
+
 #include "vulkan_api.h"
+#include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include "utils/cast.h"
 
