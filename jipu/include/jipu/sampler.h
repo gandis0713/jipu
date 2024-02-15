@@ -34,16 +34,13 @@ struct SamplerDescriptor
     float lodMax = 32;
 };
 
-class Device;
 class Sampler
 {
 public:
-    Sampler() = delete;
-    Sampler(Device* device, const SamplerDescriptor& descriptor);
     virtual ~Sampler() = default;
 
 protected:
-    Device* m_device = nullptr;
+    Sampler() = default;
 };
 
 } // namespace jipu

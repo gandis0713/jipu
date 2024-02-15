@@ -9,7 +9,7 @@ namespace jipu
 {
 
 VulkanSampler::VulkanSampler(VulkanDevice* device, const SamplerDescriptor& descriptor)
-    : Sampler(device, descriptor)
+    : m_device(device)
 {
     VkSamplerCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

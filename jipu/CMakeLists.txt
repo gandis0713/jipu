@@ -60,7 +60,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/shader_module.cpp
 
