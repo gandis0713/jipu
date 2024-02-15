@@ -11,7 +11,8 @@ namespace jipu
 {
 
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false)
-    : Buffer(device, descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
 {
     if (descriptor.size == 0)
     {
@@ -61,6 +62,16 @@ void VulkanBuffer::unmap()
 
         m_mappedPtr = nullptr;
     }
+}
+
+BufferUsageFlags VulkanBuffer::getUsage() const
+{
+    return m_descriptor.usage;
+}
+
+uint64_t VulkanBuffer::getSize() const
+{
+    return m_descriptor.size;
 }
 
 void VulkanBuffer::setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags)

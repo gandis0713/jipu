@@ -30,19 +30,13 @@ class Device;
 class JIPU_EXPORT Buffer
 {
 public:
-    Buffer() = delete;
-    Buffer(Device* device, const BufferDescriptor& descriptor);
     virtual ~Buffer() = default;
 
     virtual void* map() = 0;
     virtual void unmap() = 0;
 
-    BufferUsageFlags getUsage() const;
-    uint64_t getSize() const;
-
-protected:
-    Device* m_device = nullptr;
-    BufferDescriptor m_descriptor{};
+    virtual BufferUsageFlags getUsage() const = 0;
+    virtual uint64_t getSize() const = 0;
 };
 
 } // namespace jipu

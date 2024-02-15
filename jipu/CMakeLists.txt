@@ -57,12 +57,10 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/command_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/driver.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cpp
