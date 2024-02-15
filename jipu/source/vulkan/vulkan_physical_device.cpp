@@ -9,8 +9,8 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* vulkanDriver, const VulkanPhysicalDeviceDescriptor& descriptor)
-    : PhysicalDevice(vulkanDriver)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* driver, const VulkanPhysicalDeviceDescriptor& descriptor)
+    : m_driver(driver)
 {
     m_physicalDevice = descriptor.physicalDevice;
 
@@ -33,6 +33,11 @@ PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
     PhysicalDeviceInfo info{};
     info.deviceName = m_info.physicalDeviceProperties.deviceName;
     return info;
+}
+
+VulkanDriver* VulkanPhysicalDevice::getDriver() const
+{
+    return m_driver;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const

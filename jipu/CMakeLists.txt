@@ -63,7 +63,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture_view.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/physical_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/shader_module.cpp

@@ -9,29 +9,25 @@
 namespace jipu
 {
 
-class Driver;
-
 struct PhysicalDeviceInfo
 {
     std::string deviceName;
 };
 
+class Driver;
 class JIPU_EXPORT PhysicalDevice
 {
 public:
     virtual ~PhysicalDevice() = default;
 
+protected:
+    PhysicalDevice() = default;
+
+public:
     virtual std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) = 0;
 
+public:
     virtual PhysicalDeviceInfo getInfo() const = 0;
-    Driver* getDriver() const;
-
-protected:
-    PhysicalDevice(Driver* driver);
-    friend class Driver;
-
-protected:
-    Driver* m_driver = nullptr;
 };
 
 } // namespace jipu

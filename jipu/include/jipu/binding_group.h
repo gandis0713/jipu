@@ -39,9 +39,9 @@ class BindingGroupLayout;
 struct BindingGroupDescriptor
 {
     BindingGroupLayout* layout = nullptr;
-    std::vector<BufferBinding> buffers = {};
-    std::vector<SamplerBinding> samplers = {};
-    std::vector<TextureBinding> textures = {};
+    std::vector<BufferBinding> buffers{};
+    std::vector<SamplerBinding> samplers{};
+    std::vector<TextureBinding> textures{};
 };
 
 class Device;
