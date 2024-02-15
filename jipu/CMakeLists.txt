@@ -56,7 +56,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/pipeline.cpp
