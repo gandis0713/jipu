@@ -296,6 +296,7 @@ void Deferred2Sample::draw()
 
     // second pass
     vulkanRenderPassEncoder->nextPass();
+
     vulkanRenderPassEncoder->setPipeline(m_pipeline.get());
     vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
     vulkanRenderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
