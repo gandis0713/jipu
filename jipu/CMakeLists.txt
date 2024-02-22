@@ -19,14 +19,13 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_group.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_shader_module.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sub_pipeline_layout.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sub_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_swapchain.cpp
@@ -45,7 +44,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.h  
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.h
@@ -53,8 +53,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_shader_module.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sub_pipeline_layout.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_sub_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_surface.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.h

@@ -45,15 +45,19 @@ private:
 };
 DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 
-class VulkanRenderPass;
-
 // Vulkan Render Pipeline
+struct VulkanRenderPipelineDescriptor : RenderPipelineDescriptor
+{
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    uint32_t subpassIndex = 0;
+};
+
+class VulkanRenderPass;
 class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;
-    VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
-    VulkanRenderPipeline(VulkanDevice* device, const std::vector<RenderPipelineDescriptor>& descriptors);
+    VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor);
     ~VulkanRenderPipeline() override;
 
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
@@ -63,22 +67,22 @@ public:
     PipelineLayout* getPipelineLayout() const override;
 
 public:
-    PipelineLayout* getPipelineLayout(uint32_t index) const;
-
-    VkPipeline getVkPipeline(uint32_t index = 0) const;
+    VkPipeline getVkPipeline() const;
 
 private:
-    void initialize(const std::vector<RenderPipelineDescriptor>& descriptors);
+    void initialize();
 
 private:
     VulkanDevice* m_device = nullptr;
-
-    const std::vector<RenderPipelineDescriptor> m_descriptors{};
+    const VulkanRenderPipelineDescriptor m_descriptor{};
 
 private:
-    std::vector<VkPipeline> m_pipelines{};
+    VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
+
+// Generator Helper
+VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

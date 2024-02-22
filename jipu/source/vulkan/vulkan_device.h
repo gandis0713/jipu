@@ -7,6 +7,9 @@
 #include "vulkan_api.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_pipeline.h"
+#include "vulkan_pipeline_group.h"
+#include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
 
@@ -43,7 +46,8 @@ public:
     std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
 
 public:
-    std::unique_ptr<RenderPipeline> createRenderPipeline(const std::vector<RenderPipelineDescriptor>& descriptors);
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
+    std::unique_ptr<VulkanRenderPipelineGroup> createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor);
 
 public:
     VulkanRenderPass* getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors);

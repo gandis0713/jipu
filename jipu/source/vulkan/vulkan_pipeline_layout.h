@@ -17,6 +17,7 @@ public:
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
     ~VulkanPipelineLayout() override;
 
+public:
     VkPipelineLayout getVkPipelineLayout() const;
 
 private:

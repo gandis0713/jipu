@@ -12,8 +12,6 @@
 #include "vulkan_device.h"
 #include "vulkan_driver.h"
 #include "vulkan_physical_device.h"
-#include "vulkan_pipeline.h"
-#include "vulkan_pipeline_layout.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_surface.h"
@@ -32,7 +30,7 @@ Deferred2Sample::~Deferred2Sample()
 {
     //    clearImGui();
 
-    m_pipeline.reset();
+    m_renderPipelineGroup.reset();
 
     m_composition.vertexShaderModule.reset();
     m_composition.fragmentShaderModule.reset();
@@ -120,7 +118,7 @@ void Deferred2Sample::init()
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
 
-    createPipeline();
+    createRenderPipelineGroup();
 
     //    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
@@ -288,7 +286,7 @@ void Deferred2Sample::draw()
     vulkanRenderPassEncoder->setScissor(0, 0, m_width, m_height);
 
     // first pass
-    vulkanRenderPassEncoder->setPipeline(m_pipeline.get());
+    vulkanRenderPassEncoder->setPipeline(m_renderPipelineGroup->getRenderPipeline(0));
     vulkanRenderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
     vulkanRenderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
     vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
@@ -297,7 +295,7 @@ void Deferred2Sample::draw()
     // second pass
     vulkanRenderPassEncoder->nextPass();
 
-    vulkanRenderPassEncoder->setPipeline(m_pipeline.get());
+    vulkanRenderPassEncoder->setPipeline(m_renderPipelineGroup->getRenderPipeline(1));
     vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
     vulkanRenderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
     vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
@@ -735,7 +733,9 @@ void Deferred2Sample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
     descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
-    m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
+
+    auto vulkanDevice = downcast(m_device.get());
+    m_offscreen.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
 }
 
 RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescriptor()
@@ -977,7 +977,8 @@ void Deferred2Sample::createCompositionPipelineLayout()
     PipelineLayoutDescriptor descriptor{};
     descriptor.layouts = { m_composition.bindingGroupLayout.get() };
 
-    m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
+    auto vulkanDevice = downcast(m_device.get());
+    m_composition.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
 }
 
 RenderPipelineDescriptor Deferred2Sample::createCompositionRenderPipelineDescriptor()
@@ -1142,14 +1143,17 @@ void Deferred2Sample::createCompositionVertexBuffer()
     vertexBuffer->unmap();
 }
 
-void Deferred2Sample::createPipeline()
+void Deferred2Sample::createRenderPipelineGroup()
 {
     auto vulkanDevice = downcast(m_device.get());
 
     RenderPipelineDescriptor offscreenRenderPipelineDescriptor = createOffscreenRenderPipelineDescriptor();
     RenderPipelineDescriptor compositionRenderPipelineDescriptor = createCompositionRenderPipelineDescriptor();
 
-    m_pipeline = vulkanDevice->createRenderPipeline({ offscreenRenderPipelineDescriptor, compositionRenderPipelineDescriptor });
+    VulkanRenderPipelineGroupDescriptor vulkanRenderPipelineGroupDescriptor{};
+    vulkanRenderPipelineGroupDescriptor.pipelines = { offscreenRenderPipelineDescriptor, compositionRenderPipelineDescriptor };
+
+    m_renderPipelineGroup = vulkanDevice->createRenderPipelineGroup(vulkanRenderPipelineGroupDescriptor);
 }
 
 void Deferred2Sample::createCommandBuffer()

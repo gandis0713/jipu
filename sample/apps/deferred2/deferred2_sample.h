@@ -16,12 +16,14 @@
 #include "jipu/device.h"
 #include "jipu/driver.h"
 #include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
 #include "jipu/pipeline_layout.h"
 #include "jipu/queue.h"
 #include "jipu/render_pass_encoder.h"
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
+
+#include "vulkan_pipeline_group.h"
+
 #include "khronos_texture.h"
 
 namespace jipu
@@ -80,7 +82,7 @@ private:
     void createCompositionVertexBuffer();
     void updateCompositionUniformBuffer();
 
-    void createPipeline();
+    void createRenderPipelineGroup();
 
     void createCommandBuffer();
     void createQueue();
@@ -157,9 +159,9 @@ private:
         std::unique_ptr<Sampler> positionSampler = nullptr;
         std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<Sampler> albedoSampler = nullptr;
-        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
@@ -175,7 +177,7 @@ private:
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
+    std::unique_ptr<VulkanRenderPipelineGroup> m_renderPipelineGroup = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 10000;

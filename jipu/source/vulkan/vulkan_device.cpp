@@ -6,8 +6,6 @@
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
-#include "vulkan_pipeline.h"
-#include "vulkan_pipeline_layout.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_sampler.h"
@@ -107,7 +105,19 @@ std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const Compu
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
+    VulkanRenderPipelineDescriptor vulkanDescriptor{};
+    vulkanDescriptor.inputAssembly = descriptor.inputAssembly;
+    vulkanDescriptor.vertex = descriptor.vertex;
+    vulkanDescriptor.rasterization = descriptor.rasterization;
+    vulkanDescriptor.depthStencil = descriptor.depthStencil;
+    vulkanDescriptor.fragment = descriptor.fragment;
+    vulkanDescriptor.layout = descriptor.layout;
+
+    VulkanRenderPass* renderPass = getRenderPass({ generateVulkanRenderPassDescriptor(descriptor) });
+    vulkanDescriptor.renderPass = renderPass->getVkRenderPass();
+    vulkanDescriptor.subpassIndex = 0;
+
+    return createRenderPipeline(vulkanDescriptor);
 }
 
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
@@ -135,9 +145,14 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& de
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const std::vector<RenderPipelineDescriptor>& descriptors)
+std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(this, descriptors);
+    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
+}
+
+std::unique_ptr<VulkanRenderPipelineGroup> VulkanDevice::createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor)
+{
+    return std::make_unique<VulkanRenderPipelineGroup>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)

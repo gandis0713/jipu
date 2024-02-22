@@ -102,15 +102,14 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    VulkanRenderPipeline* vulkanRenderPipeline = downcast(static_cast<RenderPipeline*>(pipeline)); // TODO: not casting to RenderPipeline.
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanRenderPipeline->getVkPipeline(m_passIndex));
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout(m_passIndex));
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
     auto vulkanBindingGroup = downcast(bindingGroup);
     VkDescriptorSet set = vulkanBindingGroup->getVkDescriptorSet();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
