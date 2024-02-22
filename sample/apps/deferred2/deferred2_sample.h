@@ -57,8 +57,6 @@ private:
     void createOffscreenNormalColorAttachmentTextureView();
     void createOffscreenAlbedoColorAttachmentTexture();
     void createOffscreenAlbedoColorAttachmentTextureView();
-    void createOffscreenDepthStencilTexture();
-    void createOffscreenDepthStencilTextureView();
     void createOffscreenColorMapTexture();
     void createOffscreenColorMapTextureView();
     void createOffscreenNormalMapTexture();
@@ -72,8 +70,6 @@ private:
     RenderPipelineDescriptor createOffscreenRenderPipelineDescriptor();
     void updateOffscreenUniformBuffer();
 
-    void createCompositionDepthStencilTexture();
-    void createCompositionDepthStencilTextureView();
     void createCompositionBindingGroupLayout();
     void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
@@ -82,6 +78,8 @@ private:
     void createCompositionVertexBuffer();
     void updateCompositionUniformBuffer();
 
+    void createDepthStencilTexture();
+    void createDepthStencilTextureView();
     void createRenderPipelineGroup();
 
     void createCommandBuffer();
@@ -125,8 +123,6 @@ private:
         std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
         std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-        std::unique_ptr<Texture> depthStencilTexture = nullptr;
-        std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<Texture> colorMapTexture = nullptr;
         std::unique_ptr<TextureView> colorMapTextureView = nullptr;
         std::unique_ptr<Texture> normalMapTexture = nullptr;
@@ -152,8 +148,6 @@ private:
     };
     struct
     {
-        std::unique_ptr<Texture> depthStencilTexture = nullptr;
-        std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Sampler> positionSampler = nullptr;
@@ -178,6 +172,8 @@ private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<VulkanRenderPipelineGroup> m_renderPipelineGroup = nullptr;
+    std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
+    std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 10000;

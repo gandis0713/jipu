@@ -32,6 +32,9 @@ Deferred2Sample::~Deferred2Sample()
 
     m_renderPipelineGroup.reset();
 
+    m_depthStencilTextureView.reset();
+    m_depthStencilTexture.reset();
+
     m_composition.vertexShaderModule.reset();
     m_composition.fragmentShaderModule.reset();
     m_composition.pipelineLayout.reset();
@@ -42,8 +45,6 @@ Deferred2Sample::~Deferred2Sample()
     m_composition.positionSampler.reset();
     m_composition.normalSampler.reset();
     m_composition.albedoSampler.reset();
-    m_composition.depthStencilTextureView.reset();
-    m_composition.depthStencilTexture.reset();
 
     m_offscreen.vertexShaderModule.reset();
     m_offscreen.fragmentShaderModule.reset();
@@ -60,8 +61,6 @@ Deferred2Sample::~Deferred2Sample()
     m_offscreen.colorMapTexture.reset();
     m_offscreen.normalMapTextureView.reset();
     m_offscreen.normalMapTexture.reset();
-    m_offscreen.depthStencilTextureView.reset();
-    m_offscreen.depthStencilTexture.reset();
     m_offscreen.albedoColorAttachmentTextureView.reset();
     m_offscreen.albedoColorAttachmentTexture.reset();
     m_offscreen.normalColorAttachmentTextureView.reset();
@@ -97,8 +96,6 @@ void Deferred2Sample::init()
     createOffscreenNormalColorAttachmentTextureView();
     createOffscreenAlbedoColorAttachmentTexture();
     createOffscreenAlbedoColorAttachmentTextureView();
-    createOffscreenDepthStencilTexture();
-    createOffscreenDepthStencilTextureView();
     createOffscreenColorMapTexture();
     createOffscreenColorMapTextureView();
     createOffscreenNormalMapTexture();
@@ -110,14 +107,14 @@ void Deferred2Sample::init()
     createOffscreenBindingGroup();
     createOffscreenPipelineLayout();
 
-    createCompositionDepthStencilTexture();
-    createCompositionDepthStencilTextureView();
     createCompositionUniformBuffer();
     createCompositionVertexBuffer();
     createCompositionBindingGroupLayout();
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
 
+    createDepthStencilTexture();
+    createDepthStencilTextureView();
     createRenderPipelineGroup();
 
     //    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
@@ -245,7 +242,7 @@ void Deferred2Sample::draw()
         albedoColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
         DepthStencilAttachment depthStencilAttachment{};
-        depthStencilAttachment.textureView = m_offscreen.depthStencilTextureView.get();
+        depthStencilAttachment.textureView = m_depthStencilTextureView.get();
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
@@ -267,7 +264,7 @@ void Deferred2Sample::draw()
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
         DepthStencilAttachment depthStencilAttachment{};
-        depthStencilAttachment.textureView = m_composition.depthStencilTextureView.get();
+        depthStencilAttachment.textureView = m_depthStencilTextureView.get();
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
@@ -427,30 +424,6 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTextureView()
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.albedoColorAttachmentTextureView = m_offscreen.albedoColorAttachmentTexture->createTextureView(descriptor);
-}
-
-void Deferred2Sample::createOffscreenDepthStencilTexture()
-{
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
-
-    m_offscreen.depthStencilTexture = m_device->createTexture(descriptor);
-}
-
-void Deferred2Sample::createOffscreenDepthStencilTextureView()
-{
-    TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
-    descriptor.aspect = TextureAspectFlagBits::kDepth;
-
-    m_offscreen.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
 void Deferred2Sample::createOffscreenColorMapTexture()
@@ -830,7 +803,7 @@ RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescripto
     }
 
     DepthStencilStage depthStencil{};
-    depthStencil.format = m_offscreen.depthStencilTexture->getFormat();
+    depthStencil.format = m_depthStencilTexture->getFormat();
 
     RenderPipelineDescriptor renderPipelineDescriptor;
     renderPipelineDescriptor.inputAssembly = inputAssembly;
@@ -841,30 +814,6 @@ RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescripto
     renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
 
     return renderPipelineDescriptor;
-}
-
-void Deferred2Sample::createCompositionDepthStencilTexture()
-{
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-
-    m_composition.depthStencilTexture = m_device->createTexture(descriptor);
-}
-
-void Deferred2Sample::createCompositionDepthStencilTextureView()
-{
-    TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
-    descriptor.aspect = TextureAspectFlagBits::kDepth;
-
-    m_composition.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
 void Deferred2Sample::createCompositionBindingGroupLayout()
@@ -1054,7 +1003,7 @@ RenderPipelineDescriptor Deferred2Sample::createCompositionRenderPipelineDescrip
 
     // DepthStencil
     DepthStencilStage depthStencilStage{};
-    depthStencilStage.format = m_composition.depthStencilTexture->getFormat();
+    depthStencilStage.format = m_depthStencilTexture->getFormat();
 
     RenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
@@ -1154,6 +1103,30 @@ void Deferred2Sample::createRenderPipelineGroup()
     vulkanRenderPipelineGroupDescriptor.pipelines = { offscreenRenderPipelineDescriptor, compositionRenderPipelineDescriptor };
 
     m_renderPipelineGroup = vulkanDevice->createRenderPipelineGroup(vulkanRenderPipelineGroupDescriptor);
+}
+
+void Deferred2Sample::createDepthStencilTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
+
+    m_depthStencilTexture = m_device->createTexture(descriptor);
+}
+
+void Deferred2Sample::createDepthStencilTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kDepth;
+
+    m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
 void Deferred2Sample::createCommandBuffer()
