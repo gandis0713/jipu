@@ -1,7 +1,11 @@
 #version 450
 
-layout(binding = 1) uniform sampler2D texColorMap;
-layout(binding = 2) uniform sampler2D texNormalMap;
+// layout(binding = 1) uniform sampler2D texColorMap;
+// layout(binding = 2) uniform sampler2D texNormalMap;
+layout(binding = 1) uniform sampler splColorMap;
+layout(binding = 2) uniform sampler splNormalMap;
+layout(binding = 3) uniform texture2D texColorMap;
+layout(binding = 4) uniform texture2D texNormalMap;
 
 layout(location = 0) out vec4 outPosition;
 layout(location = 1) out vec4 outNormal;
@@ -21,8 +25,10 @@ void main()
     vec3 T = normalize(inTangent);
     vec3 B = cross(N, T);
     mat3 TBN = mat3(T, B, N);
-    vec3 tangentNormal = TBN * normalize(texture(texNormalMap, inTexCoord).xyz * 2.0 - vec3(1.0));
+    // vec3 tangentNormal = TBN * normalize(texture(texNormalMap, inTexCoord).xyz * 2.0 - vec3(1.0));
+    vec3 tangentNormal = TBN * normalize(texture(sampler2D(texNormalMap, splNormalMap), inTexCoord).xyz * 2.0 - vec3(1.0));
     outNormal = vec4(tangentNormal, 1.0);
 
-    outAlbedo = texture(texColorMap, inTexCoord);
+    // outAlbedo = texture(texColorMap, inTexCoord);
+    outAlbedo = texture(sampler2D(texColorMap, splColorMap), inTexCoord);
 }

@@ -515,10 +515,14 @@ void OffscreenSample::createOnscreenBindingGroupLayout()
     SamplerBindingLayout samplerLayout{};
     samplerLayout.index = 0;
     samplerLayout.stages = BindingStageFlagBits::kFragmentStage;
-    samplerLayout.withTexture = true;
+
+    TextureBindingLayout textureLayout{};
+    textureLayout.index = 1;
+    textureLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BindingGroupLayoutDescriptor descriptor{};
     descriptor.samplers = { samplerLayout };
+    descriptor.textures = { textureLayout };
 
     m_onscreen.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
@@ -528,11 +532,15 @@ void OffscreenSample::createOnscreenBindingGroup()
     SamplerBinding samplerBinding{};
     samplerBinding.index = 0;
     samplerBinding.sampler = m_onscreen.sampler.get();
-    samplerBinding.textureView = m_offscreen.renderTextureView.get();
+
+    TextureBinding textureBinding{};
+    textureBinding.index = 1;
+    textureBinding.textureView = m_offscreen.renderTextureView.get();
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = { m_onscreen.bindingGroupLayout.get() };
     descriptor.samplers = { samplerBinding };
+    descriptor.textures = { textureBinding };
 
     m_onscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }

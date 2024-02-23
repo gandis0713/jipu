@@ -92,12 +92,6 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
-        if (samplerLayout.withTexture)
-        {
-            auto vulkanTextureView = downcast(sampler.textureView);
-            imageInfo.imageView = vulkanTextureView->getVkImageView();
-            imageInfo.imageLayout = vulkanTextureView->getTexture()->getFinalLayout();
-        }
 
         samplerInfos[i] = imageInfo;
 
@@ -106,7 +100,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = sampler.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = samplerLayout.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLER;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
@@ -132,8 +126,8 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         const TextureBindingLayout textureLayout = textureLayoutOp.value();
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = downcast(texture.textureView)->getTexture()->getFinalLayout();
         imageInfo.imageView = downcast(texture.textureView)->getVkImageView();
+        imageInfo.imageLayout = downcast(texture.textureView)->getTexture()->getFinalLayout();
 
         textureInfos[i] = imageInfo;
 

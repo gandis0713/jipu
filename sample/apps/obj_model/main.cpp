@@ -113,8 +113,8 @@ private:
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::vector<std::unique_ptr<BindingGroupLayout>> m_bindingGroupLayouts{};
+    std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
 
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
@@ -142,8 +142,8 @@ OBJModelSample::~OBJModelSample()
     m_renderPipeline.reset();
     m_pipelineLayout.reset();
 
-    m_bindingGroupLayout.reset();
-    m_bindingGroup.reset();
+    m_bindingGroupLayouts.clear();
+    m_bindingGroups.clear();
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
@@ -301,7 +301,8 @@ void OBJModelSample::draw()
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
+    renderPassEncoder->setBindingGroup(0, m_bindingGroups[0].get());
+    renderPassEncoder->setBindingGroup(1, m_bindingGroups[1].get());
     renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
     renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
@@ -491,51 +492,80 @@ void OBJModelSample::createImageSampler()
 
 void OBJModelSample::createBindingGroupLayout()
 {
-    // Uniform Buffer
-    BufferBindingLayout bufferBindingLayout{};
-    bufferBindingLayout.type = BufferBindingType::kUniform;
-    bufferBindingLayout.index = 0;
-    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
-    std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
+    m_bindingGroupLayouts.resize(2);
+    {
+        // Uniform Buffer
+        BufferBindingLayout bufferBindingLayout{};
+        bufferBindingLayout.type = BufferBindingType::kUniform;
+        bufferBindingLayout.index = 0;
+        bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+        std::vector<BufferBindingLayout> bufferBindingLayouts{ bufferBindingLayout };
 
-    // Sampler
-    SamplerBindingLayout samplerBindingLayout{};
-    samplerBindingLayout.index = 1;
-    samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    samplerBindingLayout.withTexture = true;
-    std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts };
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,
-                                                               .samplers = samplerBindingLayouts };
+        m_bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
+    {
+        // Sampler
+        SamplerBindingLayout samplerBindingLayout{};
+        samplerBindingLayout.index = 0;
+        samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
+
+        // Texture
+        TextureBindingLayout textureBindingLayout{};
+        textureBindingLayout.index = 1;
+        textureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        std::vector<TextureBindingLayout> textureBindingLayouts{ textureBindingLayout };
+
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = {},
+                                                                   .samplers = samplerBindingLayouts,
+                                                                   .textures = textureBindingLayouts };
+
+        m_bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
 }
 
 void OBJModelSample::createBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.index = 0;
-    bufferBinding.buffer = m_uniformBuffer.get();
-    bufferBinding.offset = 0;
-    bufferBinding.size = sizeof(UniformBufferObject);
+    m_bindingGroups.resize(2);
+    {
+        BufferBinding bufferBinding{};
+        bufferBinding.index = 0;
+        bufferBinding.buffer = m_uniformBuffer.get();
+        bufferBinding.offset = 0;
+        bufferBinding.size = sizeof(UniformBufferObject);
 
-    SamplerBinding samplerBinding{};
-    samplerBinding.index = 1;
-    samplerBinding.sampler = m_imageSampler.get();
-    samplerBinding.textureView = m_imageTextureView.get();
+        BindingGroupDescriptor descriptor{};
+        descriptor.layout = m_bindingGroupLayouts[0].get();
+        descriptor.buffers = { bufferBinding };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = m_bindingGroupLayout.get();
-    descriptor.buffers = { bufferBinding };
-    descriptor.samplers = { samplerBinding };
-    descriptor.textures = {};
+        m_bindingGroups[0] = m_device->createBindingGroup(descriptor);
+    }
 
-    m_bindingGroup = m_device->createBindingGroup(descriptor);
+    {
+        SamplerBinding samplerBinding{};
+        samplerBinding.index = 0;
+        samplerBinding.sampler = m_imageSampler.get();
+
+        TextureBinding textureBinding{};
+        textureBinding.index = 1;
+        textureBinding.textureView = m_imageTextureView.get();
+
+        BindingGroupDescriptor descriptor{};
+        descriptor.layout = m_bindingGroupLayouts[1].get();
+        descriptor.samplers = { samplerBinding };
+        descriptor.textures = { textureBinding };
+
+        m_bindingGroups[1] = m_device->createBindingGroup(descriptor);
+    }
 }
 
 void OBJModelSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayout.get() } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
