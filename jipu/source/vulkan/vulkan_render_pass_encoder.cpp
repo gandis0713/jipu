@@ -179,7 +179,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bind
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 vulkanPipelineLayout->getVkPipelineLayout(),
-                                0,
+                                index,
                                 1,
                                 &set,
                                 static_cast<uint32_t>(dynamicOffset.size()),
