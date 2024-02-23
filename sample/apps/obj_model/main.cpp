@@ -502,11 +502,19 @@ void OBJModelSample::createBindingGroupLayout()
     SamplerBindingLayout samplerBindingLayout{};
     samplerBindingLayout.index = 1;
     samplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    samplerBindingLayout.withTexture = true;
+
     std::vector<SamplerBindingLayout> samplerBindingLayouts{ samplerBindingLayout };
 
+    // Texture
+    TextureBindingLayout textureBindingLayout{};
+    textureBindingLayout.index = 2;
+    textureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    std::vector<TextureBindingLayout> textureBindingLayouts{ textureBindingLayout };
+
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{ .buffers = bufferBindingLayouts,
-                                                               .samplers = samplerBindingLayouts };
+                                                               .samplers = samplerBindingLayouts,
+                                                               .textures = textureBindingLayouts };
 
     m_bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -522,13 +530,16 @@ void OBJModelSample::createBindingGroup()
     SamplerBinding samplerBinding{};
     samplerBinding.index = 1;
     samplerBinding.sampler = m_imageSampler.get();
-    samplerBinding.textureView = m_imageTextureView.get();
+
+    TextureBinding textureBinding{};
+    textureBinding.index = 2;
+    textureBinding.textureView = m_imageTextureView.get();
 
     BindingGroupDescriptor descriptor{};
     descriptor.layout = m_bindingGroupLayout.get();
     descriptor.buffers = { bufferBinding };
     descriptor.samplers = { samplerBinding };
-    descriptor.textures = {};
+    descriptor.textures = { textureBinding };
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
