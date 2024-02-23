@@ -32,7 +32,7 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     {
         const auto& sampler = descriptor.samplers[i];
         layoutBindings[bufferSize + i] = { .binding = sampler.index,
-                                           .descriptorType = sampler.withTexture ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLER,
+                                           .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
                                            .descriptorCount = 1,
                                            .stageFlags = ToVkShaderStageFlags(sampler.stages),
                                            .pImmutableSamplers = nullptr };

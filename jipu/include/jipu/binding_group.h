@@ -27,7 +27,6 @@ class TextureView;
 struct SamplerBinding : Binding
 {
     Sampler* sampler = nullptr;
-    TextureView* textureView = nullptr;
 };
 
 struct TextureBinding : Binding
