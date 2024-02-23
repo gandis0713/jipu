@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 #include <random>
 #include <stdexcept>
 
@@ -807,16 +808,23 @@ void DeferredSample::createOffscreenBindingGroupLayout()
     SamplerBindingLayout colorSamplerBindingLayout{};
     colorSamplerBindingLayout.index = 1;
     colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    colorSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 2;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    normalSamplerBindingLayout.withTexture = true;
+
+    TextureBindingLayout colorTextureBindingLayout{};
+    colorTextureBindingLayout.index = 3;
+    colorTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout normalTextureBindingLayout{};
+    normalTextureBindingLayout.index = 4;
+    normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
     bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
     bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+    bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
 
     m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 }
@@ -862,16 +870,23 @@ void DeferredSample::createOffscreenBindingGroup()
     SamplerBinding colorSamplerBinding{};
     colorSamplerBinding.index = 1;
     colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
-    colorSamplerBinding.textureView = m_offscreen.colorMapTextureView.get();
 
     SamplerBinding normalSamplerBinding{};
     normalSamplerBinding.index = 2;
     normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
-    normalSamplerBinding.textureView = m_offscreen.normalMapTextureView.get();
+
+    TextureBinding colorTextureBinding{};
+    colorTextureBinding.index = 3;
+    colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+
+    TextureBinding normalTextureBinding{};
+    normalTextureBinding.index = 4;
+    normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
 
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.buffers = { bufferBinding };
     bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
+    bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
     bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
 
     m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -1022,25 +1037,35 @@ void DeferredSample::createCompositionBindingGroupLayout()
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
     positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    positionSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 1;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    normalSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout albedoSamplerBindingLayout{};
     albedoSamplerBindingLayout.index = 2;
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    albedoSamplerBindingLayout.withTexture = true;
+
+    TextureBindingLayout positionTextureBindingLayout{};
+    positionTextureBindingLayout.index = 3;
+    positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout normalTextureBindingLayout{};
+    normalTextureBindingLayout.index = 4;
+    normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout albedoTextureBindingLayout{};
+    albedoTextureBindingLayout.index = 5;
+    albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BufferBindingLayout uniformBufferBindingLayout{};
-    uniformBufferBindingLayout.index = 3;
+    uniformBufferBindingLayout.index = 6;
     uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
     uniformBufferBindingLayout.type = BufferBindingType::kUniform;
 
     descriptor.buffers = { uniformBufferBindingLayout };
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
+    descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
     m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
@@ -1063,7 +1088,6 @@ void DeferredSample::createCompositionBindingGroup()
 
         positionSamplerBinding.index = 0;
         positionSamplerBinding.sampler = m_composition.positionSampler.get();
-        positionSamplerBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
     }
 
     SamplerBinding normalSamplerBinding{};
@@ -1082,7 +1106,6 @@ void DeferredSample::createCompositionBindingGroup()
 
         normalSamplerBinding.index = 1;
         normalSamplerBinding.sampler = m_composition.normalSampler.get();
-        normalSamplerBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
     }
 
     SamplerBinding albedoSamplerBinding{};
@@ -1101,13 +1124,24 @@ void DeferredSample::createCompositionBindingGroup()
 
         albedoSamplerBinding.index = 2;
         albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
-        albedoSamplerBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
     }
+
+    TextureBinding positionTextureBinding{};
+    positionTextureBinding.index = 3;
+    positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+
+    TextureBinding normalTextureBinding{};
+    normalTextureBinding.index = 4;
+    normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+
+    TextureBinding albedoTextureBinding{};
+    albedoTextureBinding.index = 5;
+    albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
 
     BufferBinding uniformBufferBinding{};
     {
         uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-        uniformBufferBinding.index = 3;
+        uniformBufferBinding.index = 6;
         uniformBufferBinding.offset = 0;
         uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
     }
@@ -1116,6 +1150,7 @@ void DeferredSample::createCompositionBindingGroup()
     descriptor.layout = m_composition.bindingGroupLayout.get();
     descriptor.buffers = { uniformBufferBinding };
     descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
+    descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
 
     m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
 }
