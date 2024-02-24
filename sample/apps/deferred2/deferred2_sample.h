@@ -132,8 +132,8 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;

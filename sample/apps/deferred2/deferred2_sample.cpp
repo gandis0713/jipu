@@ -49,8 +49,8 @@ Deferred2Sample::~Deferred2Sample()
     m_offscreen.vertexShaderModule.reset();
     m_offscreen.fragmentShaderModule.reset();
     m_offscreen.pipelineLayout.reset();
-    m_offscreen.bindingGroupLayout.reset();
-    m_offscreen.bindingGroup.reset();
+    m_offscreen.bindingGroupLayouts.clear();
+    m_offscreen.bindingGroups.clear();
     m_offscreen.camera.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
@@ -286,7 +286,8 @@ void Deferred2Sample::draw()
     vulkanRenderPassEncoder->setPipeline(m_renderPipelineGroup->getRenderPipeline(0));
     vulkanRenderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
     vulkanRenderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-    vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
+    vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroups[0].get());
+    vulkanRenderPassEncoder->setBindingGroup(1, m_offscreen.bindingGroups[1].get());
     vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
 
     // second pass
@@ -624,36 +625,47 @@ void Deferred2Sample::createOffscreenVertexBuffer()
 
 void Deferred2Sample::createOffscreenBindingGroupLayout()
 {
-    BufferBindingLayout bufferBindingLayout{};
-    bufferBindingLayout.type = BufferBindingType::kUniform;
-    bufferBindingLayout.index = 0;
-    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+    m_offscreen.bindingGroupLayouts.resize(2);
 
-    SamplerBindingLayout colorSamplerBindingLayout{};
-    colorSamplerBindingLayout.index = 1;
-    colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    colorSamplerBindingLayout.withTexture = true;
+    {
+        BufferBindingLayout bufferBindingLayout{};
+        bufferBindingLayout.type = BufferBindingType::kUniform;
+        bufferBindingLayout.index = 0;
+        bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-    SamplerBindingLayout normalSamplerBindingLayout{};
-    normalSamplerBindingLayout.index = 2;
-    normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    normalSamplerBindingLayout.withTexture = true;
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+        bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
-    bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+        m_offscreen.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
 
-    m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    {
+        SamplerBindingLayout colorSamplerBindingLayout{};
+        colorSamplerBindingLayout.index = 0;
+        colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        SamplerBindingLayout normalSamplerBindingLayout{};
+        normalSamplerBindingLayout.index = 1;
+        normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        TextureBindingLayout colorTextureBindingLayout{};
+        colorTextureBindingLayout.index = 2;
+        colorTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        TextureBindingLayout normalTextureBindingLayout{};
+        normalTextureBindingLayout.index = 3;
+        normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+        bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+        bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+
+        m_offscreen.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
 }
 
 void Deferred2Sample::createOffscreenBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = sizeof(MVP);
-
     { // create color map sampler
 
         SamplerDescriptor samplerDescriptor{};
@@ -684,28 +696,51 @@ void Deferred2Sample::createOffscreenBindingGroup()
         m_offscreen.normalMapSampler = m_device->createSampler(samplerDescriptor);
     }
 
-    SamplerBinding colorSamplerBinding{};
-    colorSamplerBinding.index = 1;
-    colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
-    colorSamplerBinding.textureView = m_offscreen.colorMapTextureView.get();
+    m_offscreen.bindingGroups.resize(2);
+    {
+        BufferBinding bufferBinding{};
+        bufferBinding.buffer = m_offscreen.uniformBuffer.get();
+        bufferBinding.index = 0;
+        bufferBinding.offset = 0;
+        bufferBinding.size = sizeof(MVP);
 
-    SamplerBinding normalSamplerBinding{};
-    normalSamplerBinding.index = 2;
-    normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
-    normalSamplerBinding.textureView = m_offscreen.normalMapTextureView.get();
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.buffers = { bufferBinding };
+        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[0].get();
 
-    BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { bufferBinding };
-    bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
-    bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
+        m_offscreen.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
+    }
 
-    m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+    {
+        SamplerBinding colorSamplerBinding{};
+        colorSamplerBinding.index = 0;
+        colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+
+        SamplerBinding normalSamplerBinding{};
+        normalSamplerBinding.index = 1;
+        normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+
+        TextureBinding colorTextureBinding{};
+        colorTextureBinding.index = 2;
+        colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+
+        TextureBinding normalTextureBinding{};
+        normalTextureBinding.index = 3;
+        normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
+        bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
+        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[1].get();
+
+        m_offscreen.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
+    }
 }
 
 void Deferred2Sample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
+    descriptor.layouts = { m_offscreen.bindingGroupLayouts[0].get(), m_offscreen.bindingGroupLayouts[1].get() };
 
     auto vulkanDevice = downcast(m_device.get());
     m_offscreen.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -818,30 +853,41 @@ RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescripto
 
 void Deferred2Sample::createCompositionBindingGroupLayout()
 {
+
     BindingGroupLayoutDescriptor descriptor{};
 
     SamplerBindingLayout positionSamplerBindingLayout{};
     positionSamplerBindingLayout.index = 0;
     positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    positionSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout normalSamplerBindingLayout{};
     normalSamplerBindingLayout.index = 1;
     normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    normalSamplerBindingLayout.withTexture = true;
 
     SamplerBindingLayout albedoSamplerBindingLayout{};
     albedoSamplerBindingLayout.index = 2;
     albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    albedoSamplerBindingLayout.withTexture = true;
+
+    TextureBindingLayout positionTextureBindingLayout{};
+    positionTextureBindingLayout.index = 3;
+    positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout normalTextureBindingLayout{};
+    normalTextureBindingLayout.index = 4;
+    normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout albedoTextureBindingLayout{};
+    albedoTextureBindingLayout.index = 5;
+    albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BufferBindingLayout uniformBufferBindingLayout{};
-    uniformBufferBindingLayout.index = 3;
+    uniformBufferBindingLayout.index = 6;
     uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
     uniformBufferBindingLayout.type = BufferBindingType::kUniform;
 
     descriptor.buffers = { uniformBufferBindingLayout };
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
+    descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
     m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
@@ -864,7 +910,6 @@ void Deferred2Sample::createCompositionBindingGroup()
 
         positionSamplerBinding.index = 0;
         positionSamplerBinding.sampler = m_composition.positionSampler.get();
-        positionSamplerBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
     }
 
     SamplerBinding normalSamplerBinding{};
@@ -883,7 +928,6 @@ void Deferred2Sample::createCompositionBindingGroup()
 
         normalSamplerBinding.index = 1;
         normalSamplerBinding.sampler = m_composition.normalSampler.get();
-        normalSamplerBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
     }
 
     SamplerBinding albedoSamplerBinding{};
@@ -902,13 +946,24 @@ void Deferred2Sample::createCompositionBindingGroup()
 
         albedoSamplerBinding.index = 2;
         albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
-        albedoSamplerBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
     }
+
+    TextureBinding positionTextureBinding{};
+    positionTextureBinding.index = 3;
+    positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+
+    TextureBinding normalTextureBinding{};
+    normalTextureBinding.index = 4;
+    normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+
+    TextureBinding albedoTextureBinding{};
+    albedoTextureBinding.index = 5;
+    albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
 
     BufferBinding uniformBufferBinding{};
     {
         uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-        uniformBufferBinding.index = 3;
+        uniformBufferBinding.index = 6;
         uniformBufferBinding.offset = 0;
         uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
     }
@@ -917,6 +972,7 @@ void Deferred2Sample::createCompositionBindingGroup()
     descriptor.layout = m_composition.bindingGroupLayout.get();
     descriptor.buffers = { uniformBufferBinding };
     descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
+    descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
 
     m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
 }
