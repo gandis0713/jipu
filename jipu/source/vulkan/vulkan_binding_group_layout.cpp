@@ -7,10 +7,19 @@
 namespace jipu
 {
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
+VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor, const VulkanBindingGroupLayoutDescriptor& vkdescriptor)
     : m_device(device)
     , m_descriptor(descriptor)
+    , m_vkdescriptor(vkdescriptor)
 {
+    if (descriptor.buffers.size() != vkdescriptor.buffers.size())
+        throw std::runtime_error("Failed to invalid descriptors for buffer.");
+
+    if (descriptor.samplers.size() != vkdescriptor.samplers.size())
+        throw std::runtime_error("Failed to invalid descriptors for sampler.");
+
+    if (descriptor.textures.size() != vkdescriptor.textures.size())
+        throw std::runtime_error("Failed to invalid descriptors for texture.");
 
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();
@@ -41,8 +50,9 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const B
     for (uint64_t i = 0; i < textureSize; ++i)
     {
         const auto& texture = descriptor.textures[i];
+        const auto& vktexture = vkdescriptor.textures[i];
         layoutBindings[bufferSize + samplerSize + i] = { .binding = texture.index,
-                                                         .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                                         .descriptorType = ToVkDescriptorType(vktexture.type),
                                                          .descriptorCount = 1,
                                                          .stageFlags = ToVkShaderStageFlags(texture.stages),
                                                          .pImmutableSamplers = nullptr };
@@ -135,6 +145,18 @@ VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset)
     case BufferBindingType::kUndefined:
         throw std::runtime_error(fmt::format("Failed to support type [{}] for VkDescriptorType.", static_cast<int32_t>(type)));
         return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    }
+}
+
+VkDescriptorType ToVkDescriptorType(const VulkanTextureBindingType type)
+{
+    switch (type)
+    {
+    case VulkanTextureBindingType::kInputAttachment:
+        return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    default:
+    case VulkanTextureBindingType::kTextureBinding:
+        return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
     }
 }
 

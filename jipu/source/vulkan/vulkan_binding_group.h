@@ -27,4 +27,5 @@ private:
     const BindingGroupDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
+
 } // namespace jipu

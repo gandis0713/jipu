@@ -7,12 +7,37 @@
 namespace jipu
 {
 
+enum class VulkanTextureBindingType
+{
+    kTextureBinding = 0,
+    kInputAttachment
+};
+
+struct VulkanBufferBindingLayout
+{
+};
+
+struct VulkanSamplerBindingLayout
+{
+};
+
+struct VulkanTextureBindingLayout
+{
+    VulkanTextureBindingType type;
+};
+struct VulkanBindingGroupLayoutDescriptor
+{
+    std::vector<VulkanBufferBindingLayout> buffers{};
+    std::vector<VulkanSamplerBindingLayout> samplers{};
+    std::vector<VulkanTextureBindingLayout> textures{};
+};
+
 class VulkanDevice;
 class JIPU_EXPERIMENTAL_EXPORT VulkanBindingGroupLayout : public BindingGroupLayout
 {
 public:
     VulkanBindingGroupLayout() = delete;
-    VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor);
+    VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor, const VulkanBindingGroupLayoutDescriptor& vkdescriptor);
     ~VulkanBindingGroupLayout() override;
 
     const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
@@ -32,11 +57,13 @@ private:
 private:
     VulkanDevice* m_device = nullptr;
     const BindingGroupLayoutDescriptor m_descriptor{};
+    const VulkanBindingGroupLayoutDescriptor m_vkdescriptor{};
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
 // Convert Helper
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
+VkDescriptorType ToVkDescriptorType(VulkanTextureBindingType type);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);
 BindingStageFlags ToBindingStageFlags(VkShaderStageFlags flags);

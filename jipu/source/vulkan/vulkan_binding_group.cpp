@@ -12,6 +12,21 @@
 namespace jipu
 {
 
+namespace
+{
+
+VkDescriptorType ToVkDescriptorType(VulkanTextureUsageFlags usages)
+{
+    if (usages & VulkanTextureUsageFlagBits::kInputAttachment)
+    {
+        return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    }
+
+    return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+}
+
+} // namespace
+
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
@@ -124,10 +139,12 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         }
 
         const TextureBindingLayout textureLayout = textureLayoutOp.value();
+        auto vulkanTextureView = downcast(texture.textureView);
+        auto vulkanTexture = downcast(vulkanTextureView->getTexture());
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageView = downcast(texture.textureView)->getVkImageView();
-        imageInfo.imageLayout = downcast(texture.textureView)->getTexture()->getFinalLayout();
+        imageInfo.imageView = vulkanTextureView->getVkImageView();
+        imageInfo.imageLayout = vulkanTextureView->getTexture()->getFinalLayout();
 
         textureInfos[i] = imageInfo;
 
@@ -136,7 +153,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = texture.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        descriptorWrite.descriptorType = ToVkDescriptorType(vulkanTexture->getVulkanTextureUsages());
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;

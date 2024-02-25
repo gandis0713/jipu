@@ -20,18 +20,25 @@ enum class TextureOwner
     Internal // by swap chain
 };
 
+enum VulkanTextureUsageFlagBits
+{
+    kUndefined = 0x00000000,
+    kInputAttachment = 0x00000001,
+};
+using VulkanTextureUsageFlags = uint32_t;
+
+struct VulkanTextureDescriptor
+{
+    VkImage image = VK_NULL_HANDLE;
+    VulkanTextureUsageFlags usages = VulkanTextureUsageFlagBits::kUndefined;
+};
+
 class VulkanDevice;
 class JIPU_EXPERIMENTAL_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
-
-    /**
-     * @brief Construct a new Vulkan Texture object.
-     *        Have not VkImage ownership.
-     */
-    VulkanTexture(VulkanDevice* device, VkImage image, const TextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
@@ -48,6 +55,7 @@ public:
 
 public:
     VulkanDevice* getDevice() const;
+    VulkanTextureUsageFlags getVulkanTextureUsages() const;
 
 public:
     VkImage getVkImage() const;
@@ -67,6 +75,7 @@ public:
 private:
     VulkanDevice* m_device = nullptr;
     const TextureDescriptor m_descriptor{};
+    const VulkanTextureDescriptor m_vkdescriptor{};
 
 private:
     VulkanTextureResource m_resource;
@@ -83,7 +92,7 @@ VkFormat ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
-VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, VulkanTextureUsageFlags usage);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
 

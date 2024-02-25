@@ -85,7 +85,12 @@ std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGrou
 
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
+    VulkanBindingGroupLayoutDescriptor vkdescriptor{};
+    vkdescriptor.buffers.resize(descriptor.buffers.size());
+    vkdescriptor.samplers.resize(descriptor.samplers.size());
+    vkdescriptor.textures.resize(descriptor.textures.size());
+
+    return createBindingGroupLayout(descriptor, vkdescriptor);
 }
 
 std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
@@ -142,7 +147,11 @@ std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescript
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(this, descriptor);
+    VulkanTextureDescriptor vkdescriptor{};
+    vkdescriptor.image = VK_NULL_HANDLE;
+    vkdescriptor.usages = VulkanTextureUsageFlagBits::kUndefined;
+
+    return std::make_unique<VulkanTexture>(this, descriptor, vkdescriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
@@ -153,6 +162,16 @@ std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanR
 std::unique_ptr<VulkanRenderPipelineGroup> VulkanDevice::createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor)
 {
     return std::make_unique<VulkanRenderPipelineGroup>(this, descriptor);
+}
+
+std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor, const VulkanBindingGroupLayoutDescriptor& vkdescriptor)
+{
+    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor, vkdescriptor);
+}
+
+std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor)
+{
+    return std::make_unique<VulkanTexture>(this, descriptor, vkdescriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)

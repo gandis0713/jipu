@@ -6,6 +6,8 @@
 #include <random>
 #include <stdexcept>
 
+#include "vulkan_binding_group.h"
+#include "vulkan_binding_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
@@ -16,6 +18,8 @@
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
+#include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 namespace jipu
 {
@@ -117,7 +121,7 @@ void Deferred2Sample::init()
     createDepthStencilTextureView();
     createRenderPipelineGroup();
 
-    //    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    // initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
     m_initialized = true;
 }
@@ -127,8 +131,8 @@ void Deferred2Sample::update()
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
-    //    updateImGui();
-    //    buildImGui();
+    // updateImGui();
+    // buildImGui();
 }
 
 void Deferred2Sample::updateOffscreenUniformBuffer()
@@ -366,9 +370,13 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
+    VulkanTextureDescriptor vkdescriptor{};
+    vkdescriptor.image = VK_NULL_HANDLE;
+    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
+
+    m_offscreen.positionColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
 }
 
 void Deferred2Sample::createOffscreenPositionColorAttachmentTextureView()
@@ -390,9 +398,13 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
+    VulkanTextureDescriptor vkdescriptor{};
+    vkdescriptor.image = VK_NULL_HANDLE;
+    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
+
+    m_offscreen.normalColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
 }
 
 void Deferred2Sample::createOffscreenNormalColorAttachmentTextureView()
@@ -414,9 +426,13 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding | TextureUsageFlagBits::kInputAttachment;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
+    VulkanTextureDescriptor vkdescriptor{};
+    vkdescriptor.image = VK_NULL_HANDLE;
+    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
+
+    m_offscreen.albedoColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
 }
 
 void Deferred2Sample::createOffscreenAlbedoColorAttachmentTextureView()
@@ -872,34 +888,26 @@ void Deferred2Sample::createCompositionBindingGroupLayout()
     {
         BindingGroupLayoutDescriptor descriptor{};
 
-        SamplerBindingLayout positionSamplerBindingLayout{};
-        positionSamplerBindingLayout.index = 0;
-        positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-
-        SamplerBindingLayout normalSamplerBindingLayout{};
-        normalSamplerBindingLayout.index = 1;
-        normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-
-        SamplerBindingLayout albedoSamplerBindingLayout{};
-        albedoSamplerBindingLayout.index = 2;
-        albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-
         TextureBindingLayout positionTextureBindingLayout{};
-        positionTextureBindingLayout.index = 3;
+        positionTextureBindingLayout.index = 0;
         positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
         TextureBindingLayout normalTextureBindingLayout{};
-        normalTextureBindingLayout.index = 4;
+        normalTextureBindingLayout.index = 1;
         normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
         TextureBindingLayout albedoTextureBindingLayout{};
-        albedoTextureBindingLayout.index = 5;
+        albedoTextureBindingLayout.index = 2;
         albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-        descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
         descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-        m_composition.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(descriptor);
+        VulkanTextureBindingLayout vktextureBindingLayout{ .type = VulkanTextureBindingType::kInputAttachment };
+
+        VulkanBindingGroupLayoutDescriptor vkdescriptor{};
+        vkdescriptor.textures = { vktextureBindingLayout, vktextureBindingLayout, vktextureBindingLayout };
+
+        m_composition.bindingGroupLayouts[1] = downcast(m_device.get())->createBindingGroupLayout(descriptor, vkdescriptor);
     }
 }
 
@@ -922,75 +930,21 @@ void Deferred2Sample::createCompositionBindingGroup()
     }
 
     {
-        SamplerBinding positionSamplerBinding{};
-        {
-            SamplerDescriptor samplerDescriptor{};
-            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-            samplerDescriptor.magFilter = FilterMode::kLinear;
-            samplerDescriptor.minFilter = FilterMode::kLinear;
-            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-            samplerDescriptor.lodMin = 0.0f;
-            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.positionColorAttachmentTexture->getMipLevels());
-
-            m_composition.positionSampler = m_device->createSampler(samplerDescriptor);
-
-            positionSamplerBinding.index = 0;
-            positionSamplerBinding.sampler = m_composition.positionSampler.get();
-        }
-
-        SamplerBinding normalSamplerBinding{};
-        {
-            SamplerDescriptor samplerDescriptor{};
-            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-            samplerDescriptor.magFilter = FilterMode::kLinear;
-            samplerDescriptor.minFilter = FilterMode::kLinear;
-            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-            samplerDescriptor.lodMin = 0.0f;
-            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
-
-            m_composition.normalSampler = m_device->createSampler(samplerDescriptor);
-
-            normalSamplerBinding.index = 1;
-            normalSamplerBinding.sampler = m_composition.normalSampler.get();
-        }
-
-        SamplerBinding albedoSamplerBinding{};
-        {
-            SamplerDescriptor samplerDescriptor{};
-            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-            samplerDescriptor.magFilter = FilterMode::kLinear;
-            samplerDescriptor.minFilter = FilterMode::kLinear;
-            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-            samplerDescriptor.lodMin = 0.0f;
-            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.albedoColorAttachmentTexture->getMipLevels());
-
-            m_composition.albedoSampler = m_device->createSampler(samplerDescriptor);
-
-            albedoSamplerBinding.index = 2;
-            albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
-        }
 
         TextureBinding positionTextureBinding{};
-        positionTextureBinding.index = 3;
+        positionTextureBinding.index = 0;
         positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
 
         TextureBinding normalTextureBinding{};
-        normalTextureBinding.index = 4;
+        normalTextureBinding.index = 1;
         normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
 
         TextureBinding albedoTextureBinding{};
-        albedoTextureBinding.index = 5;
+        albedoTextureBinding.index = 2;
         albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
 
         BindingGroupDescriptor descriptor{};
         descriptor.layout = m_composition.bindingGroupLayouts[1].get();
-        descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
         descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
 
         m_composition.bindingGroups[1] = m_device->createBindingGroup(descriptor);

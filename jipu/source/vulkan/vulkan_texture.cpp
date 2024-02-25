@@ -10,10 +10,12 @@
 namespace jipu
 {
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor)
+VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor)
     : m_device(device)
     , m_descriptor(descriptor)
-    , m_owner(TextureOwner::External)
+    , m_vkdescriptor(vkdescriptor)
+    , m_resource{ vkdescriptor.image, VK_NULL_HANDLE }
+    , m_owner(vkdescriptor.image == VK_NULL_HANDLE ? TextureOwner::External : TextureOwner::Internal)
 {
     if (descriptor.width == 0 || descriptor.height == 0 || descriptor.depth == 0)
     {
@@ -35,32 +37,27 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& desc
         throw std::runtime_error("Texture format must not be undefined.");
     }
 
-    VkImageCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    createInfo.imageType = ToVkImageType(descriptor.type);
-    createInfo.extent.width = descriptor.width;
-    createInfo.extent.height = descriptor.height;
-    createInfo.extent.depth = descriptor.depth;
-    createInfo.mipLevels = descriptor.mipLevels;
-    createInfo.arrayLayers = 1;
-    createInfo.format = ToVkFormat(descriptor.format);
-    createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    createInfo.usage = ToVkImageUsageFlags(descriptor.usage);
-    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-    createInfo.flags = 0; // Optional
+    if (m_owner == TextureOwner::External)
+    {
+        VkImageCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        createInfo.imageType = ToVkImageType(descriptor.type);
+        createInfo.extent.width = descriptor.width;
+        createInfo.extent.height = descriptor.height;
+        createInfo.extent.depth = descriptor.depth;
+        createInfo.mipLevels = descriptor.mipLevels;
+        createInfo.arrayLayers = 1;
+        createInfo.format = ToVkFormat(descriptor.format);
+        createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+        createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        createInfo.usage = ToVkImageUsageFlags(descriptor.usage, vkdescriptor.usages);
+        createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+        createInfo.flags = 0; // Optional
 
-    auto vulkanResourceAllocator = device->getResourceAllocator();
-    m_resource = vulkanResourceAllocator->createTexture(createInfo);
-}
-
-VulkanTexture::VulkanTexture(VulkanDevice* device, VkImage image, const TextureDescriptor& descriptor)
-    : m_device(device)
-    , m_descriptor(descriptor)
-    , m_resource{ image, VK_NULL_HANDLE }
-    , m_owner(TextureOwner::Internal)
-{
+        auto vulkanResourceAllocator = device->getResourceAllocator();
+        m_resource = vulkanResourceAllocator->createTexture(createInfo);
+    }
 }
 
 VulkanTexture::~VulkanTexture()
@@ -120,6 +117,11 @@ uint32_t VulkanTexture::getSampleCount() const
 VulkanDevice* VulkanTexture::getDevice() const
 {
     return m_device;
+}
+
+VulkanTextureUsageFlags VulkanTexture::getVulkanTextureUsages() const
+{
+    return m_vkdescriptor.usages;
 }
 
 VkImage VulkanTexture::getVkImage() const
@@ -301,15 +303,11 @@ TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages)
     {
         flags |= TextureUsageFlagBits::kColorAttachment;
     }
-    if (usages & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT)
-    {
-        flags |= TextureUsageFlagBits::kInputAttachment;
-    }
 
     return flags;
 }
 
-VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, VulkanTextureUsageFlags vkusages)
 {
     VkImageUsageFlags flags = 0u;
 
@@ -323,7 +321,10 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     }
     if (usages & TextureUsageFlagBits::kTextureBinding)
     {
-        flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+        if (vkusages & VulkanTextureUsageFlagBits::kInputAttachment)
+            flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        else
+            flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
     }
     if (usages & TextureUsageFlagBits::kStorageBinding)
     {
@@ -336,10 +337,6 @@ VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages)
     if (usages & TextureUsageFlagBits::kColorAttachment)
     {
         flags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    }
-    if (usages & TextureUsageFlagBits::kInputAttachment)
-    {
-        flags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     }
 
     return flags;
@@ -360,8 +357,6 @@ VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage)
     }
     if (usage & TextureUsageFlagBits::kColorAttachment)
     {
-        if (usage & TextureUsageFlagBits::kInputAttachment)
-            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
     if (usage & TextureUsageFlagBits::kStorageBinding)

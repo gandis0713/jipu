@@ -50,7 +50,6 @@ struct TextureUsageFlagBits
     static constexpr uint32_t kStorageBinding = 0x00000008;
     static constexpr uint32_t kDepthStencil = 0x00000010;
     static constexpr uint32_t kColorAttachment = 0x00000020;
-    static constexpr uint32_t kInputAttachment = 0x00000040;
 };
 using TextureUsageFlags = uint32_t;
 
