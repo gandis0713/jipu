@@ -38,8 +38,8 @@ Deferred2Sample::~Deferred2Sample()
     m_composition.vertexShaderModule.reset();
     m_composition.fragmentShaderModule.reset();
     m_composition.pipelineLayout.reset();
-    m_composition.bindingGroupLayout.reset();
-    m_composition.bindingGroup.reset();
+    m_composition.bindingGroupLayouts.clear();
+    m_composition.bindingGroups.clear();
     m_composition.vertexBuffer.reset();
     m_composition.uniformBuffer.reset();
     m_composition.positionSampler.reset();
@@ -290,12 +290,13 @@ void Deferred2Sample::draw()
     vulkanRenderPassEncoder->setBindingGroup(1, m_offscreen.bindingGroups[1].get());
     vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
 
-    // second pass
     vulkanRenderPassEncoder->nextPass();
 
+    // second pass
     vulkanRenderPassEncoder->setPipeline(m_renderPipelineGroup->getRenderPipeline(1));
     vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-    vulkanRenderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
+    vulkanRenderPassEncoder->setBindingGroup(0, m_composition.bindingGroups[0].get());
+    vulkanRenderPassEncoder->setBindingGroup(1, m_composition.bindingGroups[1].get());
     vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
 
     vulkanRenderPassEncoder->end();
@@ -853,134 +854,153 @@ RenderPipelineDescriptor Deferred2Sample::createOffscreenRenderPipelineDescripto
 
 void Deferred2Sample::createCompositionBindingGroupLayout()
 {
+    m_composition.bindingGroupLayouts.resize(2);
 
-    BindingGroupLayoutDescriptor descriptor{};
+    {
+        BindingGroupLayoutDescriptor descriptor{};
 
-    SamplerBindingLayout positionSamplerBindingLayout{};
-    positionSamplerBindingLayout.index = 0;
-    positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        BufferBindingLayout uniformBufferBindingLayout{};
+        uniformBufferBindingLayout.index = 0;
+        uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        uniformBufferBindingLayout.type = BufferBindingType::kUniform;
 
-    SamplerBindingLayout normalSamplerBindingLayout{};
-    normalSamplerBindingLayout.index = 1;
-    normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        descriptor.buffers = { uniformBufferBindingLayout };
 
-    SamplerBindingLayout albedoSamplerBindingLayout{};
-    albedoSamplerBindingLayout.index = 2;
-    albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        m_composition.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(descriptor);
+    }
 
-    TextureBindingLayout positionTextureBindingLayout{};
-    positionTextureBindingLayout.index = 3;
-    positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    {
+        BindingGroupLayoutDescriptor descriptor{};
 
-    TextureBindingLayout normalTextureBindingLayout{};
-    normalTextureBindingLayout.index = 4;
-    normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        SamplerBindingLayout positionSamplerBindingLayout{};
+        positionSamplerBindingLayout.index = 0;
+        positionSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    TextureBindingLayout albedoTextureBindingLayout{};
-    albedoTextureBindingLayout.index = 5;
-    albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        SamplerBindingLayout normalSamplerBindingLayout{};
+        normalSamplerBindingLayout.index = 1;
+        normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    BufferBindingLayout uniformBufferBindingLayout{};
-    uniformBufferBindingLayout.index = 6;
-    uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-    uniformBufferBindingLayout.type = BufferBindingType::kUniform;
+        SamplerBindingLayout albedoSamplerBindingLayout{};
+        albedoSamplerBindingLayout.index = 2;
+        albedoSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    descriptor.buffers = { uniformBufferBindingLayout };
-    descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
-    descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
+        TextureBindingLayout positionTextureBindingLayout{};
+        positionTextureBindingLayout.index = 3;
+        positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+        TextureBindingLayout normalTextureBindingLayout{};
+        normalTextureBindingLayout.index = 4;
+        normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        TextureBindingLayout albedoTextureBindingLayout{};
+        albedoTextureBindingLayout.index = 5;
+        albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
+        descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
+
+        m_composition.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(descriptor);
+    }
 }
 
 void Deferred2Sample::createCompositionBindingGroup()
 {
-    SamplerBinding positionSamplerBinding{};
+    m_composition.bindingGroups.resize(2);
+
     {
-        SamplerDescriptor samplerDescriptor{};
-        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-        samplerDescriptor.magFilter = FilterMode::kLinear;
-        samplerDescriptor.minFilter = FilterMode::kLinear;
-        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-        samplerDescriptor.lodMin = 0.0f;
-        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.positionColorAttachmentTexture->getMipLevels());
-
-        m_composition.positionSampler = m_device->createSampler(samplerDescriptor);
-
-        positionSamplerBinding.index = 0;
-        positionSamplerBinding.sampler = m_composition.positionSampler.get();
-    }
-
-    SamplerBinding normalSamplerBinding{};
-    {
-        SamplerDescriptor samplerDescriptor{};
-        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-        samplerDescriptor.magFilter = FilterMode::kLinear;
-        samplerDescriptor.minFilter = FilterMode::kLinear;
-        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-        samplerDescriptor.lodMin = 0.0f;
-        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
-
-        m_composition.normalSampler = m_device->createSampler(samplerDescriptor);
-
-        normalSamplerBinding.index = 1;
-        normalSamplerBinding.sampler = m_composition.normalSampler.get();
-    }
-
-    SamplerBinding albedoSamplerBinding{};
-    {
-        SamplerDescriptor samplerDescriptor{};
-        samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
-        samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
-        samplerDescriptor.magFilter = FilterMode::kLinear;
-        samplerDescriptor.minFilter = FilterMode::kLinear;
-        samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
-        samplerDescriptor.lodMin = 0.0f;
-        samplerDescriptor.lodMax = static_cast<float>(m_offscreen.albedoColorAttachmentTexture->getMipLevels());
-
-        m_composition.albedoSampler = m_device->createSampler(samplerDescriptor);
-
-        albedoSamplerBinding.index = 2;
-        albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
-    }
-
-    TextureBinding positionTextureBinding{};
-    positionTextureBinding.index = 3;
-    positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
-
-    TextureBinding normalTextureBinding{};
-    normalTextureBinding.index = 4;
-    normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
-
-    TextureBinding albedoTextureBinding{};
-    albedoTextureBinding.index = 5;
-    albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
-
-    BufferBinding uniformBufferBinding{};
-    {
+        BufferBinding uniformBufferBinding{};
         uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-        uniformBufferBinding.index = 6;
+        uniformBufferBinding.index = 0;
         uniformBufferBinding.offset = 0;
         uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
+
+        BindingGroupDescriptor descriptor{};
+        descriptor.layout = m_composition.bindingGroupLayouts[0].get();
+        descriptor.buffers = { uniformBufferBinding };
+
+        m_composition.bindingGroups[0] = m_device->createBindingGroup(descriptor);
     }
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = m_composition.bindingGroupLayout.get();
-    descriptor.buffers = { uniformBufferBinding };
-    descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
-    descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
+    {
+        SamplerBinding positionSamplerBinding{};
+        {
+            SamplerDescriptor samplerDescriptor{};
+            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+            samplerDescriptor.magFilter = FilterMode::kLinear;
+            samplerDescriptor.minFilter = FilterMode::kLinear;
+            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+            samplerDescriptor.lodMin = 0.0f;
+            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.positionColorAttachmentTexture->getMipLevels());
 
-    m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
+            m_composition.positionSampler = m_device->createSampler(samplerDescriptor);
+
+            positionSamplerBinding.index = 0;
+            positionSamplerBinding.sampler = m_composition.positionSampler.get();
+        }
+
+        SamplerBinding normalSamplerBinding{};
+        {
+            SamplerDescriptor samplerDescriptor{};
+            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+            samplerDescriptor.magFilter = FilterMode::kLinear;
+            samplerDescriptor.minFilter = FilterMode::kLinear;
+            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+            samplerDescriptor.lodMin = 0.0f;
+            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
+
+            m_composition.normalSampler = m_device->createSampler(samplerDescriptor);
+
+            normalSamplerBinding.index = 1;
+            normalSamplerBinding.sampler = m_composition.normalSampler.get();
+        }
+
+        SamplerBinding albedoSamplerBinding{};
+        {
+            SamplerDescriptor samplerDescriptor{};
+            samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+            samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+            samplerDescriptor.magFilter = FilterMode::kLinear;
+            samplerDescriptor.minFilter = FilterMode::kLinear;
+            samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
+            samplerDescriptor.lodMin = 0.0f;
+            samplerDescriptor.lodMax = static_cast<float>(m_offscreen.albedoColorAttachmentTexture->getMipLevels());
+
+            m_composition.albedoSampler = m_device->createSampler(samplerDescriptor);
+
+            albedoSamplerBinding.index = 2;
+            albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
+        }
+
+        TextureBinding positionTextureBinding{};
+        positionTextureBinding.index = 3;
+        positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+
+        TextureBinding normalTextureBinding{};
+        normalTextureBinding.index = 4;
+        normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+
+        TextureBinding albedoTextureBinding{};
+        albedoTextureBinding.index = 5;
+        albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
+
+        BindingGroupDescriptor descriptor{};
+        descriptor.layout = m_composition.bindingGroupLayouts[1].get();
+        descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
+        descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
+
+        m_composition.bindingGroups[1] = m_device->createBindingGroup(descriptor);
+    }
 }
 
 void Deferred2Sample::createCompositionPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_composition.bindingGroupLayout.get() };
+    descriptor.layouts = { m_composition.bindingGroupLayouts[0].get(), m_composition.bindingGroupLayouts[1].get() };
 
     auto vulkanDevice = downcast(m_device.get());
     m_composition.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
