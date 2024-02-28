@@ -873,41 +873,35 @@ void Deferred2Sample::createCompositionBindingGroupLayout()
     m_composition.bindingGroupLayouts.resize(2);
 
     {
-        BindingGroupLayoutDescriptor descriptor{};
+        VkDescriptorSetLayoutBinding uniformBufferBindingLayout{};
+        uniformBufferBindingLayout.binding = 0;
+        uniformBufferBindingLayout.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        uniformBufferBindingLayout.descriptorCount = 1;
+        uniformBufferBindingLayout.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-        BufferBindingLayout uniformBufferBindingLayout{};
-        uniformBufferBindingLayout.index = 0;
-        uniformBufferBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-        uniformBufferBindingLayout.type = BufferBindingType::kUniform;
-
+        VulkanBindingGroupLayoutDescriptor descriptor{};
         descriptor.buffers = { uniformBufferBindingLayout };
 
-        m_composition.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(descriptor);
+        m_composition.bindingGroupLayouts[0] = downcast(m_device.get())->createBindingGroupLayout(descriptor);
     }
 
     {
-        BindingGroupLayoutDescriptor descriptor{};
+        VkDescriptorSetLayoutBinding positionTextureBindingLayout{};
+        positionTextureBindingLayout.binding = 0;
+        positionTextureBindingLayout.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        positionTextureBindingLayout.descriptorCount = 1;
+        positionTextureBindingLayout.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 
-        TextureBindingLayout positionTextureBindingLayout{};
-        positionTextureBindingLayout.index = 0;
-        positionTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        VkDescriptorSetLayoutBinding normalTextureBindingLayout = positionTextureBindingLayout;
+        normalTextureBindingLayout.binding = 1;
 
-        TextureBindingLayout normalTextureBindingLayout{};
-        normalTextureBindingLayout.index = 1;
-        normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        VkDescriptorSetLayoutBinding albedoTextureBindingLayout = positionTextureBindingLayout;
+        albedoTextureBindingLayout.binding = 2;
 
-        TextureBindingLayout albedoTextureBindingLayout{};
-        albedoTextureBindingLayout.index = 2;
-        albedoTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
-
+        VulkanBindingGroupLayoutDescriptor descriptor{};
         descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-        VulkanTextureBindingLayout vktextureBindingLayout{ .type = VulkanTextureBindingType::kInputAttachment };
-
-        VulkanBindingGroupLayoutDescriptor vkdescriptor{};
-        vkdescriptor.textures = { vktextureBindingLayout, vktextureBindingLayout, vktextureBindingLayout };
-
-        m_composition.bindingGroupLayouts[1] = downcast(m_device.get())->createBindingGroupLayout(descriptor, vkdescriptor);
+        m_composition.bindingGroupLayouts[1] = downcast(m_device.get())->createBindingGroupLayout(descriptor);
     }
 }
 

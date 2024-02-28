@@ -85,12 +85,7 @@ std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGrou
 
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
 {
-    VulkanBindingGroupLayoutDescriptor vkdescriptor{};
-    vkdescriptor.buffers.resize(descriptor.buffers.size());
-    vkdescriptor.samplers.resize(descriptor.samplers.size());
-    vkdescriptor.textures.resize(descriptor.textures.size());
-
-    return createBindingGroupLayout(descriptor, vkdescriptor);
+    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
 }
 
 std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
@@ -164,9 +159,9 @@ std::unique_ptr<VulkanRenderPipelineGroup> VulkanDevice::createRenderPipelineGro
     return std::make_unique<VulkanRenderPipelineGroup>(this, descriptor);
 }
 
-std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor, const VulkanBindingGroupLayoutDescriptor& vkdescriptor)
+std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor, vkdescriptor);
+    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor)

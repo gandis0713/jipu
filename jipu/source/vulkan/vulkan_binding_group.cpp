@@ -60,14 +60,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < bufferSize; ++i)
     {
         const BufferBinding& buffer = descriptor.buffers[i];
-        auto bufferLayoutOp = vulkanBindingGroupLayout->getBufferBindingLayout(buffer.index);
-        if (!bufferLayoutOp.has_value())
-        {
-            spdlog::error("There is no buffer binding layout for that index.");
-            continue;
-        }
-
-        const BufferBindingLayout bufferLayout = bufferLayoutOp.value();
+        auto bufferLayout = vulkanBindingGroupLayout->getBufferBindingLayout(buffer.index);
 
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
@@ -81,7 +74,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = buffer.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type, bufferLayout.dynamicOffset);
+        descriptorWrite.descriptorType = bufferLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = &bufferInfos[i];
@@ -97,13 +90,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < samplerSize; ++i)
     {
         const SamplerBinding& sampler = descriptor.samplers[i];
-        auto samplerLayoutOp = vulkanBindingGroupLayout->getSamplerBindingLayout(sampler.index);
-        if (!samplerLayoutOp.has_value())
-        {
-            spdlog::error("There is no sampler binding layout for that index.");
-            continue;
-        }
-        const SamplerBindingLayout samplerLayout = samplerLayoutOp.value();
+        auto samplerLayout = vulkanBindingGroupLayout->getSamplerBindingLayout(sampler.index);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
@@ -115,7 +102,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = sampler.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+        descriptorWrite.descriptorType = samplerLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
@@ -131,14 +118,8 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     for (auto i = 0; i < textureSize; ++i)
     {
         const TextureBinding& texture = descriptor.textures[i];
-        auto textureLayoutOp = vulkanBindingGroupLayout->getTextureBindingLayout(texture.index);
-        if (!textureLayoutOp.has_value())
-        {
-            spdlog::error("There is no texture binding layout for that index.");
-            continue;
-        }
+        auto textureLayout = vulkanBindingGroupLayout->getTextureBindingLayout(texture.index);
 
-        const TextureBindingLayout textureLayout = textureLayoutOp.value();
         auto vulkanTextureView = downcast(texture.textureView);
         auto vulkanTexture = downcast(vulkanTextureView->getTexture());
 
@@ -153,7 +134,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
         descriptorWrite.dstSet = m_descriptorSet;
         descriptorWrite.dstBinding = texture.index;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = ToVkDescriptorType(vulkanTexture->getVulkanTextureUsages());
+        descriptorWrite.descriptorType = textureLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;

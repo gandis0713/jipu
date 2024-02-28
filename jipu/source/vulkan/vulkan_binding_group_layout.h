@@ -7,29 +7,13 @@
 namespace jipu
 {
 
-enum class VulkanTextureBindingType
-{
-    kTextureBinding = 0,
-    kInputAttachment
-};
-
-struct VulkanBufferBindingLayout
-{
-};
-
-struct VulkanSamplerBindingLayout
-{
-};
-
-struct VulkanTextureBindingLayout
-{
-    VulkanTextureBindingType type;
-};
 struct VulkanBindingGroupLayoutDescriptor
 {
-    std::vector<VulkanBufferBindingLayout> buffers{};
-    std::vector<VulkanSamplerBindingLayout> samplers{};
-    std::vector<VulkanTextureBindingLayout> textures{};
+    const void* next = nullptr;
+    VkDescriptorSetLayoutCreateFlags flags = 0u;
+    std::vector<VkDescriptorSetLayoutBinding> buffers{};
+    std::vector<VkDescriptorSetLayoutBinding> samplers{};
+    std::vector<VkDescriptorSetLayoutBinding> textures{};
 };
 
 class VulkanDevice;
@@ -37,17 +21,27 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanBindingGroupLayout : public BindingGroupLay
 {
 public:
     VulkanBindingGroupLayout() = delete;
-    VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor, const VulkanBindingGroupLayoutDescriptor& vkdescriptor);
+    VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor);
+    VulkanBindingGroupLayout(VulkanDevice* device, const VulkanBindingGroupLayoutDescriptor& descriptor);
     ~VulkanBindingGroupLayout() override;
 
-    const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
-    std::optional<BufferBindingLayout> getBufferBindingLayout(uint32_t index) const;
+    // const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
+    // std::optional<BufferBindingLayout> getBufferBindingLayout(uint32_t index) const;
 
-    const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
-    std::optional<SamplerBindingLayout> getSamplerBindingLayout(uint32_t index) const;
+    // const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
+    // std::optional<SamplerBindingLayout> getSamplerBindingLayout(uint32_t index) const;
 
-    const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
-    std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
+    // const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
+    // std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
+
+    std::vector<VkDescriptorSetLayoutBinding> getBufferBindingLayouts() const;
+    VkDescriptorSetLayoutBinding getBufferBindingLayout(uint32_t index) const;
+
+    std::vector<VkDescriptorSetLayoutBinding> getSamplerBindingLayouts() const;
+    VkDescriptorSetLayoutBinding getSamplerBindingLayout(uint32_t index) const;
+
+    std::vector<VkDescriptorSetLayoutBinding> getTextureBindingLayouts() const;
+    VkDescriptorSetLayoutBinding getTextureBindingLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
 
@@ -56,14 +50,12 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const BindingGroupLayoutDescriptor m_descriptor{};
-    const VulkanBindingGroupLayoutDescriptor m_vkdescriptor{};
+    VulkanBindingGroupLayoutDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
 // Convert Helper
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
-VkDescriptorType ToVkDescriptorType(VulkanTextureBindingType type);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);
 VkShaderStageFlags ToVkShaderStageFlags(BindingStageFlags flags);
 BindingStageFlags ToBindingStageFlags(VkShaderStageFlags flags);
