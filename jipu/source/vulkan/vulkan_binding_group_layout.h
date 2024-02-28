@@ -50,7 +50,7 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
-    VulkanBindingGroupLayoutDescriptor m_descriptor{};
+    const VulkanBindingGroupLayoutDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 

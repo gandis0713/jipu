@@ -96,14 +96,13 @@ std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferBin
 
 VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferBindingLayout(uint32_t index) const
 {
-    for (const auto& buffer : m_descriptor.buffers)
-    {
-        if (buffer.binding == index)
-            return buffer;
-    }
+    if (m_descriptor.buffers.empty())
+        throw std::runtime_error("Failed to find buffer binding layout due to empty.");
 
-    throw std::runtime_error("Failed to find buffer binding layout by index.");
-    return {};
+    if (m_descriptor.buffers.size() <= index)
+        throw std::runtime_error("Failed to find buffer binding layout due to over index.");
+
+    return m_descriptor.buffers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerBindingLayouts() const
@@ -113,14 +112,13 @@ std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerBi
 
 VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
 {
-    for (const auto& sampler : m_descriptor.samplers)
-    {
-        if (sampler.binding == index)
-            return sampler;
-    }
+    if (m_descriptor.samplers.empty())
+        throw std::runtime_error("Failed to find sampler binding layout due to empty.");
 
-    throw std::runtime_error("Failed to find sampler binding layout by index.");
-    return {};
+    if (m_descriptor.samplers.size() <= index)
+        throw std::runtime_error("Failed to find sampler binding layout due to over index.");
+
+    return m_descriptor.samplers[index];
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureBindingLayouts() const
@@ -130,14 +128,13 @@ std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureBi
 
 VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureBindingLayout(uint32_t index) const
 {
-    for (const auto& texture : m_descriptor.textures)
-    {
-        if (texture.binding == index)
-            return texture;
-    }
+    if (m_descriptor.textures.empty())
+        throw std::runtime_error("Failed to find texture binding layout due to empty.");
 
-    throw std::runtime_error("Failed to find texture binding layout by index.");
-    return {};
+    if (m_descriptor.textures.size() <= index)
+        throw std::runtime_error("Failed to find texture binding layout due to over index.");
+
+    return m_descriptor.textures[index];
 }
 
 VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const
