@@ -14,23 +14,24 @@
 namespace jipu
 {
 
-enum class TextureOwner
-{
-    External,
-    Internal // by swap chain
-};
-
-enum VulkanTextureUsageFlagBits
-{
-    kUndefined = 0x00000000,
-    kInputAttachment = 0x00000001,
-};
-using VulkanTextureUsageFlags = uint32_t;
-
 struct VulkanTextureDescriptor
 {
+    const void* next = nullptr;
+    VkImageCreateFlags flags;
+    VkImageType imageType;
+    VkFormat format;
+    VkExtent3D extent;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
+    VkSampleCountFlagBits samples;
+    VkImageTiling tiling;
+    VkImageUsageFlags usage;
+    VkSharingMode sharingMode;
+    std::vector<uint32_t> queueFamilyIndices{};
+    VkImageLayout initialLayout;
+
+    // if created by swap chain.
     VkImage image = VK_NULL_HANDLE;
-    VulkanTextureUsageFlags usages = VulkanTextureUsageFlagBits::kUndefined;
 };
 
 class VulkanDevice;
@@ -38,7 +39,8 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor);
+    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
@@ -55,11 +57,9 @@ public:
 
 public:
     VulkanDevice* getDevice() const;
-    VulkanTextureUsageFlags getVulkanTextureUsages() const;
 
 public:
     VkImage getVkImage() const;
-    TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
@@ -74,12 +74,18 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const TextureDescriptor m_descriptor{};
-    const VulkanTextureDescriptor m_vkdescriptor{};
+    const VulkanTextureDescriptor m_descriptor{};
+
+private:
+    enum class VulkanTextureOwner
+    {
+        User,
+        Swapchain
+    };
 
 private:
     VulkanTextureResource m_resource;
-    TextureOwner m_owner;
+    VulkanTextureOwner m_owner;
 
 private:
     VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -92,12 +98,14 @@ VkFormat ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
-VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages, VulkanTextureUsageFlags usage);
+VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
 VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
+uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 
 // Utils
-VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
+VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage);
+// VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
 VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
 VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout);
 

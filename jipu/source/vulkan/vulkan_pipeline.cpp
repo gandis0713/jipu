@@ -173,7 +173,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipeli
         vulkanColorAttachment.loadOp = LoadOp::kClear;
         vulkanColorAttachment.storeOp = StoreOp::kStore;
         vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        vulkanColorAttachment.finalLayout = GenerateFinalImageLayout(TextureUsageFlagBits::kColorAttachment);
+        vulkanColorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
 
     if (descriptor.depthStencil.has_value())

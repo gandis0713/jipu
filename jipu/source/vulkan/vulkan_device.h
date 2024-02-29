@@ -51,7 +51,7 @@ public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
     std::unique_ptr<VulkanRenderPipelineGroup> createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor);
     std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
-    std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor);
+    std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
 
 public:
     VulkanRenderPass* getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors);

@@ -362,21 +362,19 @@ void Deferred2Sample::createDevice()
 
 void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
 {
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
+    VulkanTextureDescriptor descriptor{};
+    descriptor.imageType = VK_IMAGE_TYPE_2D;
+    descriptor.format = VK_FORMAT_R16G16B16A16_UNORM;
+    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
     descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.arrayLayers = 1;
+    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
+    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
+    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VulkanTextureDescriptor vkdescriptor{};
-    vkdescriptor.image = VK_NULL_HANDLE;
-    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
-
-    m_offscreen.positionColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
+    m_offscreen.positionColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
 }
 
 void Deferred2Sample::createOffscreenPositionColorAttachmentTextureView()
@@ -390,21 +388,19 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTextureView()
 
 void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
 {
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
+    VulkanTextureDescriptor descriptor{};
+    descriptor.imageType = VK_IMAGE_TYPE_2D;
+    descriptor.format = VK_FORMAT_R16G16B16A16_UNORM;
+    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
     descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.arrayLayers = 1;
+    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
+    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
+    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VulkanTextureDescriptor vkdescriptor{};
-    vkdescriptor.image = VK_NULL_HANDLE;
-    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
-
-    m_offscreen.normalColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
+    m_offscreen.normalColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
 }
 
 void Deferred2Sample::createOffscreenNormalColorAttachmentTextureView()
@@ -418,21 +414,19 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTextureView()
 
 void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
 {
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm;
+    VulkanTextureDescriptor descriptor{};
+    descriptor.imageType = VK_IMAGE_TYPE_2D;
+    descriptor.format = VK_FORMAT_B8G8R8A8_UNORM;
+    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
     descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
+    descriptor.arrayLayers = 1;
+    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
+    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
+    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    VulkanTextureDescriptor vkdescriptor{};
-    vkdescriptor.image = VK_NULL_HANDLE;
-    vkdescriptor.usages = VulkanTextureUsageFlagBits::kInputAttachment;
-
-    m_offscreen.albedoColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor, vkdescriptor);
+    m_offscreen.albedoColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
 }
 
 void Deferred2Sample::createOffscreenAlbedoColorAttachmentTextureView()

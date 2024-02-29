@@ -142,11 +142,7 @@ std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescript
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)
 {
-    VulkanTextureDescriptor vkdescriptor{};
-    vkdescriptor.image = VK_NULL_HANDLE;
-    vkdescriptor.usages = VulkanTextureUsageFlagBits::kUndefined;
-
-    return std::make_unique<VulkanTexture>(this, descriptor, vkdescriptor);
+    return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
@@ -164,9 +160,9 @@ std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const
     return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
 }
 
-std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor, const VulkanTextureDescriptor& vkdescriptor)
+std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(this, descriptor, vkdescriptor);
+    return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)
