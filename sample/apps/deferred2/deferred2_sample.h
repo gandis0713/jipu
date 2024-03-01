@@ -22,13 +22,15 @@
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
 
-#include "vulkan_pipeline_group.h"
+#include "vulkan_pipeline.h"
 
 #include "khronos_texture.h"
 
 namespace jipu
 {
 
+class VulkanFramebuffer;
+class VulkanRenderPass;
 class Deferred2Sample : public Sample, public Im_Gui
 {
 public:
@@ -50,6 +52,11 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
+    void createCommandBuffer();
+    void createQueue();
+
+    void createDepthStencilTexture();
+    void createDepthStencilTextureView();
 
     void createOffscreenPositionColorAttachmentTexture();
     void createOffscreenPositionColorAttachmentTextureView();
@@ -67,23 +74,21 @@ private:
     void createOffscreenBindingGroupLayout();
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
-    RenderPipelineDescriptor createOffscreenRenderPipelineDescriptor();
+    void createOffscreenPipeline();
+
     void updateOffscreenUniformBuffer();
 
     void createCompositionBindingGroupLayout();
     void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
-    RenderPipelineDescriptor createCompositionRenderPipelineDescriptor();
+    void createCompositionPipeline();
     void createCompositionUniformBuffer();
     void createCompositionVertexBuffer();
+
     void updateCompositionUniformBuffer();
 
-    void createDepthStencilTexture();
-    void createDepthStencilTextureView();
-    void createRenderPipelineGroup();
-
-    void createCommandBuffer();
-    void createQueue();
+    VulkanRenderPass* getRenderPass();
+    VulkanFramebuffer* getFrameBuffer(TextureView* renderView);
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -137,6 +142,7 @@ private:
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -156,6 +162,7 @@ private:
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
@@ -171,7 +178,6 @@ private:
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<VulkanRenderPipelineGroup> m_renderPipelineGroup = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
