@@ -105,19 +105,7 @@ std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const Compu
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
-    VulkanRenderPipelineDescriptor vulkanDescriptor{};
-    vulkanDescriptor.inputAssembly = descriptor.inputAssembly;
-    vulkanDescriptor.vertex = descriptor.vertex;
-    vulkanDescriptor.rasterization = descriptor.rasterization;
-    vulkanDescriptor.depthStencil = descriptor.depthStencil;
-    vulkanDescriptor.fragment = descriptor.fragment;
-    vulkanDescriptor.layout = descriptor.layout;
-
-    VulkanRenderPass* renderPass = getRenderPass({ generateVulkanRenderPassDescriptor(descriptor) });
-    vulkanDescriptor.renderPass = renderPass->getVkRenderPass();
-    vulkanDescriptor.subpassIndex = 0;
-
-    return createRenderPipeline(vulkanDescriptor);
+    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
 }
 
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
@@ -150,11 +138,6 @@ std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanR
     return std::make_unique<VulkanRenderPipeline>(this, descriptor);
 }
 
-std::unique_ptr<VulkanRenderPipelineGroup> VulkanDevice::createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor)
-{
-    return std::make_unique<VulkanRenderPipelineGroup>(this, descriptor);
-}
-
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor)
 {
     return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
@@ -165,9 +148,9 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescript
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
-VulkanRenderPass* VulkanDevice::getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors)
+VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
-    return m_renderPassCache.getRenderPass(descriptors);
+    return m_renderPassCache.getRenderPass(descriptor);
 }
 
 VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)

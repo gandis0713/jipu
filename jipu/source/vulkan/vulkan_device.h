@@ -9,7 +9,6 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
-#include "vulkan_pipeline_group.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
@@ -49,12 +48,11 @@ public:
 
 public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
-    std::unique_ptr<VulkanRenderPipelineGroup> createRenderPipelineGroup(const VulkanRenderPipelineGroupDescriptor& descriptor);
     std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
 
 public:
-    VulkanRenderPass* getRenderPass(const std::vector<VulkanRenderPassDescriptor>& descriptors);
+    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
     VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
     VulkanResourceAllocator* getResourceAllocator() const;
 
