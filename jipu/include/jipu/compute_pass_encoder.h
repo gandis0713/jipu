@@ -7,7 +7,7 @@
 namespace jipu
 {
 
-struct ComputePassDescriptor
+struct ComputePassEncoderDescriptor
 {
 };
 

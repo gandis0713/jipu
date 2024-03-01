@@ -34,19 +34,19 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, c
     }
 }
 
-std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const ComputePassDescriptor& descriptor)
+std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const ComputePassEncoderDescriptor& descriptor)
 {
     return std::make_unique<VulkanComputePassEncoder>(downcast(m_commandBuffer), descriptor);
 }
 
-std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassDescriptor& descriptor)
+std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassEncoderDescriptor& descriptor)
 {
     return std::make_unique<VulkanRenderPassEncoder>(downcast(m_commandBuffer), descriptor);
 }
 
-std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const std::vector<RenderPassDescriptor>& descriptors)
+std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPassEncoder>(downcast(m_commandBuffer), descriptors);
+    return std::make_unique<VulkanRenderPassEncoder>(downcast(m_commandBuffer), descriptor);
 }
 
 void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)

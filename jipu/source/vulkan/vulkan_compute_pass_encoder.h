@@ -14,7 +14,7 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanComputePassEncoder : public ComputePassEnco
 {
 public:
     VulkanComputePassEncoder() = delete;
-    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor);
+    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
     ~VulkanComputePassEncoder() override = default;
 
 public:

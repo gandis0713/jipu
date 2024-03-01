@@ -229,7 +229,7 @@ void ParticleSample::draw()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        ComputePassDescriptor computePassDescriptor{};
+        ComputePassEncoderDescriptor computePassDescriptor{};
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
         computePassEncoder->setPipeline(m_computePipeline.get());
         computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
@@ -255,7 +255,7 @@ void ParticleSample::draw()
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassDescriptor renderPassDescriptor{};
+        RenderPassEncoderDescriptor renderPassDescriptor{};
         renderPassDescriptor.colorAttachments = { colorAttachment };
         renderPassDescriptor.sampleCount = m_sampleCount;
 
