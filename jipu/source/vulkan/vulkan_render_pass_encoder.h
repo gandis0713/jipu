@@ -10,6 +10,15 @@
 namespace jipu
 {
 
+struct VulkanRenderPassEncoderDescriptor
+{
+    const void* next = nullptr;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    VkRect2D renderArea{};
+    std::vector<VkClearValue> clearValues{};
+};
+
 class VulkanDevice;
 class VulkanRenderPass;
 class VulkanFramebuffer;
@@ -19,8 +28,8 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPassEncoder : public RenderPassEncode
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const std::vector<RenderPassDescriptor>& descriptors);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
@@ -51,9 +60,7 @@ public:
     void nextPass();
 
 private:
-    void initialize(const std::vector<RenderPassDescriptor>& descriptors);
-    VulkanRenderPass* getVulkanRenderPass(const std::vector<RenderPassDescriptor>& descriptors);
-    VulkanFramebuffer* getVulkanFramebuffer(VulkanRenderPass* renderPass, const std::vector<RenderPassDescriptor>& descriptors);
+    void initialize();
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
@@ -61,7 +68,7 @@ private:
 
     uint32_t m_passIndex = 0;
 
-    const std::vector<RenderPassDescriptor> m_descriptors{};
+    const VulkanRenderPassEncoderDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
