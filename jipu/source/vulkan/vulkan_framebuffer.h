@@ -14,8 +14,13 @@ namespace jipu
 
 struct VulkanFramebufferDescriptor
 {
-    VulkanRenderPass* renderPass = nullptr;
-    std::vector<TextureView*> textureViews{};
+    const void* next = nullptr;
+    VkFramebufferCreateFlags flags = 0u;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    std::vector<VkImageView> attachments{};
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint32_t layers = 0;
 };
 
 class VulkanDevice;
@@ -33,12 +38,10 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
+    const VulkanFramebufferDescriptor m_descriptor{};
 
 private:
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
-
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
 };
 
 class JIPU_EXPERIMENTAL_EXPORT VulkanFramebufferCache final

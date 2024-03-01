@@ -14,28 +14,17 @@ namespace jipu
 
 VulkanFramebuffer::VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor)
     : m_device(device)
+    , m_descriptor(descriptor)
 {
-    if (descriptor.textureViews.empty())
-        throw std::runtime_error("Failed to create vulkan frame buffer due to empty texture view.");
-
-    const auto& textureView = descriptor.textureViews[0];
-    m_width = textureView->getWidth();
-    m_height = textureView->getHeight();
-
-    uint32_t textureViewSize = static_cast<uint32_t>(descriptor.textureViews.size());
-    std::vector<VkImageView> imageViews(textureViewSize);
-    for (auto i = 0; i < textureViewSize; ++i)
-    {
-        imageViews[i] = downcast(descriptor.textureViews[i])->getVkImageView();
-    }
-
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                                                   .renderPass = descriptor.renderPass->getVkRenderPass(),
-                                                   .attachmentCount = static_cast<uint32_t>(imageViews.size()),
-                                                   .pAttachments = imageViews.data(),
-                                                   .width = m_width,
-                                                   .height = m_height,
-                                                   .layers = 1 };
+                                                   .pNext = descriptor.next,
+                                                   .flags = descriptor.flags,
+                                                   .renderPass = descriptor.renderPass,
+                                                   .attachmentCount = static_cast<uint32_t>(descriptor.attachments.size()),
+                                                   .pAttachments = descriptor.attachments.data(),
+                                                   .width = descriptor.width,
+                                                   .height = descriptor.height,
+                                                   .layers = descriptor.layers };
 
     if (m_device->vkAPI.CreateFramebuffer(device->getVkDevice(), &framebufferCreateInfo, nullptr, &m_framebuffer) != VK_SUCCESS)
     {
@@ -55,21 +44,26 @@ VkFramebuffer VulkanFramebuffer::getVkFrameBuffer() const
 
 uint32_t VulkanFramebuffer::getWidth() const
 {
-    return m_width;
+    return m_descriptor.width;
 }
 
 uint32_t VulkanFramebuffer::getHeight() const
 {
-    return m_height;
+    return m_descriptor.height;
 }
 
 size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
 {
     size_t hash = jipu::hash(reinterpret_cast<uint64_t>(descriptor.renderPass));
 
-    for (const auto& textureView : descriptor.textureViews)
+    combineHash(hash, descriptor.flags);
+    combineHash(hash, descriptor.width);
+    combineHash(hash, descriptor.height);
+    combineHash(hash, descriptor.layers);
+
+    for (const auto& attachment : descriptor.attachments)
     {
-        combineHash(hash, reinterpret_cast<uint64_t>(textureView));
+        combineHash(hash, reinterpret_cast<uint64_t>(attachment));
     }
 
     return hash;
@@ -78,12 +72,16 @@ size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescri
 bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& lhs,
                                                  const VulkanFramebufferDescriptor& rhs) const
 {
-    if (lhs.renderPass == rhs.renderPass &&
-        lhs.textureViews.size() == rhs.textureViews.size())
+    if (lhs.flags == rhs.flags &&
+        lhs.width == rhs.width &&
+        lhs.height == rhs.height &&
+        lhs.layers == rhs.layers &&
+        lhs.renderPass == rhs.renderPass &&
+        lhs.attachments.size() == rhs.attachments.size())
     {
-        for (auto i = 0; i < lhs.textureViews.size(); ++i)
+        for (auto i = 0; i < lhs.attachments.size(); ++i)
         {
-            if (lhs.textureViews[i] != rhs.textureViews[i])
+            if (lhs.attachments[i] != rhs.attachments[i])
                 return false;
         }
 
