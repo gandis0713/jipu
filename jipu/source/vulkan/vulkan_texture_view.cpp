@@ -97,8 +97,7 @@ VkImageViewType ToVkImageViewType(TextureViewType type)
     case TextureViewType::kCubeArray:
         return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     default:
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return VK_IMAGE_VIEW_TYPE_1D;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 TextureViewType ToTextureViewType(VkImageViewType type)
@@ -120,9 +119,7 @@ TextureViewType ToTextureViewType(VkImageViewType type)
     case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
         return TextureViewType::kCubeArray;
     default:
-
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return TextureViewType::kUndefined;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 

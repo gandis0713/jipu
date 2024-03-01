@@ -230,8 +230,7 @@ VkFormat ToVkFormat(TextureFormat format)
     case TextureFormat::kD_24_UInt_Norm_S_8_UInt:
         return VK_FORMAT_D24_UNORM_S8_UINT;
     default:
-        assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
-        return VK_FORMAT_UNDEFINED;
+        throw std::runtime_error(fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
     }
 }
 
@@ -258,8 +257,7 @@ TextureFormat ToTextureFormat(VkFormat format)
     case VK_FORMAT_D24_UNORM_S8_UINT:
         return TextureFormat::kD_24_UInt_Norm_S_8_UInt;
     default:
-        assert_message(false, fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
-        return TextureFormat::kUndefined;
+        throw std::runtime_error(fmt::format("{} format does not support.", static_cast<uint32_t>(format)));
     }
 }
 
@@ -274,8 +272,7 @@ VkImageType ToVkImageType(TextureType type)
     case TextureType::k3D:
         return VK_IMAGE_TYPE_3D;
     default:
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return VK_IMAGE_TYPE_1D;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 
@@ -290,9 +287,7 @@ TextureType ToTextureType(VkImageType type)
     case VK_IMAGE_TYPE_3D:
         return TextureType::k3D;
     default:
-
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return TextureType::kUndefined;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 
