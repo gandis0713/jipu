@@ -94,13 +94,13 @@ private:
 DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
-VkFormat ToVkFormat(TextureFormat format);
+VkFormat JIPU_EXPERIMENTAL_EXPORT ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
-VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
+VkSampleCountFlagBits JIPU_EXPERIMENTAL_EXPORT ToVkSampleCountFlagBits(uint32_t count);
 uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 
 // Utils
