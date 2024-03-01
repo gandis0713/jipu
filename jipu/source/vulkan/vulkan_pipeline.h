@@ -57,6 +57,7 @@ class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;
+    VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
     VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor);
     ~VulkanRenderPipeline() override;
 
@@ -80,9 +81,6 @@ private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
-
-// Generator Helper
-VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

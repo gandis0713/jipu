@@ -1,6 +1,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -63,6 +64,9 @@ void VulkanComputePipeline::initialize()
 }
 
 // Vulkan Render Pipeline
+namespace
+{
+
 std::array<VkPipelineShaderStageCreateInfo, 2> generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor)
 {
     // Vertex Stage
@@ -160,38 +164,142 @@ std::vector<VkPipelineColorBlendAttachmentState> generateColorBlendAttachmentSta
 
 VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor)
 {
+    if (descriptor.fragment.targets.empty())
+        throw std::runtime_error("Failed to create vulkan render pass encoder due to empty fragment target.");
+
     // Refer to render pass compatibility (https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#renderpass-compatibility)
-    VulkanRenderPassDescriptor renderPassDescriptor{};
+    VulkanRenderPassDescriptor vkdescriptor{};
 
     uint32_t targetSize = static_cast<uint32_t>(descriptor.fragment.targets.size());
-    renderPassDescriptor.colorAttachments.resize(targetSize);
-    for (auto i = 0; i < targetSize; ++i)
+
+    for (const auto& target : descriptor.fragment.targets)
     {
-        const auto& target = descriptor.fragment.targets[i];
-        VulkanColorAttachment& vulkanColorAttachment = renderPassDescriptor.colorAttachments[i];
-        vulkanColorAttachment.format = target.format;
-        vulkanColorAttachment.loadOp = LoadOp::kClear;
-        vulkanColorAttachment.storeOp = StoreOp::kStore;
-        vulkanColorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        vulkanColorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkAttachmentDescription attachment{};
+
+        attachment.format = ToVkFormat(target.format);
+        attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachment.samples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
+        attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        vkdescriptor.attachmentDescriptions.push_back(attachment);
+    }
+
+    if (descriptor.rasterization.sampleCount > 1)
+    {
+        for (const auto& target : descriptor.fragment.targets)
+        {
+            VkAttachmentDescription attachment{};
+
+            attachment.format = ToVkFormat(target.format);
+            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
+            attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+            vkdescriptor.attachmentDescriptions.push_back(attachment);
+        }
     }
 
     if (descriptor.depthStencil.has_value())
     {
-        const DepthStencilStage depthStencilStage = descriptor.depthStencil.value();
-        VulkanDepthStencilAttachment vulkanDepthStencilAttachment{};
-        vulkanDepthStencilAttachment.format = depthStencilStage.format;
-        vulkanDepthStencilAttachment.depthLoadOp = LoadOp::kClear;
-        vulkanDepthStencilAttachment.depthStoreOp = StoreOp::kStore;
-        vulkanDepthStencilAttachment.stencilLoadOp = LoadOp::kDontCare;
-        vulkanDepthStencilAttachment.stencilStoreOp = StoreOp::kDontCare;
+        auto depthStencil = descriptor.depthStencil.value();
 
-        renderPassDescriptor.depthStencilAttachment = vulkanDepthStencilAttachment;
+        VkAttachmentDescription attachment{};
+        attachment.format = ToVkFormat(depthStencil.format);
+        attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachment.samples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
+        attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        vkdescriptor.attachmentDescriptions.push_back(attachment);
     }
 
-    renderPassDescriptor.sampleCount = descriptor.rasterization.sampleCount;
+    {
+        VulkanSubpassDescription subpassDescription{};
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
-    return renderPassDescriptor;
+        // color attachments
+        uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.fragment.targets.size());
+        for (auto i = 0; i < colorAttachmentCount; ++i)
+        {
+            // attachment references
+            VkAttachmentReference colorAttachmentReference{};
+            colorAttachmentReference.attachment = i;
+            colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            subpassDescription.colorAttachments.push_back(colorAttachmentReference);
+        }
+
+        std::vector<VkAttachmentReference> resolveAttachmentReferences{};
+        if (descriptor.rasterization.sampleCount > 1)
+        {
+            // resolve attachments
+            for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
+            {
+                VkAttachmentReference resolveAttachmentReference{};
+                resolveAttachmentReference.attachment = i;
+                resolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                subpassDescription.resolveAttachments.push_back(resolveAttachmentReference);
+            }
+        }
+
+        if (descriptor.depthStencil.has_value())
+        {
+            VkAttachmentReference depthAttachment{};
+            depthAttachment.attachment = static_cast<uint32_t>(subpassDescription.colorAttachments.size() + subpassDescription.resolveAttachments.size());
+            depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            subpassDescription.depthStencilAttachment = depthAttachment;
+        }
+        vkdescriptor.subpassDescriptions = { subpassDescription };
+
+        VkSubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependency.dstSubpass = 0;
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.srcAccessMask = 0;
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        if (descriptor.depthStencil.has_value())
+            subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+        vkdescriptor.subpassDependencies = { subpassDependency };
+    }
+
+    return vkdescriptor;
+}
+
+VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
+{
+    VulkanRenderPipelineDescriptor vkdescriptor{};
+    vkdescriptor.layout = descriptor.layout;
+    vkdescriptor.inputAssembly = descriptor.inputAssembly;
+    vkdescriptor.vertex = descriptor.vertex;
+    vkdescriptor.depthStencil = descriptor.depthStencil;
+    vkdescriptor.rasterization = descriptor.rasterization;
+    vkdescriptor.fragment = descriptor.fragment;
+    vkdescriptor.renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor))->getVkRenderPass();
+    vkdescriptor.subpassIndex = 0;
+
+    return vkdescriptor;
+}
+
+} // namespace
+
+VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
+    : VulkanRenderPipeline(device, generateVulkanRenderPipelineDescriptor(device, descriptor))
+{
 }
 
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor)
