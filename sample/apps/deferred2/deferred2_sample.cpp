@@ -731,7 +731,7 @@ void Deferred2Sample::createOffscreenPipeline()
 
     // shader module
     {
-        std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
+        std::vector<char> vertexSource = utils::readFile(m_appDir / "subpasses_offscreen.vert.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.code = vertexSource.data();
@@ -785,7 +785,7 @@ void Deferred2Sample::createOffscreenPipeline()
 
     // shader module
     {
-        std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
+        std::vector<char> fragmentSource = utils::readFile(m_appDir / "subpasses_offscreen.frag.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor;
         shaderModuleDescriptor.code = fragmentSource.data();
@@ -966,7 +966,7 @@ void Deferred2Sample::createCompositionPipeline()
         vertexStage.layouts = { vertexInputLayout };
     }
     { // vertex shader module
-        std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
+        std::vector<char> vertexSource = utils::readFile(m_appDir / "subpasses_composition.vert.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor{};
         shaderModuleDescriptor.code = vertexSource.data();
@@ -993,7 +993,7 @@ void Deferred2Sample::createCompositionPipeline()
     }
 
     { // fragment shader module
-        std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
+        std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "subpasses_composition.frag.spv", m_handle);
 
         ShaderModuleDescriptor shaderModuleDescriptor{};
         shaderModuleDescriptor.code = fragmentShaderSource.data();
