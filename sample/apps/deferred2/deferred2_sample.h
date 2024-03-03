@@ -123,12 +123,38 @@ private:
 
     struct
     {
-        std::unique_ptr<Texture> positionColorAttachmentTexture = nullptr;
-        std::unique_ptr<TextureView> positionColorAttachmentTextureView = nullptr;
-        std::unique_ptr<Texture> normalColorAttachmentTexture = nullptr;
-        std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
-        std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
-        std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
+        struct
+        {
+            std::unique_ptr<Texture> positionColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> positionColorAttachmentTextureView = nullptr;
+            std::unique_ptr<Texture> normalColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
+            std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
+            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+            std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+            std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+            std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+        } subPasses;
+
+        struct
+        {
+            std::unique_ptr<Texture> positionColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> positionColorAttachmentTextureView = nullptr;
+            std::unique_ptr<Texture> normalColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
+            std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
+            std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
+            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+            std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+            std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+            std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+
+        } renderPasses;
         std::unique_ptr<Texture> colorMapTexture = nullptr;
         std::unique_ptr<TextureView> colorMapTextureView = nullptr;
         std::unique_ptr<Texture> normalMapTexture = nullptr;
@@ -138,12 +164,6 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
-        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
-        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -155,12 +175,27 @@ private:
     };
     struct
     {
-        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
-        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
-        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+        struct
+        {
+            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+            std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+            std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+            std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+        } subPasses;
+
+        struct
+        {
+            std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+            std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+            std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+            std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+            std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+            std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+
+        } renderPasses;
+
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
