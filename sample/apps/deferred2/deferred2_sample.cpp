@@ -34,7 +34,7 @@ Deferred2Sample::Deferred2Sample(const SampleDescriptor& descriptor)
 
 Deferred2Sample::~Deferred2Sample()
 {
-    //    clearImGui();
+    clearImGui();
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
@@ -124,7 +124,7 @@ void Deferred2Sample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
 
-    // initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
     m_initialized = true;
 }
@@ -134,8 +134,8 @@ void Deferred2Sample::update()
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
-    // updateImGui();
-    // buildImGui();
+    updateImGui();
+    buildImGui();
 }
 
 void Deferred2Sample::updateOffscreenUniformBuffer()
@@ -270,7 +270,7 @@ void Deferred2Sample::draw()
 
     vulkanRenderPassEncoder->end();
 
-    //    drawImGui(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
