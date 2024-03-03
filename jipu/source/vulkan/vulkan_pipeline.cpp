@@ -64,32 +64,6 @@ void VulkanComputePipeline::initialize()
 }
 
 // Vulkan Render Pipeline
-namespace
-{
-
-std::array<VkPipelineShaderStageCreateInfo, 2> generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor)
-{
-    // Vertex Stage
-    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule)->getVkShaderModule();
-
-    VkPipelineShaderStageCreateInfo vertexStageInfo{};
-    vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertexStageInfo.module = vertexShaderModule;
-    vertexStageInfo.pName = descriptor.vertex.entryPoint.c_str();
-
-    // Fragment Stage
-    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule)->getVkShaderModule();
-
-    VkPipelineShaderStageCreateInfo fragmentStageInfo{};
-    fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentStageInfo.module = fragmentShaderModule;
-    fragmentStageInfo.pName = descriptor.fragment.entryPoint.c_str();
-
-    return { vertexStageInfo, fragmentStageInfo };
-}
-
 std::vector<VkVertexInputBindingDescription> generateVertexInputBindingDescription(const RenderPipelineDescriptor& descriptor)
 {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions{};
@@ -161,6 +135,144 @@ std::vector<VkPipelineColorBlendAttachmentState> generateColorBlendAttachmentSta
 
     return colorBlendAttachmentStates;
 }
+
+VkPipelineInputAssemblyStateCreateInfo generateInputAssemblyStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{};
+    inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyStateCreateInfo.topology = ToVkPrimitiveTopology(descriptor.inputAssembly.topology);
+    inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
+
+    return inputAssemblyStateCreateInfo;
+}
+
+VulkanPipelineVertexInputStateCreateInfo generateVertexInputStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VulkanPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
+    vertexInputStateCreateInfo.vertexAttributeDescriptions = generateVertexInputAttributeDescription(descriptor);
+    vertexInputStateCreateInfo.vertexBindingDescriptions = generateVertexInputBindingDescription(descriptor);
+
+    return vertexInputStateCreateInfo;
+}
+
+VkPipelineViewportStateCreateInfo generateViewportStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
+    viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportStateCreateInfo.viewportCount = 1;
+    viewportStateCreateInfo.pViewports = nullptr; // use dynamic state.
+    viewportStateCreateInfo.scissorCount = 1;
+    viewportStateCreateInfo.pScissors = nullptr; // use dynamic state.
+
+    return viewportStateCreateInfo;
+}
+
+VkPipelineRasterizationStateCreateInfo generateRasterizationStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
+    rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+    rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+    rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizationStateCreateInfo.lineWidth = 1.0f;
+    rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(descriptor.rasterization.cullMode);
+    rasterizationStateCreateInfo.frontFace = ToVkFrontFace(descriptor.rasterization.frontFace);
+    rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+    rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f; // Optional
+    rasterizationStateCreateInfo.depthBiasClamp = 0.0f;          // Optional
+    rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;    // Optional
+
+    return rasterizationStateCreateInfo;
+}
+
+VkPipelineMultisampleStateCreateInfo generateMultisampleStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
+    multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
+    multisampleStateCreateInfo.rasterizationSamples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
+    multisampleStateCreateInfo.minSampleShading = 1.0f;          // Optional
+    multisampleStateCreateInfo.pSampleMask = nullptr;            // Optional
+    multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
+    multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
+
+    return multisampleStateCreateInfo;
+}
+
+VulkanPipelineColorBlendStateCreateInfo generateColorBlendStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates = generateColorBlendAttachmentState(descriptor);
+    VulkanPipelineColorBlendStateCreateInfo colorBlendingStateCreateInfo{};
+    colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
+    colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
+    colorBlendingStateCreateInfo.attachments = colorBlendAttachmentStates;
+    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
+    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
+    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
+    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f; // Optional
+
+    return colorBlendingStateCreateInfo;
+}
+
+VkPipelineDepthStencilStateCreateInfo generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    VkPipelineDepthStencilStateCreateInfo depthStencil{};
+    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencil.depthTestEnable = descriptor.depthStencil.has_value();
+    depthStencil.depthWriteEnable = descriptor.depthStencil.has_value();
+    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depthStencil.depthBoundsTestEnable = VK_FALSE;
+    depthStencil.minDepthBounds = 0.0f; // Optional
+    depthStencil.maxDepthBounds = 1.0f; // Optional
+    depthStencil.stencilTestEnable = VK_FALSE;
+    depthStencil.front = {}; // Optional
+    depthStencil.back = {};  // Optional
+
+    return depthStencil;
+}
+
+VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    std::vector<VkDynamicState> dynamicStates = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+        // VK_DYNAMIC_STATE_LINE_WIDTH,
+        // VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
+        // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+    };
+
+    VulkanPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
+    dynamicStateCreateInfo.dynamicStates = dynamicStates;
+
+    return dynamicStateCreateInfo;
+}
+
+std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor)
+{
+    // Vertex Stage
+    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule)->getVkShaderModule();
+
+    VkPipelineShaderStageCreateInfo vertexStageInfo{};
+    vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertexStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertexStageInfo.module = vertexShaderModule;
+    vertexStageInfo.pName = descriptor.vertex.entryPoint.c_str();
+
+    // Fragment Stage
+    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule)->getVkShaderModule();
+
+    VkPipelineShaderStageCreateInfo fragmentStageInfo{};
+    fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragmentStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentStageInfo.module = fragmentShaderModule;
+    fragmentStageInfo.pName = descriptor.fragment.entryPoint.c_str();
+
+    return { vertexStageInfo, fragmentStageInfo };
+}
+
+namespace
+{
 
 VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor)
 {
@@ -283,14 +395,22 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipeli
 VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
 {
     VulkanRenderPipelineDescriptor vkdescriptor{};
-    vkdescriptor.layout = descriptor.layout;
-    vkdescriptor.inputAssembly = descriptor.inputAssembly;
-    vkdescriptor.vertex = descriptor.vertex;
-    vkdescriptor.depthStencil = descriptor.depthStencil;
-    vkdescriptor.rasterization = descriptor.rasterization;
-    vkdescriptor.fragment = descriptor.fragment;
-    vkdescriptor.renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor))->getVkRenderPass();
-    vkdescriptor.subpassIndex = 0;
+
+    vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
+    vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
+    vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
+    vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
+    vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
+    vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
+    vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
+    vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
+    vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
+
+    vkdescriptor.layout = downcast(descriptor.layout);
+    vkdescriptor.renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor));
+    vkdescriptor.subpass = 0;
+    vkdescriptor.basePipelineHandle = VK_NULL_HANDLE; // Optional
+    vkdescriptor.basePipelineIndex = -1;              // Optional
 
     return vkdescriptor;
 }
@@ -329,108 +449,46 @@ void VulkanRenderPipeline::initialize()
 {
     const auto& descriptor = m_descriptor;
 
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo{};
-    inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssemblyStateCreateInfo.topology = ToVkPrimitiveTopology(m_descriptor.inputAssembly.topology);
-    inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
-
-    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages = generateShaderStageCreateInfo(descriptor);
-
-    std::vector<VkVertexInputBindingDescription> bindingDescriptions = generateVertexInputBindingDescription(descriptor);
-    std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions = generateVertexInputAttributeDescription(descriptor);
-
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
     vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
-    vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexAttributeDescriptions.size());
-    vertexInputStateCreateInfo.pVertexBindingDescriptions = bindingDescriptions.data();
-    vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexAttributeDescriptions.data();
+    vertexInputStateCreateInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(descriptor.vertexInputState.vertexBindingDescriptions.size());
+    vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(descriptor.vertexInputState.vertexAttributeDescriptions.size());
+    vertexInputStateCreateInfo.pVertexBindingDescriptions = descriptor.vertexInputState.vertexBindingDescriptions.data();
+    vertexInputStateCreateInfo.pVertexAttributeDescriptions = descriptor.vertexInputState.vertexAttributeDescriptions.data();
 
-    VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
-    viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportStateCreateInfo.viewportCount = 1;
-    viewportStateCreateInfo.pViewports = nullptr; // use dynamic state.
-    viewportStateCreateInfo.scissorCount = 1;
-    viewportStateCreateInfo.pScissors = nullptr; // use dynamic state.
-
-    // Rasterization Stage
-    VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo{};
-    rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
-    rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationStateCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationStateCreateInfo.lineWidth = 1.0f;
-    rasterizationStateCreateInfo.cullMode = ToVkCullModeFlags(descriptor.rasterization.cullMode);
-    rasterizationStateCreateInfo.frontFace = ToVkFrontFace(descriptor.rasterization.frontFace);
-    rasterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
-    rasterizationStateCreateInfo.depthBiasConstantFactor = 0.0f; // Optional
-    rasterizationStateCreateInfo.depthBiasClamp = 0.0f;          // Optional
-    rasterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;    // Optional
-
-    VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo{};
-    multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
-    multisampleStateCreateInfo.rasterizationSamples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
-    multisampleStateCreateInfo.minSampleShading = 1.0f;          // Optional
-    multisampleStateCreateInfo.pSampleMask = nullptr;            // Optional
-    multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE; // Optional
-    multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;      // Optional
-
-    std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates = generateColorBlendAttachmentState(descriptor);
-    VkPipelineColorBlendStateCreateInfo colorBlendingStateCreateInfo{};
-    colorBlendingStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
-    colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
-    colorBlendingStateCreateInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachmentStates.size());
-    colorBlendingStateCreateInfo.pAttachments = colorBlendAttachmentStates.data();
-    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f; // Optional
-
-    VkPipelineDepthStencilStateCreateInfo depthStencil{};
-    depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = descriptor.depthStencil.has_value();
-    depthStencil.depthWriteEnable = descriptor.depthStencil.has_value();
-    depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencil.depthBoundsTestEnable = VK_FALSE;
-    depthStencil.minDepthBounds = 0.0f; // Optional
-    depthStencil.maxDepthBounds = 1.0f; // Optional
-    depthStencil.stencilTestEnable = VK_FALSE;
-    depthStencil.front = {}; // Optional
-    depthStencil.back = {};  // Optional
-
-    std::array<VkDynamicState, 2> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
-        // VK_DYNAMIC_STATE_LINE_WIDTH,
-        // VK_DYNAMIC_STATE_BLEND_CONSTANTS,
-        // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
-        // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
-    };
+    VkPipelineColorBlendStateCreateInfo colorBlendCreateInfo{};
+    colorBlendCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlendCreateInfo.attachmentCount = static_cast<uint32_t>(descriptor.colorBlendState.attachments.size());
+    colorBlendCreateInfo.pAttachments = descriptor.colorBlendState.attachments.data();
+    colorBlendCreateInfo.logicOpEnable = descriptor.colorBlendState.logicOpEnable;
+    colorBlendCreateInfo.logicOp = descriptor.colorBlendState.logicOp;
+    colorBlendCreateInfo.blendConstants[0] = descriptor.colorBlendState.blendConstants[0];
+    colorBlendCreateInfo.blendConstants[1] = descriptor.colorBlendState.blendConstants[1];
+    colorBlendCreateInfo.blendConstants[2] = descriptor.colorBlendState.blendConstants[2];
+    colorBlendCreateInfo.blendConstants[3] = descriptor.colorBlendState.blendConstants[3];
 
     VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
     dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicStateCreateInfo.dynamicStateCount = dynamicStates.size();
-    dynamicStateCreateInfo.pDynamicStates = dynamicStates.data();
+    dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(descriptor.dynamicState.dynamicStates.size());
+    dynamicStateCreateInfo.pDynamicStates = descriptor.dynamicState.dynamicStates.data();
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = shaderStages.size();
-    pipelineInfo.pStages = shaderStages.data();
+    pipelineInfo.stageCount = static_cast<uint32_t>(descriptor.stages.size());
+    pipelineInfo.pStages = descriptor.stages.data();
     pipelineInfo.pVertexInputState = &vertexInputStateCreateInfo;
-    pipelineInfo.pInputAssemblyState = &inputAssemblyStateCreateInfo;
-    pipelineInfo.pViewportState = &viewportStateCreateInfo;
-    pipelineInfo.pRasterizationState = &rasterizationStateCreateInfo;
-    pipelineInfo.pMultisampleState = &multisampleStateCreateInfo;
-    pipelineInfo.pDepthStencilState = &depthStencil;
-    pipelineInfo.pColorBlendState = &colorBlendingStateCreateInfo;
+    pipelineInfo.pInputAssemblyState = &descriptor.inputAssemblyState;
+    pipelineInfo.pViewportState = &descriptor.viewportState;
+    pipelineInfo.pRasterizationState = &descriptor.rasterizationState;
+    pipelineInfo.pMultisampleState = &descriptor.multisampleState;
+    pipelineInfo.pDepthStencilState = &descriptor.depthStencilState;
+    pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
     pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
-    pipelineInfo.renderPass = m_descriptor.renderPass;
-    pipelineInfo.subpass = m_descriptor.subpassIndex;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-    pipelineInfo.basePipelineIndex = -1;              // Optional
+    pipelineInfo.renderPass = descriptor.renderPass->getVkRenderPass();
+    pipelineInfo.subpass = descriptor.subpass;
+    pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;
+    pipelineInfo.basePipelineIndex = descriptor.basePipelineIndex;
 
     auto vulkanDevice = downcast(m_device);
     if (vulkanDevice->vkAPI.CreateGraphicsPipelines(vulkanDevice->getVkDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)

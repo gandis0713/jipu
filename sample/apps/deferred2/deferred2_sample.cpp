@@ -816,19 +816,33 @@ void Deferred2Sample::createOffscreenPipeline()
     DepthStencilStage depthStencil{};
     depthStencil.format = m_depthStencilTexture->getFormat();
 
-    VulkanRenderPipelineDescriptor renderPipelineDescriptor;
-    renderPipelineDescriptor.inputAssembly = inputAssembly;
-    renderPipelineDescriptor.vertex = vertexShage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencil;
-    renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
+    RenderPipelineDescriptor descriptor{};
+    descriptor.layout = m_offscreen.pipelineLayout.get();
+    descriptor.inputAssembly = inputAssembly;
+    descriptor.vertex = vertexShage;
+    descriptor.depthStencil = depthStencil;
+    descriptor.rasterization = rasterizationStage;
+    descriptor.fragment = fragmentStage;
 
-    renderPipelineDescriptor.renderPass = getRenderPass()->getVkRenderPass();
-    renderPipelineDescriptor.subpassIndex = 0;
+    VulkanRenderPipelineDescriptor vkdescriptor{};
+    vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
+    vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
+    vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
+    vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
+    vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
+    vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
+    vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
+    vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
+    vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
+
+    vkdescriptor.layout = downcast(descriptor.layout);
+    vkdescriptor.renderPass = getRenderPass();
+    vkdescriptor.subpass = 0;
+    vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
+    vkdescriptor.basePipelineIndex = -1;
 
     auto vulkanDevice = downcast(m_device.get());
-    m_offscreen.renderPipeline = vulkanDevice->createRenderPipeline(renderPipelineDescriptor);
+    m_offscreen.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
 }
 
 void Deferred2Sample::createCompositionBindingGroupLayout()
@@ -992,19 +1006,33 @@ void Deferred2Sample::createCompositionPipeline()
     DepthStencilStage depthStencilStage{};
     depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-    VulkanRenderPipelineDescriptor renderPipelineDescriptor{};
-    renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-    renderPipelineDescriptor.vertex = vertexStage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencilStage;
-    renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
+    RenderPipelineDescriptor descriptor{};
+    descriptor.layout = m_composition.pipelineLayout.get();
+    descriptor.inputAssembly = inputAssemblyStage;
+    descriptor.vertex = vertexStage;
+    descriptor.depthStencil = depthStencilStage;
+    descriptor.rasterization = rasterizationStage;
+    descriptor.fragment = fragmentStage;
 
-    renderPipelineDescriptor.renderPass = getRenderPass()->getVkRenderPass();
-    renderPipelineDescriptor.subpassIndex = 1;
+    VulkanRenderPipelineDescriptor vkdescriptor{};
+    vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
+    vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
+    vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
+    vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
+    vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
+    vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
+    vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
+    vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
+    vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
+
+    vkdescriptor.layout = downcast(descriptor.layout);
+    vkdescriptor.renderPass = getRenderPass();
+    vkdescriptor.subpass = 1;
+    vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
+    vkdescriptor.basePipelineIndex = -1;
 
     auto vulkanDevice = downcast(m_device.get());
-    m_composition.renderPipeline = vulkanDevice->createRenderPipeline(renderPipelineDescriptor);
+    m_composition.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
 }
 
 void Deferred2Sample::createCompositionUniformBuffer()
