@@ -492,8 +492,8 @@ void ParticleSample::createComputeBindingGroup()
         bindingGroupDescriptor.textures = {};
         bindingGroupDescriptor.buffers = {
             bufferUBOBinding,
-            bufferOutBinding,
             bufferInBinding,
+            bufferOutBinding,
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
