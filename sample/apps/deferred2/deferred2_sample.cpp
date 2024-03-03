@@ -47,9 +47,6 @@ Deferred2Sample::~Deferred2Sample()
     m_composition.bindingGroups.clear();
     m_composition.vertexBuffer.reset();
     m_composition.uniformBuffer.reset();
-    m_composition.positionSampler.reset();
-    m_composition.normalSampler.reset();
-    m_composition.albedoSampler.reset();
 
     m_offscreen.vertexShaderModule.reset();
     m_offscreen.fragmentShaderModule.reset();

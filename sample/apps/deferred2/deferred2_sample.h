@@ -157,9 +157,6 @@ private:
     {
         std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
         std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
-        std::unique_ptr<Sampler> positionSampler = nullptr;
-        std::unique_ptr<Sampler> normalSampler = nullptr;
-        std::unique_ptr<Sampler> albedoSampler = nullptr;
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
