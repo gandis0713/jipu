@@ -88,6 +88,7 @@ private:
     void updateCompositionUniformBuffer();
 
     VulkanRenderPass* getRenderPass();
+    VulkanRenderPass* getCompatibleRenderPass();
     VulkanFramebuffer* getFrameBuffer(TextureView* renderView);
 
 private:

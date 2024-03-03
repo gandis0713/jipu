@@ -836,7 +836,7 @@ void Deferred2Sample::createOffscreenPipeline()
     vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
 
     vkdescriptor.layout = downcast(descriptor.layout);
-    vkdescriptor.renderPass = getRenderPass();
+    vkdescriptor.renderPass = getCompatibleRenderPass();
     vkdescriptor.subpass = 0;
     vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
     vkdescriptor.basePipelineIndex = -1;
@@ -1026,7 +1026,7 @@ void Deferred2Sample::createCompositionPipeline()
     vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
 
     vkdescriptor.layout = downcast(descriptor.layout);
-    vkdescriptor.renderPass = getRenderPass();
+    vkdescriptor.renderPass = getCompatibleRenderPass();
     vkdescriptor.subpass = 1;
     vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
     vkdescriptor.basePipelineIndex = -1;
@@ -1305,6 +1305,253 @@ VulkanRenderPass* Deferred2Sample::getRenderPass()
                 VkAttachmentReference reference{};
                 reference.attachment = 4;
                 reference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+                description.depthStencilAttachment = reference;
+            }
+
+            renderPassDescriptor.subpassDescriptions[1] = description;
+        }
+    }
+
+    // subpass dependencies
+    {
+        renderPassDescriptor.subpassDependencies.resize(3);
+        {
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            subpassDependency.dstSubpass = 0;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            subpassDependency.srcAccessMask = 0;
+            subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            subpassDependency.dependencyFlags = 0;
+
+            renderPassDescriptor.subpassDependencies[0] = subpassDependency;
+        }
+        {
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            subpassDependency.dstSubpass = 0;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            subpassDependency.srcAccessMask = 0;
+            subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            subpassDependency.dependencyFlags = 0;
+
+            renderPassDescriptor.subpassDependencies[1] = subpassDependency;
+        }
+        {
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = 0;
+            subpassDependency.dstSubpass = 1;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            subpassDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            subpassDependency.dstAccessMask = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+            subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            renderPassDescriptor.subpassDependencies[2] = subpassDependency;
+        }
+    }
+
+    auto vulkanDevice = downcast(m_device.get());
+    return vulkanDevice->getRenderPass(renderPassDescriptor);
+}
+
+VulkanRenderPass* Deferred2Sample::getCompatibleRenderPass()
+{
+    VulkanRenderPassDescriptor renderPassDescriptor{};
+
+    // attachment descriptors
+    renderPassDescriptor.attachmentDescriptions.resize(5);
+    {
+        // first pass
+        {
+            // position
+            {
+                auto texture = downcast(m_offscreen.positionColorAttachmentTextureView.get())->getTexture();
+
+                VkAttachmentDescription attachment{};
+                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+                renderPassDescriptor.attachmentDescriptions[0] = attachment;
+            }
+
+            // normal
+            {
+                auto texture = downcast(m_offscreen.normalColorAttachmentTextureView.get())->getTexture();
+
+                VkAttachmentDescription attachment{};
+                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+                renderPassDescriptor.attachmentDescriptions[1] = attachment;
+            }
+
+            // albedo
+            {
+                auto texture = downcast(m_offscreen.albedoColorAttachmentTextureView.get())->getTexture();
+
+                VkAttachmentDescription attachment{};
+                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+                attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+                attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+                renderPassDescriptor.attachmentDescriptions[2] = attachment;
+            }
+        }
+
+        // second pass
+        {
+            auto swapchain = downcast(m_swapchain.get());
+
+            VkAttachmentDescription attachment{};
+            attachment.format = ToVkFormat(swapchain->getTextureFormat());
+            attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+            renderPassDescriptor.attachmentDescriptions[3] = attachment;
+        }
+
+        // depth
+        {
+            auto texture = downcast(m_depthStencilTextureView.get())->getTexture();
+
+            VkAttachmentDescription attachment{};
+            attachment.format = ToVkFormat(texture->getFormat());
+            attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+            renderPassDescriptor.attachmentDescriptions[4] = attachment;
+        }
+    }
+
+    // subpass descriptions
+    renderPassDescriptor.subpassDescriptions.resize(2);
+    {
+        // first pass
+        {
+            VulkanSubpassDescription description{};
+            description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            // color attachment
+            {
+                description.colorAttachments.resize(3);
+                // position attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 0;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.colorAttachments[0] = reference;
+                }
+                // normal attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 1;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.colorAttachments[1] = reference;
+                }
+
+                // albedo attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 2;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.colorAttachments[2] = reference;
+                }
+            }
+            // depth attachment
+            {
+                VkAttachmentReference reference{};
+                reference.attachment = 4;
+                reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                description.depthStencilAttachment = reference;
+            }
+
+            renderPassDescriptor.subpassDescriptions[0] = description;
+        }
+        // second pass
+        {
+            VulkanSubpassDescription description{};
+            description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            // color attachment
+            {
+                description.colorAttachments.resize(1);
+                // render attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 3;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.colorAttachments[0] = reference;
+                }
+            }
+            // input attachment
+            {
+                description.inputAttachments.resize(3);
+                // position attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 0;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.inputAttachments[0] = reference;
+                }
+
+                // normal attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 1;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.inputAttachments[1] = reference;
+                }
+
+                // albedo attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 2;
+                    reference.layout = VK_IMAGE_LAYOUT_GENERAL;
+
+                    description.inputAttachments[2] = reference;
+                }
+            }
+            // depth attachment
+            {
+                VkAttachmentReference reference{};
+                reference.attachment = 4;
+                reference.layout = VK_IMAGE_LAYOUT_GENERAL;
 
                 description.depthStencilAttachment = reference;
             }
