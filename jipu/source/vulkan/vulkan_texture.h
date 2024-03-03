@@ -10,6 +10,7 @@
 #include "vulkan_texture_view.h"
 
 #include <fmt/format.h>
+#include <vector>
 
 namespace jipu
 {
