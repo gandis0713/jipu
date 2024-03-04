@@ -87,9 +87,9 @@ private:
 
     void updateCompositionUniformBuffer();
 
-    VulkanRenderPass* getRenderPass();
-    VulkanRenderPass* getCompatibleRenderPass();
-    VulkanFramebuffer* getFrameBuffer(TextureView* renderView);
+    VulkanRenderPass* getSubpassesRenderPass();
+    VulkanRenderPass* getSubpassesCompatibleRenderPass();
+    VulkanFramebuffer* getSubpassesFrameBuffer(TextureView* renderView);
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -187,6 +187,9 @@ private:
 
         struct
         {
+            std::unique_ptr<Sampler> positionSampler = nullptr;
+            std::unique_ptr<Sampler> normalSampler = nullptr;
+            std::unique_ptr<Sampler> albedoSampler = nullptr;
             std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
             std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
             std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
@@ -216,6 +219,8 @@ private:
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 10000;
+    bool m_useSubpasses = true;
+    bool m_showTexture = false;
 };
 
 } // namespace jipu

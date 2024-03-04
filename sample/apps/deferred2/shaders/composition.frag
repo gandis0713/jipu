@@ -6,17 +6,12 @@ layout(location = 0) out vec4 outColor;
 // layout(binding = 0) uniform sampler2D texSamplerPosition;
 // layout(binding = 1) uniform sampler2D texSamplerNormal;
 // layout(binding = 2) uniform sampler2D texSamplerAlbedo;
-
-// layout(set = 1, binding = 0) uniform sampler samplerPosition;
-// layout(set = 1, binding = 1) uniform sampler samplerNormal;
-// layout(set = 1, binding = 2) uniform sampler samplerAlbedo;
-// layout(set = 1, binding = 3) uniform texture2D texPosition;
-// layout(set = 1, binding = 4) uniform texture2D texNormal;
-// layout(set = 1, binding = 5) uniform texture2D texAlbedo;
-
-layout(input_attachment_index = 0, set = 1, binding = 0) uniform subpassInput inputPosition;
-layout(input_attachment_index = 1, set = 1, binding = 1) uniform subpassInput inputNormal;
-layout(input_attachment_index = 2, set = 1, binding = 2) uniform subpassInput inputAlbedo;
+layout(binding = 0) uniform sampler samplerPosition;
+layout(binding = 1) uniform sampler samplerNormal;
+layout(binding = 2) uniform sampler samplerAlbedo;
+layout(binding = 3) uniform texture2D texPosition;
+layout(binding = 4) uniform texture2D texNormal;
+layout(binding = 5) uniform texture2D texAlbedo;
 
 struct Light
 {
@@ -28,7 +23,7 @@ struct Light
 #define ambient 0.0
 
 // std140 for only uniform, consider alignment such as vec3
-layout(std140, set = 0, binding = 0) uniform UBO
+layout(std140, binding = 6) uniform UBO
 {
     Light lights[maxLightCount];
     vec3 cameraPosition;
@@ -45,14 +40,9 @@ void applyLight(vec2 texCoord)
     // vec3 position = texture(texSamplerPosition, texCoord).rgb;
     // vec3 normal = texture(texSamplerNormal, texCoord).rgb;
     // vec4 albedo = texture(texSamplerAlbedo, texCoord);
-
-    // vec3 position = texture(sampler2D(texPosition, samplerPosition), texCoord).rgb;
-    // vec3 normal = texture(sampler2D(texNormal, samplerNormal), texCoord).rgb;
-    // vec4 albedo = texture(sampler2D(texAlbedo, samplerAlbedo), texCoord);
-
-    vec3 position = subpassLoad(inputPosition).rgb;
-    vec3 normal = subpassLoad(inputNormal).rgb;
-    vec4 albedo = subpassLoad(inputAlbedo);
+    vec3 position = texture(sampler2D(texPosition, samplerPosition), texCoord).rgb;
+    vec3 normal = texture(sampler2D(texNormal, samplerNormal), texCoord).rgb;
+    vec4 albedo = texture(sampler2D(texAlbedo, samplerAlbedo), texCoord);
 
     // Ambient part
     vec3 color = albedo.rgb * ambient;
@@ -105,19 +95,16 @@ void main()
     else if (inTexCoord.x < 0.5 && inTexCoord.y >= 0.5)
     {
         // outColor = texture(texSamplerNormal, vec2(inTexCoord.x * 2.0f, inTexCoord.y * 2.0f - 1.0f));
-        // outColor = texture(sampler2D(texNormal, samplerNormal), vec2(inTexCoord.x * 2.0f, inTexCoord.y * 2.0f - 1.0f));
-        outColor = subpassLoad(inputNormal);
+        outColor = texture(sampler2D(texNormal, samplerNormal), vec2(inTexCoord.x * 2.0f, inTexCoord.y * 2.0f - 1.0f));
     }
     else if (inTexCoord.x >= 0.5 && inTexCoord.y < 0.5)
     {
         // outColor = texture(texSamplerAlbedo, vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f));
-        // outColor = texture(sampler2D(texAlbedo, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f));
-        outColor = subpassLoad(inputAlbedo);
+        outColor = texture(sampler2D(texAlbedo, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f));
     }
     else
     {
         // outColor = texture(texSamplerPosition, vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
-        // outColor = texture(sampler2D(texPosition, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
-        outColor = subpassLoad(inputPosition);
+        outColor = texture(sampler2D(texPosition, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
     }
 }
