@@ -109,9 +109,9 @@ private:
         std::vector<CompositionUBO::Light> lights{};
         alignas(16) glm::vec3 cameraPosition;
         int lightCount = 8;
+        int showTexture = 1;
         int padding1;
         int padding2;
-        int padding3;
     };
 
     struct MVP
@@ -218,9 +218,8 @@ private:
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
-    int m_lightMax = 10000;
+    int m_lightMax = 1000;
     bool m_useSubpasses = true;
-    bool m_showTexture = false;
 };
 
 } // namespace jipu

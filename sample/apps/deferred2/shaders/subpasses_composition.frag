@@ -24,7 +24,7 @@ struct Light
     vec3 color;
 };
 
-#define maxLightCount 10000
+#define maxLightCount 1000
 #define ambient 0.0
 
 // std140 for only uniform, consider alignment such as vec3
@@ -33,13 +33,13 @@ layout(std140, set = 0, binding = 0) uniform UBO
     Light lights[maxLightCount];
     vec3 cameraPosition;
     int lightCount;
+    int showTexture;
     int padding1;
     int padding2;
-    int padding3;
 }
 ubo;
 
-void applyLight(vec2 texCoord)
+void applyLight()
 {
     // Get G-Buffer values
     // vec3 position = texture(texSamplerPosition, texCoord).rgb;
@@ -98,26 +98,20 @@ void applyLight(vec2 texCoord)
 
 void main()
 {
-    if (inTexCoord.x < 0.5 && inTexCoord.y < 0.5)
+    if (ubo.showTexture == 0)
     {
-        applyLight(inTexCoord * 2.0f);
+        applyLight();
     }
-    else if (inTexCoord.x < 0.5 && inTexCoord.y >= 0.5)
+    else if (ubo.showTexture == 1)
     {
-        // outColor = texture(texSamplerNormal, vec2(inTexCoord.x * 2.0f, inTexCoord.y * 2.0f - 1.0f));
-        // outColor = texture(sampler2D(texNormal, samplerNormal), vec2(inTexCoord.x * 2.0f, inTexCoord.y * 2.0f - 1.0f));
+        outColor = subpassLoad(inputPosition);
+    }
+    else if (ubo.showTexture == 2)
+    {
         outColor = subpassLoad(inputNormal);
     }
-    else if (inTexCoord.x >= 0.5 && inTexCoord.y < 0.5)
+    else if (ubo.showTexture == 3)
     {
-        // outColor = texture(texSamplerAlbedo, vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f));
-        // outColor = texture(sampler2D(texAlbedo, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f));
         outColor = subpassLoad(inputAlbedo);
-    }
-    else
-    {
-        // outColor = texture(texSamplerPosition, vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
-        // outColor = texture(sampler2D(texPosition, samplerNormal), vec2(inTexCoord.x * 2.0f - 1.0f, inTexCoord.y * 2.0f - 1.0f));
-        outColor = subpassLoad(inputPosition);
     }
 }

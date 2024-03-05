@@ -196,16 +196,24 @@ void Deferred2Sample::updateCompositionUniformBuffer()
     m_composition.ubo.cameraPosition = m_offscreen.camera->getPosition();
 
     uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightMax);
-    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
+    uint32_t lightCountByteSize = static_cast<uint32_t>(sizeof(int));
+    uint32_t showTextureByteSize = static_cast<uint32_t>(sizeof(int));
+    uint32_t cameraPositionSize = sizeof(glm::vec3);
 
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
     char* bytePointer = static_cast<char*>(pointer);
+
     memcpy(bytePointer, m_composition.ubo.lights.data(), lightSize);
     bytePointer += lightSize;
+
     memcpy(bytePointer, &m_composition.ubo.cameraPosition, cameraPositionSize);
     bytePointer += cameraPositionSize;
-    memcpy(bytePointer, &m_composition.ubo.lightCount, sizeof(int));
+
+    memcpy(bytePointer, &m_composition.ubo.lightCount, lightCountByteSize);
+    bytePointer += lightCountByteSize;
+
+    memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
 }
 
 void Deferred2Sample::updateImGui()
@@ -234,7 +242,15 @@ void Deferred2Sample::updateImGui()
         ImGui::Begin("Settings");
         ImGui::Checkbox("Use Subpasses", &m_useSubpasses);
         ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
-        ImGui::Checkbox("Show Position/Normal/Albedo", &m_showTexture);
+        // 라디오 버튼 1
+        if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
+            m_composition.ubo.showTexture = 0;
+        else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
+            m_composition.ubo.showTexture = 1;
+        else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
+            m_composition.ubo.showTexture = 2;
+        else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
+            m_composition.ubo.showTexture = 3;
         ImGui::End();
     }
 
@@ -1732,11 +1748,13 @@ void Deferred2Sample::createCompositionUniformBuffer()
     }
 
     uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightMax);
-    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
+    uint32_t lightCountByteSize = sizeof(int);
+    uint32_t showTextureByteSize = sizeof(int);
+    uint32_t cameraPositionSize = sizeof(glm::vec3);
 
     BufferDescriptor descriptor{};
-    descriptor.size = lightSize + cameraPositionSize;
-    descriptor.size += sizeof(int) * 3; // padding
+    descriptor.size = lightSize + cameraPositionSize + lightCountByteSize + showTextureByteSize;
+    descriptor.size += sizeof(int) * 2; // padding
     descriptor.usage = BufferUsageFlagBits::kUniform;
 
     m_composition.uniformBuffer = m_device->createBuffer(descriptor);
@@ -1748,7 +1766,9 @@ void Deferred2Sample::createCompositionUniformBuffer()
     bytePointer += lightSize;
     memcpy(bytePointer, &m_composition.ubo.cameraPosition, cameraPositionSize);
     bytePointer += cameraPositionSize;
-    memcpy(bytePointer, &m_composition.ubo.lightCount, sizeof(int));
+    memcpy(bytePointer, &m_composition.ubo.lightCount, lightCountByteSize);
+    bytePointer += lightCountByteSize;
+    memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
     // uniformBuffer->unmap();
 }
 
