@@ -10,7 +10,7 @@ class MainActivity : GameActivity() {
 
     companion object {
         init {
-            System.loadLibrary("deferred2")
+            System.loadLibrary("vulkan_subpass")
         }
     }
 }

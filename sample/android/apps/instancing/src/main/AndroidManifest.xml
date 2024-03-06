@@ -4,7 +4,7 @@
 
     <application
         android:icon="@drawable/icon"
-        android:label="triangle"
+        android:label="instancing"
         android:supportsRtl="true"
         android:theme="@style/Theme.jipu"
         tools:targetApi="31">

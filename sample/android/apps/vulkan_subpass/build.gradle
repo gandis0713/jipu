@@ -6,7 +6,7 @@ plugins {
 }
 
 // Paths
-def sampleName = "deferred2"
+def sampleName = "vulkan_subpass"
 def rootDir = Paths.get(project.projectDir.getParent()).getParent().getParent().getParent()
 def appDir = "${rootDir}/sample/apps/${sampleName}"
 def shaderDir = "${appDir}/shaders"
@@ -40,6 +40,7 @@ android {
                 arguments += "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${androidSDKRootDir}/ndk/${androidNDKVersion}/build/cmake/android.toolchain.cmake"
                 arguments += "-DANDROID_ARM_NEON=ON"
                 arguments += "-DANDROID_STL=c++_shared"
+                arguments += "-DENABLE_VULKAN_EXPERIMENTAL=ON"
 
                 targets += "${sampleName}"
             }
