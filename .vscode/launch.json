@@ -188,19 +188,19 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Experimental [windows x64] Deferred2",
+            "name": "Vulkan [windows x64] Subpasses",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja-experimental/debug/sample/apps/deferred2/deferred2.exe",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
         },
         {
-            "name": "Experimental [arm64 osx] Deferred2",
+            "name": "Vulkan [arm64 osx] Subpasses",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja-experimental/debug/sample/apps/deferred2/deferred2",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses",
             "args": [],
             "stopAtEntry": false,
             "environment": [
