@@ -1,11 +1,10 @@
 #pragma once
 
-#include "export.h"
-
 #include "jipu/driver.h"
 #include "utils/cast.h"
 #include "utils/dylib.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 #include <memory>
 #include <vector>
@@ -19,7 +18,7 @@ struct VulkanDriverInfo : VulkanDriverKnobs
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class JIPU_EXPERIMENTAL_EXPORT VulkanDriver : public Driver
+class VULKAN_EXPORT VulkanDriver : public Driver
 {
 
 public:

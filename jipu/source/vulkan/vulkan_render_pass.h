@@ -1,10 +1,9 @@
 #pragma once
 
-#include "export.h"
-
 #include "jipu/render_pass_encoder.h"
 #include "jipu/texture.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 #include <memory>
 #include <optional>
@@ -35,7 +34,7 @@ struct VulkanRenderPassDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPass
+class VULKAN_EXPORT VulkanRenderPass
 {
 public:
     VulkanRenderPass() = delete;
@@ -54,7 +53,7 @@ private:
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
 };
 
-class JIPU_EXPERIMENTAL_EXPORT VulkanRenderPassCache final
+class VULKAN_EXPORT VulkanRenderPassCache final
 {
 
 public:

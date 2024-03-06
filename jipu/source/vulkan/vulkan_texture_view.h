@@ -1,16 +1,15 @@
 #pragma once
 
-#include "export.h"
-
 #include "jipu/texture_view.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanTexture;
-class JIPU_EXPERIMENTAL_EXPORT VulkanTextureView : public TextureView
+class VULKAN_EXPORT VulkanTextureView : public TextureView
 {
 public:
     VulkanTextureView() = delete;

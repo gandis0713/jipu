@@ -1,12 +1,11 @@
 #pragma once
 
-#include "export.h"
-
 #include "jipu/device.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_command_buffer.h"
+#include "vulkan_export.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
@@ -22,7 +21,7 @@ namespace jipu
 {
 
 class VulkanPhysicalDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanDevice : public Device
+class VULKAN_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;

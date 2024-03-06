@@ -3,6 +3,7 @@
 #include "jipu/binding_group_layout.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
@@ -17,7 +18,7 @@ struct VulkanBindingGroupLayoutDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanBindingGroupLayout : public BindingGroupLayout
+class VULKAN_EXPORT VulkanBindingGroupLayout : public BindingGroupLayout
 {
 public:
     VulkanBindingGroupLayout() = delete;

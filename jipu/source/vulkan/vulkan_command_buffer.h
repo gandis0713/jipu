@@ -5,12 +5,13 @@
 #include "jipu/command_buffer.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanCommandBuffer : public CommandBuffer
+class VULKAN_EXPORT VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;

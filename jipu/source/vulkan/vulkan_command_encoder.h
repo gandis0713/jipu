@@ -6,6 +6,7 @@
 #include "jipu/render_pass_encoder.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 #include "vulkan_render_pass_encoder.h"
 
@@ -13,7 +14,7 @@ namespace jipu
 {
 
 class VulkanCommandBuffer;
-class JIPU_EXPERIMENTAL_EXPORT VulkanCommandEncoder : public CommandEncoder
+class VULKAN_EXPORT VulkanCommandEncoder : public CommandEncoder
 {
 public:
     VulkanCommandEncoder() = delete;

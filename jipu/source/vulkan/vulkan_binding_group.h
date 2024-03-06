@@ -5,6 +5,7 @@
 #include "jipu/binding_group.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
@@ -18,7 +19,7 @@ struct VulkanBindingGroupDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanBindingGroup : public BindingGroup
+class VULKAN_EXPORT VulkanBindingGroup : public BindingGroup
 {
 public:
     VulkanBindingGroup() = delete;

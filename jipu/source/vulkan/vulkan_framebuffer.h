@@ -1,12 +1,11 @@
 #pragma once
 
-#include "export.h"
-
 #include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 #include "vulkan_render_pass.h"
 
 namespace jipu
@@ -24,7 +23,7 @@ struct VulkanFramebufferDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanFramebuffer
+class VULKAN_EXPORT VulkanFramebuffer
 {
 public:
     VulkanFramebuffer() = delete;
@@ -44,7 +43,7 @@ private:
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
 };
 
-class JIPU_EXPERIMENTAL_EXPORT VulkanFramebufferCache final
+class VULKAN_EXPORT VulkanFramebufferCache final
 {
 
 public:

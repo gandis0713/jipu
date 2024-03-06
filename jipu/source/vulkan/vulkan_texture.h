@@ -1,11 +1,10 @@
 #pragma once
 
-#include "export.h"
-
 #include "jipu/texture.h"
 #include "utils/assert.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 #include "vulkan_resource.h"
 #include "vulkan_texture_view.h"
 
@@ -36,7 +35,7 @@ struct VulkanTextureDescriptor
 };
 
 class VulkanDevice;
-class JIPU_EXPERIMENTAL_EXPORT VulkanTexture : public Texture
+class VULKAN_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
@@ -95,13 +94,13 @@ private:
 DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
-VkFormat JIPU_EXPERIMENTAL_EXPORT ToVkFormat(TextureFormat format);
+VkFormat VULKAN_EXPORT ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
-VkSampleCountFlagBits JIPU_EXPERIMENTAL_EXPORT ToVkSampleCountFlagBits(uint32_t count);
+VkSampleCountFlagBits VULKAN_EXPORT ToVkSampleCountFlagBits(uint32_t count);
 uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 
 // Utils
