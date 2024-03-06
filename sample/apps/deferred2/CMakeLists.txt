@@ -1,1 +1,0 @@
-configure_sample(deferred2)

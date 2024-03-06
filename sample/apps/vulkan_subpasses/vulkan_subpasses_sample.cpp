@@ -1,4 +1,4 @@
-#include "deferred2_sample.h"
+#include "vulkan_subpasses_sample.h"
 
 #include <math.h>
 #include <spdlog/spdlog.h>
@@ -26,13 +26,13 @@
 namespace jipu
 {
 
-Deferred2Sample::Deferred2Sample(const SampleDescriptor& descriptor)
+VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
     // Do not call init function.
 }
 
-Deferred2Sample::~Deferred2Sample()
+VulkanSubpassesSample::~VulkanSubpassesSample()
 {
     clearImGui();
 
@@ -107,7 +107,7 @@ Deferred2Sample::~Deferred2Sample()
     m_driver.reset();
 }
 
-void Deferred2Sample::init()
+void VulkanSubpassesSample::init()
 {
     createDriver();
     getPhysicalDevices();
@@ -153,7 +153,7 @@ void Deferred2Sample::init()
     m_initialized = true;
 }
 
-void Deferred2Sample::update()
+void VulkanSubpassesSample::update()
 {
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
@@ -162,7 +162,7 @@ void Deferred2Sample::update()
     buildImGui();
 }
 
-void Deferred2Sample::updateOffscreenUniformBuffer()
+void VulkanSubpassesSample::updateOffscreenUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -179,7 +179,7 @@ void Deferred2Sample::updateOffscreenUniformBuffer()
     memcpy(mappedPointer, &m_mvp, sizeof(MVP));
 }
 
-void Deferred2Sample::updateCompositionUniformBuffer()
+void VulkanSubpassesSample::updateCompositionUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -216,7 +216,7 @@ void Deferred2Sample::updateCompositionUniformBuffer()
     memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
 }
 
-void Deferred2Sample::updateImGui()
+void VulkanSubpassesSample::updateImGui()
 {
     // set display size and mouse state.
     {
@@ -258,7 +258,7 @@ void Deferred2Sample::updateImGui()
     ImGui::Render();
 }
 
-void Deferred2Sample::draw()
+void VulkanSubpassesSample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -399,26 +399,26 @@ void Deferred2Sample::draw()
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
-void Deferred2Sample::createDriver()
+void VulkanSubpassesSample::createDriver()
 {
     DriverDescriptor descriptor;
     descriptor.type = DriverType::kVulkan;
     m_driver = Driver::create(descriptor);
 }
 
-void Deferred2Sample::getPhysicalDevices()
+void VulkanSubpassesSample::getPhysicalDevices()
 {
     m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
-void Deferred2Sample::createSurface()
+void VulkanSubpassesSample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
     m_surface = m_driver->createSurface(descriptor);
 }
 
-void Deferred2Sample::createSwapchain()
+void VulkanSubpassesSample::createSwapchain()
 {
     if (m_surface == nullptr)
         throw std::runtime_error("Surface is null pointer.");
@@ -440,7 +440,7 @@ void Deferred2Sample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void Deferred2Sample::createDevice()
+void VulkanSubpassesSample::createDevice()
 {
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
@@ -449,7 +449,7 @@ void Deferred2Sample::createDevice()
     m_device = physicalDevice->createDevice(descriptor);
 }
 
-void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTexture()
 {
     // render passes
     {
@@ -486,7 +486,7 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTexture()
     }
 }
 
-void Deferred2Sample::createOffscreenPositionColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTextureView()
 {
     // render passes
     {
@@ -507,7 +507,7 @@ void Deferred2Sample::createOffscreenPositionColorAttachmentTextureView()
     }
 }
 
-void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTexture()
 {
     // render passes
     {
@@ -544,7 +544,7 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTexture()
     }
 }
 
-void Deferred2Sample::createOffscreenNormalColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTextureView()
 {
     // render passe
     {
@@ -565,7 +565,7 @@ void Deferred2Sample::createOffscreenNormalColorAttachmentTextureView()
     }
 }
 
-void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTexture()
 {
     // render passes
     {
@@ -602,7 +602,7 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTexture()
     }
 }
 
-void Deferred2Sample::createOffscreenAlbedoColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTextureView()
 {
     // render passes
     {
@@ -623,7 +623,7 @@ void Deferred2Sample::createOffscreenAlbedoColorAttachmentTextureView()
     }
 }
 
-void Deferred2Sample::createOffscreenColorMapTexture()
+void VulkanSubpassesSample::createOffscreenColorMapTexture()
 {
     // ktx{ m_appDir / "colormap_rgba.ktx" };
     std::vector<char> data = utils::readFile(m_appDir / "colormap_rgba.ktx", m_handle);
@@ -684,7 +684,7 @@ void Deferred2Sample::createOffscreenColorMapTexture()
     }
 }
 
-void Deferred2Sample::createOffscreenColorMapTextureView()
+void VulkanSubpassesSample::createOffscreenColorMapTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -693,7 +693,7 @@ void Deferred2Sample::createOffscreenColorMapTextureView()
     m_offscreen.colorMapTextureView = m_offscreen.colorMapTexture->createTextureView(descriptor);
 }
 
-void Deferred2Sample::createOffscreenNormalMapTexture()
+void VulkanSubpassesSample::createOffscreenNormalMapTexture()
 {
     // KTX ktx{ m_appDir / "normalmap_rgba.ktx" };
     std::vector<char> data = utils::readFile(m_appDir / "normalmap_rgba.ktx", m_handle);
@@ -754,7 +754,7 @@ void Deferred2Sample::createOffscreenNormalMapTexture()
     }
 }
 
-void Deferred2Sample::createOffscreenNormalMapTextureView()
+void VulkanSubpassesSample::createOffscreenNormalMapTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -763,7 +763,7 @@ void Deferred2Sample::createOffscreenNormalMapTextureView()
     m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
 }
 
-void Deferred2Sample::createOffscreenCamera()
+void VulkanSubpassesSample::createOffscreenCamera()
 {
     m_offscreen.camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
                                                              m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
@@ -772,7 +772,7 @@ void Deferred2Sample::createOffscreenCamera()
     m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
-void Deferred2Sample::createOffscreenUniformBuffer()
+void VulkanSubpassesSample::createOffscreenUniformBuffer()
 {
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
     glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -791,7 +791,7 @@ void Deferred2Sample::createOffscreenUniformBuffer()
     // m_offscreen.uniformBuffer->unmap();
 }
 
-void Deferred2Sample::createOffscreenVertexBuffer()
+void VulkanSubpassesSample::createOffscreenVertexBuffer()
 {
     // m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
     std::vector<char> data = utils::readFile(m_appDir / "armor.gltf", m_handle);
@@ -819,7 +819,7 @@ void Deferred2Sample::createOffscreenVertexBuffer()
     }
 }
 
-void Deferred2Sample::createOffscreenBindingGroupLayout()
+void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
 {
     // render passes
     {
@@ -904,7 +904,7 @@ void Deferred2Sample::createOffscreenBindingGroupLayout()
     }
 }
 
-void Deferred2Sample::createOffscreenBindingGroup()
+void VulkanSubpassesSample::createOffscreenBindingGroup()
 {
     { // create color map sampler
 
@@ -1023,7 +1023,7 @@ void Deferred2Sample::createOffscreenBindingGroup()
     }
 }
 
-void Deferred2Sample::createOffscreenPipelineLayout()
+void VulkanSubpassesSample::createOffscreenPipelineLayout()
 {
     // render passes
     {
@@ -1044,7 +1044,7 @@ void Deferred2Sample::createOffscreenPipelineLayout()
     }
 }
 
-void Deferred2Sample::createOffscreenPipeline()
+void VulkanSubpassesSample::createOffscreenPipeline()
 {
     // render passes
     {
@@ -1276,7 +1276,7 @@ void Deferred2Sample::createOffscreenPipeline()
     }
 }
 
-void Deferred2Sample::createCompositionBindingGroupLayout()
+void VulkanSubpassesSample::createCompositionBindingGroupLayout()
 {
     // render passes
     {
@@ -1358,7 +1358,7 @@ void Deferred2Sample::createCompositionBindingGroupLayout()
     }
 }
 
-void Deferred2Sample::createCompositionBindingGroup()
+void VulkanSubpassesSample::createCompositionBindingGroup()
 {
     // render passes
     {
@@ -1488,7 +1488,7 @@ void Deferred2Sample::createCompositionBindingGroup()
     }
 }
 
-void Deferred2Sample::createCompositionPipelineLayout()
+void VulkanSubpassesSample::createCompositionPipelineLayout()
 {
     // render passes
     {
@@ -1509,7 +1509,7 @@ void Deferred2Sample::createCompositionPipelineLayout()
     }
 }
 
-void Deferred2Sample::createCompositionPipeline()
+void VulkanSubpassesSample::createCompositionPipeline()
 {
     // render passes
     {
@@ -1706,7 +1706,7 @@ void Deferred2Sample::createCompositionPipeline()
     }
 }
 
-void Deferred2Sample::createCompositionUniformBuffer()
+void VulkanSubpassesSample::createCompositionUniformBuffer()
 {
     // light
     {
@@ -1772,7 +1772,7 @@ void Deferred2Sample::createCompositionUniformBuffer()
     // uniformBuffer->unmap();
 }
 
-void Deferred2Sample::createCompositionVertexBuffer()
+void VulkanSubpassesSample::createCompositionVertexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = sizeof(CompositionVertex) * m_composition.vertices.size();
@@ -1786,7 +1786,7 @@ void Deferred2Sample::createCompositionVertexBuffer()
     vertexBuffer->unmap();
 }
 
-VulkanRenderPass* Deferred2Sample::getSubpassesRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -2033,7 +2033,7 @@ VulkanRenderPass* Deferred2Sample::getSubpassesRenderPass()
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanRenderPass* Deferred2Sample::getSubpassesCompatibleRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -2280,7 +2280,7 @@ VulkanRenderPass* Deferred2Sample::getSubpassesCompatibleRenderPass()
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer* Deferred2Sample::getSubpassesFrameBuffer(TextureView* renderView)
+VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* renderView)
 {
     VulkanFramebufferDescriptor descriptor{};
     descriptor.renderPass = getSubpassesRenderPass()->getVkRenderPass();
@@ -2303,7 +2303,7 @@ VulkanFramebuffer* Deferred2Sample::getSubpassesFrameBuffer(TextureView* renderV
     return vulkanDevice->getFrameBuffer(descriptor);
 }
 
-void Deferred2Sample::createDepthStencilTexture()
+void VulkanSubpassesSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
@@ -2318,7 +2318,7 @@ void Deferred2Sample::createDepthStencilTexture()
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
 
-void Deferred2Sample::createDepthStencilTextureView()
+void VulkanSubpassesSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -2327,7 +2327,7 @@ void Deferred2Sample::createDepthStencilTextureView()
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
-void Deferred2Sample::createCommandBuffer()
+void VulkanSubpassesSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
     descriptor.usage = CommandBufferUsage::kOneTime;
@@ -2335,7 +2335,7 @@ void Deferred2Sample::createCommandBuffer()
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void Deferred2Sample::createQueue()
+void VulkanSubpassesSample::createQueue()
 {
     QueueDescriptor descriptor{};
     descriptor.flags = QueueFlagBits::kGraphics;
