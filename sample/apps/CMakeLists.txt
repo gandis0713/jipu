@@ -107,6 +107,6 @@ add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
 # experimental
-if(ENABLE_EXPERIMENTAL)
-    add_subdirectory(deferred2)
+if(ENABLE_VULKAN_EXPERIMENTAL)
+    add_subdirectory(vulkan_subpasses)
 endif()
