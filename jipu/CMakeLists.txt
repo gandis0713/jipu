@@ -123,7 +123,7 @@ target_include_directories(jipu
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-if(ENABLE_EXPERIMENTAL)
+if(ENABLE_VULKAN_EXPERIMENTAL)
   target_include_directories(jipu
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan>
@@ -176,10 +176,10 @@ if(BUILD_SHARED_LIBS)
     "JIPU_IMPLEMENTATION"
   )
 
-  if(ENABLE_EXPERIMENTAL)
+  if(ENABLE_VULKAN_EXPERIMENTAL)
     target_compile_definitions(jipu
       PRIVATE
-      "EXPERIMENTAL"
+      "VULKAN_IMPLEMENTATION"
     )
   endif()
 endif()
