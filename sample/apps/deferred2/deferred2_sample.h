@@ -109,7 +109,7 @@ private:
         std::vector<CompositionUBO::Light> lights{};
         alignas(16) glm::vec3 cameraPosition;
         int lightCount = 8;
-        int showTexture = 1;
+        int showTexture = 0;
         int padding1;
         int padding2;
     };
