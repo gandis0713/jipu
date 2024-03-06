@@ -31,12 +31,12 @@ namespace jipu
 
 class VulkanFramebuffer;
 class VulkanRenderPass;
-class VulkanSubpassesSample : public Sample, public Im_Gui
+class VulkanSubpassSample : public Sample, public Im_Gui
 {
 public:
-    VulkanSubpassesSample() = delete;
-    VulkanSubpassesSample(const SampleDescriptor& descriptor);
-    ~VulkanSubpassesSample() override;
+    VulkanSubpassSample() = delete;
+    VulkanSubpassSample(const SampleDescriptor& descriptor);
+    ~VulkanSubpassSample() override;
 
 public:
     void init() override;

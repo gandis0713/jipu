@@ -108,5 +108,5 @@ add_subdirectory(offscreen)
 
 # experimental
 if(ENABLE_VULKAN_EXPERIMENTAL)
-    add_subdirectory(vulkan_subpasses)
+    add_subdirectory(vulkan_subpass)
 endif()
