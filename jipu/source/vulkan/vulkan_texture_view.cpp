@@ -131,11 +131,11 @@ VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags)
     {
         vkflags |= VK_IMAGE_ASPECT_COLOR_BIT;
     }
-    else if (flags & TextureAspectFlagBits::kDepth)
+    if (flags & TextureAspectFlagBits::kDepth)
     {
         vkflags |= VK_IMAGE_ASPECT_DEPTH_BIT;
     }
-    else if (flags & TextureAspectFlagBits::kStencil)
+    if (flags & TextureAspectFlagBits::kStencil)
     {
         vkflags |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -151,11 +151,11 @@ TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags vkflags)
     {
         flags |= TextureAspectFlagBits::kColor;
     }
-    else if (vkflags & VK_IMAGE_ASPECT_DEPTH_BIT)
+    if (vkflags & VK_IMAGE_ASPECT_DEPTH_BIT)
     {
         flags |= TextureAspectFlagBits::kDepth;
     }
-    else if (vkflags & VK_IMAGE_ASPECT_STENCIL_BIT)
+    if (vkflags & VK_IMAGE_ASPECT_STENCIL_BIT)
     {
         flags |= TextureAspectFlagBits::kStencil;
     }

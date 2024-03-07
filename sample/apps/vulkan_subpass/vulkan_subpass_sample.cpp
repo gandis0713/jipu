@@ -361,7 +361,7 @@ void VulkanSubpassSample::draw()
         colorClearValue.color.float32[0] = 0.0f;
         colorClearValue.color.float32[1] = 0.0f;
         colorClearValue.color.float32[2] = 0.0f;
-        colorClearValue.color.float32[3] = 1.0f;
+        colorClearValue.color.float32[3] = 0.0f;
         VkClearValue depthClearValue{ .depthStencil = { .depth = 1.0f, .stencil = 0 } };
         renderPassEncoderDescriptor.clearValues.push_back(colorClearValue);
         renderPassEncoderDescriptor.clearValues.push_back(colorClearValue);
@@ -1266,7 +1266,8 @@ void VulkanSubpassSample::createOffscreenPipeline()
         vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
 
         vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
+        vkdescriptor.renderPass = getSubpassesRenderPass();
+        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
         vkdescriptor.subpass = 0;
         vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
         vkdescriptor.basePipelineIndex = -1;
@@ -1696,7 +1697,8 @@ void VulkanSubpassSample::createCompositionPipeline()
         vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
 
         vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
+        vkdescriptor.renderPass = getSubpassesRenderPass();
+        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
         vkdescriptor.subpass = 1;
         vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
         vkdescriptor.basePipelineIndex = -1;
@@ -1933,18 +1935,6 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
         {
             VulkanSubpassDescription description{};
             description.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-            // color attachment
-            {
-                description.colorAttachments.resize(1);
-                // render attachment
-                {
-                    VkAttachmentReference reference{};
-                    reference.attachment = 3;
-                    reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-                    description.colorAttachments[0] = reference;
-                }
-            }
             // input attachment
             {
                 description.inputAttachments.resize(3);
@@ -1975,6 +1965,18 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
                     description.inputAttachments[2] = reference;
                 }
             }
+            // color attachment
+            {
+                description.colorAttachments.resize(1);
+                // render attachment
+                {
+                    VkAttachmentReference reference{};
+                    reference.attachment = 3;
+                    reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+                    description.colorAttachments[0] = reference;
+                }
+            }
             // depth attachment
             {
                 VkAttachmentReference reference{};
@@ -1990,14 +1992,14 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
 
     // subpass dependencies
     {
-        renderPassDescriptor.subpassDependencies.resize(3);
+        renderPassDescriptor.subpassDependencies.resize(4);
         {
             VkSubpassDependency subpassDependency{};
             subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
             subpassDependency.dstSubpass = 0;
             subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
             subpassDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            subpassDependency.srcAccessMask = 0;
+            subpassDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             subpassDependency.dependencyFlags = 0;
 
@@ -2007,7 +2009,7 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
             VkSubpassDependency subpassDependency{};
             subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
             subpassDependency.dstSubpass = 0;
-            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
             subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             subpassDependency.srcAccessMask = 0;
             subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -2026,6 +2028,18 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
             subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
             renderPassDescriptor.subpassDependencies[2] = subpassDependency;
+        }
+        {
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = 0;
+            subpassDependency.dstSubpass = 1;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            subpassDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            renderPassDescriptor.subpassDependencies[3] = subpassDependency;
         }
     }
 
@@ -2237,14 +2251,14 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesCompatibleRenderPass()
 
     // subpass dependencies
     {
-        renderPassDescriptor.subpassDependencies.resize(3);
+        renderPassDescriptor.subpassDependencies.resize(4);
         {
             VkSubpassDependency subpassDependency{};
             subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
             subpassDependency.dstSubpass = 0;
             subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
             subpassDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-            subpassDependency.srcAccessMask = 0;
+            subpassDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             subpassDependency.dependencyFlags = 0;
 
@@ -2254,7 +2268,7 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesCompatibleRenderPass()
             VkSubpassDependency subpassDependency{};
             subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
             subpassDependency.dstSubpass = 0;
-            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
             subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             subpassDependency.srcAccessMask = 0;
             subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
@@ -2273,6 +2287,18 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesCompatibleRenderPass()
             subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
             renderPassDescriptor.subpassDependencies[2] = subpassDependency;
+        }
+        {
+            VkSubpassDependency subpassDependency{};
+            subpassDependency.srcSubpass = 0;
+            subpassDependency.dstSubpass = 1;
+            subpassDependency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            subpassDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            subpassDependency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            subpassDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            subpassDependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+            renderPassDescriptor.subpassDependencies[3] = subpassDependency;
         }
     }
 
