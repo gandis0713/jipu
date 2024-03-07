@@ -1,6 +1,7 @@
 #pragma once
 
 #include "jipu/compute_pass_encoder.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
@@ -8,11 +9,11 @@ namespace jipu
 class VulkanBindingGroup;
 class VulkanComputePipeline;
 class VulkanCommandBuffer;
-class VulkanComputePassEncoder : public ComputePassEncoder
+class VULKAN_EXPORT VulkanComputePassEncoder : public ComputePassEncoder
 {
 public:
     VulkanComputePassEncoder() = delete;
-    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor);
+    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
     ~VulkanComputePassEncoder() override = default;
 
 public:

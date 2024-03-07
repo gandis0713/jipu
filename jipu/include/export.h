@@ -1,5 +1,6 @@
 #pragma once
 
+// clang-format off
 #if defined(JIPU_SHARED_LIBRARY)
     #if defined(_WIN32)
         #if defined(JIPU_IMPLEMENTATION)
@@ -17,3 +18,4 @@
 #else      // defined(JIPU_SHARED_LIBRARY)
     #define JIPU_EXPORT
 #endif // defined(JIPU_SHARED_LIBRARY)
+// clang-format on

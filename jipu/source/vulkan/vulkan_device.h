@@ -3,10 +3,15 @@
 #include "jipu/device.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_binding_group_layout.h"
 #include "vulkan_command_buffer.h"
+#include "vulkan_export.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_pipeline.h"
+#include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
+#include "vulkan_texture.h"
 
 #include <memory>
 #include <unordered_set>
@@ -16,8 +21,7 @@ namespace jipu
 {
 
 class VulkanPhysicalDevice;
-
-class VulkanDevice : public Device
+class VULKAN_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
@@ -42,8 +46,13 @@ public:
     std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) override;
 
 public:
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
+    std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
+    std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
+
+public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
-    VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
     VulkanResourceAllocator* getResourceAllocator() const;
 
 public:
@@ -77,7 +86,7 @@ private:
     std::vector<VkQueue> m_queues{};
 
     VulkanRenderPassCache m_renderPassCache;
-    VulkanFrameBufferCache m_frameBufferCache;
+    VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
 };
 

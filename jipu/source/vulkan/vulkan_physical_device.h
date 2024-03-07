@@ -3,6 +3,7 @@
 #include "jipu/physical_device.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
@@ -27,7 +28,7 @@ struct VulkanPhysicalDeviceDescriptor
 };
 
 class VulkanDriver;
-class VulkanPhysicalDevice : public PhysicalDevice
+class VULKAN_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;

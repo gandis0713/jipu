@@ -7,50 +7,74 @@
 namespace jipu
 {
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
-    : m_device(device)
-    , m_descriptor(descriptor)
+namespace
 {
+
+VulkanBindingGroupLayoutDescriptor generateVulkanDescriptor(const BindingGroupLayoutDescriptor& descriptor)
+{
+    VulkanBindingGroupLayoutDescriptor vkdescriptor{};
 
     const uint64_t bufferSize = descriptor.buffers.size();
     const uint64_t samplerSize = descriptor.samplers.size();
     const uint64_t textureSize = descriptor.textures.size();
-    std::vector<VkDescriptorSetLayoutBinding> layoutBindings{};
-    layoutBindings.resize(bufferSize + samplerSize + textureSize);
+
+    vkdescriptor.buffers.resize(bufferSize);
+    vkdescriptor.samplers.resize(samplerSize);
+    vkdescriptor.textures.resize(textureSize);
 
     for (uint64_t i = 0; i < bufferSize; ++i)
     {
         const auto& buffer = descriptor.buffers[i];
-        layoutBindings[i] = { .binding = buffer.index,
-                              .descriptorType = ToVkDescriptorType(buffer.type, buffer.dynamicOffset),
-                              .descriptorCount = 1,
-                              .stageFlags = ToVkShaderStageFlags(buffer.stages),
-                              .pImmutableSamplers = nullptr };
+        vkdescriptor.buffers[i] = { .binding = buffer.index,
+                                    .descriptorType = ToVkDescriptorType(buffer.type, buffer.dynamicOffset),
+                                    .descriptorCount = 1,
+                                    .stageFlags = ToVkShaderStageFlags(buffer.stages),
+                                    .pImmutableSamplers = nullptr };
     }
 
     for (uint64_t i = 0; i < samplerSize; ++i)
     {
         const auto& sampler = descriptor.samplers[i];
-        layoutBindings[bufferSize + i] = { .binding = sampler.index,
-                                           .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
-                                           .descriptorCount = 1,
-                                           .stageFlags = ToVkShaderStageFlags(sampler.stages),
-                                           .pImmutableSamplers = nullptr };
+        vkdescriptor.samplers[i] = { .binding = sampler.index,
+                                     .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER,
+                                     .descriptorCount = 1,
+                                     .stageFlags = ToVkShaderStageFlags(sampler.stages),
+                                     .pImmutableSamplers = nullptr };
     }
 
     for (uint64_t i = 0; i < textureSize; ++i)
     {
         const auto& texture = descriptor.textures[i];
-        layoutBindings[bufferSize + samplerSize + i] = { .binding = texture.index,
-                                                         .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                                                         .descriptorCount = 1,
-                                                         .stageFlags = ToVkShaderStageFlags(texture.stages),
-                                                         .pImmutableSamplers = nullptr };
+        vkdescriptor.textures[i] = { .binding = texture.index,
+                                     .descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                     .descriptorCount = 1,
+                                     .stageFlags = ToVkShaderStageFlags(texture.stages),
+                                     .pImmutableSamplers = nullptr };
     }
 
+    return vkdescriptor;
+}
+
+} // namespace
+
+VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
+    : VulkanBindingGroupLayout(device, generateVulkanDescriptor(descriptor))
+{
+}
+
+VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const VulkanBindingGroupLayoutDescriptor& descriptor)
+    : m_device(device)
+    , m_descriptor(descriptor)
+{
+    std::vector<VkDescriptorSetLayoutBinding> bindings{};
+    bindings.insert(bindings.end(), m_descriptor.buffers.begin(), m_descriptor.buffers.end());
+    bindings.insert(bindings.end(), m_descriptor.samplers.begin(), m_descriptor.samplers.end());
+    bindings.insert(bindings.end(), m_descriptor.textures.begin(), m_descriptor.textures.end());
+
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-                                                      .bindingCount = static_cast<uint32_t>(layoutBindings.size()),
-                                                      .pBindings = layoutBindings.data() };
+                                                      .bindingCount = static_cast<uint32_t>(bindings.size()),
+                                                      .pBindings = bindings.data() };
+
     const VulkanAPI& vkAPI = device->vkAPI;
     VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
     if (result != VK_SUCCESS)
@@ -65,49 +89,52 @@ VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
     vulkanDevice->vkAPI.DestroyDescriptorSetLayout(vulkanDevice->getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
-const std::vector<BufferBindingLayout>& VulkanBindingGroupLayout::getBufferBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferBindingLayouts() const
 {
     return m_descriptor.buffers;
 }
 
-std::optional<BufferBindingLayout> VulkanBindingGroupLayout::getBufferBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferBindingLayout(uint32_t index) const
 {
-    for (const auto& buffer : m_descriptor.buffers)
-    {
-        if (buffer.index == index)
-            return buffer;
-    }
-    return std::nullopt;
+    if (m_descriptor.buffers.empty())
+        throw std::runtime_error("Failed to find buffer binding layout due to empty.");
+
+    if (m_descriptor.buffers.size() <= index)
+        throw std::runtime_error("Failed to find buffer binding layout due to over index.");
+
+    return m_descriptor.buffers[index];
 }
 
-const std::vector<SamplerBindingLayout>& VulkanBindingGroupLayout::getSamplerBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerBindingLayouts() const
 {
     return m_descriptor.samplers;
 }
 
-std::optional<SamplerBindingLayout> VulkanBindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
 {
-    for (const auto& sampler : m_descriptor.samplers)
-    {
-        if (sampler.index == index)
-            return sampler;
-    }
-    return std::nullopt;
+    if (m_descriptor.samplers.empty())
+        throw std::runtime_error("Failed to find sampler binding layout due to empty.");
+
+    if (m_descriptor.samplers.size() <= index)
+        throw std::runtime_error("Failed to find sampler binding layout due to over index.");
+
+    return m_descriptor.samplers[index];
 }
 
-const std::vector<TextureBindingLayout>& VulkanBindingGroupLayout::getTextureBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureBindingLayouts() const
 {
     return m_descriptor.textures;
 }
 
-std::optional<TextureBindingLayout> VulkanBindingGroupLayout::getTextureBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureBindingLayout(uint32_t index) const
 {
-    for (const auto& texture : m_descriptor.textures)
-    {
-        if (texture.index == index)
-            return texture;
-    }
-    return std::nullopt;
+    if (m_descriptor.textures.empty())
+        throw std::runtime_error("Failed to find texture binding layout due to empty.");
+
+    if (m_descriptor.textures.size() <= index)
+        throw std::runtime_error("Failed to find texture binding layout due to over index.");
+
+    return m_descriptor.textures[index];
 }
 
 VkDescriptorSetLayout VulkanBindingGroupLayout::getVkDescriptorSetLayout() const

@@ -11,7 +11,7 @@
 namespace jipu
 {
 
-VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassDescriptor& descriptor)
+VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
 {
     // do nothing.

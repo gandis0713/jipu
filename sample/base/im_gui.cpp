@@ -466,7 +466,7 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassDescriptor renderPassDescriptor{};
+        RenderPassEncoderDescriptor renderPassDescriptor{};
         renderPassDescriptor.colorAttachments = { colorAttachment };
         renderPassDescriptor.sampleCount = 1;
 

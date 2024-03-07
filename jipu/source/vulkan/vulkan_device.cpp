@@ -6,8 +6,6 @@
 #include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
-#include "vulkan_pipeline.h"
-#include "vulkan_pipeline_layout.h"
 #include "vulkan_queue.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_sampler.h"
@@ -135,12 +133,27 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& de
     return std::make_unique<VulkanTexture>(this, descriptor);
 }
 
+std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
+{
+    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
+}
+
+std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor)
+{
+    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
+}
+
+std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
+{
+    return std::make_unique<VulkanTexture>(this, descriptor);
+}
+
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
 }
 
-VulkanFrameBuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }
@@ -199,13 +212,14 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
 {
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
+        const uint32_t maxSets = 30; // TODO: set correct max value.
         const uint64_t descriptorPoolCount = 7;
         const uint64_t maxDescriptorSetSize = descriptorPoolCount;
         std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
         VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                                                    .pNext = nullptr,
                                                    .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                                                   .maxSets = maxDescriptorSetSize,
+                                                   .maxSets = maxSets,
                                                    .poolSizeCount = descriptorPoolCount,
                                                    .pPoolSizes = poolSizes.data() };
 
@@ -214,13 +228,14 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
         // TODO: set correct max value.
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxBoundDescriptorSets };
-        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxBoundDescriptorSets };
+        uint32_t poolSize = devicePropertyLimists.maxBoundDescriptorSets;
+        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, poolSize };
+        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolSize };
+        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, poolSize };
+        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, poolSize };
+        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolSize };
+        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, poolSize };
+        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, poolSize };
 
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)

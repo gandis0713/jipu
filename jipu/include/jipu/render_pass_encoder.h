@@ -57,7 +57,7 @@ struct DepthStencilAttachment
     DepthStencilClearValue clearValue{};
 };
 
-struct RenderPassDescriptor
+struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;

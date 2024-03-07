@@ -1,0 +1,1 @@
+configure_sample(vulkan_subpass)

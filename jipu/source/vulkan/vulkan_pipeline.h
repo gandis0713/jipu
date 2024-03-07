@@ -3,6 +3,8 @@
 #include "jipu/pipeline.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_shader_module.h"
 
 #include <string>
@@ -13,7 +15,7 @@ namespace jipu
 
 class VulkanDevice;
 class VulkanPipelineLayout;
-class VulkanComputePipeline : public ComputePipeline
+class VULKAN_EXPORT VulkanComputePipeline : public ComputePipeline
 {
 public:
     VulkanComputePipeline() = delete;
@@ -42,14 +44,61 @@ private:
 };
 DOWN_CAST(VulkanComputePipeline, ComputePipeline);
 
-class VulkanRenderPass;
-
 // Vulkan Render Pipeline
-class VulkanRenderPipeline : public RenderPipeline
+
+struct VulkanPipelineVertexInputStateCreateInfo
+{
+    const void* next = nullptr;
+    VkPipelineVertexInputStateCreateFlags flags = 0u;
+    std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions{};
+    std::vector<VkVertexInputAttributeDescription> vertexAttributeDescriptions{};
+};
+
+struct VulkanPipelineColorBlendStateCreateInfo
+{
+    const void* next = nullptr;
+    VkPipelineColorBlendStateCreateFlags flags = 0u;
+    VkBool32 logicOpEnable;
+    VkLogicOp logicOp = VK_LOGIC_OP_CLEAR;
+    std::vector<VkPipelineColorBlendAttachmentState> attachments{};
+    float blendConstants[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+struct VulkanPipelineDynamicStateCreateInfo
+{
+    const void* next = nullptr;
+    VkPipelineDynamicStateCreateFlags flags = 0u;
+    std::vector<VkDynamicState> dynamicStates{};
+};
+
+struct VulkanRenderPipelineDescriptor
+{
+    const void* next = nullptr;
+    VkPipelineCreateFlags flags = 0u;
+    std::vector<VkPipelineShaderStageCreateInfo> stages{};
+    VulkanPipelineVertexInputStateCreateInfo vertexInputState{};
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState{};
+    VkPipelineTessellationStateCreateInfo tessellationState{};
+    VkPipelineViewportStateCreateInfo viewportState{};
+    VkPipelineRasterizationStateCreateInfo rasterizationState{};
+    VkPipelineMultisampleStateCreateInfo multisampleState{};
+    VkPipelineDepthStencilStateCreateInfo depthStencilState{};
+    VulkanPipelineColorBlendStateCreateInfo colorBlendState{};
+    VulkanPipelineDynamicStateCreateInfo dynamicState{};
+    VulkanPipelineLayout* layout = nullptr;
+    VulkanRenderPass* renderPass = nullptr;
+    uint32_t subpass = 0;
+    VkPipeline basePipelineHandle = VK_NULL_HANDLE;
+    int32_t basePipelineIndex = -1;
+};
+
+class VulkanRenderPass;
+class VULKAN_EXPORT VulkanRenderPipeline : public RenderPipeline
 {
 public:
     VulkanRenderPipeline() = delete;
     VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
+    VulkanRenderPipeline(VulkanDevice* device, const VulkanRenderPipelineDescriptor& descriptor);
     ~VulkanRenderPipeline() override;
 
     VulkanRenderPipeline(const VulkanRenderPipeline&) = delete;
@@ -66,13 +115,26 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
-
-    const RenderPipelineDescriptor m_descriptor{};
+    const VulkanRenderPipelineDescriptor m_descriptor{};
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
 };
 DOWN_CAST(VulkanRenderPipeline, RenderPipeline);
+
+// Generate Helper
+std::vector<VkVertexInputBindingDescription> VULKAN_EXPORT generateVertexInputBindingDescription(const RenderPipelineDescriptor& descriptor);
+std::vector<VkVertexInputAttributeDescription> VULKAN_EXPORT generateVertexInputAttributeDescription(const RenderPipelineDescriptor& descriptor);
+std::vector<VkPipelineColorBlendAttachmentState> VULKAN_EXPORT generateColorBlendAttachmentState(const RenderPipelineDescriptor& descriptor);
+VkPipelineInputAssemblyStateCreateInfo VULKAN_EXPORT generateInputAssemblyStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VulkanPipelineVertexInputStateCreateInfo VULKAN_EXPORT generateVertexInputStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VkPipelineViewportStateCreateInfo VULKAN_EXPORT generateViewportStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VkPipelineRasterizationStateCreateInfo VULKAN_EXPORT generateRasterizationStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VkPipelineMultisampleStateCreateInfo VULKAN_EXPORT generateMultisampleStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VulkanPipelineColorBlendStateCreateInfo VULKAN_EXPORT generateColorBlendStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VkPipelineDepthStencilStateCreateInfo VULKAN_EXPORT generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+VulkanPipelineDynamicStateCreateInfo VULKAN_EXPORT generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor);
+std::vector<VkPipelineShaderStageCreateInfo> VULKAN_EXPORT generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);

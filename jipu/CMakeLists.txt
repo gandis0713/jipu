@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.22)
 # find package
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+
+# find_library(VulkanSDK NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib")
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
@@ -121,11 +123,21 @@ target_include_directories(jipu
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
+if(ENABLE_VULKAN_EXPERIMENTAL)
+  target_include_directories(jipu
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  )
+endif()
+
 # link libraries
 target_link_libraries(jipu
   PRIVATE
   Vulkan::Headers
   GPUOpen::VulkanMemoryAllocator
+
+  # ${VulkanSDK}
   spdlog::spdlog_header_only
 )
 
@@ -163,6 +175,13 @@ if(BUILD_SHARED_LIBS)
     "JIPU_SHARED_LIBRARY"
     "JIPU_IMPLEMENTATION"
   )
+
+  if(ENABLE_VULKAN_EXPERIMENTAL)
+    target_compile_definitions(jipu
+      PRIVATE
+      "VULKAN_IMPLEMENTATION"
+    )
+  endif()
 endif()
 
 if(MSVC)

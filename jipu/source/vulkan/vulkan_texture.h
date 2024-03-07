@@ -4,32 +4,43 @@
 #include "utils/assert.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 #include "vulkan_resource.h"
 #include "vulkan_texture_view.h"
 
 #include <fmt/format.h>
+#include <vector>
 
 namespace jipu
 {
 
-enum class TextureOwner
+struct VulkanTextureDescriptor
 {
-    External,
-    Internal // by swap chain
+    const void* next = nullptr;
+    VkImageCreateFlags flags;
+    VkImageType imageType;
+    VkFormat format;
+    VkExtent3D extent;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
+    VkSampleCountFlagBits samples;
+    VkImageTiling tiling;
+    VkImageUsageFlags usage;
+    VkSharingMode sharingMode;
+    std::vector<uint32_t> queueFamilyIndices{};
+    VkImageLayout initialLayout;
+
+    // if created by swap chain.
+    VkImage image = VK_NULL_HANDLE;
 };
 
 class VulkanDevice;
-class VulkanTexture : public Texture
+class VULKAN_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
     VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
-
-    /**
-     * @brief Construct a new Vulkan Texture object.
-     *        Have not VkImage ownership.
-     */
-    VulkanTexture(VulkanDevice* device, VkImage image, const TextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
@@ -49,7 +60,6 @@ public:
 
 public:
     VkImage getVkImage() const;
-    TextureOwner getTextureOwner() const;
 
     /// @brief record pipeline barrier command, but not submitted.
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
@@ -64,11 +74,18 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const TextureDescriptor m_descriptor{};
+    const VulkanTextureDescriptor m_descriptor{};
+
+private:
+    enum class VulkanTextureOwner
+    {
+        User,
+        Swapchain
+    };
 
 private:
     VulkanTextureResource m_resource;
-    TextureOwner m_owner;
+    VulkanTextureOwner m_owner;
 
 private:
     VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -77,16 +94,18 @@ private:
 DOWN_CAST(VulkanTexture, Texture);
 
 // Convert Helper
-VkFormat ToVkFormat(TextureFormat format);
+VkFormat VULKAN_EXPORT ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);
 VkImageType ToVkImageType(TextureType type);
 TextureType ToTextureType(VkImageType type);
 VkImageUsageFlags ToVkImageUsageFlags(TextureUsageFlags usages);
 TextureUsageFlags ToTextureUsageFlags(VkImageUsageFlags usages);
-VkSampleCountFlagBits ToVkSampleCountFlagBits(uint32_t count);
+VkSampleCountFlagBits VULKAN_EXPORT ToVkSampleCountFlagBits(uint32_t count);
+uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 
 // Utils
-VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
+VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage);
+// VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
 VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
 VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout);
 

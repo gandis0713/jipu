@@ -3,6 +3,7 @@
 #include "jipu/swapchain.h"
 
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -17,7 +18,7 @@ namespace jipu
 class VulkanDevice;
 class VulkanTexture;
 class VulkanTextureView;
-class VulkanSwapchain : public Swapchain
+class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;

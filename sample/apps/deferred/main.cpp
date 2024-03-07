@@ -401,7 +401,7 @@ void DeferredSample::draw()
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-        RenderPassDescriptor renderPassDescriptor{};
+        RenderPassEncoderDescriptor renderPassDescriptor{};
         renderPassDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment };
         renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
         renderPassDescriptor.sampleCount = m_sampleCount;
@@ -433,7 +433,7 @@ void DeferredSample::draw()
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-        RenderPassDescriptor renderPassDescriptor{};
+        RenderPassEncoderDescriptor renderPassDescriptor{};
         renderPassDescriptor.colorAttachments = { colorAttachment };
         renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
         renderPassDescriptor.sampleCount = m_sampleCount;

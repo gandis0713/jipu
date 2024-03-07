@@ -3,18 +3,20 @@
 #include "jipu/pipeline_layout.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanDevice;
-class VulkanPipelineLayout : public PipelineLayout
+class VULKAN_EXPORT VulkanPipelineLayout : public PipelineLayout
 {
 public:
     VulkanPipelineLayout() = delete;
     VulkanPipelineLayout(VulkanDevice* device, const PipelineLayoutDescriptor& descriptor);
     ~VulkanPipelineLayout() override;
 
+public:
     VkPipelineLayout getVkPipelineLayout() const;
 
 private:

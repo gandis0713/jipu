@@ -97,8 +97,7 @@ VkImageViewType ToVkImageViewType(TextureViewType type)
     case TextureViewType::kCubeArray:
         return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     default:
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return VK_IMAGE_VIEW_TYPE_1D;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 TextureViewType ToTextureViewType(VkImageViewType type)
@@ -120,9 +119,7 @@ TextureViewType ToTextureViewType(VkImageViewType type)
     case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
         return TextureViewType::kCubeArray;
     default:
-
-        assert_message(false, fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
-        return TextureViewType::kUndefined;
+        throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
 
@@ -134,11 +131,11 @@ VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags)
     {
         vkflags |= VK_IMAGE_ASPECT_COLOR_BIT;
     }
-    else if (flags & TextureAspectFlagBits::kDepth)
+    if (flags & TextureAspectFlagBits::kDepth)
     {
         vkflags |= VK_IMAGE_ASPECT_DEPTH_BIT;
     }
-    else if (flags & TextureAspectFlagBits::kStencil)
+    if (flags & TextureAspectFlagBits::kStencil)
     {
         vkflags |= VK_IMAGE_ASPECT_STENCIL_BIT;
     }
@@ -154,11 +151,11 @@ TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags vkflags)
     {
         flags |= TextureAspectFlagBits::kColor;
     }
-    else if (vkflags & VK_IMAGE_ASPECT_DEPTH_BIT)
+    if (vkflags & VK_IMAGE_ASPECT_DEPTH_BIT)
     {
         flags |= TextureAspectFlagBits::kDepth;
     }
-    else if (vkflags & VK_IMAGE_ASPECT_STENCIL_BIT)
+    if (vkflags & VK_IMAGE_ASPECT_STENCIL_BIT)
     {
         flags |= TextureAspectFlagBits::kStencil;
     }

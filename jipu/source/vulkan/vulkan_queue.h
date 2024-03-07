@@ -3,12 +3,13 @@
 #include "jipu/queue.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanDevice;
-class VulkanQueue : public Queue
+class VULKAN_EXPORT VulkanQueue : public Queue
 {
 public:
     VulkanQueue() = delete;

@@ -163,7 +163,8 @@ struct FragmentStage : ProgrammableStage
 {
     struct Target
     {
-        TextureFormat format;
+        TextureFormat format = TextureFormat::kUndefined;
+        // TextureUsageFlags usage = TextureUsageFlagBits::kUndefined;
         std::optional<BlendState> blend = std::nullopt;
     };
 

@@ -3,12 +3,13 @@
 #include "jipu/texture_view.h"
 #include "utils/cast.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 namespace jipu
 {
 
 class VulkanTexture;
-class VulkanTextureView : public TextureView
+class VULKAN_EXPORT VulkanTextureView : public TextureView
 {
 public:
     VulkanTextureView() = delete;

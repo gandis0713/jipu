@@ -105,3 +105,8 @@ add_subdirectory(deferred)
 add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
+
+# experimental
+if(ENABLE_VULKAN_EXPERIMENTAL)
+    add_subdirectory(vulkan_subpass)
+endif()

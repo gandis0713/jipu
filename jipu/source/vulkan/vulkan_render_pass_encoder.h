@@ -2,17 +2,33 @@
 
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
+
+#include "utils/cast.h"
 
 namespace jipu
 {
 
+struct VulkanRenderPassEncoderDescriptor
+{
+    const void* next = nullptr;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    VkRect2D renderArea{};
+    std::vector<VkClearValue> clearValues{};
+};
+
+class VulkanDevice;
+class VulkanRenderPass;
+class VulkanFramebuffer;
 class VulkanRenderPipeline;
 class VulkanCommandBuffer;
-class VulkanRenderPassEncoder : public RenderPassEncoder
+class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
@@ -39,12 +55,21 @@ public:
 
     void end() override;
 
+public:
+    void nextPass();
+
+private:
+    void initialize();
+
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanRenderPipeline* m_pipeline = nullptr;
 
-    const RenderPassDescriptor m_descriptor{};
+    uint32_t m_passIndex = 0;
+
+    const VulkanRenderPassEncoderDescriptor m_descriptor{};
 };
+DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

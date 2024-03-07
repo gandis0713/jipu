@@ -12,7 +12,8 @@
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
 				"VCPKG_INSTALLED_DIR": "${sourceDir}/externals",
 				"JIPU_SAMPLE": "ON",
-				"JIPU_TEST": "ON"
+				"JIPU_TEST": "ON",
+				"ENABLE_VULKAN_EXPERIMENTAL": "ON"
 			},
 			"environment": {
 				"VCPKG_FEATURE_FLAGS": "manifests,binarycaching,registries"
@@ -33,6 +34,18 @@
 			},
 			"cacheVariables": {
 				"BUILD_SHARED_LIBS": true
+			}
+		},
+		{
+			"name": "base-windows",
+			"inherits": "base",
+			"condition": {
+				"type": "equals",
+				"lhs": "${hostSystemName}",
+				"rhs": "Windows"
+			},
+			"cacheVariables": {
+				"BUILD_SHARED_LIBS": false
 			}
 		},
 		{
@@ -70,6 +83,29 @@
 			"name": "base-x64-osx-xcode",
 			"inherits": "base-x64-osx",
 			"generator": "Xcode"
+		},
+		{
+			"name": "base-x64-windows",
+			"inherits": "base-windows",
+			"cacheVariables": {
+				"VCPKG_TARGET_TRIPLET": "x64-windows",
+				"CMAKE_OSX_ARCHITECTURES": "x64"
+			}
+		},
+		{
+			"name": "base-x64-windows-vs2019",
+			"inherits": "base-x64-windows",
+			"generator": "Visual Studio 16 2019"
+		},
+		{
+			"name": "base-x64-windows-vs2022",
+			"inherits": "base-x64-windows",
+			"generator": "Visual Studio 17 2022"
+		},
+		{
+			"name": "base-x64-windows-ninja",
+			"inherits": "base-x64-windows",
+			"generator": "Ninja"
 		},
 		{
 			"name": "arm64-osx-ninja-debug",
@@ -202,41 +238,6 @@
 				"CMAKE_BUILD_TYPE": "RelWithDebInfo",
 				"CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O2 -g -DNDEBUG"
 			}
-		},
-		{
-			"name": "base-windows",
-			"inherits": "base",
-			"condition": {
-				"type": "equals",
-				"lhs": "${hostSystemName}",
-				"rhs": "Windows"
-			},
-			"cacheVariables": {
-				"BUILD_SHARED_LIBS": false
-			}
-		},
-		{
-			"name": "base-x64-windows",
-			"inherits": "base-windows",
-			"cacheVariables": {
-				"VCPKG_TARGET_TRIPLET": "x64-windows",
-				"CMAKE_OSX_ARCHITECTURES": "x64"
-			}
-		},
-		{
-			"name": "base-x64-windows-vs2019",
-			"inherits": "base-x64-windows",
-			"generator": "Visual Studio 16 2019"
-		},
-		{
-			"name": "base-x64-windows-vs2022",
-			"inherits": "base-x64-windows",
-			"generator": "Visual Studio 17 2022"
-		},
-		{
-			"name": "base-x64-windows-ninja",
-			"inherits": "base-x64-windows",
-			"generator": "Ninja"
 		},
 		{
 			"name": "x64-windows-vs2019-debug",

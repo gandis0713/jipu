@@ -3,6 +3,7 @@
 #include "jipu/render_pass_encoder.h"
 #include "jipu/texture.h"
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 
 #include <memory>
 #include <optional>
@@ -12,41 +13,38 @@
 namespace jipu
 {
 
-struct VulkanColorAttachment
+struct VulkanSubpassDescription
 {
-    TextureFormat format = TextureFormat::kUndefined;
-    LoadOp loadOp = LoadOp::kDontCare;
-    StoreOp storeOp = StoreOp::kDontCare;
-
-    // TODO: custom type?
-    VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // TODO: custom type?
-    VkImageLayout finalLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkSubpassDescriptionFlags flags;
+    VkPipelineBindPoint pipelineBindPoint;
+    std::vector<VkAttachmentReference> inputAttachments{};
+    std::vector<VkAttachmentReference> colorAttachments{};
+    std::vector<VkAttachmentReference> resolveAttachments{};
+    std::optional<VkAttachmentReference> depthStencilAttachment = std::nullopt;
+    std::vector<uint32_t> preserveAttachments{};
 };
 
-struct VulkanDepthStencilAttachment
-{
-    TextureFormat format = TextureFormat::kUndefined;
-    LoadOp depthLoadOp = LoadOp::kDontCare;
-    StoreOp depthStoreOp = StoreOp::kDontCare;
-    LoadOp stencilLoadOp = LoadOp::kDontCare;
-    StoreOp stencilStoreOp = StoreOp::kDontCare;
-};
 struct VulkanRenderPassDescriptor
 {
-    std::vector<VulkanColorAttachment> colorAttachments{};
-    std::optional<VulkanDepthStencilAttachment> depthStencilAttachment = std::nullopt;
-    uint32_t sampleCount = 1;
+    const void* next;
+    VkRenderPassCreateFlags flags;
+    std::vector<VkAttachmentDescription> attachmentDescriptions{};
+    std::vector<VulkanSubpassDescription> subpassDescriptions{};
+    std::vector<VkSubpassDependency> subpassDependencies{};
 };
 
 class VulkanDevice;
-class VulkanRenderPass
+class VULKAN_EXPORT VulkanRenderPass
 {
 public:
-    VulkanRenderPass(VulkanDevice* device, VulkanRenderPassDescriptor descriptor);
+    VulkanRenderPass() = delete;
+    VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor);
     ~VulkanRenderPass();
 
     VkRenderPass getVkRenderPass() const;
+
+private:
+    void initialize(const VulkanRenderPassDescriptor& descriptors);
 
 private:
     VulkanDevice* m_device = nullptr;
@@ -55,7 +53,7 @@ private:
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
 };
 
-class VulkanRenderPassCache final
+class VULKAN_EXPORT VulkanRenderPassCache final
 {
 
 public:

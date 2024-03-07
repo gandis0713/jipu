@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "vulkan_api.h"
+#include "vulkan_export.h"
 #include "vulkan_render_pass.h"
 
 namespace jipu
@@ -12,18 +13,22 @@ namespace jipu
 
 struct VulkanFramebufferDescriptor
 {
-    VulkanRenderPass* renderPass = nullptr;
-    std::vector<TextureView*> textureViews{};
+    const void* next = nullptr;
+    VkFramebufferCreateFlags flags = 0u;
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+    std::vector<VkImageView> attachments{};
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint32_t layers = 0;
 };
 
 class VulkanDevice;
-
-class VulkanFrameBuffer
+class VULKAN_EXPORT VulkanFramebuffer
 {
 public:
-    VulkanFrameBuffer() = delete;
-    VulkanFrameBuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
-    ~VulkanFrameBuffer();
+    VulkanFramebuffer() = delete;
+    VulkanFramebuffer(VulkanDevice* device, const VulkanFramebufferDescriptor& descriptor);
+    ~VulkanFramebuffer();
 
     VkFramebuffer getVkFrameBuffer() const;
 
@@ -32,22 +37,20 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
+    const VulkanFramebufferDescriptor m_descriptor{};
 
 private:
     VkFramebuffer m_framebuffer = VK_NULL_HANDLE;
-
-    uint32_t m_width = 0;
-    uint32_t m_height = 0;
 };
 
-class VulkanFrameBufferCache final
+class VULKAN_EXPORT VulkanFramebufferCache final
 {
 
 public:
-    VulkanFrameBufferCache(VulkanDevice* device);
-    ~VulkanFrameBufferCache() = default;
+    VulkanFramebufferCache(VulkanDevice* device);
+    ~VulkanFramebufferCache() = default;
 
-    VulkanFrameBuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
     void clear();
 
@@ -62,7 +65,7 @@ private:
         // equal
         bool operator()(const VulkanFramebufferDescriptor& lhs, const VulkanFramebufferDescriptor& rhs) const;
     };
-    using Cache = std::unordered_map<VulkanFramebufferDescriptor, std::unique_ptr<VulkanFrameBuffer>, Functor, Functor>;
+    using Cache = std::unordered_map<VulkanFramebufferDescriptor, std::unique_ptr<VulkanFramebuffer>, Functor, Functor>;
 
     Cache m_cache{};
 };

@@ -9,121 +9,38 @@
 namespace jipu
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* vulkanDevice, VulkanRenderPassDescriptor descriptor)
-    : m_device(vulkanDevice)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor)
+    : m_device(device)
 {
-    std::vector<VkAttachmentDescription> attachments{};
-
-    for (auto colorAttachment : descriptor.colorAttachments)
+    std::vector<VkSubpassDescription> subpassDescriptions{};
+    subpassDescriptions.resize(descriptor.subpassDescriptions.size());
+    for (auto i = 0; i < descriptor.subpassDescriptions.size(); ++i)
     {
-        VkAttachmentDescription colorAttachmentDescription{};
-        colorAttachmentDescription.format = ToVkFormat(colorAttachment.format);
-        colorAttachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
-        colorAttachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-        colorAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        colorAttachmentDescription.initialLayout = colorAttachment.initialLayout;
-        colorAttachmentDescription.finalLayout = colorAttachment.finalLayout;
+        const auto& subpassDescription = descriptor.subpassDescriptions[i];
 
-        attachments.push_back(colorAttachmentDescription);
+        subpassDescriptions[i].flags = subpassDescription.flags;
+        subpassDescriptions[i].pipelineBindPoint = subpassDescription.pipelineBindPoint;
+        subpassDescriptions[i].colorAttachmentCount = static_cast<uint32_t>(subpassDescription.colorAttachments.size());
+        subpassDescriptions[i].pColorAttachments = subpassDescription.colorAttachments.data();
+        subpassDescriptions[i].inputAttachmentCount = static_cast<uint32_t>(subpassDescription.inputAttachments.size());
+        subpassDescriptions[i].pInputAttachments = subpassDescription.inputAttachments.data();
+        subpassDescriptions[i].pResolveAttachments = subpassDescription.resolveAttachments.data();
+        subpassDescriptions[i].preserveAttachmentCount = static_cast<uint32_t>(subpassDescription.preserveAttachments.size());
+        subpassDescriptions[i].pPreserveAttachments = subpassDescription.preserveAttachments.data();
+        if (subpassDescription.depthStencilAttachment.has_value())
+            subpassDescriptions[i].pDepthStencilAttachment = &subpassDescription.depthStencilAttachment.value();
     }
-
-    if (descriptor.sampleCount > 1)
-    {
-        for (auto colorAttachment : descriptor.colorAttachments)
-        {
-            VkAttachmentDescription attachmentDescription{};
-            attachmentDescription.format = ToVkFormat(colorAttachment.format);
-            attachmentDescription.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
-            attachmentDescription.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-            attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
-            attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-            attachments.push_back(attachmentDescription);
-        }
-    }
-
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
-        VkAttachmentDescription depthAttachmentDescription{};
-        depthAttachmentDescription.format = ToVkFormat(depthStencilAttachment.format);
-        depthAttachmentDescription.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
-        depthAttachmentDescription.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
-        depthAttachmentDescription.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
-        depthAttachmentDescription.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
-        depthAttachmentDescription.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
-        depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachments.push_back(depthAttachmentDescription);
-    }
-
-    VkSubpassDescription subpassDescription{};
-    subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-
-    // color attachments
-    uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.colorAttachments.size());
-    std::vector<VkAttachmentReference> colorAttachmentReferences{};
-    for (auto i = 0; i < colorAttachmentCount; ++i)
-    {
-        // attachment references
-        VkAttachmentReference colorAttachmentReference{};
-        colorAttachmentReference.attachment = i;
-        colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        colorAttachmentReferences.push_back(colorAttachmentReference);
-    }
-    subpassDescription.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentReferences.size());
-    subpassDescription.pColorAttachments = colorAttachmentReferences.data();
-
-    std::vector<VkAttachmentReference> resolveAttachmentReferences{};
-    if (descriptor.sampleCount > 1)
-    {
-        // resolve attachments
-        for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
-        {
-            VkAttachmentReference resolveAttachmentReference{};
-            resolveAttachmentReference.attachment = i;
-            resolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-            resolveAttachmentReferences.push_back(resolveAttachmentReference);
-        }
-        subpassDescription.pResolveAttachments = resolveAttachmentReferences.data();
-    }
-
-    VkAttachmentReference depthAttachment{};
-    if (descriptor.depthStencilAttachment.has_value())
-    {
-        depthAttachment.attachment = static_cast<uint32_t>(colorAttachmentReferences.size() + resolveAttachmentReferences.size());
-        depthAttachment.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-        subpassDescription.pDepthStencilAttachment = &depthAttachment;
-    }
-
-    VkSubpassDependency subpassDependency{};
-    subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependency.dstSubpass = 0;
-    subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.srcAccessMask = 0;
-    subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    if (descriptor.depthStencilAttachment.has_value())
-        subpassDependency.dstAccessMask |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
     VkRenderPassCreateInfo renderPassCreateInfo{};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassCreateInfo.pAttachments = attachments.data();
-    renderPassCreateInfo.subpassCount = 1;
-    renderPassCreateInfo.pSubpasses = &subpassDescription;
-    renderPassCreateInfo.dependencyCount = 1;
-    renderPassCreateInfo.pDependencies = &subpassDependency;
+    renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(descriptor.attachmentDescriptions.size());
+    renderPassCreateInfo.pAttachments = descriptor.attachmentDescriptions.data();
+    renderPassCreateInfo.subpassCount = static_cast<uint32_t>(subpassDescriptions.size());
+    renderPassCreateInfo.pSubpasses = subpassDescriptions.data();
+    renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(descriptor.subpassDependencies.size());
+    renderPassCreateInfo.pDependencies = descriptor.subpassDependencies.data();
 
-    if (vulkanDevice->vkAPI.CreateRenderPass(vulkanDevice->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (device->vkAPI.CreateRenderPass(device->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -136,6 +53,10 @@ VulkanRenderPass::~VulkanRenderPass()
     vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
 }
 
+void VulkanRenderPass::initialize(const VulkanRenderPassDescriptor& descriptors)
+{
+}
+
 VkRenderPass VulkanRenderPass::getVkRenderPass() const
 {
     return m_renderPass;
@@ -143,25 +64,42 @@ VkRenderPass VulkanRenderPass::getVkRenderPass() const
 
 size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& descriptor) const
 {
-    size_t hash = jipu::hash(descriptor.sampleCount);
+    size_t hash = 0;
 
-    for (auto colorAttachment : descriptor.colorAttachments)
+    combineHash(hash, descriptor.flags);
+
+    for (auto attachment : descriptor.attachmentDescriptions)
     {
-        combineHash(hash, colorAttachment.loadOp);
-        combineHash(hash, colorAttachment.storeOp);
-        combineHash(hash, colorAttachment.format);
-        combineHash(hash, colorAttachment.finalLayout);
+        combineHash(hash, attachment.finalLayout);
+        combineHash(hash, attachment.flags);
+        combineHash(hash, attachment.format);
+        combineHash(hash, attachment.initialLayout);
+        combineHash(hash, attachment.loadOp);
+        combineHash(hash, attachment.samples);
+        combineHash(hash, attachment.stencilLoadOp);
+        combineHash(hash, attachment.stencilStoreOp);
+        combineHash(hash, attachment.storeOp);
     }
 
-    if (descriptor.depthStencilAttachment)
+    for (auto subpass : descriptor.subpassDescriptions)
     {
-        auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
+        combineHash(hash, subpass.flags);
+        combineHash(hash, subpass.colorAttachments.size());
+        combineHash(hash, subpass.inputAttachments.size());
+        combineHash(hash, subpass.resolveAttachments.size());
+        combineHash(hash, subpass.preserveAttachments.size());
+        combineHash(hash, subpass.depthStencilAttachment.has_value());
+    }
 
-        combineHash(hash, depthStencilAttachment.depthLoadOp);
-        combineHash(hash, depthStencilAttachment.depthStoreOp);
-        combineHash(hash, depthStencilAttachment.stencilLoadOp);
-        combineHash(hash, depthStencilAttachment.stencilStoreOp);
-        combineHash(hash, depthStencilAttachment.format);
+    for (auto subpass : descriptor.subpassDependencies)
+    {
+        combineHash(hash, subpass.dependencyFlags);
+        combineHash(hash, subpass.dstAccessMask);
+        combineHash(hash, subpass.dstStageMask);
+        combineHash(hash, subpass.dstSubpass);
+        combineHash(hash, subpass.srcAccessMask);
+        combineHash(hash, subpass.srcStageMask);
+        combineHash(hash, subpass.srcSubpass);
     }
 
     return hash;
@@ -170,42 +108,57 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
 bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
                                                 const VulkanRenderPassDescriptor& rhs) const
 {
-
-    if (lhs.colorAttachments.size() == rhs.colorAttachments.size() &&
-        lhs.depthStencilAttachment.has_value() == rhs.depthStencilAttachment.has_value() &&
-        lhs.sampleCount == rhs.sampleCount)
+    if (lhs.attachmentDescriptions.size() != rhs.attachmentDescriptions.size() ||
+        lhs.subpassDescriptions.size() != rhs.subpassDescriptions.size() ||
+        lhs.subpassDependencies.size() != rhs.subpassDependencies.size())
     {
-        auto colorAttanchmentSize = lhs.colorAttachments.size();
-        for (auto i = 0; i < colorAttanchmentSize; ++i)
-        {
-            if (lhs.colorAttachments[i].loadOp != rhs.colorAttachments[i].loadOp ||
-                lhs.colorAttachments[i].storeOp != rhs.colorAttachments[i].storeOp ||
-                lhs.colorAttachments[i].format != rhs.colorAttachments[i].format ||
-                lhs.colorAttachments[i].finalLayout != rhs.colorAttachments[i].finalLayout)
-            {
-                return false;
-            }
-        }
-
-        if (lhs.depthStencilAttachment.has_value() && rhs.depthStencilAttachment.has_value())
-        {
-            auto lhsDepthStencilAttachment = lhs.depthStencilAttachment.value();
-            auto rhsDepthStencilAttachment = rhs.depthStencilAttachment.value();
-
-            if (lhsDepthStencilAttachment.depthLoadOp != rhsDepthStencilAttachment.depthLoadOp ||
-                lhsDepthStencilAttachment.depthStoreOp != rhsDepthStencilAttachment.depthStoreOp ||
-                lhsDepthStencilAttachment.stencilLoadOp != rhsDepthStencilAttachment.stencilLoadOp ||
-                lhsDepthStencilAttachment.stencilStoreOp != rhsDepthStencilAttachment.stencilStoreOp ||
-                lhsDepthStencilAttachment.format != rhsDepthStencilAttachment.format)
-            {
-                return false;
-            }
-        }
-
-        return true; // return true
+        return false;
     }
 
-    return false;
+    for (auto i = 0; i < lhs.attachmentDescriptions.size(); ++i)
+    {
+        if (lhs.attachmentDescriptions[i].finalLayout != rhs.attachmentDescriptions[i].finalLayout ||
+            lhs.attachmentDescriptions[i].flags != rhs.attachmentDescriptions[i].flags ||
+            lhs.attachmentDescriptions[i].format != rhs.attachmentDescriptions[i].format ||
+            lhs.attachmentDescriptions[i].initialLayout != rhs.attachmentDescriptions[i].initialLayout ||
+            lhs.attachmentDescriptions[i].loadOp != rhs.attachmentDescriptions[i].loadOp ||
+            lhs.attachmentDescriptions[i].samples != rhs.attachmentDescriptions[i].samples ||
+            lhs.attachmentDescriptions[i].stencilLoadOp != rhs.attachmentDescriptions[i].stencilLoadOp ||
+            lhs.attachmentDescriptions[i].stencilStoreOp != rhs.attachmentDescriptions[i].stencilStoreOp ||
+            lhs.attachmentDescriptions[i].storeOp != rhs.attachmentDescriptions[i].storeOp)
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.subpassDescriptions.size(); ++i)
+    {
+        if (lhs.subpassDescriptions[i].flags != rhs.subpassDescriptions[i].flags ||
+            lhs.subpassDescriptions[i].colorAttachments.size() != rhs.subpassDescriptions[i].colorAttachments.size() ||
+            lhs.subpassDescriptions[i].inputAttachments.size() != rhs.subpassDescriptions[i].inputAttachments.size() ||
+            lhs.subpassDescriptions[i].resolveAttachments.size() != rhs.subpassDescriptions[i].resolveAttachments.size() ||
+            lhs.subpassDescriptions[i].preserveAttachments.size() != rhs.subpassDescriptions[i].preserveAttachments.size() ||
+            lhs.subpassDescriptions[i].depthStencilAttachment.has_value() != rhs.subpassDescriptions[i].depthStencilAttachment.has_value())
+        {
+            return false;
+        }
+    }
+
+    for (auto i = 0; i < lhs.subpassDependencies.size(); ++i)
+    {
+        if (lhs.subpassDependencies[i].dependencyFlags != rhs.subpassDependencies[i].dependencyFlags ||
+            lhs.subpassDependencies[i].dstAccessMask != rhs.subpassDependencies[i].dstAccessMask ||
+            lhs.subpassDependencies[i].dstStageMask != rhs.subpassDependencies[i].dstStageMask ||
+            lhs.subpassDependencies[i].dstSubpass != rhs.subpassDependencies[i].dstSubpass ||
+            lhs.subpassDependencies[i].srcAccessMask != rhs.subpassDependencies[i].srcAccessMask ||
+            lhs.subpassDependencies[i].srcStageMask != rhs.subpassDependencies[i].srcStageMask ||
+            lhs.subpassDependencies[i].srcSubpass != rhs.subpassDependencies[i].srcSubpass)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
@@ -221,36 +174,12 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
         return (it->second).get();
     }
 
-    // log
-    {
-        // auto colorAttanchmentSize = descriptor.colorAttachments.size();
-        // for (auto i = 0; i < colorAttanchmentSize; ++i)
-        // {
-        //     spdlog::trace("{} index color attachment for new renderpass.", i);
-        //     spdlog::trace("  loadOp {}", static_cast<uint32_t>(descriptor.colorAttachments[i].loadOp));
-        //     spdlog::trace("  storeOp {}", static_cast<uint32_t>(descriptor.colorAttachments[i].storeOp));
-        //     spdlog::trace("  format {}", static_cast<uint32_t>(descriptor.colorAttachments[i].format));
-        //     spdlog::trace("  finalLayout {}", static_cast<uint32_t>(descriptor.colorAttachments[i].finalLayout));
-        // }
-
-        // if (descriptor.depthStencilAttachment.has_value())
-        // {
-        //     auto lhsDepthStencilAttachment = descriptor.depthStencilAttachment.value();
-        //     spdlog::trace("depth/stencil attachment for new renderpass.");
-        //     spdlog::trace("  depthLoadOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.depthLoadOp));
-        //     spdlog::trace("  depthStoreOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.depthStoreOp));
-        //     spdlog::trace("  stencilLoadOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.stencilLoadOp));
-        //     spdlog::trace("  stencilStoreOp {}", static_cast<uint32_t>(lhsDepthStencilAttachment.stencilStoreOp));
-        //     spdlog::trace("  format {}", static_cast<uint32_t>(lhsDepthStencilAttachment.format));
-        // }
-    }
-
     // create new renderpass
-    auto renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
+    std::unique_ptr<VulkanRenderPass> renderPass = std::make_unique<VulkanRenderPass>(m_device, descriptor);
 
     // get raw pointer before moving.
     VulkanRenderPass* renderPassPtr = renderPass.get();
-    m_cache.emplace(descriptor, std::move(renderPass));
+    auto result = m_cache.emplace(descriptor, std::move(renderPass));
 
     return renderPassPtr;
 }

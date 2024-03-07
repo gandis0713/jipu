@@ -12,13 +12,75 @@
 namespace jipu
 {
 
+namespace
+{
+
+VulkanBindingGroupDescriptor generateVulkanDescriptor(const BindingGroupDescriptor& descriptor)
+{
+    VulkanBindingGroupDescriptor vkdescriptor{};
+    vkdescriptor.layout = descriptor.layout;
+
+    const uint64_t bufferSize = descriptor.buffers.size();
+    const uint64_t samplerSize = descriptor.samplers.size();
+    const uint64_t textureSize = descriptor.textures.size();
+
+    vkdescriptor.buffers.resize(bufferSize);
+    for (auto i = 0; i < bufferSize; ++i)
+    {
+        const BufferBinding& buffer = descriptor.buffers[i];
+
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
+        bufferInfo.offset = buffer.offset;
+        bufferInfo.range = buffer.size;
+
+        vkdescriptor.buffers[i] = bufferInfo;
+    }
+
+    vkdescriptor.samplers.resize(samplerSize);
+    for (auto i = 0; i < samplerSize; ++i)
+    {
+        const SamplerBinding& sampler = descriptor.samplers[i];
+
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
+
+        vkdescriptor.samplers[i] = imageInfo;
+    }
+
+    vkdescriptor.textures.resize(textureSize);
+    // update texture
+    for (auto i = 0; i < textureSize; ++i)
+    {
+        const TextureBinding& texture = descriptor.textures[i];
+
+        auto vulkanTextureView = downcast(texture.textureView);
+        auto vulkanTexture = downcast(vulkanTextureView->getTexture());
+
+        VkDescriptorImageInfo imageInfo{};
+        imageInfo.imageView = vulkanTextureView->getVkImageView();
+        imageInfo.imageLayout = vulkanTextureView->getTexture()->getFinalLayout();
+
+        vkdescriptor.textures[i] = imageInfo;
+    }
+
+    return vkdescriptor;
+}
+
+} // namespace
+
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
+    : VulkanBindingGroup(device, generateVulkanDescriptor(descriptor))
+{
+}
+
+VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const VulkanBindingGroupDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
     auto vulkanDevice = downcast(device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-    auto vulkanBindingGroupLayout = downcast(descriptor.layout);
+    auto vulkanBindingGroupLayout = downcast(m_descriptor.layout);
     auto descriptorSetLayout = vulkanBindingGroupLayout->getVkDescriptorSetLayout();
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
@@ -40,107 +102,61 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupD
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     descriptorWrites.resize(bufferSize + samplerSize + textureSize);
 
-    std::vector<VkDescriptorBufferInfo> bufferInfos{};
-    bufferInfos.resize(bufferSize);
     for (auto i = 0; i < bufferSize; ++i)
     {
-        const BufferBinding& buffer = descriptor.buffers[i];
-        auto bufferLayoutOp = vulkanBindingGroupLayout->getBufferBindingLayout(buffer.index);
-        if (!bufferLayoutOp.has_value())
-        {
-            spdlog::error("There is no buffer binding layout for that index.");
-            continue;
-        }
-
-        const BufferBindingLayout bufferLayout = bufferLayoutOp.value();
-
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
-        bufferInfo.offset = buffer.offset;
-        bufferInfo.range = buffer.size;
-
-        bufferInfos[i] = bufferInfo;
+        const VkDescriptorBufferInfo& buffer = descriptor.buffers[i];
+        auto bufferLayout = vulkanBindingGroupLayout->getBufferBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.dstSet = m_descriptorSet;
-        descriptorWrite.dstBinding = buffer.index;
+        descriptorWrite.dstBinding = bufferLayout.binding;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = ToVkDescriptorType(bufferLayout.type, bufferLayout.dynamicOffset);
+        descriptorWrite.descriptorType = bufferLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
-        descriptorWrite.pBufferInfo = &bufferInfos[i];
+        descriptorWrite.pBufferInfo = &buffer;
         descriptorWrite.pImageInfo = nullptr;
         descriptorWrite.pTexelBufferView = nullptr;
 
         descriptorWrites[i] = descriptorWrite;
     }
 
-    std::vector<VkDescriptorImageInfo> samplerInfos{};
-    samplerInfos.resize(samplerSize);
-    // update sampler
     for (auto i = 0; i < samplerSize; ++i)
     {
-        const SamplerBinding& sampler = descriptor.samplers[i];
-        auto samplerLayoutOp = vulkanBindingGroupLayout->getSamplerBindingLayout(sampler.index);
-        if (!samplerLayoutOp.has_value())
-        {
-            spdlog::error("There is no sampler binding layout for that index.");
-            continue;
-        }
-        const SamplerBindingLayout samplerLayout = samplerLayoutOp.value();
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
-
-        samplerInfos[i] = imageInfo;
+        const VkDescriptorImageInfo& sampler = descriptor.samplers[i];
+        auto samplerLayout = vulkanBindingGroupLayout->getSamplerBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.dstSet = m_descriptorSet;
-        descriptorWrite.dstBinding = sampler.index;
+        descriptorWrite.dstBinding = samplerLayout.binding;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+        descriptorWrite.descriptorType = samplerLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
-        descriptorWrite.pImageInfo = &samplerInfos[i];
+        descriptorWrite.pImageInfo = &sampler;
         descriptorWrite.pTexelBufferView = nullptr;
 
         descriptorWrites[bufferSize + i] = descriptorWrite;
     }
 
-    std::vector<VkDescriptorImageInfo> textureInfos{};
-    textureInfos.resize(textureSize);
-    // update texture
     for (auto i = 0; i < textureSize; ++i)
     {
-        const TextureBinding& texture = descriptor.textures[i];
-        auto textureLayoutOp = vulkanBindingGroupLayout->getTextureBindingLayout(texture.index);
-        if (!textureLayoutOp.has_value())
-        {
-            spdlog::error("There is no texture binding layout for that index.");
-            continue;
-        }
-
-        const TextureBindingLayout textureLayout = textureLayoutOp.value();
-
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageView = downcast(texture.textureView)->getVkImageView();
-        imageInfo.imageLayout = downcast(texture.textureView)->getTexture()->getFinalLayout();
-
-        textureInfos[i] = imageInfo;
+        const VkDescriptorImageInfo& texture = descriptor.textures[i];
+        auto textureLayout = vulkanBindingGroupLayout->getTextureBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.dstSet = m_descriptorSet;
-        descriptorWrite.dstBinding = texture.index;
+        descriptorWrite.dstBinding = textureLayout.binding;
         descriptorWrite.dstArrayElement = 0;
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        descriptorWrite.descriptorType = textureLayout.descriptorType;
         descriptorWrite.descriptorCount = 1;
 
         descriptorWrite.pBufferInfo = nullptr;
-        descriptorWrite.pImageInfo = &textureInfos[i];
+        descriptorWrite.pImageInfo = &texture;
         descriptorWrite.pTexelBufferView = nullptr;
 
         descriptorWrites[bufferSize + samplerSize + i] = descriptorWrite;
