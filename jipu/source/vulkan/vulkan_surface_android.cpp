@@ -7,13 +7,22 @@
 namespace jipu
 {
 
+VulkanSurfaceDescriptor generateVulkanSurfaceDescriptor(const SurfaceDescriptor& descriptor)
+{
+    VulkanSurfaceDescriptor vkdescriptor{};
+    vkdescriptor.window = static_cast<ANativeWindow*>(descriptor.windowHandle);
+
+    return vkdescriptor;
+}
+
 void VulkanSurface::createSurfaceKHR()
 {
-    VkAndroidSurfaceCreateInfoKHR createInfo{
+    VkAndroidSurfaceCreateInfoKHR createInfo
+    {
         .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
         .pNext = nullptr,
         .flags = 0,
-        .window = static_cast<ANativeWindow*>(m_descriptor.windowHandle)
+        .window = m_descriptor.window;
     };
 
     VulkanDriver* driver = downcast(m_driver);

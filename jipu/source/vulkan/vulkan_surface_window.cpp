@@ -7,12 +7,22 @@
 namespace jipu
 {
 
+VulkanSurfaceDescriptor generateVulkanSurfaceDescriptor(const SurfaceDescriptor& descriptor)
+{
+    VulkanSurfaceDescriptor vkdescriptor{};
+
+    vkdescriptor.hwnd = (HWND)descriptor.windowHandle;
+    vkdescriptor.hinstance = GetModuleHandle(nullptr);
+
+    return vkdescriptor;
+}
+
 void VulkanSurface::createSurfaceKHR()
 {
     VkWin32SurfaceCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-    createInfo.hwnd = (HWND)m_descriptor.windowHandle;
-    createInfo.hinstance = GetModuleHandle(nullptr);
+    createInfo.hwnd = m_descriptor.hwnd;
+    createInfo.hinstance = m_descriptor.hinstance;
 
     VulkanDriver* driver = downcast(m_driver);
     VkResult result = driver->vkAPI.CreateWin32SurfaceKHR(driver->getVkInstance(), &createInfo, nullptr, &m_surface);

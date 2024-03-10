@@ -9,6 +9,11 @@ namespace jipu
 {
 
 VulkanSurface::VulkanSurface(VulkanDriver* driver, const SurfaceDescriptor& descriptor)
+    : VulkanSurface(driver, generateVulkanSurfaceDescriptor(descriptor))
+{
+}
+
+VulkanSurface::VulkanSurface(VulkanDriver* driver, const VulkanSurfaceDescriptor& descriptor)
     : m_driver(driver)
     , m_descriptor(descriptor)
 {
