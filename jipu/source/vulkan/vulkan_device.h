@@ -11,6 +11,7 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
+#include "vulkan_swapchain.h"
 #include "vulkan_texture.h"
 
 #include <memory>
@@ -49,6 +50,7 @@ public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
     std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
+    std::unique_ptr<Swapchain> createSwapchain(const VulkanSwapchainDescriptor& descriptor);
 
 public:
     VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);

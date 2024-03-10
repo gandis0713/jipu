@@ -7,10 +7,7 @@
 #include "vulkan_framebuffer.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_queue.h"
-#include "vulkan_render_pass.h"
 #include "vulkan_sampler.h"
-#include "vulkan_swapchain.h"
-#include "vulkan_texture.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -146,6 +143,11 @@ std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
     return std::make_unique<VulkanTexture>(this, descriptor);
+}
+
+std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
+{
+    return std::make_unique<VulkanSwapchain>(this, descriptor);
 }
 
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)

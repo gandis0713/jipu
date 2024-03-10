@@ -6,22 +6,8 @@
 #include <random>
 #include <stdexcept>
 
-#include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
-#include "vulkan_buffer.h"
-#include "vulkan_command_buffer.h"
-#include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
-#include "vulkan_driver.h"
-#include "vulkan_framebuffer.h"
-#include "vulkan_physical_device.h"
-#include "vulkan_queue.h"
-#include "vulkan_render_pass.h"
-#include "vulkan_render_pass_encoder.h"
-#include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
-#include "vulkan_texture.h"
-#include "vulkan_texture_view.h"
 
 namespace jipu
 {
@@ -241,8 +227,6 @@ void VulkanNBufferingSample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
-    auto vulkanDevice = downcast(m_device.get());
-    auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
     auto renderView = m_swapchain->acquireNextTexture();
 
@@ -363,7 +347,10 @@ void VulkanNBufferingSample::createSwapchain()
     descriptor.textureFormat = textureFormat;
     descriptor.presentMode = PresentMode::kFifo;
 
-    m_swapchain = m_device->createSwapchain(descriptor);
+    auto vulkanDevice = downcast(m_device.get());
+    VulkanSwapchainDescriptor vkdescriptor = generateVulkanSwapchainDescriptor(vulkanDevice, descriptor);
+
+    m_swapchain = vulkanDevice->createSwapchain(vkdescriptor);
 }
 
 void VulkanNBufferingSample::createDevice()
@@ -377,19 +364,17 @@ void VulkanNBufferingSample::createDevice()
 
 void VulkanNBufferingSample::createOffscreenPositionColorAttachmentTexture()
 {
-    VulkanTextureDescriptor descriptor{};
-    descriptor.imageType = VK_IMAGE_TYPE_2D;
-    descriptor.format = VK_FORMAT_R16G16B16A16_UNORM;
-    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
     descriptor.mipLevels = 1;
-    descriptor.arrayLayers = 1;
-    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
-    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.positionColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
+    m_offscreen.positionColorAttachmentTexture = m_device->createTexture(descriptor);
 }
 
 void VulkanNBufferingSample::createOffscreenPositionColorAttachmentTextureView()
@@ -403,20 +388,18 @@ void VulkanNBufferingSample::createOffscreenPositionColorAttachmentTextureView()
 
 void VulkanNBufferingSample::createOffscreenNormalColorAttachmentTexture()
 {
-
-    VulkanTextureDescriptor descriptor{};
-    descriptor.imageType = VK_IMAGE_TYPE_2D;
-    descriptor.format = VK_FORMAT_R16G16B16A16_UNORM;
-    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
     descriptor.mipLevels = 1;
-    descriptor.arrayLayers = 1;
-    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
-    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment |
+                       TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.normalColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
+    m_offscreen.normalColorAttachmentTexture = m_device->createTexture(descriptor);
 }
 
 void VulkanNBufferingSample::createOffscreenNormalColorAttachmentTextureView()
@@ -430,19 +413,17 @@ void VulkanNBufferingSample::createOffscreenNormalColorAttachmentTextureView()
 
 void VulkanNBufferingSample::createOffscreenAlbedoColorAttachmentTexture()
 {
-    VulkanTextureDescriptor descriptor{};
-    descriptor.imageType = VK_IMAGE_TYPE_2D;
-    descriptor.format = VK_FORMAT_B8G8R8A8_UNORM;
-    descriptor.extent = { m_swapchain->getWidth(), m_swapchain->getHeight(), 1 };
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm;
     descriptor.mipLevels = 1;
-    descriptor.arrayLayers = 1;
-    descriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-    descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-    descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
-    descriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
+    descriptor.usage = TextureUsageFlagBits::kColorAttachment | TextureUsageFlagBits::kTextureBinding;
 
-    m_offscreen.albedoColorAttachmentTexture = downcast(m_device.get())->createTexture(descriptor);
+    m_offscreen.albedoColorAttachmentTexture = m_device->createTexture(descriptor);
 }
 
 void VulkanNBufferingSample::createOffscreenAlbedoColorAttachmentTextureView()
@@ -769,8 +750,7 @@ void VulkanNBufferingSample::createOffscreenPipelineLayout()
     PipelineLayoutDescriptor descriptor{};
     descriptor.layouts = { m_offscreen.bindingGroupLayouts[0].get(), m_offscreen.bindingGroupLayouts[1].get() };
 
-    auto vulkanDevice = downcast(m_device.get());
-    m_offscreen.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
+    m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
 void VulkanNBufferingSample::createOffscreenPipeline()
@@ -875,8 +855,7 @@ void VulkanNBufferingSample::createOffscreenPipeline()
     descriptor.rasterization = rasterizationStage;
     descriptor.fragment = fragmentStage;
 
-    auto vulkanDevice = downcast(m_device.get());
-    m_offscreen.renderPipeline = vulkanDevice->createRenderPipeline(descriptor);
+    m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 void VulkanNBufferingSample::createCompositionBindingGroupLayout()
@@ -1013,8 +992,7 @@ void VulkanNBufferingSample::createCompositionPipelineLayout()
     PipelineLayoutDescriptor descriptor{};
     descriptor.layouts = { m_composition.bindingGroupLayouts[0].get() };
 
-    auto vulkanDevice = downcast(m_device.get());
-    m_composition.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
+    m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
 void VulkanNBufferingSample::createCompositionPipeline()

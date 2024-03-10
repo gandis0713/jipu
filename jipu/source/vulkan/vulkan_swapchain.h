@@ -80,6 +80,9 @@ private:
 
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
+// Generate Helper
+VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor);
+
 // Convert Helper
 ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace);
 VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace);
