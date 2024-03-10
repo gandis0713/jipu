@@ -271,9 +271,6 @@ std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const
     return { vertexStageInfo, fragmentStageInfo };
 }
 
-namespace
-{
-
 VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipelineDescriptor& descriptor)
 {
     if (descriptor.fragment.targets.empty())
@@ -414,8 +411,6 @@ VulkanRenderPipelineDescriptor generateVulkanRenderPipelineDescriptor(VulkanDevi
 
     return vkdescriptor;
 }
-
-} // namespace
 
 VulkanRenderPipeline::VulkanRenderPipeline(VulkanDevice* device, const RenderPipelineDescriptor& descriptor)
     : VulkanRenderPipeline(device, generateVulkanRenderPipelineDescriptor(device, descriptor))

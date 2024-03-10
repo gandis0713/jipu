@@ -135,6 +135,7 @@ VulkanPipelineColorBlendStateCreateInfo VULKAN_EXPORT generateColorBlendStateCre
 VkPipelineDepthStencilStateCreateInfo VULKAN_EXPORT generateDepthStencilStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 VulkanPipelineDynamicStateCreateInfo VULKAN_EXPORT generateDynamicStateCreateInfo(const RenderPipelineDescriptor& descriptor);
 std::vector<VkPipelineShaderStageCreateInfo> VULKAN_EXPORT generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor);
+VulkanRenderPipelineDescriptor VULKAN_EXPORT generateVulkanRenderPipelineDescriptor(VulkanDevice* device, const RenderPipelineDescriptor& descriptor);
 
 // Convert Helper
 VkFormat ToVkVertexFormat(VertexFormat format);
