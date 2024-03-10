@@ -188,19 +188,19 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Vulkan [windows x64] Subpass",
+            "name": "Vulkan [windows x64] Subpasses",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_subpass/vulkan_subpass.exe",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
         },
         {
-            "name": "Vulkan [arm64 osx] Subpass",
+            "name": "Vulkan [arm64 osx] Subpasses",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpass/vulkan_subpass",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses",
             "args": [],
             "stopAtEntry": false,
             "environment": [

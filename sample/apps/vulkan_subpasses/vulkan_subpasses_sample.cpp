@@ -1,4 +1,4 @@
-#include "vulkan_subpass_sample.h"
+#include "vulkan_subpasses_sample.h"
 
 #include <math.h>
 #include <spdlog/spdlog.h>
@@ -26,13 +26,13 @@
 namespace jipu
 {
 
-VulkanSubpassSample::VulkanSubpassSample(const SampleDescriptor& descriptor)
+VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
     // Do not call init function.
 }
 
-VulkanSubpassSample::~VulkanSubpassSample()
+VulkanSubpassesSample::~VulkanSubpassesSample()
 {
     clearImGui();
 
@@ -107,7 +107,7 @@ VulkanSubpassSample::~VulkanSubpassSample()
     m_driver.reset();
 }
 
-void VulkanSubpassSample::init()
+void VulkanSubpassesSample::init()
 {
     createDriver();
     getPhysicalDevices();
@@ -153,7 +153,7 @@ void VulkanSubpassSample::init()
     m_initialized = true;
 }
 
-void VulkanSubpassSample::update()
+void VulkanSubpassesSample::update()
 {
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
@@ -162,7 +162,7 @@ void VulkanSubpassSample::update()
     buildImGui();
 }
 
-void VulkanSubpassSample::updateOffscreenUniformBuffer()
+void VulkanSubpassesSample::updateOffscreenUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -179,7 +179,7 @@ void VulkanSubpassSample::updateOffscreenUniformBuffer()
     memcpy(mappedPointer, &m_mvp, sizeof(MVP));
 }
 
-void VulkanSubpassSample::updateCompositionUniformBuffer()
+void VulkanSubpassesSample::updateCompositionUniformBuffer()
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
     auto currentTime = std::chrono::high_resolution_clock::now();
@@ -216,7 +216,7 @@ void VulkanSubpassSample::updateCompositionUniformBuffer()
     memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
 }
 
-void VulkanSubpassSample::updateImGui()
+void VulkanSubpassesSample::updateImGui()
 {
     // set display size and mouse state.
     {
@@ -258,7 +258,7 @@ void VulkanSubpassSample::updateImGui()
     ImGui::Render();
 }
 
-void VulkanSubpassSample::draw()
+void VulkanSubpassesSample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -399,26 +399,26 @@ void VulkanSubpassSample::draw()
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
 
-void VulkanSubpassSample::createDriver()
+void VulkanSubpassesSample::createDriver()
 {
     DriverDescriptor descriptor;
     descriptor.type = DriverType::kVulkan;
     m_driver = Driver::create(descriptor);
 }
 
-void VulkanSubpassSample::getPhysicalDevices()
+void VulkanSubpassesSample::getPhysicalDevices()
 {
     m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
-void VulkanSubpassSample::createSurface()
+void VulkanSubpassesSample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
     m_surface = m_driver->createSurface(descriptor);
 }
 
-void VulkanSubpassSample::createSwapchain()
+void VulkanSubpassesSample::createSwapchain()
 {
     if (m_surface == nullptr)
         throw std::runtime_error("Surface is null pointer.");
@@ -440,7 +440,7 @@ void VulkanSubpassSample::createSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void VulkanSubpassSample::createDevice()
+void VulkanSubpassesSample::createDevice()
 {
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
@@ -449,7 +449,7 @@ void VulkanSubpassSample::createDevice()
     m_device = physicalDevice->createDevice(descriptor);
 }
 
-void VulkanSubpassSample::createOffscreenPositionColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTexture()
 {
     // render passes
     {
@@ -486,7 +486,7 @@ void VulkanSubpassSample::createOffscreenPositionColorAttachmentTexture()
     }
 }
 
-void VulkanSubpassSample::createOffscreenPositionColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTextureView()
 {
     // render passes
     {
@@ -507,7 +507,7 @@ void VulkanSubpassSample::createOffscreenPositionColorAttachmentTextureView()
     }
 }
 
-void VulkanSubpassSample::createOffscreenNormalColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTexture()
 {
     // render passes
     {
@@ -544,7 +544,7 @@ void VulkanSubpassSample::createOffscreenNormalColorAttachmentTexture()
     }
 }
 
-void VulkanSubpassSample::createOffscreenNormalColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTextureView()
 {
     // render passe
     {
@@ -565,7 +565,7 @@ void VulkanSubpassSample::createOffscreenNormalColorAttachmentTextureView()
     }
 }
 
-void VulkanSubpassSample::createOffscreenAlbedoColorAttachmentTexture()
+void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTexture()
 {
     // render passes
     {
@@ -602,7 +602,7 @@ void VulkanSubpassSample::createOffscreenAlbedoColorAttachmentTexture()
     }
 }
 
-void VulkanSubpassSample::createOffscreenAlbedoColorAttachmentTextureView()
+void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTextureView()
 {
     // render passes
     {
@@ -623,7 +623,7 @@ void VulkanSubpassSample::createOffscreenAlbedoColorAttachmentTextureView()
     }
 }
 
-void VulkanSubpassSample::createOffscreenColorMapTexture()
+void VulkanSubpassesSample::createOffscreenColorMapTexture()
 {
     // ktx{ m_appDir / "colormap_rgba.ktx" };
     std::vector<char> data = utils::readFile(m_appDir / "colormap_rgba.ktx", m_handle);
@@ -684,7 +684,7 @@ void VulkanSubpassSample::createOffscreenColorMapTexture()
     }
 }
 
-void VulkanSubpassSample::createOffscreenColorMapTextureView()
+void VulkanSubpassesSample::createOffscreenColorMapTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -693,7 +693,7 @@ void VulkanSubpassSample::createOffscreenColorMapTextureView()
     m_offscreen.colorMapTextureView = m_offscreen.colorMapTexture->createTextureView(descriptor);
 }
 
-void VulkanSubpassSample::createOffscreenNormalMapTexture()
+void VulkanSubpassesSample::createOffscreenNormalMapTexture()
 {
     // KTX ktx{ m_appDir / "normalmap_rgba.ktx" };
     std::vector<char> data = utils::readFile(m_appDir / "normalmap_rgba.ktx", m_handle);
@@ -754,7 +754,7 @@ void VulkanSubpassSample::createOffscreenNormalMapTexture()
     }
 }
 
-void VulkanSubpassSample::createOffscreenNormalMapTextureView()
+void VulkanSubpassesSample::createOffscreenNormalMapTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -763,7 +763,7 @@ void VulkanSubpassSample::createOffscreenNormalMapTextureView()
     m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
 }
 
-void VulkanSubpassSample::createOffscreenCamera()
+void VulkanSubpassesSample::createOffscreenCamera()
 {
     m_offscreen.camera = std::make_unique<PerspectiveCamera>(glm::radians(45.0f),
                                                              m_swapchain->getWidth() / static_cast<float>(m_swapchain->getHeight()),
@@ -772,7 +772,7 @@ void VulkanSubpassSample::createOffscreenCamera()
     m_offscreen.camera->lookAt(glm::vec3(0.0f, 0.0f, 300.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
-void VulkanSubpassSample::createOffscreenUniformBuffer()
+void VulkanSubpassesSample::createOffscreenUniformBuffer()
 {
     glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 80.0f));
     glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -791,7 +791,7 @@ void VulkanSubpassSample::createOffscreenUniformBuffer()
     // m_offscreen.uniformBuffer->unmap();
 }
 
-void VulkanSubpassSample::createOffscreenVertexBuffer()
+void VulkanSubpassesSample::createOffscreenVertexBuffer()
 {
     // m_offscreen.polygon = loadGLTF(m_appDir / "armor.gltf");
     std::vector<char> data = utils::readFile(m_appDir / "armor.gltf", m_handle);
@@ -819,7 +819,7 @@ void VulkanSubpassSample::createOffscreenVertexBuffer()
     }
 }
 
-void VulkanSubpassSample::createOffscreenBindingGroupLayout()
+void VulkanSubpassesSample::createOffscreenBindingGroupLayout()
 {
     // render passes
     {
@@ -904,7 +904,7 @@ void VulkanSubpassSample::createOffscreenBindingGroupLayout()
     }
 }
 
-void VulkanSubpassSample::createOffscreenBindingGroup()
+void VulkanSubpassesSample::createOffscreenBindingGroup()
 {
     { // create color map sampler
 
@@ -1023,7 +1023,7 @@ void VulkanSubpassSample::createOffscreenBindingGroup()
     }
 }
 
-void VulkanSubpassSample::createOffscreenPipelineLayout()
+void VulkanSubpassesSample::createOffscreenPipelineLayout()
 {
     // render passes
     {
@@ -1044,7 +1044,7 @@ void VulkanSubpassSample::createOffscreenPipelineLayout()
     }
 }
 
-void VulkanSubpassSample::createOffscreenPipeline()
+void VulkanSubpassesSample::createOffscreenPipeline()
 {
     // render passes
     {
@@ -1160,7 +1160,7 @@ void VulkanSubpassSample::createOffscreenPipeline()
 
         // shader module
         {
-            std::vector<char> vertexSource = utils::readFile(m_appDir / "subpasses_offscreen.vert.spv", m_handle);
+            std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
 
             ShaderModuleDescriptor shaderModuleDescriptor;
             shaderModuleDescriptor.code = vertexSource.data();
@@ -1214,7 +1214,7 @@ void VulkanSubpassSample::createOffscreenPipeline()
 
         // shader module
         {
-            std::vector<char> fragmentSource = utils::readFile(m_appDir / "subpasses_offscreen.frag.spv", m_handle);
+            std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
 
             ShaderModuleDescriptor shaderModuleDescriptor;
             shaderModuleDescriptor.code = fragmentSource.data();
@@ -1277,7 +1277,7 @@ void VulkanSubpassSample::createOffscreenPipeline()
     }
 }
 
-void VulkanSubpassSample::createCompositionBindingGroupLayout()
+void VulkanSubpassesSample::createCompositionBindingGroupLayout()
 {
     // render passes
     {
@@ -1359,7 +1359,7 @@ void VulkanSubpassSample::createCompositionBindingGroupLayout()
     }
 }
 
-void VulkanSubpassSample::createCompositionBindingGroup()
+void VulkanSubpassesSample::createCompositionBindingGroup()
 {
     // render passes
     {
@@ -1489,7 +1489,7 @@ void VulkanSubpassSample::createCompositionBindingGroup()
     }
 }
 
-void VulkanSubpassSample::createCompositionPipelineLayout()
+void VulkanSubpassesSample::createCompositionPipelineLayout()
 {
     // render passes
     {
@@ -1510,7 +1510,7 @@ void VulkanSubpassSample::createCompositionPipelineLayout()
     }
 }
 
-void VulkanSubpassSample::createCompositionPipeline()
+void VulkanSubpassesSample::createCompositionPipeline()
 {
     // render passes
     {
@@ -1709,7 +1709,7 @@ void VulkanSubpassSample::createCompositionPipeline()
     }
 }
 
-void VulkanSubpassSample::createCompositionUniformBuffer()
+void VulkanSubpassesSample::createCompositionUniformBuffer()
 {
     // light
     {
@@ -1775,7 +1775,7 @@ void VulkanSubpassSample::createCompositionUniformBuffer()
     // uniformBuffer->unmap();
 }
 
-void VulkanSubpassSample::createCompositionVertexBuffer()
+void VulkanSubpassesSample::createCompositionVertexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = sizeof(CompositionVertex) * m_composition.vertices.size();
@@ -1789,7 +1789,7 @@ void VulkanSubpassSample::createCompositionVertexBuffer()
     vertexBuffer->unmap();
 }
 
-VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -2036,7 +2036,7 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesRenderPass()
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanRenderPass* VulkanSubpassSample::getSubpassesCompatibleRenderPass()
+VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -2295,7 +2295,7 @@ VulkanRenderPass* VulkanSubpassSample::getSubpassesCompatibleRenderPass()
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer* VulkanSubpassSample::getSubpassesFrameBuffer(TextureView* renderView)
+VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* renderView)
 {
     VulkanFramebufferDescriptor descriptor{};
     descriptor.renderPass = getSubpassesRenderPass()->getVkRenderPass();
@@ -2318,7 +2318,7 @@ VulkanFramebuffer* VulkanSubpassSample::getSubpassesFrameBuffer(TextureView* ren
     return vulkanDevice->getFrameBuffer(descriptor);
 }
 
-void VulkanSubpassSample::createDepthStencilTexture()
+void VulkanSubpassesSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
@@ -2333,7 +2333,7 @@ void VulkanSubpassSample::createDepthStencilTexture()
     m_depthStencilTexture = m_device->createTexture(descriptor);
 }
 
-void VulkanSubpassSample::createDepthStencilTextureView()
+void VulkanSubpassesSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
     descriptor.type = TextureViewType::k2D;
@@ -2342,7 +2342,7 @@ void VulkanSubpassSample::createDepthStencilTextureView()
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
-void VulkanSubpassSample::createCommandBuffer()
+void VulkanSubpassesSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
     descriptor.usage = CommandBufferUsage::kOneTime;
@@ -2350,7 +2350,7 @@ void VulkanSubpassSample::createCommandBuffer()
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void VulkanSubpassSample::createQueue()
+void VulkanSubpassesSample::createQueue()
 {
     QueueDescriptor descriptor{};
     descriptor.flags = QueueFlagBits::kGraphics;
