@@ -197,10 +197,36 @@
             "environment": [],
         },
         {
+            "name": "Vulkan [windows x64] N Buffering",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "Vulkan [arm64 osx] Subpasses",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_subpasses/vulkan_subpasses",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "Vulkan [arm64 osx] N Buffering",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering",
             "args": [],
             "stopAtEntry": false,
             "environment": [
