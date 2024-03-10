@@ -51,6 +51,11 @@ private:
     void createSurface();
     void createDevice();
     void createSwapchain();
+    void createCommandBuffer();
+    void createQueue();
+
+    void createDepthStencilTexture();
+    void createDepthStencilTextureView();
 
     void createOffscreenPositionColorAttachmentTexture();
     void createOffscreenPositionColorAttachmentTextureView();
@@ -58,8 +63,6 @@ private:
     void createOffscreenNormalColorAttachmentTextureView();
     void createOffscreenAlbedoColorAttachmentTexture();
     void createOffscreenAlbedoColorAttachmentTextureView();
-    void createOffscreenDepthStencilTexture();
-    void createOffscreenDepthStencilTextureView();
     void createOffscreenColorMapTexture();
     void createOffscreenColorMapTextureView();
     void createOffscreenNormalMapTexture();
@@ -71,20 +74,17 @@ private:
     void createOffscreenBindingGroup();
     void createOffscreenPipelineLayout();
     void createOffscreenPipeline();
+
     void updateOffscreenUniformBuffer();
 
-    void createCompositionDepthStencilTexture();
-    void createCompositionDepthStencilTextureView();
     void createCompositionBindingGroupLayout();
     void createCompositionBindingGroup();
     void createCompositionPipelineLayout();
     void createCompositionPipeline();
     void createCompositionUniformBuffer();
     void createCompositionVertexBuffer();
-    void updateCompositionUniformBuffer();
 
-    void createCommandBuffer();
-    void createQueue();
+    void updateCompositionUniformBuffer();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -104,9 +104,9 @@ private:
         std::vector<CompositionUBO::Light> lights{};
         alignas(16) glm::vec3 cameraPosition;
         int lightCount = 8;
+        int showTexture = 0;
         int padding1;
         int padding2;
-        int padding3;
     };
 
     struct MVP
@@ -124,8 +124,13 @@ private:
         std::unique_ptr<TextureView> normalColorAttachmentTextureView = nullptr;
         std::unique_ptr<Texture> albedoColorAttachmentTexture = nullptr;
         std::unique_ptr<TextureView> albedoColorAttachmentTextureView = nullptr;
-        std::unique_ptr<Texture> depthStencilTexture = nullptr;
-        std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
+        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+
         std::unique_ptr<Texture> colorMapTexture = nullptr;
         std::unique_ptr<TextureView> colorMapTextureView = nullptr;
         std::unique_ptr<Texture> normalMapTexture = nullptr;
@@ -135,10 +140,6 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
-        std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<RenderPipeline> pipeline = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -150,15 +151,16 @@ private:
     };
     struct
     {
-        std::unique_ptr<Texture> depthStencilTexture = nullptr;
-        std::unique_ptr<TextureView> depthStencilTextureView = nullptr;
-        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
-        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<Sampler> positionSampler = nullptr;
         std::unique_ptr<Sampler> normalSampler = nullptr;
         std::unique_ptr<Sampler> albedoSampler = nullptr;
+        std::vector<std::unique_ptr<BindingGroupLayout>> bindingGroupLayouts{};
+        std::vector<std::unique_ptr<BindingGroup>> bindingGroups{};
+        std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
+        std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
         std::unique_ptr<PipelineLayout> pipelineLayout = nullptr;
-        std::unique_ptr<RenderPipeline> pipeline = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         CompositionUBO ubo{};
@@ -174,9 +176,11 @@ private:
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
+    std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
+    std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
-    int m_lightMax = 10000;
+    int m_lightMax = 1000;
 };
 
 DeferredSample::DeferredSample(const SampleDescriptor& descriptor)
@@ -189,22 +193,22 @@ DeferredSample::~DeferredSample()
 {
     clearImGui();
 
-    m_composition.pipeline.reset();
-    m_composition.pipelineLayout.reset();
-    m_composition.bindingGroupLayout.reset();
-    m_composition.bindingGroup.reset();
+    m_depthStencilTextureView.reset();
+    m_depthStencilTexture.reset();
+
     m_composition.vertexBuffer.reset();
     m_composition.uniformBuffer.reset();
-    m_composition.positionSampler.reset();
-    m_composition.normalSampler.reset();
-    m_composition.albedoSampler.reset();
-    m_composition.depthStencilTextureView.reset();
-    m_composition.depthStencilTexture.reset();
 
-    m_offscreen.pipeline.reset();
-    m_offscreen.pipelineLayout.reset();
-    m_offscreen.bindingGroupLayout.reset();
-    m_offscreen.bindingGroup.reset();
+    m_composition.vertexShaderModule.reset();
+    m_composition.fragmentShaderModule.reset();
+    m_composition.renderPipeline.reset();
+    m_composition.pipelineLayout.reset();
+    m_composition.bindingGroupLayouts.clear();
+    m_composition.bindingGroups.clear();
+    m_composition.albedoSampler.reset();
+    m_composition.normalSampler.reset();
+    m_composition.positionSampler.reset();
+
     m_offscreen.camera.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
@@ -215,8 +219,13 @@ DeferredSample::~DeferredSample()
     m_offscreen.colorMapTexture.reset();
     m_offscreen.normalMapTextureView.reset();
     m_offscreen.normalMapTexture.reset();
-    m_offscreen.depthStencilTextureView.reset();
-    m_offscreen.depthStencilTexture.reset();
+
+    m_offscreen.vertexShaderModule.reset();
+    m_offscreen.fragmentShaderModule.reset();
+    m_offscreen.renderPipeline.reset();
+    m_offscreen.pipelineLayout.reset();
+    m_offscreen.bindingGroupLayouts.clear();
+    m_offscreen.bindingGroups.clear();
     m_offscreen.albedoColorAttachmentTextureView.reset();
     m_offscreen.albedoColorAttachmentTexture.reset();
     m_offscreen.normalColorAttachmentTextureView.reset();
@@ -246,14 +255,9 @@ void DeferredSample::init()
     createCommandBuffer();
     createQueue();
 
-    createOffscreenPositionColorAttachmentTexture();
-    createOffscreenPositionColorAttachmentTextureView();
-    createOffscreenNormalColorAttachmentTexture();
-    createOffscreenNormalColorAttachmentTextureView();
-    createOffscreenAlbedoColorAttachmentTexture();
-    createOffscreenAlbedoColorAttachmentTextureView();
-    createOffscreenDepthStencilTexture();
-    createOffscreenDepthStencilTextureView();
+    createDepthStencilTexture();
+    createDepthStencilTextureView();
+
     createOffscreenColorMapTexture();
     createOffscreenColorMapTextureView();
     createOffscreenNormalMapTexture();
@@ -261,15 +265,21 @@ void DeferredSample::init()
     createOffscreenCamera();
     createOffscreenUniformBuffer();
     createOffscreenVertexBuffer();
+
+    createOffscreenPositionColorAttachmentTexture();
+    createOffscreenPositionColorAttachmentTextureView();
+    createOffscreenNormalColorAttachmentTexture();
+    createOffscreenNormalColorAttachmentTextureView();
+    createOffscreenAlbedoColorAttachmentTexture();
+    createOffscreenAlbedoColorAttachmentTextureView();
     createOffscreenBindingGroupLayout();
     createOffscreenBindingGroup();
     createOffscreenPipelineLayout();
     createOffscreenPipeline();
 
-    createCompositionDepthStencilTexture();
-    createCompositionDepthStencilTextureView();
     createCompositionUniformBuffer();
     createCompositionVertexBuffer();
+
     createCompositionBindingGroupLayout();
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
@@ -323,16 +333,24 @@ void DeferredSample::updateCompositionUniformBuffer()
     m_composition.ubo.cameraPosition = m_offscreen.camera->getPosition();
 
     uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightMax);
-    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
+    uint32_t lightCountByteSize = static_cast<uint32_t>(sizeof(int));
+    uint32_t showTextureByteSize = static_cast<uint32_t>(sizeof(int));
+    uint32_t cameraPositionSize = sizeof(glm::vec3);
 
     auto& uniformBuffer = m_composition.uniformBuffer;
     void* pointer = uniformBuffer->map();
     char* bytePointer = static_cast<char*>(pointer);
+
     memcpy(bytePointer, m_composition.ubo.lights.data(), lightSize);
     bytePointer += lightSize;
+
     memcpy(bytePointer, &m_composition.ubo.cameraPosition, cameraPositionSize);
     bytePointer += cameraPositionSize;
-    memcpy(bytePointer, &m_composition.ubo.lightCount, sizeof(int));
+
+    memcpy(bytePointer, &m_composition.ubo.lightCount, lightCountByteSize);
+    bytePointer += lightCountByteSize;
+
+    memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
 }
 
 void DeferredSample::updateImGui()
@@ -360,6 +378,15 @@ void DeferredSample::updateImGui()
     {
         ImGui::Begin("Settings");
         ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
+        // 라디오 버튼 1
+        if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
+            m_composition.ubo.showTexture = 0;
+        else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
+            m_composition.ubo.showTexture = 1;
+        else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
+            m_composition.ubo.showTexture = 2;
+        else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
+            m_composition.ubo.showTexture = 3;
         ImGui::End();
     }
 
@@ -372,7 +399,8 @@ void DeferredSample::draw()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    // first pass
+    auto renderView = m_swapchain->acquireNextTexture();
+
     {
         ColorAttachment positionColorAttachment{};
         positionColorAttachment.loadOp = LoadOp::kClear;
@@ -396,7 +424,7 @@ void DeferredSample::draw()
         albedoColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
         DepthStencilAttachment depthStencilAttachment{};
-        depthStencilAttachment.textureView = m_offscreen.depthStencilTextureView.get();
+        depthStencilAttachment.textureView = m_depthStencilTextureView.get();
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
@@ -407,19 +435,18 @@ void DeferredSample::draw()
         renderPassDescriptor.sampleCount = m_sampleCount;
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_offscreen.pipeline.get());
+        renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
+        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroups[0].get());
+        renderPassEncoder->setBindingGroup(1, m_offscreen.bindingGroups[1].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
     }
-    // second pass
-    {
-        auto renderView = m_swapchain->acquireNextTexture();
 
+    {
         ColorAttachment colorAttachment{};
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
@@ -428,7 +455,7 @@ void DeferredSample::draw()
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
         DepthStencilAttachment depthStencilAttachment{};
-        depthStencilAttachment.textureView = m_composition.depthStencilTextureView.get();
+        depthStencilAttachment.textureView = m_depthStencilTextureView.get();
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
         depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
@@ -439,18 +466,16 @@ void DeferredSample::draw()
         renderPassDescriptor.sampleCount = m_sampleCount;
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_composition.pipeline.get());
+        renderPassEncoder->setPipeline(m_composition.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-        renderPassEncoder->setBindingGroup(0, m_composition.bindingGroup.get());
+        renderPassEncoder->setBindingGroup(0, m_composition.bindingGroups[0].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
         renderPassEncoder->end();
-
-        drawImGui(commandEncoder.get(), renderView);
-
-        // renderPassEncoder->end();
     }
+
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
 }
@@ -576,30 +601,6 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTextureView()
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.albedoColorAttachmentTextureView = m_offscreen.albedoColorAttachmentTexture->createTextureView(descriptor);
-}
-
-void DeferredSample::createOffscreenDepthStencilTexture()
-{
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
-
-    m_offscreen.depthStencilTexture = m_device->createTexture(descriptor);
-}
-
-void DeferredSample::createOffscreenDepthStencilTextureView()
-{
-    TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
-    descriptor.aspect = TextureAspectFlagBits::kDepth;
-
-    m_offscreen.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
 }
 
 void DeferredSample::createOffscreenColorMapTexture()
@@ -800,43 +801,47 @@ void DeferredSample::createOffscreenVertexBuffer()
 
 void DeferredSample::createOffscreenBindingGroupLayout()
 {
-    BufferBindingLayout bufferBindingLayout{};
-    bufferBindingLayout.type = BufferBindingType::kUniform;
-    bufferBindingLayout.index = 0;
-    bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
+    m_offscreen.bindingGroupLayouts.resize(2);
 
-    SamplerBindingLayout colorSamplerBindingLayout{};
-    colorSamplerBindingLayout.index = 1;
-    colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    {
+        BufferBindingLayout bufferBindingLayout{};
+        bufferBindingLayout.type = BufferBindingType::kUniform;
+        bufferBindingLayout.index = 0;
+        bufferBindingLayout.stages = BindingStageFlagBits::kVertexStage;
 
-    SamplerBindingLayout normalSamplerBindingLayout{};
-    normalSamplerBindingLayout.index = 2;
-    normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+        bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
 
-    TextureBindingLayout colorTextureBindingLayout{};
-    colorTextureBindingLayout.index = 3;
-    colorTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+        m_offscreen.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
 
-    TextureBindingLayout normalTextureBindingLayout{};
-    normalTextureBindingLayout.index = 4;
-    normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+    {
+        SamplerBindingLayout colorSamplerBindingLayout{};
+        colorSamplerBindingLayout.index = 0;
+        colorSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
-    bindingGroupLayoutDescriptor.buffers = { bufferBindingLayout };
-    bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
-    bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+        SamplerBindingLayout normalSamplerBindingLayout{};
+        normalSamplerBindingLayout.index = 1;
+        normalSamplerBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
 
-    m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+        TextureBindingLayout colorTextureBindingLayout{};
+        colorTextureBindingLayout.index = 2;
+        colorTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        TextureBindingLayout normalTextureBindingLayout{};
+        normalTextureBindingLayout.index = 3;
+        normalTextureBindingLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+        BindingGroupLayoutDescriptor bindingGroupLayoutDescriptor{};
+        bindingGroupLayoutDescriptor.samplers = { colorSamplerBindingLayout, normalSamplerBindingLayout };
+        bindingGroupLayoutDescriptor.textures = { colorTextureBindingLayout, normalTextureBindingLayout };
+
+        m_offscreen.bindingGroupLayouts[1] = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
+    }
 }
 
 void DeferredSample::createOffscreenBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = sizeof(MVP);
-
     { // create color map sampler
 
         SamplerDescriptor samplerDescriptor{};
@@ -867,35 +872,52 @@ void DeferredSample::createOffscreenBindingGroup()
         m_offscreen.normalMapSampler = m_device->createSampler(samplerDescriptor);
     }
 
-    SamplerBinding colorSamplerBinding{};
-    colorSamplerBinding.index = 1;
-    colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+    m_offscreen.bindingGroups.resize(2);
+    {
+        BufferBinding bufferBinding{};
+        bufferBinding.buffer = m_offscreen.uniformBuffer.get();
+        bufferBinding.index = 0;
+        bufferBinding.offset = 0;
+        bufferBinding.size = sizeof(MVP);
 
-    SamplerBinding normalSamplerBinding{};
-    normalSamplerBinding.index = 2;
-    normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.buffers = { bufferBinding };
+        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[0].get();
 
-    TextureBinding colorTextureBinding{};
-    colorTextureBinding.index = 3;
-    colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+        m_offscreen.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
+    }
 
-    TextureBinding normalTextureBinding{};
-    normalTextureBinding.index = 4;
-    normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+    {
+        SamplerBinding colorSamplerBinding{};
+        colorSamplerBinding.index = 0;
+        colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
 
-    BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { bufferBinding };
-    bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
-    bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
-    bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayout.get();
+        SamplerBinding normalSamplerBinding{};
+        normalSamplerBinding.index = 1;
+        normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
 
-    m_offscreen.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
+        TextureBinding colorTextureBinding{};
+        colorTextureBinding.index = 2;
+        colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+
+        TextureBinding normalTextureBinding{};
+        normalTextureBinding.index = 3;
+        normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+
+        BindingGroupDescriptor bindingGroupDescriptor{};
+        bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
+        bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
+        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[1].get();
+
+        m_offscreen.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
+    }
 }
 
 void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
+    descriptor.layouts = { m_offscreen.bindingGroupLayouts[0].get(), m_offscreen.bindingGroupLayouts[1].get() };
+
     m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
 
@@ -906,7 +928,6 @@ void DeferredSample::createOffscreenPipeline()
     inputAssembly.topology = PrimitiveTopology::kTriangleList;
 
     // shader module
-    std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
         std::vector<char> vertexSource = utils::readFile(m_appDir / "offscreen.vert.spv", m_handle);
 
@@ -914,8 +935,9 @@ void DeferredSample::createOffscreenPipeline()
         shaderModuleDescriptor.code = vertexSource.data();
         shaderModuleDescriptor.codeSize = vertexSource.size();
 
-        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_offscreen.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
+
     // Vertex Shader
     VertexStage vertexShage{};
     {
@@ -951,7 +973,7 @@ void DeferredSample::createOffscreenPipeline()
 
         vertexShage.layouts = { inputLayout };
 
-        vertexShage.shaderModule = vertexShaderModule.get();
+        vertexShage.shaderModule = m_offscreen.vertexShaderModule.get();
     }
 
     // Rasterization
@@ -961,7 +983,6 @@ void DeferredSample::createOffscreenPipeline()
     rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
     // shader module
-    std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
         std::vector<char> fragmentSource = utils::readFile(m_appDir / "offscreen.frag.spv", m_handle);
 
@@ -969,7 +990,7 @@ void DeferredSample::createOffscreenPipeline()
         shaderModuleDescriptor.code = fragmentSource.data();
         shaderModuleDescriptor.codeSize = fragmentSource.size();
 
-        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+        m_offscreen.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
 
     // Fragment Shader
@@ -989,49 +1010,26 @@ void DeferredSample::createOffscreenPipeline()
         albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
 
         fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-        fragmentStage.shaderModule = fragmentShaderModule.get();
+        fragmentStage.shaderModule = m_offscreen.fragmentShaderModule.get();
     }
-
     DepthStencilStage depthStencil{};
-    depthStencil.format = m_offscreen.depthStencilTexture->getFormat();
+    depthStencil.format = m_depthStencilTexture->getFormat();
 
-    RenderPipelineDescriptor renderPipelineDescriptor;
-    renderPipelineDescriptor.inputAssembly = inputAssembly;
-    renderPipelineDescriptor.vertex = vertexShage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencil;
-    renderPipelineDescriptor.layout = m_offscreen.pipelineLayout.get();
+    RenderPipelineDescriptor descriptor{};
+    descriptor.layout = m_offscreen.pipelineLayout.get();
+    descriptor.inputAssembly = inputAssembly;
+    descriptor.vertex = vertexShage;
+    descriptor.depthStencil = depthStencil;
+    descriptor.rasterization = rasterizationStage;
+    descriptor.fragment = fragmentStage;
 
-    m_offscreen.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
-}
-
-void DeferredSample::createCompositionDepthStencilTexture()
-{
-    TextureDescriptor descriptor{};
-    descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
-    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
-    descriptor.width = m_swapchain->getWidth();
-    descriptor.height = m_swapchain->getHeight();
-    descriptor.depth = 1;
-    descriptor.mipLevels = 1;
-    descriptor.sampleCount = m_sampleCount;
-
-    m_composition.depthStencilTexture = m_device->createTexture(descriptor);
-}
-
-void DeferredSample::createCompositionDepthStencilTextureView()
-{
-    TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
-    descriptor.aspect = TextureAspectFlagBits::kDepth;
-
-    m_composition.depthStencilTextureView = m_offscreen.depthStencilTexture->createTextureView(descriptor);
+    m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 void DeferredSample::createCompositionBindingGroupLayout()
 {
+    m_composition.bindingGroupLayouts.resize(1);
+
     BindingGroupLayoutDescriptor descriptor{};
 
     SamplerBindingLayout positionSamplerBindingLayout{};
@@ -1067,11 +1065,13 @@ void DeferredSample::createCompositionBindingGroupLayout()
     descriptor.samplers = { positionSamplerBindingLayout, normalSamplerBindingLayout, albedoSamplerBindingLayout };
     descriptor.textures = { positionTextureBindingLayout, normalTextureBindingLayout, albedoTextureBindingLayout };
 
-    m_composition.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
+    m_composition.bindingGroupLayouts[0] = m_device->createBindingGroupLayout(descriptor);
 }
 
 void DeferredSample::createCompositionBindingGroup()
 {
+    m_composition.bindingGroups.resize(1);
+
     SamplerBinding positionSamplerBinding{};
     {
         SamplerDescriptor samplerDescriptor{};
@@ -1147,18 +1147,18 @@ void DeferredSample::createCompositionBindingGroup()
     }
 
     BindingGroupDescriptor descriptor{};
-    descriptor.layout = m_composition.bindingGroupLayout.get();
+    descriptor.layout = m_composition.bindingGroupLayouts[0].get();
     descriptor.buffers = { uniformBufferBinding };
     descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
     descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
 
-    m_composition.bindingGroup = m_device->createBindingGroup(descriptor);
+    m_composition.bindingGroups[0] = m_device->createBindingGroup(descriptor);
 }
 
 void DeferredSample::createCompositionPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { m_composition.bindingGroupLayout.get() };
+    descriptor.layouts = { m_composition.bindingGroupLayouts[0].get() };
 
     m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
@@ -1240,7 +1240,7 @@ void DeferredSample::createCompositionPipeline()
 
     // DepthStencil
     DepthStencilStage depthStencilStage{};
-    depthStencilStage.format = m_composition.depthStencilTexture->getFormat();
+    depthStencilStage.format = m_depthStencilTexture->getFormat();
 
     RenderPipelineDescriptor renderPipelineDescriptor{};
     renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
@@ -1250,7 +1250,7 @@ void DeferredSample::createCompositionPipeline()
     renderPipelineDescriptor.depthStencil = depthStencilStage;
     renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
 
-    m_composition.pipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
+    m_composition.renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 
 void DeferredSample::createCompositionUniformBuffer()
@@ -1295,11 +1295,13 @@ void DeferredSample::createCompositionUniformBuffer()
     }
 
     uint32_t lightSize = static_cast<uint32_t>(sizeof(CompositionUBO::Light) * m_lightMax);
-    uint32_t cameraPositionSize = 16; // alignas(16) glm::vec3
+    uint32_t lightCountByteSize = sizeof(int);
+    uint32_t showTextureByteSize = sizeof(int);
+    uint32_t cameraPositionSize = sizeof(glm::vec3);
 
     BufferDescriptor descriptor{};
-    descriptor.size = lightSize + cameraPositionSize;
-    descriptor.size += sizeof(int) * 3; // padding
+    descriptor.size = lightSize + cameraPositionSize + lightCountByteSize + showTextureByteSize;
+    descriptor.size += sizeof(int) * 2; // padding
     descriptor.usage = BufferUsageFlagBits::kUniform;
 
     m_composition.uniformBuffer = m_device->createBuffer(descriptor);
@@ -1311,7 +1313,9 @@ void DeferredSample::createCompositionUniformBuffer()
     bytePointer += lightSize;
     memcpy(bytePointer, &m_composition.ubo.cameraPosition, cameraPositionSize);
     bytePointer += cameraPositionSize;
-    memcpy(bytePointer, &m_composition.ubo.lightCount, sizeof(int));
+    memcpy(bytePointer, &m_composition.ubo.lightCount, lightCountByteSize);
+    bytePointer += lightCountByteSize;
+    memcpy(bytePointer, &m_composition.ubo.showTexture, showTextureByteSize);
     // uniformBuffer->unmap();
 }
 
@@ -1327,6 +1331,30 @@ void DeferredSample::createCompositionVertexBuffer()
     void* mappedPointer = vertexBuffer->map();
     memcpy(mappedPointer, m_composition.vertices.data(), descriptor.size);
     vertexBuffer->unmap();
+}
+
+void DeferredSample::createDepthStencilTexture()
+{
+    TextureDescriptor descriptor{};
+    descriptor.type = TextureType::k2D;
+    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.mipLevels = 1;
+    descriptor.sampleCount = m_sampleCount;
+    descriptor.width = m_swapchain->getWidth();
+    descriptor.height = m_swapchain->getHeight();
+    descriptor.depth = 1;
+    descriptor.usage = TextureUsageFlagBits::kDepthStencil;
+
+    m_depthStencilTexture = m_device->createTexture(descriptor);
+}
+
+void DeferredSample::createDepthStencilTextureView()
+{
+    TextureViewDescriptor descriptor{};
+    descriptor.type = TextureViewType::k2D;
+    descriptor.aspect = TextureAspectFlagBits::kDepth;
+
+    m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
 }
 
 void DeferredSample::createCommandBuffer()

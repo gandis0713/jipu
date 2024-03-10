@@ -1,11 +1,11 @@
 #version 450
 
-// layout(binding = 1) uniform sampler2D texColorMap;
-// layout(binding = 2) uniform sampler2D texNormalMap;
-layout(binding = 1) uniform sampler splColorMap;
-layout(binding = 2) uniform sampler splNormalMap;
-layout(binding = 3) uniform texture2D texColorMap;
-layout(binding = 4) uniform texture2D texNormalMap;
+// layout(binding = 0) uniform sampler2D texColorMap;
+// layout(binding = 1) uniform sampler2D texNormalMap;
+layout(set = 1, binding = 0) uniform sampler splColorMap;
+layout(set = 1, binding = 1) uniform sampler splNormalMap;
+layout(set = 1, binding = 2) uniform texture2D texColorMap;
+layout(set = 1, binding = 3) uniform texture2D texNormalMap;
 
 layout(location = 0) out vec4 outPosition;
 layout(location = 1) out vec4 outNormal;
