@@ -1,4 +1,4 @@
-#include "vulkan_subpass_sample.h"
+#include "vulkan_subpasses_sample.h"
 
 #include <spdlog/spdlog.h>
 
@@ -18,11 +18,11 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::SampleDescriptor descriptor{
-        { 1000, 2000, "Vulkan Subpass Sample", app },
+        { 1000, 2000, "Vulkan Subpasses Sample", app },
         ""
     };
 
-    jipu::VulkanSubpassSample sample(descriptor);
+    jipu::VulkanSubpassesSample sample(descriptor);
 
     sample.exec();
 }
@@ -34,11 +34,11 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::SampleDescriptor descriptor{
-        { 800, 600, "Vulkan Subpass Sample", nullptr },
+        { 800, 600, "Vulkan Subpasses Sample", nullptr },
         argv[0]
     };
 
-    jipu::VulkanSubpassSample sample(descriptor);
+    jipu::VulkanSubpassesSample sample(descriptor);
 
     return sample.exec();
 }
