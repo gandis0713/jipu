@@ -207,15 +207,34 @@ void VulkanNBufferingSample::updateImGui()
     {
         ImGui::Begin("Settings");
         ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
-        // 라디오 버튼 1
-        if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
-            m_composition.ubo.showTexture = 0;
-        else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
-            m_composition.ubo.showTexture = 1;
-        else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
-            m_composition.ubo.showTexture = 2;
-        else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
-            m_composition.ubo.showTexture = 3;
+        if (ImGui::RadioButton("FIFO", m_presentMode == VK_PRESENT_MODE_FIFO_KHR))
+        {
+            m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+            recreateSwapchain();
+        }
+        else if (ImGui::RadioButton("FIFO RELAXED", m_presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR))
+        {
+            m_presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+            recreateSwapchain();
+        }
+        else if (ImGui::RadioButton("MAILBOX", m_presentMode == VK_PRESENT_MODE_MAILBOX_KHR))
+        {
+            m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+            recreateSwapchain();
+        }
+
+        ImGui::Separator();
+
+        if (ImGui::RadioButton("Min Count 2", m_minImageCount == 2))
+        {
+            m_minImageCount = 2;
+            recreateSwapchain();
+        }
+        else if (ImGui::RadioButton("Min Count 3", m_minImageCount == 3))
+        {
+            m_minImageCount = 3;
+            recreateSwapchain();
+        }
         ImGui::End();
     }
 
@@ -350,7 +369,13 @@ void VulkanNBufferingSample::createSwapchain()
     auto vulkanDevice = downcast(m_device.get());
     VulkanSwapchainDescriptor vkdescriptor = generateVulkanSwapchainDescriptor(vulkanDevice, descriptor);
 
-    m_swapchain = vulkanDevice->createSwapchain(vkdescriptor);
+    vkdescriptor.presentMode = m_presentMode;
+    vkdescriptor.minImageCount = m_minImageCount;
+    vkdescriptor.oldSwapchain = m_swapchain != nullptr ? downcast(m_swapchain.get())->getVkSwapchainKHR() : VK_NULL_HANDLE;
+
+    auto swapchain = vulkanDevice->createSwapchain(vkdescriptor);
+
+    m_swapchain = std::move(swapchain);
 }
 
 void VulkanNBufferingSample::createDevice()
@@ -1203,6 +1228,13 @@ void VulkanNBufferingSample::createQueue()
     descriptor.flags = QueueFlagBits::kGraphics;
 
     m_queue = m_device->createQueue(descriptor);
+}
+
+void VulkanNBufferingSample::recreateSwapchain()
+{
+    auto vulkanDevice = downcast(m_device.get());
+    vulkanDevice->vkAPI.DeviceWaitIdle(vulkanDevice->getVkDevice());
+    createSwapchain();
 }
 
 } // namespace jipu

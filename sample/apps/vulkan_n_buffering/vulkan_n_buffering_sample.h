@@ -87,6 +87,8 @@ private:
 
     void updateCompositionUniformBuffer();
 
+    void recreateSwapchain();
+
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
     std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
@@ -181,7 +183,9 @@ private:
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
-    int m_lightMax = 30;
+    int m_lightMax = 5000;
+    VkPresentModeKHR m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    uint32_t m_minImageCount = 2;
 };
 
 } // namespace jipu
