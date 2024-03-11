@@ -19,7 +19,7 @@ struct Light
     vec3 color;
 };
 
-#define maxLightCount 5000
+#define maxLightCount 10
 #define ambient 0.0
 
 // std140 for only uniform, consider alignment such as vec3

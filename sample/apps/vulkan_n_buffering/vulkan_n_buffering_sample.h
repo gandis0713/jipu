@@ -183,7 +183,7 @@ private:
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
-    int m_lightMax = 5000;
+    int m_lightMax = 10;
     VkPresentModeKHR m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
     uint32_t m_minImageCount = 2;
 };
