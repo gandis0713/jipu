@@ -169,6 +169,11 @@ void VulkanNBufferingSample::updateImGui()
             m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
             recreateSwapchain();
         }
+        else if (ImGui::RadioButton("IMMEDIATE", m_presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR))
+        {
+            m_presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+            recreateSwapchain();
+        }
 
         ImGui::Separator();
         ImGui::Text("Min Image Count");
