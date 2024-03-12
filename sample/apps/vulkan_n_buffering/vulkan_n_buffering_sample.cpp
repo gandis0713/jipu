@@ -547,7 +547,7 @@ void VulkanNBufferingSample::createRenderPipeline()
     RasterizationStage rasterization{};
     {
         rasterization.sampleCount = m_sampleCount;
-        rasterization.cullMode = CullMode::kNone;
+        rasterization.cullMode = CullMode::kBack;
         rasterization.frontFace = FrontFace::kCounterClockwise;
     }
 
