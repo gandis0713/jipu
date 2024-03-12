@@ -152,6 +152,8 @@ void VulkanNBufferingSample::updateImGui()
     // set ui
     {
         ImGui::Begin("Settings");
+
+        ImGui::Text("Present Mode");
         if (ImGui::RadioButton("FIFO", m_presentMode == VK_PRESENT_MODE_FIFO_KHR))
         {
             m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -169,13 +171,13 @@ void VulkanNBufferingSample::updateImGui()
         }
 
         ImGui::Separator();
-
-        if (ImGui::RadioButton("Min Count 2", m_minImageCount == 2))
+        ImGui::Text("Min Image Count");
+        if (ImGui::RadioButton("2", m_minImageCount == 2))
         {
             m_minImageCount = 2;
             recreateSwapchain();
         }
-        else if (ImGui::RadioButton("Min Count 3", m_minImageCount == 3))
+        else if (ImGui::RadioButton("3", m_minImageCount == 3))
         {
             m_minImageCount = 3;
             recreateSwapchain();
