@@ -1,6 +1,5 @@
 #include "vulkan_n_buffering_sample.h"
 
-#include <math.h>
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
