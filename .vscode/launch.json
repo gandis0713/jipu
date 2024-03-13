@@ -206,6 +206,15 @@
             "environment": [],
         },
         {
+            "name": "Vulkan [windows x64] Layout Transition",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_layout_transition/vulkan_layout_transition.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "Vulkan [arm64 osx] Subpasses",
             "type": "cppdbg",
             "request": "launch",
@@ -227,6 +236,23 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_n_buffering/vulkan_n_buffering",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "Vulkan [arm64 osx] Layout Transition",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_layout_transition/vulkan_layout_transition",
             "args": [],
             "stopAtEntry": false,
             "environment": [
