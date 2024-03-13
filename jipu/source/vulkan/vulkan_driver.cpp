@@ -2,7 +2,6 @@
 
 #include "utils/assert.h"
 #include "vulkan_physical_device.h"
-#include "vulkan_surface.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -113,6 +112,53 @@ void VulkanDriver::initialize() noexcept(false)
     createInstance();
 
     gatherPhysicalDevices();
+}
+
+std::vector<std::unique_ptr<PhysicalDevice>> VulkanDriver::getPhysicalDevices()
+{
+    std::vector<std::unique_ptr<PhysicalDevice>> physicalDevices{};
+    for (auto physicalDevice : m_physicalDevices)
+    {
+        VulkanPhysicalDeviceDescriptor descriptor{};
+        descriptor.physicalDevice = physicalDevice;
+
+        auto device = std::make_unique<VulkanPhysicalDevice>(this, descriptor);
+        physicalDevices.push_back(std::move(device));
+    }
+
+    return physicalDevices;
+}
+
+std::unique_ptr<Surface> VulkanDriver::createSurface(const SurfaceDescriptor& descriptor)
+{
+    return std::make_unique<VulkanSurface>(this, descriptor);
+}
+
+std::unique_ptr<Surface> VulkanDriver::createSurface(const VulkanSurfaceDescriptor& descriptor)
+{
+    return std::make_unique<VulkanSurface>(this, descriptor);
+}
+
+VkInstance VulkanDriver::getVkInstance() const
+{
+    return m_instance;
+}
+
+const std::vector<VkPhysicalDevice>& VulkanDriver::getVkPhysicalDevices() const
+{
+    return m_physicalDevices;
+}
+
+VkPhysicalDevice VulkanDriver::getVkPhysicalDevice(uint32_t index) const
+{
+    assert(index < m_physicalDevices.size());
+
+    return m_physicalDevices[index];
+}
+
+const VulkanDriverInfo& VulkanDriver::getDriverInfo() const
+{
+    return m_driverInfo;
 }
 
 void VulkanDriver::createInstance() noexcept(false)
@@ -312,48 +358,6 @@ void VulkanDriver::gatherDriverInfo()
 #endif
         }
     }
-}
-
-std::unique_ptr<Surface> VulkanDriver::createSurface(const SurfaceDescriptor& descriptor)
-{
-    return std::make_unique<VulkanSurface>(this, descriptor);
-}
-
-std::vector<std::unique_ptr<PhysicalDevice>> VulkanDriver::getPhysicalDevices()
-{
-    std::vector<std::unique_ptr<PhysicalDevice>> physicalDevices{};
-    for (auto physicalDevice : m_physicalDevices)
-    {
-        VulkanPhysicalDeviceDescriptor descriptor{};
-        descriptor.physicalDevice = physicalDevice;
-
-        auto device = std::make_unique<VulkanPhysicalDevice>(this, descriptor);
-        physicalDevices.push_back(std::move(device));
-    }
-
-    return physicalDevices;
-}
-
-VkInstance VulkanDriver::getVkInstance() const
-{
-    return m_instance;
-}
-
-const std::vector<VkPhysicalDevice>& VulkanDriver::getVkPhysicalDevices() const
-{
-    return m_physicalDevices;
-}
-
-VkPhysicalDevice VulkanDriver::getVkPhysicalDevice(uint32_t index) const
-{
-    assert(index < m_physicalDevices.size());
-
-    return m_physicalDevices[index];
-}
-
-const VulkanDriverInfo& VulkanDriver::getDriverInfo() const
-{
-    return m_driverInfo;
 }
 
 bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)

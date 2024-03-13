@@ -5,6 +5,7 @@
 #include "utils/dylib.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
+#include "vulkan_surface.h"
 
 #include <memory>
 #include <vector>
@@ -32,6 +33,9 @@ public:
 public:
     std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
     std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
+
+public:
+    std::unique_ptr<Surface> createSurface(const VulkanSurfaceDescriptor& descriptor);
 
 public: // vulkan
     VkInstance getVkInstance() const;
