@@ -7,6 +7,9 @@
 #include <stdexcept>
 
 #include "vulkan_device.h"
+#include "vulkan_driver.h"
+#include "vulkan_physical_device.h"
+#include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
 
 namespace jipu
@@ -50,7 +53,7 @@ VulkanNBufferingSample::~VulkanNBufferingSample()
     m_renderCommandBuffer.reset();
     m_swapchain.reset();
 
-    m_physicalDevices.clear();
+    m_physicalDevice.reset();
     m_device.reset();
 
     m_surface.reset();
@@ -214,22 +217,28 @@ void VulkanNBufferingSample::createDriver()
 
 void VulkanNBufferingSample::getPhysicalDevices()
 {
-    m_physicalDevices = m_driver->getPhysicalDevices();
+    auto physicalDevices = m_driver->getPhysicalDevices();
+    m_physicalDevice = std::move(physicalDevices[0]);
 }
 
 void VulkanNBufferingSample::createSurface()
 {
     SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
-    m_surface = m_driver->createSurface(descriptor);
+
+    VulkanSurfaceDescriptor vkdescriptor = generateVulkanSurfaceDescriptor(descriptor);
+
+    m_surface = downcast(m_driver.get())->createSurface(vkdescriptor);
+
+    auto vulkanSurface = downcast(m_surface.get());
+
+    auto surfaceInfo = vulkanSurface->gatherSurfaceInfo(downcast(m_physicalDevice.get())->getVkPhysicalDevice());
+    auto count = surfaceInfo.capabilities.minImageCount;
 }
 
 void VulkanNBufferingSample::createDevice()
 {
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
     DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
+    m_device = m_physicalDevice->createDevice(descriptor);
 }
 
 void VulkanNBufferingSample::createCommandBuffer()
