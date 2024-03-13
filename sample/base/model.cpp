@@ -23,23 +23,29 @@ jipu::Polygon generatePolygonFromOBJ(const tinyobj::attrib_t& attrib, const std:
 
     for (const auto& shape : shapes)
     {
-        for (const auto& index : shape.mesh.indices)
+        for (auto index = 0; index < attrib.vertices.size(); index += 3)
         {
             jipu::Vertex vertex{};
 
             vertex.pos = {
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
+                attrib.vertices[index + 0],
+                attrib.vertices[index + 1],
+                attrib.vertices[index + 2],
             };
+
+            polygon.vertices.push_back(vertex);
+        }
+
+        for (const auto& index : shape.mesh.indices)
+        {
+            auto& vertex = polygon.vertices[index.vertex_index];
 
             vertex.texCoord = {
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
-            polygon.vertices.push_back(vertex);
-            polygon.indices.push_back(polygon.indices.size());
+            polygon.indices.push_back(index.vertex_index);
         }
     }
 
@@ -119,8 +125,7 @@ jipu::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinygl
             // glTF supports different component types of indices
             switch (accessor.componentType)
             {
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
-            {
+            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT: {
                 const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                 for (size_t index = 0; index < accessor.count; index++)
                 {
@@ -128,8 +133,7 @@ jipu::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinygl
                 }
                 break;
             }
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
-            {
+            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT: {
                 const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                 for (size_t index = 0; index < accessor.count; index++)
                 {
@@ -137,8 +141,7 @@ jipu::Polygon generatePolygonFromGLTF(const tinygltf::Model& model, const tinygl
                 }
                 break;
             }
-            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
-            {
+            case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE: {
                 const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                 for (size_t index = 0; index < accessor.count; index++)
                 {

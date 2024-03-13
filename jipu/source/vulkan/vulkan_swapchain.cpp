@@ -1,6 +1,7 @@
 #include "vulkan_swapchain.h"
 
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 #include "vulkan_queue.h"
 #include "vulkan_surface.h"
 
@@ -11,34 +12,61 @@
 namespace jipu
 {
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false)
-    : m_device(device)
-    , m_descriptor(descriptor)
+namespace
 {
-    VulkanSurface* surface = downcast(m_descriptor.surface);
 
-    const VulkanSurfaceInfo& surfaceInfo = surface->gatherSurfaceInfo(m_device->getVkPhysicalDevice());
+VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)
+{
+    std::array<VkCompositeAlphaFlagBitsKHR, 4> compositeAlphaFlagBits = {
+        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+        VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+    };
+
+    for (const auto compositeAlphaFlagBit : compositeAlphaFlagBits)
+    {
+        if (supportedCompositeAlpha & compositeAlphaFlagBit)
+        {
+            return compositeAlphaFlagBit;
+        }
+    }
+
+    throw std::runtime_error(fmt::format("Failed to find supported composite alpha flag bit. [{}]", supportedCompositeAlpha));
+
+    return static_cast<VkCompositeAlphaFlagBitsKHR>(0x00000000);
+}
+} // namespace
+
+VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor)
+{
+    VulkanSwapchainDescriptor vkdescriptor{};
+
+    VulkanSurface* surface = downcast(descriptor.surface);
+
+    auto vulkanPhysicalDevice = device->getPhysicalDevice();
+    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice->gatherSurfaceInfo(surface);
 
     // Check surface formats supports.
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),
                                           surfaceInfo.formats.end(),
-                                          [textureFormat = m_descriptor.textureFormat, colorSpace = m_descriptor.colorSpace](const VkSurfaceFormatKHR& surfaceFormat) { return surfaceFormat.format == ToVkFormat(textureFormat) &&
-                                                                                                                                                                               surfaceFormat.colorSpace == ToVkColorSpaceKHR(colorSpace); });
+                                          [textureFormat = descriptor.textureFormat, colorSpace = descriptor.colorSpace](const VkSurfaceFormatKHR& surfaceFormat) { return surfaceFormat.format == ToVkFormat(textureFormat) &&
+                                                                                                                                                                           surfaceFormat.colorSpace == ToVkColorSpaceKHR(colorSpace); });
     if (surfaceFormatIter == surfaceInfo.formats.end())
     {
         throw std::runtime_error(fmt::format("{} texture format or/and {} color space are not supported.",
-                                             static_cast<uint32_t>(m_descriptor.textureFormat),
-                                             static_cast<uint32_t>(m_descriptor.colorSpace)));
+                                             static_cast<uint32_t>(descriptor.textureFormat),
+                                             static_cast<uint32_t>(descriptor.colorSpace)));
     }
     const VkSurfaceFormatKHR surfaceFormat = *surfaceFormatIter;
 
     // Check surface present mode.
     auto presentModeIter = std::find(surfaceInfo.presentModes.begin(),
                                      surfaceInfo.presentModes.end(),
-                                     ToVkPresentModeKHR(m_descriptor.presentMode));
+                                     ToVkPresentModeKHR(descriptor.presentMode));
     if (presentModeIter == surfaceInfo.presentModes.end())
     {
-        throw std::runtime_error(fmt::format("{} present mode is not supported.", static_cast<uint32_t>(m_descriptor.presentMode)));
+        throw std::runtime_error(fmt::format("{} present mode is not supported.", static_cast<uint32_t>(descriptor.presentMode)));
     }
     const VkPresentModeKHR presentMode = *presentModeIter;
 
@@ -50,53 +78,76 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor
         imageCount = surfaceCapabilities.maxImageCount;
     }
 
-    m_width = m_descriptor.width;
-    m_height = m_descriptor.height;
+    uint32_t width = descriptor.width;
+    uint32_t height = descriptor.height;
 
     // If extent is invalid, use current extent.
-    if (m_descriptor.width < surfaceCapabilities.minImageExtent.width ||
-        m_descriptor.width > surfaceCapabilities.maxImageExtent.width ||
-        m_descriptor.height < surfaceCapabilities.minImageExtent.height ||
-        m_descriptor.height > surfaceCapabilities.maxImageExtent.height)
+    if (descriptor.width < surfaceCapabilities.minImageExtent.width ||
+        descriptor.width > surfaceCapabilities.maxImageExtent.width ||
+        descriptor.height < surfaceCapabilities.minImageExtent.height ||
+        descriptor.height > surfaceCapabilities.maxImageExtent.height)
     {
-        m_width = surfaceCapabilities.currentExtent.width;
-        m_height = surfaceCapabilities.currentExtent.height;
+        width = surfaceCapabilities.currentExtent.width;
+        height = surfaceCapabilities.currentExtent.height;
     }
 
-    VkSwapchainCreateInfoKHR swapchainCreateInfo{};
-    swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = surface->getSurfaceKHR();
-    swapchainCreateInfo.minImageCount = imageCount;
-    swapchainCreateInfo.imageFormat = surfaceFormat.format;
-    swapchainCreateInfo.imageColorSpace = surfaceFormat.colorSpace;
-    swapchainCreateInfo.imageExtent = { m_width, m_height };
-    swapchainCreateInfo.imageArrayLayers = 1;
-    swapchainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    vkdescriptor.surface = surface;
+    vkdescriptor.minImageCount = imageCount;
+    vkdescriptor.imageFormat = surfaceFormat.format;
+    vkdescriptor.imageColorSpace = surfaceFormat.colorSpace;
+    vkdescriptor.imageExtent = { width, height };
+    vkdescriptor.imageArrayLayers = 1;
+    vkdescriptor.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     // TODO: check sharing mode
     // if graphics and present queue family are difference.
     // {
-    //     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-    //     swapchainCreateInfo.queueFamilyIndexCount = 2;
-    //     swapchainCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
+    //     vkdescriptor.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    //     vkdescriptor.queueFamilyIndices.resize(2);
+    //     vkdescriptor.pQueueFamilyIndices = queueFamilyIndices;
     // }
     // else
     // {
-    //     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    //     swapchainCreateInfo.queueFamilyIndexCount = 0;     // Optional
-    //     swapchainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
+    //     vkdescriptor.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     // }
 
-    swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    swapchainCreateInfo.queueFamilyIndexCount = 0;     // Optional
-    swapchainCreateInfo.pQueueFamilyIndices = nullptr; // Optional
+    vkdescriptor.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    vkdescriptor.queueFamilyIndices = {}; // Optional
+    vkdescriptor.preTransform = surfaceCapabilities.currentTransform;
+    vkdescriptor.compositeAlpha = getCompositeAlphaFlagBit(surfaceCapabilities.supportedCompositeAlpha);
+    vkdescriptor.presentMode = presentMode;
+    vkdescriptor.clipped = VK_TRUE;
+    vkdescriptor.oldSwapchain = VK_NULL_HANDLE;
 
-    swapchainCreateInfo.preTransform = surfaceCapabilities.currentTransform;
-    swapchainCreateInfo.compositeAlpha = getCompositeAlphaFlagBit(surfaceCapabilities.supportedCompositeAlpha);
-    swapchainCreateInfo.presentMode = presentMode;
-    swapchainCreateInfo.clipped = VK_TRUE;
+    return vkdescriptor;
+}
 
-    swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false)
+    : VulkanSwapchain(device, generateVulkanSwapchainDescriptor(device, descriptor))
+{
+}
+
+VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false)
+    : m_device(device)
+    , m_descriptor(descriptor)
+{
+    VkSwapchainCreateInfoKHR swapchainCreateInfo{};
+    swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapchainCreateInfo.surface = descriptor.surface->getVkSurface();
+    swapchainCreateInfo.minImageCount = descriptor.minImageCount;
+    swapchainCreateInfo.imageFormat = descriptor.imageFormat;
+    swapchainCreateInfo.imageColorSpace = descriptor.imageColorSpace;
+    swapchainCreateInfo.imageExtent = descriptor.imageExtent;
+    swapchainCreateInfo.imageArrayLayers = descriptor.imageArrayLayers;
+    swapchainCreateInfo.imageUsage = descriptor.imageUsage;
+    swapchainCreateInfo.imageSharingMode = descriptor.imageSharingMode;
+    swapchainCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(descriptor.queueFamilyIndices.size());
+    swapchainCreateInfo.pQueueFamilyIndices = descriptor.queueFamilyIndices.data();
+    swapchainCreateInfo.preTransform = descriptor.preTransform;
+    swapchainCreateInfo.compositeAlpha = descriptor.compositeAlpha;
+    swapchainCreateInfo.presentMode = descriptor.presentMode;
+    swapchainCreateInfo.clipped = descriptor.clipped;
+    swapchainCreateInfo.oldSwapchain = descriptor.oldSwapchain;
 
     const VulkanAPI& vkAPI = m_device->vkAPI;
     if (vkAPI.CreateSwapchainKHR(m_device->getVkDevice(), &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
@@ -105,11 +156,11 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor
     }
 
     // get swapchain image.
-    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &imageCount, nullptr);
+    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, nullptr);
 
     std::vector<VkImage> images{};
-    images.resize(imageCount);
-    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &imageCount, images.data());
+    images.resize(swapchainCreateInfo.minImageCount);
+    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, images.data());
 
     // create Textures by VkImage.
     for (VkImage image : images)
@@ -118,10 +169,10 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor
         descriptor.image = image; // by swapchain
 
         descriptor.imageType = VK_IMAGE_TYPE_2D;
-        descriptor.extent = { m_width, m_height, 1 };
+        descriptor.extent = { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 1 };
         descriptor.mipLevels = 1;
         descriptor.arrayLayers = 1;
-        descriptor.format = ToVkFormat(m_descriptor.textureFormat);
+        descriptor.format = swapchainCreateInfo.imageFormat;
         descriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
         descriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         descriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -175,17 +226,17 @@ VulkanSwapchain::~VulkanSwapchain()
 
 TextureFormat VulkanSwapchain::getTextureFormat() const
 {
-    return m_descriptor.textureFormat;
+    return ToTextureFormat(m_descriptor.imageFormat);
 }
 
 uint32_t VulkanSwapchain::getWidth() const
 {
-    return m_width;
+    return m_descriptor.imageExtent.width;
 }
 
 uint32_t VulkanSwapchain::getHeight() const
 {
-    return m_height;
+    return m_descriptor.imageExtent.height;
 }
 
 void VulkanSwapchain::present(Queue* queue)
@@ -238,28 +289,6 @@ std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getPresentSemaphor
 std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getRenderSemaphore() const
 {
     return { m_renderSemaphore, VK_PIPELINE_STAGE_NONE };
-}
-
-VkCompositeAlphaFlagBitsKHR VulkanSwapchain::getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR supportedCompositeAlpha)
-{
-    std::array<VkCompositeAlphaFlagBitsKHR, 4> compositeAlphaFlagBits = {
-        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
-        VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
-        VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
-    };
-
-    for (const auto compositeAlphaFlagBit : compositeAlphaFlagBits)
-    {
-        if (supportedCompositeAlpha & compositeAlphaFlagBit)
-        {
-            return compositeAlphaFlagBit;
-        }
-    }
-
-    throw std::runtime_error(fmt::format("Failed to find supported composite alpha flag bit. [{}]", supportedCompositeAlpha));
-
-    return static_cast<VkCompositeAlphaFlagBitsKHR>(0x00000000);
 }
 
 // Convert Helper

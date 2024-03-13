@@ -11,11 +11,14 @@ namespace jipu
 {
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-void VulkanSurface::createSurfaceKHR()
+
+VulkanSurfaceDescriptor generateVulkanSurfaceDescriptor(const SurfaceDescriptor& descriptor)
 {
     @autoreleasepool
     {
-        NSView* nsView = (__bridge NSView*)m_descriptor.windowHandle;
+        VulkanSurfaceDescriptor vkdescriptor{};
+
+        NSView* nsView = (__bridge NSView*)descriptor.windowHandle;
         if (nsView == nil)
         {
             throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
@@ -26,26 +29,49 @@ void VulkanSurface::createSurfaceKHR()
         [nsView setLayer:layer];
         [nsView setWantsLayer:YES];
 
-        VulkanDriver* driver = downcast(m_driver);
-        const VulkanAPI& vkAPI = driver->vkAPI;
-        if (vkAPI.CreateMetalSurfaceEXT == nullptr)
-        {
-            throw std::runtime_error("vkCreateMetalSurfaceEXT is nullptr.");
-        }
+        vkdescriptor.layer = layer;
 
-        VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
-        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
-        surfaceCreateInfo.pLayer = layer;
+        return vkdescriptor;
+    }
+}
 
-        VkResult result = vkAPI.CreateMetalSurfaceEXT(driver->getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+void VulkanSurface::createSurfaceKHR()
+{
+    VkMetalSurfaceCreateInfoEXT surfaceCreateInfo{};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+    surfaceCreateInfo.pLayer = m_descriptor.layer;
 
-        if (result != VK_SUCCESS)
-        {
-            throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", static_cast<int32_t>(result)));
-        }
+    VkResult result = m_driver->vkAPI.CreateMetalSurfaceEXT(m_driver->getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", static_cast<int32_t>(result)));
     }
 }
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
+
+VulkanSurfaceDescriptor generateVulkanSurfaceDescriptor(const SurfaceDescriptor& descriptor)
+{
+    @autoreleasepool
+    {
+        VulkanSurfaceDescriptor vkdescriptor{};
+
+        NSView* nsView = (__bridge NSView*)descriptor.windowHandle;
+        if (nsView == nil)
+        {
+            throw std::runtime_error(fmt::format("[{}] Failed to get NSView.", __func__));
+        }
+        NSBundle* bundle = [NSBundle bundleWithPath:@"/System/Library/Frameworks/QuartzCore.framework"];
+        CAMetalLayer* layer = [[bundle classNamed:@"CAMetalLayer"] layer];
+
+        [nsView setLayer:layer];
+
+        vkdescriptor.view = (__bridge void*)nsView;
+
+        return vkdescriptor;
+    }
+}
+
 void VulkanSurface::createSurfaceKHR()
 {
     @autoreleasepool

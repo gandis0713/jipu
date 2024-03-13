@@ -4,6 +4,7 @@
 #include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
+#include "vulkan_surface.h"
 
 namespace jipu
 {
@@ -44,6 +45,7 @@ public:
 
 public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
+    VulkanSurfaceInfo gatherSurfaceInfo(VulkanSurface* surface) const;
 
     int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
     bool isDepthStencilSupported(VkFormat format) const;

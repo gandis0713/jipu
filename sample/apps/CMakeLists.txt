@@ -56,6 +56,13 @@ function(configure_sample target)
         )
     endif()
 
+    if(MSVC)
+        target_compile_definitions(${target}
+            PRIVATE
+            "NOMINMAX" # to undefine max, min macro
+        )
+    endif()
+
     if(CMAKE_GENERATOR STREQUAL "Ninja")
         set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
     else()
@@ -109,4 +116,5 @@ add_subdirectory(offscreen)
 # experimental
 if(ENABLE_VULKAN_EXPERIMENTAL)
     add_subdirectory(vulkan_subpasses)
+    add_subdirectory(vulkan_n_buffering)
 endif()
