@@ -56,6 +56,13 @@ function(configure_sample target)
         )
     endif()
 
+    if(MSVC)
+        target_compile_definitions(${target}
+            PRIVATE
+            "NOMINMAX" # to undefine max, min macro
+        )
+    endif()
+
     if(CMAKE_GENERATOR STREQUAL "Ninja")
         set(BINARY_OUT ${CMAKE_CURRENT_BINARY_DIR})
     else()
