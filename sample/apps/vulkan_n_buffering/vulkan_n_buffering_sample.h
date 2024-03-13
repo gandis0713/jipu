@@ -48,7 +48,13 @@ private:
     void updateImGui() override;
 
 private:
+    void createDriver();
+    void getPhysicalDevices();
+    void createSurface();
+    void createDevice();
     void createSwapchain();
+    void createCommandBuffer();
+    void createQueue();
 
     void createVertexBuffer();
     void createIndexBuffer();
@@ -68,7 +74,6 @@ private:
 
     void createPipelineLayout();
     void createRenderPipeline();
-    void createCommandBuffers();
 
     void copyBufferToBuffer(Buffer* src, Buffer* dst);
     void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);

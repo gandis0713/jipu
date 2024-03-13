@@ -59,40 +59,13 @@ VulkanNBufferingSample::~VulkanNBufferingSample()
 
 void VulkanNBufferingSample::init()
 {
-    // create Driver.
-    {
-        DriverDescriptor descriptor{ .type = DriverType::kVulkan };
-        m_driver = Driver::create(descriptor);
-    }
-
-    // create surface
-    {
-        SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
-        m_surface = m_driver->createSurface(descriptor);
-    }
-
-    // create PhysicalDevice.
-    {
-        m_physicalDevices = m_driver->getPhysicalDevices();
-    }
-
-    // create Device.
-    {
-        // TODO: select suit device.
-        PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-        DeviceDescriptor descriptor;
-        m_device = physicalDevice->createDevice(descriptor);
-    }
-
-    // create queue
-    {
-        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
-        m_queue = m_device->createQueue(rednerQueueDescriptor);
-    }
-
-    // create swapchain
+    createDriver();
+    getPhysicalDevices();
+    createSurface();
+    createDevice();
     createSwapchain();
+    createCommandBuffer();
+    createQueue();
 
     // create buffer
     createVertexBuffer();
@@ -113,7 +86,6 @@ void VulkanNBufferingSample::init()
 
     createPipelineLayout();
     createRenderPipeline();
-    createCommandBuffers();
 
     initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
 
@@ -232,6 +204,44 @@ void VulkanNBufferingSample::draw()
     drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+}
+
+void VulkanNBufferingSample::createDriver()
+{
+    DriverDescriptor descriptor{ .type = DriverType::kVulkan };
+    m_driver = Driver::create(descriptor);
+}
+
+void VulkanNBufferingSample::getPhysicalDevices()
+{
+    m_physicalDevices = m_driver->getPhysicalDevices();
+}
+
+void VulkanNBufferingSample::createSurface()
+{
+    SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
+    m_surface = m_driver->createSurface(descriptor);
+}
+
+void VulkanNBufferingSample::createDevice()
+{
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
+
+    DeviceDescriptor descriptor;
+    m_device = physicalDevice->createDevice(descriptor);
+}
+
+void VulkanNBufferingSample::createCommandBuffer()
+{
+    CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
+    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
+}
+
+void VulkanNBufferingSample::createQueue()
+{
+    QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
+    m_queue = m_device->createQueue(rednerQueueDescriptor);
 }
 
 void VulkanNBufferingSample::createSwapchain()
@@ -588,12 +598,6 @@ void VulkanNBufferingSample::createRenderPipeline()
     descriptor.depthStencil = depthStencilStage;
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
-}
-
-void VulkanNBufferingSample::createCommandBuffers()
-{
-    CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
-    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void VulkanNBufferingSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
