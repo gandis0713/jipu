@@ -49,8 +49,7 @@ public:
     VulkanSurface(VulkanDriver* driver, const VulkanSurfaceDescriptor& descriptor);
     ~VulkanSurface() override;
 
-    VkSurfaceKHR getSurfaceKHR() const;
-    VulkanSurfaceInfo gatherSurfaceInfo(VkPhysicalDevice physicalDevice) const;
+    VkSurfaceKHR getVkSurface() const;
 
 private:
     void createSurfaceKHR();

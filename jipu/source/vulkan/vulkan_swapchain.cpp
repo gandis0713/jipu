@@ -1,6 +1,7 @@
 #include "vulkan_swapchain.h"
 
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 #include "vulkan_queue.h"
 #include "vulkan_surface.h"
 
@@ -43,7 +44,8 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
 
     VulkanSurface* surface = downcast(descriptor.surface);
 
-    const VulkanSurfaceInfo& surfaceInfo = surface->gatherSurfaceInfo(device->getVkPhysicalDevice());
+    auto vulkanPhysicalDevice = device->getPhysicalDevice();
+    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice->gatherSurfaceInfo(surface);
 
     // Check surface formats supports.
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),
@@ -131,7 +133,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
 {
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = descriptor.surface->getSurfaceKHR();
+    swapchainCreateInfo.surface = descriptor.surface->getVkSurface();
     swapchainCreateInfo.minImageCount = descriptor.minImageCount;
     swapchainCreateInfo.imageFormat = descriptor.imageFormat;
     swapchainCreateInfo.imageColorSpace = descriptor.imageColorSpace;
