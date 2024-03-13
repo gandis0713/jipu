@@ -78,7 +78,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
     ImGuiIO& io = ImGui::GetIO();
 #if defined(__ANDROID__)
-    io.FontGlobalScale = 2.0;
+    io.FontGlobalScale = 3.0;
 #else
     io.FontGlobalScale = 1.0;
 #endif
