@@ -20,6 +20,7 @@
 #include "jipu/swapchain.h"
 #include "jipu/texture_view.h"
 
+#include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
 
 #define GLM_FORCE_RADIANS
@@ -132,6 +133,8 @@ private:
     std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
 
     uint32_t m_sampleCount = 1;
+
+    VulkanSurfaceInfo m_surfaceInfo{};
     VkPresentModeKHR m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
     uint32_t m_minImageCount = 2;
 };

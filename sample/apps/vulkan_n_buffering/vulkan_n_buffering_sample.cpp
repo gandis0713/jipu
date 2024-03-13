@@ -3,6 +3,7 @@
 #include <math.h>
 #include <spdlog/spdlog.h>
 
+#include <algorithm>
 #include <random>
 #include <stdexcept>
 
@@ -128,39 +129,39 @@ void VulkanNBufferingSample::updateImGui()
     {
         ImGui::Begin("Settings");
 
+        auto presentModeUI = [&](const char* name, VkPresentModeKHR presentMode) {
+            auto it = std::find(m_surfaceInfo.presentModes.begin(), m_surfaceInfo.presentModes.end(), presentMode);
+            if (it == m_surfaceInfo.presentModes.end())
+                ImGui::BeginDisabled();
+
+            if (ImGui::RadioButton(name, m_presentMode == presentMode))
+            {
+                m_presentMode = presentMode;
+                recreateSwapchain();
+            }
+
+            if (it == m_surfaceInfo.presentModes.end())
+                ImGui::EndDisabled();
+        };
+
         ImGui::Text("Present Mode");
-        if (ImGui::RadioButton("FIFO", m_presentMode == VK_PRESENT_MODE_FIFO_KHR))
-        {
-            m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
-            recreateSwapchain();
-        }
-        else if (ImGui::RadioButton("FIFO RELAXED", m_presentMode == VK_PRESENT_MODE_FIFO_RELAXED_KHR))
-        {
-            m_presentMode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
-            recreateSwapchain();
-        }
-        else if (ImGui::RadioButton("MAILBOX", m_presentMode == VK_PRESENT_MODE_MAILBOX_KHR))
-        {
-            m_presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
-            recreateSwapchain();
-        }
-        else if (ImGui::RadioButton("IMMEDIATE", m_presentMode == VK_PRESENT_MODE_IMMEDIATE_KHR))
-        {
-            m_presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-            recreateSwapchain();
-        }
+        presentModeUI("FIFO", VK_PRESENT_MODE_FIFO_KHR);
+        presentModeUI("FIFO RELAXED", VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+        presentModeUI("MAILBOX", VK_PRESENT_MODE_MAILBOX_KHR);
+        presentModeUI("IMMEDIATE", VK_PRESENT_MODE_IMMEDIATE_KHR);
 
         ImGui::Separator();
         ImGui::Text("Min Image Count");
-        if (ImGui::RadioButton("2", m_minImageCount == 2))
+
+        auto minCount = std::max(m_surfaceInfo.capabilities.minImageCount, 1u);
+        auto maxCount = std::min(m_surfaceInfo.capabilities.maxImageCount, 3u);
+        for (auto i = minCount; i <= maxCount; ++i)
         {
-            m_minImageCount = 2;
-            recreateSwapchain();
-        }
-        else if (ImGui::RadioButton("3", m_minImageCount == 3))
-        {
-            m_minImageCount = 3;
-            recreateSwapchain();
+            if (ImGui::RadioButton(std::to_string(i).c_str(), m_minImageCount == i))
+            {
+                m_minImageCount = i;
+                recreateSwapchain();
+            }
         }
         ImGui::End();
     }
@@ -230,9 +231,7 @@ void VulkanNBufferingSample::createSurface()
     m_surface = downcast(m_driver.get())->createSurface(vkdescriptor);
 
     auto vulkanSurface = downcast(m_surface.get());
-
-    auto surfaceInfo = vulkanSurface->gatherSurfaceInfo(downcast(m_physicalDevice.get())->getVkPhysicalDevice());
-    auto count = surfaceInfo.capabilities.minImageCount;
+    m_surfaceInfo = downcast(m_physicalDevice.get())->gatherSurfaceInfo(downcast(vulkanSurface));
 }
 
 void VulkanNBufferingSample::createDevice()
