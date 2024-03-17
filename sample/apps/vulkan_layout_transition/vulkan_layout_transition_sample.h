@@ -1,3 +1,5 @@
+
+
 #include "camera.h"
 #include "file.h"
 #include "im_gui.h"
@@ -15,18 +17,15 @@
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
 
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-
 namespace jipu
 {
 
-class VulkanLayoutTransition : public Sample, public Im_Gui
+class VulkanLayoutTransitionSample : public Sample, public Im_Gui
 {
 public:
-    VulkanLayoutTransition() = delete;
-    VulkanLayoutTransition(const SampleDescriptor& descriptor);
-    ~VulkanLayoutTransition() override;
+    VulkanLayoutTransitionSample() = delete;
+    VulkanLayoutTransitionSample(const SampleDescriptor& descriptor);
+    ~VulkanLayoutTransitionSample() override;
 
     void init() override;
     void update() override;
@@ -36,9 +35,7 @@ private:
     void updateImGui() override;
 
 private:
-    void createCamera();
-
-    void updateUniformBuffer();
+    void updateOffscreenUniformBuffer();
 
 private:
     void createDevier();
@@ -48,12 +45,25 @@ private:
     void createSwapchain();
     void createCommandBuffer();
     void createQueue();
-    void createVertexBuffer();
-    void createIndexBuffer();
-    void createUniformBuffer();
-    void createBindingGroupLayout();
-    void createBindingGroup();
-    void createRenderPipeline();
+
+    void createOffscreenTexture();
+    void createOffscreenTextureView();
+    void createOffscreenVertexBuffer();
+    void createOffscreenIndexBuffer();
+    void createOffscreenUniformBuffer();
+    void createOffscreenBindingGroupLayout();
+    void createOffscreenBindingGroup();
+    void createOffscreenRenderPipeline();
+
+    void createOnscreenSwapchain();
+    void createOnscreenVertexBuffer();
+    void createOnscreenIndexBuffer();
+    void createOnscreenSampler();
+    void createOnscreenBindingGroupLayout();
+    void createOnscreenBindingGroup();
+    void createOnscreenRenderPipeline();
+
+    void createCamera();
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -63,13 +73,30 @@ private:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_indexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
-    std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
-    std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
-    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+
+    struct
+    {
+        std::unique_ptr<Texture> renderTexture = nullptr;
+        std::unique_ptr<TextureView> renderTextureView = nullptr;
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::unique_ptr<Buffer> indexBuffer = nullptr;
+        std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+    } m_offscreen;
+
+    struct
+    {
+        std::unique_ptr<Buffer> vertexBuffer = nullptr;
+        std::unique_ptr<Buffer> indexBuffer = nullptr;
+        std::unique_ptr<Sampler> sampler = nullptr;
+        std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
+        std::unique_ptr<BindingGroup> bindingGroup = nullptr;
+        std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
+        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+    } m_onscreen;
 
     struct MVP
     {
@@ -83,22 +110,33 @@ private:
         MVP mvp;
     } m_ubo;
 
-    struct Vertex
+    struct OffscreenVertex
     {
         glm::vec3 pos;
         glm::vec3 color;
     };
 
-    std::vector<uint16_t> m_indices{ 0, 1, 2 };
-    std::vector<Vertex>
-        m_vertices{
-            { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
-            { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
-        };
+    std::vector<OffscreenVertex> m_offscreenVertices{
+        { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
+        { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
+        { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
+    };
+    std::vector<uint16_t> m_offscreenIndices{ 0, 1, 2 };
+
+    struct OnscreenVertex
+    {
+        glm::vec3 pos;
+        glm::vec2 texCoord;
+    };
+    std::vector<OnscreenVertex> m_onscreenVertices{
+        { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+        { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
+    };
+    std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
 };
-
 } // namespace jipu

@@ -22,7 +22,7 @@ void android_main(struct android_app* app)
         ""
     };
 
-    jipu::VulkanLayoutTransition sample(descriptor);
+    jipu::VulkanLayoutTransitionSample sample(descriptor);
 
     sample.exec();
 }
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
         argv[0]
     };
 
-    jipu::VulkanLayoutTransition sample(descriptor);
+    jipu::VulkanLayoutTransitionSample sample(descriptor);
 
     return sample.exec();
 }
