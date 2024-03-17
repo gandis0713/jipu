@@ -3,6 +3,8 @@
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
+#include "vulkan_framebuffer.h"
+#include "vulkan_render_pass.h"
 
 #include "utils/cast.h"
 
@@ -70,6 +72,11 @@ private:
     const VulkanRenderPassEncoderDescriptor m_descriptor{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
+
+// Generate Helper
+VulkanRenderPassDescriptor VULKAN_EXPORT generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
+VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(VulkanRenderPass* renderPass, const RenderPassEncoderDescriptor& descriptor);
+VulkanRenderPassEncoderDescriptor VULKAN_EXPORT generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);
