@@ -17,6 +17,9 @@
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
 
+#include "vulkan_framebuffer.h"
+#include "vulkan_render_pass.h"
+
 namespace jipu
 {
 
@@ -64,6 +67,13 @@ private:
     void createOnscreenRenderPipeline();
 
     void createCamera();
+
+private:
+    VulkanRenderPass* getOffscreenRenderPass();
+    VulkanRenderPass* getOnscreenRenderPass();
+
+    VulkanFramebuffer* getOffscreenFramebuffer(TextureView* renderView);
+    VulkanFramebuffer* getOnscreenFramebuffer(TextureView* renderView);
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;
@@ -139,4 +149,5 @@ private:
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
 };
+
 } // namespace jipu

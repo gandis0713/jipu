@@ -2,6 +2,11 @@
 
 #include "vulkan_layout_transition_sample.h"
 
+#include "vulkan_command_encoder.h"
+#include "vulkan_device.h"
+#include "vulkan_render_pass_encoder.h"
+#include "vulkan_texture.h"
+
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
@@ -119,21 +124,24 @@ void VulkanLayoutTransitionSample::draw()
 
     // offscreen pass
     {
-        ColorAttachment attachment{};
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
-        attachment.loadOp = LoadOp::kClear;
-        attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = m_offscreen.renderTextureView.get();
-        attachment.resolveView = nullptr;
+        VulkanRenderPassEncoderDescriptor renderPassEncoderDescriptor{};
+        renderPassEncoderDescriptor.renderPass = getOffscreenRenderPass()->getVkRenderPass();
+        renderPassEncoderDescriptor.framebuffer = getOffscreenFramebuffer(m_offscreen.renderTextureView.get())->getVkFrameBuffer();
+        renderPassEncoderDescriptor.renderArea.offset = { 0, 0 };
+        renderPassEncoderDescriptor.renderArea.extent = { m_swapchain->getWidth(), m_swapchain->getHeight() };
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        VkClearValue colorClearValue{};
+        colorClearValue.color.float32[0] = 0.0f;
+        colorClearValue.color.float32[1] = 0.0f;
+        colorClearValue.color.float32[2] = 0.0f;
+        colorClearValue.color.float32[3] = 0.0f;
+        renderPassEncoderDescriptor.clearValues.push_back(colorClearValue);
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = vulkanCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
@@ -143,7 +151,7 @@ void VulkanLayoutTransitionSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        m_queue->submit({ commadEncoder->finish() });
+        m_queue->submit({ commandEncoder->finish() });
     }
 
     // onscreen pass
@@ -636,6 +644,73 @@ void VulkanLayoutTransitionSample::createOnscreenRenderPipeline()
     descriptor.layout = m_onscreen.renderPipelineLayout.get();
 
     m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
+}
+
+VulkanRenderPass* VulkanLayoutTransitionSample::getOffscreenRenderPass()
+{
+    VulkanRenderPassDescriptor vkdescriptor{};
+
+    {
+        VkAttachmentDescription attachmentDescription{};
+        attachmentDescription.format = ToVkFormat(m_offscreen.renderTexture->getFormat());
+        attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attachmentDescription.samples = ToVkSampleCountFlagBits(m_sampleCount);
+
+        vkdescriptor.attachmentDescriptions = { attachmentDescription };
+    }
+
+    {
+        VkAttachmentReference attachmentReference{};
+        attachmentReference.attachment = 0;
+        attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VulkanSubpassDescription subpassDescription{};
+        subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDescription.colorAttachments = { attachmentReference };
+
+        vkdescriptor.subpassDescriptions = { subpassDescription };
+    }
+
+    {
+        VkSubpassDependency subpassDependency{};
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDependency.dstSubpass = 0;
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.srcAccessMask = 0;
+        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        vkdescriptor.subpassDependencies = { subpassDependency };
+    }
+
+    return downcast(m_device.get())->getRenderPass(vkdescriptor);
+}
+
+VulkanRenderPass* VulkanLayoutTransitionSample::getOnscreenRenderPass()
+{
+    return nullptr;
+}
+
+VulkanFramebuffer* VulkanLayoutTransitionSample::getOffscreenFramebuffer(TextureView* renderView)
+{
+    VulkanFramebufferDescriptor vkdescriptor{};
+    vkdescriptor.renderPass = getOffscreenRenderPass()->getVkRenderPass();
+    vkdescriptor.width = m_swapchain->getWidth();
+    vkdescriptor.height = m_swapchain->getHeight();
+    vkdescriptor.layers = 1;
+    vkdescriptor.attachments.push_back(downcast(m_offscreen.renderTextureView.get())->getVkImageView());
+
+    return downcast(m_device.get())->getFrameBuffer(vkdescriptor);
+}
+
+VulkanFramebuffer* VulkanLayoutTransitionSample::getOnscreenFramebuffer(TextureView* renderView)
+{
+    return nullptr;
 }
 
 } // namespace jipu
