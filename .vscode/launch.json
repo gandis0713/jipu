@@ -206,7 +206,7 @@
             "environment": [],
         },
         {
-            "name": "Vulkan [windows x64] Layout Transition",
+            "name": "Vulkan [windows x64] Pipeline Barrier",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier.exe",
@@ -249,7 +249,7 @@
             "targetArchitecture": "arm64",
         },
         {
-            "name": "Vulkan [arm64 osx] Layout Transition",
+            "name": "Vulkan [arm64 osx] Pipeline Barrier",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier",
