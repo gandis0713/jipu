@@ -4,6 +4,7 @@
 
 #include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
+#include "vulkan_pipeline.h"
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_texture.h"
 
@@ -455,7 +456,10 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
     descriptor.fragment = fragmentStage;
     descriptor.layout = m_offscreen.renderPipelineLayout.get();
 
-    m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
+    VulkanRenderPipelineDescriptor vkdescriptor = generateVulkanRenderPipelineDescriptor(downcast(m_device.get()), descriptor);
+    vkdescriptor.renderPass = getOffscreenRenderPass();
+
+    m_offscreen.renderPipeline = downcast(m_device.get())->createRenderPipeline(vkdescriptor);
 }
 
 void VulkanPipelineBarrierSample::createOnscreenSwapchain()
@@ -680,8 +684,8 @@ VulkanRenderPass* VulkanPipelineBarrierSample::getOffscreenRenderPass()
         VkSubpassDependency subpassDependency{};
         subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         subpassDependency.dstSubpass = 0;
-        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         subpassDependency.srcAccessMask = 0;
         subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
