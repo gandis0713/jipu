@@ -62,13 +62,10 @@ public:
     VkImage getVkImage() const;
 
     /// @brief record pipeline barrier command, but not submitted.
-    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range);
+    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range);
+    void setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
-    /// @brief return current VkImageLayout if set pipeline barrier by layout and surbresource range.
-    /// @return VkImageLayout
-    VkImageLayout getLayout() const;
-
-    /// @brief generate final layout and return it.
+    /// @brief generate final layout by usage.
     /// @return VKImageLayout
     VkImageLayout getFinalLayout() const;
 
@@ -86,9 +83,6 @@ private:
 private:
     VulkanTextureResource m_resource;
     VulkanTextureOwner m_owner;
-
-private:
-    VkImageLayout m_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
 DOWN_CAST(VulkanTexture, Texture);
