@@ -1,4 +1,4 @@
-#include "vulkan_layout_transition_sample.h"
+#include "vulkan_pipeline_barrier_sample.h"
 
 #include <spdlog/spdlog.h>
 
@@ -18,11 +18,11 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::SampleDescriptor descriptor{
-        { 1000, 2000, "Vulkan Layout Transition", app },
+        { 1000, 2000, "Vulkan Pipeline Barrier", app },
         ""
     };
 
-    jipu::VulkanLayoutTransitionSample sample(descriptor);
+    jipu::VulkanPipelineBarrierSample sample(descriptor);
 
     sample.exec();
 }
@@ -34,11 +34,11 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::SampleDescriptor descriptor{
-        { 800, 600, "Vulkan Layout Transition", nullptr },
+        { 800, 600, "Vulkan Pipeline Barrier", nullptr },
         argv[0]
     };
 
-    jipu::VulkanLayoutTransitionSample sample(descriptor);
+    jipu::VulkanPipelineBarrierSample sample(descriptor);
 
     return sample.exec();
 }

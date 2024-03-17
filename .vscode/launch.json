@@ -209,7 +209,7 @@
             "name": "Vulkan [windows x64] Layout Transition",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_layout_transition/vulkan_layout_transition.exe",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier.exe",
             "args": [],
             "stopAtEntry": false,
             "environment": [],
@@ -252,7 +252,7 @@
             "name": "Vulkan [arm64 osx] Layout Transition",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_layout_transition/vulkan_layout_transition",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/vulkan_pipeline_barrier/vulkan_pipeline_barrier",
             "args": [],
             "stopAtEntry": false,
             "environment": [

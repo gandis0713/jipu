@@ -1,6 +1,6 @@
 
 
-#include "vulkan_layout_transition_sample.h"
+#include "vulkan_pipeline_barrier_sample.h"
 
 #include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
@@ -14,12 +14,12 @@
 namespace jipu
 {
 
-VulkanLayoutTransitionSample::VulkanLayoutTransitionSample(const SampleDescriptor& descriptor)
+VulkanPipelineBarrierSample::VulkanPipelineBarrierSample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
 }
 
-VulkanLayoutTransitionSample::~VulkanLayoutTransitionSample()
+VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
 {
     clearImGui();
 
@@ -50,7 +50,7 @@ VulkanLayoutTransitionSample::~VulkanLayoutTransitionSample()
     m_driver.reset();
 }
 
-void VulkanLayoutTransitionSample::init()
+void VulkanPipelineBarrierSample::init()
 {
     createDevier();
     getPhysicalDevices();
@@ -84,7 +84,7 @@ void VulkanLayoutTransitionSample::init()
     m_initialized = true;
 }
 
-void VulkanLayoutTransitionSample::createCamera()
+void VulkanPipelineBarrierSample::createCamera()
 {
     m_camera = std::make_unique<PerspectiveCamera>(45.0f,
                                                    m_width / static_cast<float>(m_height),
@@ -100,7 +100,7 @@ void VulkanLayoutTransitionSample::createCamera()
     m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0));
 }
 
-void VulkanLayoutTransitionSample::updateOffscreenUniformBuffer()
+void VulkanPipelineBarrierSample::updateOffscreenUniformBuffer()
 {
     m_ubo.mvp.model = glm::mat4(1.0f);
     m_ubo.mvp.view = m_camera->getViewMat();
@@ -110,7 +110,7 @@ void VulkanLayoutTransitionSample::updateOffscreenUniformBuffer()
     memcpy(pointer, &m_ubo, m_offscreen.uniformBuffer->getSize());
 }
 
-void VulkanLayoutTransitionSample::update()
+void VulkanPipelineBarrierSample::update()
 {
     updateOffscreenUniformBuffer();
 
@@ -118,7 +118,7 @@ void VulkanLayoutTransitionSample::update()
     buildImGui();
 }
 
-void VulkanLayoutTransitionSample::draw()
+void VulkanPipelineBarrierSample::draw()
 {
     auto renderView = m_swapchain->acquireNextTexture();
 
@@ -186,7 +186,7 @@ void VulkanLayoutTransitionSample::draw()
     }
 }
 
-void VulkanLayoutTransitionSample::updateImGui()
+void VulkanPipelineBarrierSample::updateImGui()
 {
     // set display size and mouse state.
     {
@@ -203,7 +203,7 @@ void VulkanLayoutTransitionSample::updateImGui()
     ImGui::Render();
 }
 
-void VulkanLayoutTransitionSample::createDevier()
+void VulkanPipelineBarrierSample::createDevier()
 {
     DriverDescriptor descriptor{};
     descriptor.type = DriverType::kVulkan;
@@ -211,12 +211,12 @@ void VulkanLayoutTransitionSample::createDevier()
     m_driver = Driver::create(descriptor);
 }
 
-void VulkanLayoutTransitionSample::getPhysicalDevices()
+void VulkanPipelineBarrierSample::getPhysicalDevices()
 {
     m_physicalDevices = m_driver->getPhysicalDevices();
 }
 
-void VulkanLayoutTransitionSample::createDevice()
+void VulkanPipelineBarrierSample::createDevice()
 {
     SurfaceDescriptor descriptor{};
     descriptor.windowHandle = getWindowHandle();
@@ -224,7 +224,7 @@ void VulkanLayoutTransitionSample::createDevice()
     m_surface = m_driver->createSurface(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createSurface()
+void VulkanPipelineBarrierSample::createSurface()
 {
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
@@ -233,7 +233,7 @@ void VulkanLayoutTransitionSample::createSurface()
     m_device = physicalDevice->createDevice(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createSwapchain()
+void VulkanPipelineBarrierSample::createSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -252,7 +252,7 @@ void VulkanLayoutTransitionSample::createSwapchain()
     // m_onScreen.swapchain = m_device->createSwapchain(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createCommandBuffer()
+void VulkanPipelineBarrierSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
     descriptor.usage = CommandBufferUsage::kOneTime;
@@ -260,7 +260,7 @@ void VulkanLayoutTransitionSample::createCommandBuffer()
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createQueue()
+void VulkanPipelineBarrierSample::createQueue()
 {
     QueueDescriptor descriptor{};
     descriptor.flags = QueueFlagBits::kGraphics;
@@ -268,7 +268,7 @@ void VulkanLayoutTransitionSample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOffscreenTexture()
+void VulkanPipelineBarrierSample::createOffscreenTexture()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -289,7 +289,7 @@ void VulkanLayoutTransitionSample::createOffscreenTexture()
     m_offscreen.renderTexture = m_device->createTexture(textureDescriptor);
 }
 
-void VulkanLayoutTransitionSample::createOffscreenTextureView()
+void VulkanPipelineBarrierSample::createOffscreenTextureView()
 {
     TextureViewDescriptor textureViewDescriptor;
     textureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
@@ -298,7 +298,7 @@ void VulkanLayoutTransitionSample::createOffscreenTextureView()
     m_offscreen.renderTextureView = m_offscreen.renderTexture->createTextureView(textureViewDescriptor);
 }
 
-void VulkanLayoutTransitionSample::createOffscreenVertexBuffer()
+void VulkanPipelineBarrierSample::createOffscreenVertexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = m_offscreenVertices.size() * sizeof(OffscreenVertex);
@@ -311,7 +311,7 @@ void VulkanLayoutTransitionSample::createOffscreenVertexBuffer()
     m_offscreen.vertexBuffer->unmap();
 }
 
-void VulkanLayoutTransitionSample::createOffscreenIndexBuffer()
+void VulkanPipelineBarrierSample::createOffscreenIndexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = m_offscreenIndices.size() * sizeof(uint16_t);
@@ -324,7 +324,7 @@ void VulkanLayoutTransitionSample::createOffscreenIndexBuffer()
     m_offscreen.indexBuffer->unmap();
 }
 
-void VulkanLayoutTransitionSample::createOffscreenUniformBuffer()
+void VulkanPipelineBarrierSample::createOffscreenUniformBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = sizeof(UBO);
@@ -337,7 +337,7 @@ void VulkanLayoutTransitionSample::createOffscreenUniformBuffer()
     // m_offscreen.uniformBuffer->unmap();
 }
 
-void VulkanLayoutTransitionSample::createOffscreenBindingGroupLayout()
+void VulkanPipelineBarrierSample::createOffscreenBindingGroupLayout()
 {
     BufferBindingLayout bufferLayout{};
     bufferLayout.index = 0;
@@ -350,7 +350,7 @@ void VulkanLayoutTransitionSample::createOffscreenBindingGroupLayout()
     m_offscreen.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOffscreenBindingGroup()
+void VulkanPipelineBarrierSample::createOffscreenBindingGroup()
 {
     BufferBinding bufferBinding{};
     bufferBinding.buffer = m_offscreen.uniformBuffer.get();
@@ -365,7 +365,7 @@ void VulkanLayoutTransitionSample::createOffscreenBindingGroup()
     m_offscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOffscreenRenderPipeline()
+void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
 {
     // render pipeline layout
     {
@@ -458,7 +458,7 @@ void VulkanLayoutTransitionSample::createOffscreenRenderPipeline()
     m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOnscreenSwapchain()
+void VulkanPipelineBarrierSample::createOnscreenSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
@@ -477,7 +477,7 @@ void VulkanLayoutTransitionSample::createOnscreenSwapchain()
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOnscreenVertexBuffer()
+void VulkanPipelineBarrierSample::createOnscreenVertexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = m_onscreenVertices.size() * sizeof(OnscreenVertex);
@@ -490,7 +490,7 @@ void VulkanLayoutTransitionSample::createOnscreenVertexBuffer()
     m_onscreen.vertexBuffer->unmap();
 }
 
-void VulkanLayoutTransitionSample::createOnscreenIndexBuffer()
+void VulkanPipelineBarrierSample::createOnscreenIndexBuffer()
 {
     BufferDescriptor descriptor{};
     descriptor.size = m_onscreenIndices.size() * sizeof(uint16_t);
@@ -503,7 +503,7 @@ void VulkanLayoutTransitionSample::createOnscreenIndexBuffer()
     m_onscreen.indexBuffer->unmap();
 }
 
-void VulkanLayoutTransitionSample::createOnscreenSampler()
+void VulkanPipelineBarrierSample::createOnscreenSampler()
 {
     SamplerDescriptor samplerDescriptor{};
     samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -518,7 +518,7 @@ void VulkanLayoutTransitionSample::createOnscreenSampler()
     m_onscreen.sampler = m_device->createSampler(samplerDescriptor);
 }
 
-void VulkanLayoutTransitionSample::createOnscreenBindingGroupLayout()
+void VulkanPipelineBarrierSample::createOnscreenBindingGroupLayout()
 {
     SamplerBindingLayout samplerLayout{};
     samplerLayout.index = 0;
@@ -535,7 +535,7 @@ void VulkanLayoutTransitionSample::createOnscreenBindingGroupLayout()
     m_onscreen.bindingGroupLayout = m_device->createBindingGroupLayout(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOnscreenBindingGroup()
+void VulkanPipelineBarrierSample::createOnscreenBindingGroup()
 {
     SamplerBinding samplerBinding{};
     samplerBinding.index = 0;
@@ -553,7 +553,7 @@ void VulkanLayoutTransitionSample::createOnscreenBindingGroup()
     m_onscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }
 
-void VulkanLayoutTransitionSample::createOnscreenRenderPipeline()
+void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
 {
     // render pipeline layout
     {
@@ -646,7 +646,7 @@ void VulkanLayoutTransitionSample::createOnscreenRenderPipeline()
     m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-VulkanRenderPass* VulkanLayoutTransitionSample::getOffscreenRenderPass()
+VulkanRenderPass* VulkanPipelineBarrierSample::getOffscreenRenderPass()
 {
     VulkanRenderPassDescriptor vkdescriptor{};
 
@@ -691,12 +691,12 @@ VulkanRenderPass* VulkanLayoutTransitionSample::getOffscreenRenderPass()
     return downcast(m_device.get())->getRenderPass(vkdescriptor);
 }
 
-VulkanRenderPass* VulkanLayoutTransitionSample::getOnscreenRenderPass()
+VulkanRenderPass* VulkanPipelineBarrierSample::getOnscreenRenderPass()
 {
     return nullptr;
 }
 
-VulkanFramebuffer* VulkanLayoutTransitionSample::getOffscreenFramebuffer(TextureView* renderView)
+VulkanFramebuffer* VulkanPipelineBarrierSample::getOffscreenFramebuffer(TextureView* renderView)
 {
     VulkanFramebufferDescriptor vkdescriptor{};
     vkdescriptor.renderPass = getOffscreenRenderPass()->getVkRenderPass();
@@ -708,7 +708,7 @@ VulkanFramebuffer* VulkanLayoutTransitionSample::getOffscreenFramebuffer(Texture
     return downcast(m_device.get())->getFrameBuffer(vkdescriptor);
 }
 
-VulkanFramebuffer* VulkanLayoutTransitionSample::getOnscreenFramebuffer(TextureView* renderView)
+VulkanFramebuffer* VulkanPipelineBarrierSample::getOnscreenFramebuffer(TextureView* renderView)
 {
     return nullptr;
 }

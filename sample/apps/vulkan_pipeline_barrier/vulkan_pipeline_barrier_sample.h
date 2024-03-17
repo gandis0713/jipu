@@ -23,12 +23,12 @@
 namespace jipu
 {
 
-class VulkanLayoutTransitionSample : public Sample, public Im_Gui
+class VulkanPipelineBarrierSample : public Sample, public Im_Gui
 {
 public:
-    VulkanLayoutTransitionSample() = delete;
-    VulkanLayoutTransitionSample(const SampleDescriptor& descriptor);
-    ~VulkanLayoutTransitionSample() override;
+    VulkanPipelineBarrierSample() = delete;
+    VulkanPipelineBarrierSample(const SampleDescriptor& descriptor);
+    ~VulkanPipelineBarrierSample() override;
 
     void init() override;
     void update() override;

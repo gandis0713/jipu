@@ -34,9 +34,6 @@
 # log
 *.log
 
-# shader
-*.spv
-
 # build
 build/
 
