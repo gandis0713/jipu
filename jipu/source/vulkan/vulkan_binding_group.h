@@ -38,4 +38,7 @@ private:
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
 
+// Generate Helper
+VulkanBindingGroupDescriptor VULKAN_EXPORT generateVulkanBindingGroupDescriptor(const BindingGroupDescriptor& descriptor);
+
 } // namespace jipu

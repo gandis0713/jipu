@@ -93,6 +93,9 @@ private:
 
 DOWN_CAST(VulkanTexture, Texture);
 
+// Generate Helper
+VulkanTextureDescriptor VULKAN_EXPORT generateVulkanTextureDescriptor(const TextureDescriptor& descriptor);
+
 // Convert Helper
 VkFormat VULKAN_EXPORT ToVkFormat(TextureFormat format);
 TextureFormat ToTextureFormat(VkFormat format);

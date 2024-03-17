@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-VulkanTextureDescriptor generateVulkanDescriptor(const TextureDescriptor& descriptor)
+VulkanTextureDescriptor generateVulkanTextureDescriptor(const TextureDescriptor& descriptor)
 {
     VulkanTextureDescriptor vkdescriptor{};
 
@@ -32,7 +32,7 @@ VulkanTextureDescriptor generateVulkanDescriptor(const TextureDescriptor& descri
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor)
-    : VulkanTexture(device, generateVulkanDescriptor(descriptor))
+    : VulkanTexture(device, generateVulkanTextureDescriptor(descriptor))
 {
 }
 
