@@ -23,6 +23,23 @@
 namespace jipu
 {
 
+struct Stage
+{
+    VkPipelineStageFlags srcStageMask;
+    VkPipelineStageFlags dstStageMask;
+    VkAccessFlags srcAccessMask;
+    VkAccessFlags dstAccessMask;
+};
+struct StageHash
+{
+    size_t operator()(const Stage& stage) const;
+};
+
+struct StageEqual
+{
+    bool operator()(const Stage& lhs, const Stage& rhs) const;
+};
+
 class VulkanPipelineBarrierSample : public Sample, public Im_Gui
 {
 public:
@@ -69,8 +86,8 @@ private:
     void createCamera();
 
 private:
-    VulkanRenderPass* getOffscreenRenderPass();
-    VulkanRenderPass* getOnscreenRenderPass();
+    VulkanRenderPass* getOffscreenRenderPass(Stage stage);
+    VulkanRenderPass* getOnscreenRenderPass(Stage stage);
 
     VulkanFramebuffer* getOffscreenFramebuffer(TextureView* renderView);
     VulkanFramebuffer* getOnscreenFramebuffer(TextureView* renderView);
@@ -148,6 +165,8 @@ private:
 
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
+    std::unordered_map<Stage, std::unique_ptr<RenderPipeline>, StageHash, StageEqual> m_renderPipelines{};
+    Stage m_stage{ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 };
 
 } // namespace jipu
