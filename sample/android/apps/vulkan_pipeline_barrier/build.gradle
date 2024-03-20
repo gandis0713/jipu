@@ -6,7 +6,7 @@ plugins {
 }
 
 // Paths
-def sampleName = "vulkan_layout_transition"
+def sampleName = "vulkan_pipeline_barrier"
 def rootDir = Paths.get(project.projectDir.getParent()).getParent().getParent().getParent()
 def appDir = "${rootDir}/sample/apps/${sampleName}"
 def shaderDir = "${appDir}/shaders"

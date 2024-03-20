@@ -10,7 +10,7 @@ class MainActivity : GameActivity() {
 
     companion object {
         init {
-            System.loadLibrary("vulkan_layout_transition")
+            System.loadLibrary("vulkan_pipeline_barrier")
         }
     }
 }
