@@ -111,7 +111,7 @@ private:
         std::unique_ptr<BindingGroupLayout> bindingGroupLayout = nullptr;
         std::unique_ptr<BindingGroup> bindingGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
-        std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+        std::unordered_map<Stage, std::unique_ptr<RenderPipeline>, StageHash, StageEqual> renderPipelines{};
     } m_offscreen;
 
     struct
@@ -165,7 +165,6 @@ private:
 
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
-    std::unordered_map<Stage, std::unique_ptr<RenderPipeline>, StageHash, StageEqual> m_renderPipelines{};
     Stage m_stage{ VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
 };
 
