@@ -210,19 +210,19 @@ void OffscreenSample::getPhysicalDevices()
 
 void OffscreenSample::createDevice()
 {
-    SurfaceDescriptor descriptor{};
-    descriptor.windowHandle = getWindowHandle();
-
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void OffscreenSample::createSurface()
-{
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
 
     DeviceDescriptor descriptor;
     m_device = physicalDevice->createDevice(descriptor);
+}
+
+void OffscreenSample::createSurface()
+{
+    SurfaceDescriptor descriptor{};
+    descriptor.windowHandle = getWindowHandle();
+
+    m_surface = m_driver->createSurface(descriptor);
 }
 
 void OffscreenSample::createSwapchain()
