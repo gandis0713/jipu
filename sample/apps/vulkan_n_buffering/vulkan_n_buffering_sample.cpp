@@ -484,10 +484,10 @@ void VulkanNBufferingSample::createBindingGroup()
     m_bindingGroups.resize(2);
     {
         BufferBinding bufferBinding{
-            { .index = 0 },
-            .buffer = *m_uniformBuffer,
+            .index = 0,
             .offset = 0,
             .size = sizeof(UniformBufferObject),
+            .buffer = *m_uniformBuffer,
         };
 
         BindingGroupDescriptor descriptor{
@@ -500,12 +500,12 @@ void VulkanNBufferingSample::createBindingGroup()
 
     {
         SamplerBinding samplerBinding{
-            { .index = 0 },
+            .index = 0,
             .sampler = *m_imageSampler,
         };
 
         TextureBinding textureBinding{
-            { .index = 1 },
+            .index = 1,
             .textureView = *m_imageTextureView,
         };
 

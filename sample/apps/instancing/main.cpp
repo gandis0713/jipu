@@ -503,10 +503,10 @@ void InstancingSample::createInstancingBindingGroupLayout()
 void InstancingSample::createInstancingBindingGroup()
 {
     BufferBinding mvpBufferBinding{
-        { .index = 0 },
-        .buffer = *m_instancing.uniformBuffer,
+        .index = 0,
         .offset = 0,
-        .size = m_instancing.uniformBuffer->getSize()
+        .size = m_instancing.uniformBuffer->getSize(),
+        .buffer = *m_instancing.uniformBuffer,
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
@@ -677,17 +677,17 @@ void InstancingSample::createNonInstancingBindingGroupLayout()
 void InstancingSample::createNonInstancingBindingGroup()
 {
     BufferBinding bufferBinding{
-        { .index = 0 },
-        .buffer = *m_nonInstancing.uniformBuffer,
+        .index = 0,
         .offset = 0,
-        .size = m_nonInstancing.uniformBuffer->getSize()
+        .size = m_nonInstancing.uniformBuffer->getSize(),
+        .buffer = *m_nonInstancing.uniformBuffer,
     };
 
     BufferBinding instancingBufferBinding{
-        { .index = 1 },
-        .buffer = *m_nonInstancing.transformBuffer,
+        .index = 1,
         .offset = 0,
-        .size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size()
+        .size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size(),
+        .buffer = *m_nonInstancing.transformBuffer,
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{

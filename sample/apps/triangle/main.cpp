@@ -358,10 +358,10 @@ void TriangleSample::createBindingGroupLayout()
 void TriangleSample::createBindingGroup()
 {
     BufferBinding bufferBinding{
-        { .index = 0 },
-        .buffer = *m_uniformBuffer,
+        .index = 0,
         .offset = 0,
         .size = m_uniformBuffer->getSize(),
+        .buffer = *m_uniformBuffer,
     };
 
     BindingGroupDescriptor descriptor{

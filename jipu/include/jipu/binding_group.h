@@ -7,30 +7,29 @@
 namespace jipu
 {
 
-struct BindingLayout;
-struct Binding
+class Buffer;
+struct BufferBinding
 {
     /// @brief The index of binding.
     uint32_t index = 0;
-};
-
-class Buffer;
-struct BufferBinding : Binding
-{
-    const Buffer& buffer;
     uint64_t offset = 0;
     uint64_t size = 0;
+    const Buffer& buffer;
 };
 
 class Sampler;
 class TextureView;
-struct SamplerBinding : Binding
+struct SamplerBinding
 {
+    /// @brief The index of binding.
+    uint32_t index = 0;
     const Sampler& sampler;
 };
 
-struct TextureBinding : Binding
+struct TextureBinding
 {
+    /// @brief The index of binding.
+    uint32_t index = 0;
     const TextureView& textureView;
 };
 

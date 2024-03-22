@@ -345,10 +345,10 @@ void OffscreenSample::createOffscreenBindingGroupLayout()
 void OffscreenSample::createOffscreenBindingGroup()
 {
     BufferBinding bufferBinding{
-        { .index = 0 },
-        .buffer = *m_offscreen.uniformBuffer,
+        .index = 0,
         .offset = 0,
-        .size = m_offscreen.uniformBuffer->getSize()
+        .size = m_offscreen.uniformBuffer->getSize(),
+        .buffer = *m_offscreen.uniformBuffer,
     };
 
     BindingGroupDescriptor descriptor{
@@ -532,12 +532,12 @@ void OffscreenSample::createOnscreenBindingGroupLayout()
 void OffscreenSample::createOnscreenBindingGroup()
 {
     SamplerBinding samplerBinding{
-        { .index = 0 },
+        .index = 0,
         .sampler = *m_onscreen.sampler
     };
 
     TextureBinding textureBinding{
-        { .index = 1 },
+        .index = 1,
         .textureView = *m_offscreen.renderTextureView
     };
 

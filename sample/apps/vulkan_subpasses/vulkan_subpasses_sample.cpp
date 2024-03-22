@@ -945,10 +945,10 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
         m_offscreen.renderPasses.bindingGroups.resize(2);
         {
             BufferBinding bufferBinding{
-                { .index = 0 },
-                .buffer = *m_offscreen.uniformBuffer,
+                .index = 0,
                 .offset = 0,
-                .size = sizeof(MVP)
+                .size = sizeof(MVP),
+                .buffer = *m_offscreen.uniformBuffer,
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -961,22 +961,22 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
 
         {
             SamplerBinding colorSamplerBinding{
-                { .index = 0 },
+                .index = 0,
                 .sampler = *m_offscreen.colorMapSampler
             };
 
             SamplerBinding normalSamplerBinding{
-                { .index = 1 },
+                .index = 1,
                 .sampler = *m_offscreen.normalMapSampler
             };
 
             TextureBinding colorTextureBinding{
-                { .index = 2 },
+                .index = 2,
                 .textureView = *m_offscreen.colorMapTextureView
             };
 
             TextureBinding normalTextureBinding{
-                { .index = 3 },
+                .index = 3,
                 .textureView = *m_offscreen.normalMapTextureView
             };
 
@@ -995,10 +995,10 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
         m_offscreen.subPasses.bindingGroups.resize(2);
         {
             BufferBinding bufferBinding{
-                { .index = 0 },
-                .buffer = *m_offscreen.uniformBuffer,
+                .index = 0,
                 .offset = 0,
-                .size = sizeof(MVP)
+                .size = sizeof(MVP),
+                .buffer = *m_offscreen.uniformBuffer,
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -1011,24 +1011,24 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
 
         {
             SamplerBinding colorSamplerBinding{
-                { .index = 0 },
+                .index = 0,
                 .sampler = *m_offscreen.colorMapSampler
             };
 
             SamplerBinding normalSamplerBinding{
-                { .index = 1 },
+                .index = 1,
                 .sampler = *m_offscreen.normalMapSampler
             };
 
             // colorTextureBinding.index = 2;
             // colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
             TextureBinding colorTextureBinding{
-                { .index = 2 },
+                .index = 2,
                 .textureView = *m_offscreen.colorMapTextureView
             };
 
             TextureBinding normalTextureBinding{
-                { .index = 3 },
+                .index = 3,
                 .textureView = *m_offscreen.normalMapTextureView
             };
 
@@ -1400,7 +1400,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         }
 
         SamplerBinding positionSamplerBinding{
-            { .index = 0 },
+            .index = 0,
             .sampler = *m_composition.renderPasses.positionSampler
         };
 
@@ -1419,7 +1419,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         }
 
         SamplerBinding normalSamplerBinding{
-            { .index = 1 },
+            .index = 1,
             .sampler = *m_composition.renderPasses.normalSampler
         };
 
@@ -1438,30 +1438,30 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         }
 
         SamplerBinding albedoSamplerBinding{
-            { .index = 2 },
+            .index = 2,
             .sampler = *m_composition.renderPasses.albedoSampler
         };
 
         TextureBinding positionTextureBinding{
-            { .index = 3 },
+            .index = 3,
             .textureView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
         };
 
         TextureBinding normalTextureBinding{
-            { .index = 4 },
+            .index = 4,
             .textureView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
         };
 
         TextureBinding albedoTextureBinding{
-            { .index = 5 },
+            .index = 5,
             .textureView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
         };
 
         BufferBinding uniformBufferBinding{
-            { .index = 6 },
-            .buffer = *m_composition.uniformBuffer,
+            .index = 6,
             .offset = 0,
-            .size = m_composition.uniformBuffer->getSize()
+            .size = m_composition.uniformBuffer->getSize(),
+            .buffer = *m_composition.uniformBuffer,
         };
 
         BindingGroupDescriptor descriptor{
@@ -1480,10 +1480,10 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
 
         {
             BufferBinding uniformBufferBinding{
-                { .index = 0 },
-                .buffer = *m_composition.uniformBuffer,
+                .index = 0,
                 .offset = 0,
-                .size = m_composition.uniformBuffer->getSize()
+                .size = m_composition.uniformBuffer->getSize(),
+                .buffer = *m_composition.uniformBuffer,
             };
 
             BindingGroupDescriptor descriptor{
@@ -1496,17 +1496,17 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
 
         {
             TextureBinding positionTextureBinding{
-                { .index = 0 },
+                .index = 0,
                 .textureView = *m_offscreen.subPasses.positionColorAttachmentTextureView
             };
 
             TextureBinding normalTextureBinding{
-                { .index = 1 },
+                .index = 1,
                 .textureView = *m_offscreen.subPasses.normalColorAttachmentTextureView
             };
 
             TextureBinding albedoTextureBinding{
-                { .index = 2 },
+                .index = 2,
                 .textureView = *m_offscreen.subPasses.albedoColorAttachmentTextureView
             };
 

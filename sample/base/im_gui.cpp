@@ -234,10 +234,10 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         m_bindingGroups.resize(2);
         {
             BufferBinding uiTransformBinding{
-                Binding{ .index = 0 },
-                .buffer = *m_uniformBuffer,
+                .index = 0,
                 .offset = 0,
                 .size = m_uniformBuffer->getSize(),
+                .buffer = *m_uniformBuffer,
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -250,12 +250,12 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
         {
             SamplerBinding fontSamplerBinding{
-                Binding{ .index = 0 },
+                .index = 0,
                 .sampler = *m_fontSampler,
             };
 
             TextureBinding fontTextureBinding{
-                Binding{ .index = 1 },
+                .index = 1,
                 .textureView = *m_fontTextureView,
             };
 

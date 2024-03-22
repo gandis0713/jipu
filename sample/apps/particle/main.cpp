@@ -436,21 +436,21 @@ void ParticleSample::createComputeBindingGroup()
 
     {
         BufferBinding bufferUBOBinding{
-            { .index = 0 },
+            .index = 0,
             .buffer = *m_uniformBuffer,
             .offset = 0,
             .size = m_uniformBuffer->getSize(),
         };
 
         BufferBinding bufferInBinding{
-            { .index = 1 },
+            .index = 1,
             .buffer = *m_vertexBuffers[0],
             .offset = 0,
             .size = m_vertexBuffers[0]->getSize(),
         };
 
         BufferBinding bufferOutBinding{
-            { .index = 2 },
+            .index = 2,
             .buffer = *m_vertexBuffers[1],
             .offset = 0,
             .size = m_vertexBuffers[1]->getSize(),
@@ -474,21 +474,21 @@ void ParticleSample::createComputeBindingGroup()
 
     {
         BufferBinding bufferUBOBinding{
-            { .index = 0 },
+            .index = 0,
             .buffer = *m_uniformBuffer,
             .offset = 0,
             .size = m_uniformBuffer->getSize(),
         };
 
         BufferBinding bufferInBinding{
-            { .index = 1 },
+            .index = 1,
             .buffer = *m_vertexBuffers[1],
             .offset = 0,
             .size = m_vertexBuffers[1]->getSize(),
         };
 
         BufferBinding bufferOutBinding{
-            { .index = 2 },
+            .index = 2,
             .buffer = *m_vertexBuffers[0],
             .offset = 0,
             .size = m_vertexBuffers[0]->getSize(),

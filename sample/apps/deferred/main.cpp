@@ -879,10 +879,10 @@ void DeferredSample::createOffscreenBindingGroup()
     m_offscreen.bindingGroups.resize(2);
     {
         BufferBinding bufferBinding{
-            { .index = 0 },
-            .buffer = *m_offscreen.uniformBuffer,
+            .index = 0,
             .offset = 0,
             .size = sizeof(MVP),
+            .buffer = *m_offscreen.uniformBuffer,
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
@@ -895,22 +895,22 @@ void DeferredSample::createOffscreenBindingGroup()
 
     {
         SamplerBinding colorSamplerBinding{
-            { .index = 0 },
+            .index = 0,
             .sampler = *m_offscreen.colorMapSampler,
         };
 
         SamplerBinding normalSamplerBinding{
-            { .index = 1 },
+            .index = 1,
             .sampler = *m_offscreen.normalMapSampler,
         };
 
         TextureBinding colorTextureBinding{
-            { .index = 2 },
+            .index = 2,
             .textureView = *m_offscreen.colorMapTextureView,
         };
 
         TextureBinding normalTextureBinding{
-            { .index = 3 },
+            .index = 3,
             .textureView = *m_offscreen.normalMapTextureView,
         };
 
@@ -1098,7 +1098,7 @@ void DeferredSample::createCompositionBindingGroup()
     }
 
     SamplerBinding positionSamplerBinding{
-        { .index = 0 },
+        .index = 0,
         .sampler = *m_composition.positionSampler
     };
 
@@ -1117,7 +1117,7 @@ void DeferredSample::createCompositionBindingGroup()
     }
 
     SamplerBinding normalSamplerBinding{
-        { .index = 1 },
+        .index = 1,
         .sampler = *m_composition.normalSampler
 
     };
@@ -1137,7 +1137,7 @@ void DeferredSample::createCompositionBindingGroup()
     }
 
     SamplerBinding albedoSamplerBinding{
-        { .index = 2 },
+        .index = 2,
         .sampler = *m_composition.albedoSampler
 
     };
@@ -1145,25 +1145,25 @@ void DeferredSample::createCompositionBindingGroup()
     // positionTextureBinding.index = 3;
     // positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
     TextureBinding positionTextureBinding{
-        { .index = 3 },
+        .index = 3,
         .textureView = *m_offscreen.positionColorAttachmentTextureView
     };
 
     TextureBinding normalTextureBinding{
-        { .index = 4 },
+        .index = 4,
         .textureView = *m_offscreen.normalColorAttachmentTextureView
     };
 
     TextureBinding albedoTextureBinding{
-        { .index = 5 },
+        .index = 5,
         .textureView = *m_offscreen.albedoColorAttachmentTextureView
     };
 
     BufferBinding uniformBufferBinding{
-        { .index = 6 },
-        .buffer = *m_composition.uniformBuffer,
+        .index = 6,
         .offset = 0,
-        .size = m_composition.uniformBuffer->getSize()
+        .size = m_composition.uniformBuffer->getSize(),
+        .buffer = *m_composition.uniformBuffer,
     };
 
     BindingGroupDescriptor descriptor{

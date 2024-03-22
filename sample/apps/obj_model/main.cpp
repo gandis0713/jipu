@@ -533,7 +533,7 @@ void OBJModelSample::createBindingGroup()
     m_bindingGroups.resize(2);
     {
         BufferBinding bufferBinding{
-            { .index = 0 },
+            .index = 0,
             .buffer = *m_uniformBuffer,
             .offset = 0,
             .size = sizeof(UniformBufferObject),
@@ -549,12 +549,12 @@ void OBJModelSample::createBindingGroup()
 
     {
         SamplerBinding samplerBinding{
-            { .index = 0 },
+            .index = 0,
             .sampler = *m_imageSampler,
         };
 
         TextureBinding textureBinding{
-            { .index = 1 },
+            .index = 1,
             .textureView = *m_imageTextureView,
         };
 
