@@ -458,14 +458,13 @@ void ParticleSample::createComputeBindingGroup()
 
         BindingGroupDescriptor bindingGroupDescriptor{
             .layout = *m_computeBindingGroupLayout,
-            .samplers = {},
-            .textures = {},
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,
                 bufferOutBinding,
             },
-
+            .samplers = {},
+            .textures = {},
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -496,13 +495,13 @@ void ParticleSample::createComputeBindingGroup()
 
         BindingGroupDescriptor bindingGroupDescriptor{
             .layout = *m_computeBindingGroupLayout,
-            .samplers = {},
-            .textures = {},
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,
                 bufferOutBinding,
             },
+            .samplers = {},
+            .textures = {},
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);

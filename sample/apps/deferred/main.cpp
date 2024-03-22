@@ -886,8 +886,8 @@ void DeferredSample::createOffscreenBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
-            .buffers = { bufferBinding },
             .layout = *m_offscreen.bindingGroupLayouts[0],
+            .buffers = { bufferBinding },
         };
 
         m_offscreen.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -915,9 +915,9 @@ void DeferredSample::createOffscreenBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
+            .layout = *m_offscreen.bindingGroupLayouts[1],
             .samplers = { colorSamplerBinding, normalSamplerBinding },
             .textures = { colorTextureBinding, normalTextureBinding },
-            .layout = *m_offscreen.bindingGroupLayouts[1],
         };
 
         m_offscreen.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
