@@ -226,32 +226,37 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     {
         m_bindingGroups.resize(2);
         {
-            BufferBinding uiTransformBinding{};
-            uiTransformBinding.buffer = m_uniformBuffer.get();
-            uiTransformBinding.index = 0;
-            uiTransformBinding.offset = 0;
-            uiTransformBinding.size = m_uniformBuffer->getSize();
+            BufferBinding uiTransformBinding{
+                { .index = 0 },
+                .buffer = *m_uniformBuffer,
+                .offset = 0,
+                .size = m_uniformBuffer->getSize(),
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.layout = m_bindingGroupLayouts[0].get();
-            bindingGroupDescriptor.buffers = { uiTransformBinding };
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_bindingGroupLayouts[0],
+                .buffers = { uiTransformBinding },
+            };
 
             m_bindingGroups[0] = device->createBindingGroup(bindingGroupDescriptor);
         }
 
         {
-            SamplerBinding fontSamplerBinding{};
-            fontSamplerBinding.index = 0;
-            fontSamplerBinding.sampler = m_fontSampler.get();
+            SamplerBinding fontSamplerBinding{
+                { .index = 0 },
+                .sampler = *m_fontSampler,
+            };
 
-            TextureBinding fontTextureBinding{};
-            fontTextureBinding.index = 1;
-            fontTextureBinding.textureView = m_fontTextureView.get();
+            TextureBinding fontTextureBinding{
+                { .index = 1 },
+                .textureView = *m_fontTextureView,
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.layout = m_bindingGroupLayouts[1].get();
-            bindingGroupDescriptor.samplers = { fontSamplerBinding };
-            bindingGroupDescriptor.textures = { fontTextureBinding };
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_bindingGroupLayouts[1],
+                .samplers = { fontSamplerBinding },
+                .textures = { fontTextureBinding },
+            };
 
             m_bindingGroups[1] = device->createBindingGroup(bindingGroupDescriptor);
         }

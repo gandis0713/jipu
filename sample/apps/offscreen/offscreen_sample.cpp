@@ -344,15 +344,17 @@ void OffscreenSample::createOffscreenBindingGroupLayout()
 
 void OffscreenSample::createOffscreenBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = m_offscreen.uniformBuffer->getSize();
+    BufferBinding bufferBinding{
+        { .index = 0 },
+        .buffer = *m_offscreen.uniformBuffer,
+        .offset = 0,
+        .size = m_offscreen.uniformBuffer->getSize()
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_offscreen.bindingGroupLayout.get() };
-    descriptor.buffers = { bufferBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_offscreen.bindingGroupLayout,
+        .buffers = { bufferBinding }
+    };
 
     m_offscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }
@@ -529,18 +531,21 @@ void OffscreenSample::createOnscreenBindingGroupLayout()
 
 void OffscreenSample::createOnscreenBindingGroup()
 {
-    SamplerBinding samplerBinding{};
-    samplerBinding.index = 0;
-    samplerBinding.sampler = m_onscreen.sampler.get();
+    SamplerBinding samplerBinding{
+        { .index = 0 },
+        .sampler = *m_onscreen.sampler
+    };
 
-    TextureBinding textureBinding{};
-    textureBinding.index = 1;
-    textureBinding.textureView = m_offscreen.renderTextureView.get();
+    TextureBinding textureBinding{
+        { .index = 1 },
+        .textureView = *m_offscreen.renderTextureView
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_onscreen.bindingGroupLayout.get() };
-    descriptor.samplers = { samplerBinding };
-    descriptor.textures = { textureBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_onscreen.bindingGroupLayout,
+        .samplers = { samplerBinding },
+        .textures = { textureBinding }
+    };
 
     m_onscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }

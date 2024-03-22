@@ -357,15 +357,17 @@ void TriangleSample::createBindingGroupLayout()
 
 void TriangleSample::createBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = m_uniformBuffer->getSize();
+    BufferBinding bufferBinding{
+        { .index = 0 },
+        .buffer = *m_uniformBuffer,
+        .offset = 0,
+        .size = m_uniformBuffer->getSize(),
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_bindingGroupLayout.get() };
-    descriptor.buffers = { bufferBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_bindingGroupLayout,
+        .buffers = { bufferBinding },
+    };
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }

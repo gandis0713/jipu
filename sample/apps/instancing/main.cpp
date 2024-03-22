@@ -502,15 +502,17 @@ void InstancingSample::createInstancingBindingGroupLayout()
 
 void InstancingSample::createInstancingBindingGroup()
 {
-    BufferBinding mvpBufferBinding{};
-    mvpBufferBinding.index = 0;
-    mvpBufferBinding.buffer = m_instancing.uniformBuffer.get();
-    mvpBufferBinding.offset = 0;
-    mvpBufferBinding.size = m_instancing.uniformBuffer->getSize();
+    BufferBinding mvpBufferBinding{
+        { .index = 0 },
+        .buffer = *m_instancing.uniformBuffer,
+        .offset = 0,
+        .size = m_instancing.uniformBuffer->getSize()
+    };
 
-    BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { mvpBufferBinding };
-    bindingGroupDescriptor.layout = m_instancing.bindingGroupLayout.get();
+    BindingGroupDescriptor bindingGroupDescriptor{
+        .layout = *m_instancing.bindingGroupLayout,
+        .buffers = { mvpBufferBinding }
+    };
 
     m_instancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
 }
@@ -674,21 +676,24 @@ void InstancingSample::createNonInstancingBindingGroupLayout()
 
 void InstancingSample::createNonInstancingBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.index = 0;
-    bufferBinding.buffer = m_nonInstancing.uniformBuffer.get();
-    bufferBinding.offset = 0;
-    bufferBinding.size = m_nonInstancing.uniformBuffer->getSize();
+    BufferBinding bufferBinding{
+        { .index = 0 },
+        .buffer = *m_nonInstancing.uniformBuffer,
+        .offset = 0,
+        .size = m_nonInstancing.uniformBuffer->getSize()
+    };
 
-    BufferBinding instancingBufferBinding{};
-    instancingBufferBinding.index = 1;
-    instancingBufferBinding.buffer = m_nonInstancing.transformBuffer.get();
-    instancingBufferBinding.offset = 0;
-    instancingBufferBinding.size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size();
+    BufferBinding instancingBufferBinding{
+        { .index = 1 },
+        .buffer = *m_nonInstancing.transformBuffer,
+        .offset = 0,
+        .size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size()
+    };
 
-    BindingGroupDescriptor bindingGroupDescriptor{};
-    bindingGroupDescriptor.buffers = { bufferBinding, instancingBufferBinding };
-    bindingGroupDescriptor.layout = m_nonInstancing.bindingGroupLayout.get();
+    BindingGroupDescriptor bindingGroupDescriptor{
+        .layout = *m_nonInstancing.bindingGroupLayout,
+        .buffers = { bufferBinding, instancingBufferBinding }
+    };
 
     m_nonInstancing.bindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
 }

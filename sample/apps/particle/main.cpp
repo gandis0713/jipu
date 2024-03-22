@@ -435,32 +435,37 @@ void ParticleSample::createComputeBindingGroup()
     m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 
     {
-        BufferBinding bufferUBOBinding{};
-        bufferUBOBinding.buffer = m_uniformBuffer.get();
-        bufferUBOBinding.index = 0;
-        bufferUBOBinding.offset = 0;
-        bufferUBOBinding.size = m_uniformBuffer->getSize();
+        BufferBinding bufferUBOBinding{
+            { .index = 0 },
+            .buffer = *m_uniformBuffer,
+            .offset = 0,
+            .size = m_uniformBuffer->getSize(),
+        };
 
-        BufferBinding bufferInBinding{};
-        bufferInBinding.buffer = m_vertexBuffers[0].get();
-        bufferInBinding.index = 1;
-        bufferInBinding.offset = 0;
-        bufferInBinding.size = m_vertexBuffers[0]->getSize();
+        BufferBinding bufferInBinding{
+            { .index = 1 },
+            .buffer = *m_vertexBuffers[0],
+            .offset = 0,
+            .size = m_vertexBuffers[0]->getSize(),
+        };
 
-        BufferBinding bufferOutBinding{};
-        bufferOutBinding.buffer = m_vertexBuffers[1].get();
-        bufferOutBinding.index = 2;
-        bufferOutBinding.offset = 0;
-        bufferOutBinding.size = m_vertexBuffers[1]->getSize();
+        BufferBinding bufferOutBinding{
+            { .index = 2 },
+            .buffer = *m_vertexBuffers[1],
+            .offset = 0,
+            .size = m_vertexBuffers[1]->getSize(),
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
-        bindingGroupDescriptor.samplers = {};
-        bindingGroupDescriptor.textures = {};
-        bindingGroupDescriptor.buffers = {
-            bufferUBOBinding,
-            bufferInBinding,
-            bufferOutBinding
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .layout = *m_computeBindingGroupLayout,
+            .samplers = {},
+            .textures = {},
+            .buffers = {
+                bufferUBOBinding,
+                bufferInBinding,
+                bufferOutBinding,
+            },
+
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -468,32 +473,36 @@ void ParticleSample::createComputeBindingGroup()
     }
 
     {
-        BufferBinding bufferUBOBinding{};
-        bufferUBOBinding.buffer = m_uniformBuffer.get();
-        bufferUBOBinding.index = 0;
-        bufferUBOBinding.offset = 0;
-        bufferUBOBinding.size = m_uniformBuffer->getSize();
+        BufferBinding bufferUBOBinding{
+            { .index = 0 },
+            .buffer = *m_uniformBuffer,
+            .offset = 0,
+            .size = m_uniformBuffer->getSize(),
+        };
 
-        BufferBinding bufferInBinding{};
-        bufferInBinding.buffer = m_vertexBuffers[1].get();
-        bufferInBinding.index = 1;
-        bufferInBinding.offset = 0;
-        bufferInBinding.size = m_vertexBuffers[1]->getSize();
+        BufferBinding bufferInBinding{
+            { .index = 1 },
+            .buffer = *m_vertexBuffers[1],
+            .offset = 0,
+            .size = m_vertexBuffers[1]->getSize(),
+        };
 
-        BufferBinding bufferOutBinding{};
-        bufferOutBinding.buffer = m_vertexBuffers[0].get();
-        bufferOutBinding.index = 2;
-        bufferOutBinding.offset = 0;
-        bufferOutBinding.size = m_vertexBuffers[0]->getSize();
+        BufferBinding bufferOutBinding{
+            { .index = 2 },
+            .buffer = *m_vertexBuffers[0],
+            .offset = 0,
+            .size = m_vertexBuffers[0]->getSize(),
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
-        bindingGroupDescriptor.samplers = {};
-        bindingGroupDescriptor.textures = {};
-        bindingGroupDescriptor.buffers = {
-            bufferUBOBinding,
-            bufferInBinding,
-            bufferOutBinding,
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .layout = *m_computeBindingGroupLayout,
+            .samplers = {},
+            .textures = {},
+            .buffers = {
+                bufferUBOBinding,
+                bufferInBinding,
+                bufferOutBinding,
+            },
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);

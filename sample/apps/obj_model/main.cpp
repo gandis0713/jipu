@@ -532,32 +532,37 @@ void OBJModelSample::createBindingGroup()
 {
     m_bindingGroups.resize(2);
     {
-        BufferBinding bufferBinding{};
-        bufferBinding.index = 0;
-        bufferBinding.buffer = m_uniformBuffer.get();
-        bufferBinding.offset = 0;
-        bufferBinding.size = sizeof(UniformBufferObject);
+        BufferBinding bufferBinding{
+            { .index = 0 },
+            .buffer = *m_uniformBuffer,
+            .offset = 0,
+            .size = sizeof(UniformBufferObject),
+        };
 
-        BindingGroupDescriptor descriptor{};
-        descriptor.layout = m_bindingGroupLayouts[0].get();
-        descriptor.buffers = { bufferBinding };
+        BindingGroupDescriptor descriptor{
+            .layout = *m_bindingGroupLayouts[0],
+            .buffers = { bufferBinding },
+        };
 
         m_bindingGroups[0] = m_device->createBindingGroup(descriptor);
     }
 
     {
-        SamplerBinding samplerBinding{};
-        samplerBinding.index = 0;
-        samplerBinding.sampler = m_imageSampler.get();
+        SamplerBinding samplerBinding{
+            { .index = 0 },
+            .sampler = *m_imageSampler,
+        };
 
-        TextureBinding textureBinding{};
-        textureBinding.index = 1;
-        textureBinding.textureView = m_imageTextureView.get();
+        TextureBinding textureBinding{
+            { .index = 1 },
+            .textureView = *m_imageTextureView,
+        };
 
-        BindingGroupDescriptor descriptor{};
-        descriptor.layout = m_bindingGroupLayouts[1].get();
-        descriptor.samplers = { samplerBinding };
-        descriptor.textures = { textureBinding };
+        BindingGroupDescriptor descriptor{
+            .layout = *m_bindingGroupLayouts[1],
+            .samplers = { samplerBinding },
+            .textures = { textureBinding },
+        };
 
         m_bindingGroups[1] = m_device->createBindingGroup(descriptor);
     }

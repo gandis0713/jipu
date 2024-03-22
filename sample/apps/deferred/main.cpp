@@ -874,40 +874,47 @@ void DeferredSample::createOffscreenBindingGroup()
 
     m_offscreen.bindingGroups.resize(2);
     {
-        BufferBinding bufferBinding{};
-        bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-        bufferBinding.index = 0;
-        bufferBinding.offset = 0;
-        bufferBinding.size = sizeof(MVP);
+        BufferBinding bufferBinding{
+            { .index = 0 },
+            .buffer = *m_offscreen.uniformBuffer,
+            .offset = 0,
+            .size = sizeof(MVP),
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.buffers = { bufferBinding };
-        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[0].get();
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .buffers = { bufferBinding },
+            .layout = *m_offscreen.bindingGroupLayouts[0],
+        };
 
         m_offscreen.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
     }
 
     {
-        SamplerBinding colorSamplerBinding{};
-        colorSamplerBinding.index = 0;
-        colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+        SamplerBinding colorSamplerBinding{
+            { .index = 0 },
+            .sampler = *m_offscreen.colorMapSampler,
+        };
 
-        SamplerBinding normalSamplerBinding{};
-        normalSamplerBinding.index = 1;
-        normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+        SamplerBinding normalSamplerBinding{
+            { .index = 1 },
+            .sampler = *m_offscreen.normalMapSampler,
+        };
 
-        TextureBinding colorTextureBinding{};
-        colorTextureBinding.index = 2;
-        colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+        TextureBinding colorTextureBinding{
+            { .index = 2 },
+            .textureView = *m_offscreen.colorMapTextureView,
+        };
 
-        TextureBinding normalTextureBinding{};
-        normalTextureBinding.index = 3;
-        normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+        TextureBinding normalTextureBinding{
+            { .index = 3 },
+            .textureView = *m_offscreen.normalMapTextureView,
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
-        bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
-        bindingGroupDescriptor.layout = m_offscreen.bindingGroupLayouts[1].get();
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .samplers = { colorSamplerBinding, normalSamplerBinding },
+            .textures = { colorTextureBinding, normalTextureBinding },
+            .layout = *m_offscreen.bindingGroupLayouts[1],
+        };
 
         m_offscreen.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
     }
@@ -1072,7 +1079,6 @@ void DeferredSample::createCompositionBindingGroup()
 {
     m_composition.bindingGroups.resize(1);
 
-    SamplerBinding positionSamplerBinding{};
     {
         SamplerDescriptor samplerDescriptor{};
         samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1085,12 +1091,13 @@ void DeferredSample::createCompositionBindingGroup()
         samplerDescriptor.lodMax = static_cast<float>(m_offscreen.positionColorAttachmentTexture->getMipLevels());
 
         m_composition.positionSampler = m_device->createSampler(samplerDescriptor);
-
-        positionSamplerBinding.index = 0;
-        positionSamplerBinding.sampler = m_composition.positionSampler.get();
     }
 
-    SamplerBinding normalSamplerBinding{};
+    SamplerBinding positionSamplerBinding{
+        { .index = 0 },
+        .sampler = *m_composition.positionSampler
+    };
+
     {
         SamplerDescriptor samplerDescriptor{};
         samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1103,12 +1110,14 @@ void DeferredSample::createCompositionBindingGroup()
         samplerDescriptor.lodMax = static_cast<float>(m_offscreen.normalColorAttachmentTexture->getMipLevels());
 
         m_composition.normalSampler = m_device->createSampler(samplerDescriptor);
-
-        normalSamplerBinding.index = 1;
-        normalSamplerBinding.sampler = m_composition.normalSampler.get();
     }
 
-    SamplerBinding albedoSamplerBinding{};
+    SamplerBinding normalSamplerBinding{
+        { .index = 1 },
+        .sampler = *m_composition.normalSampler
+
+    };
+
     {
         SamplerDescriptor samplerDescriptor{};
         samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1121,36 +1130,44 @@ void DeferredSample::createCompositionBindingGroup()
         samplerDescriptor.lodMax = static_cast<float>(m_offscreen.albedoColorAttachmentTexture->getMipLevels());
 
         m_composition.albedoSampler = m_device->createSampler(samplerDescriptor);
-
-        albedoSamplerBinding.index = 2;
-        albedoSamplerBinding.sampler = m_composition.albedoSampler.get();
     }
 
-    TextureBinding positionTextureBinding{};
-    positionTextureBinding.index = 3;
-    positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+    SamplerBinding albedoSamplerBinding{
+        { .index = 2 },
+        .sampler = *m_composition.albedoSampler
 
-    TextureBinding normalTextureBinding{};
-    normalTextureBinding.index = 4;
-    normalTextureBinding.textureView = m_offscreen.normalColorAttachmentTextureView.get();
+    };
 
-    TextureBinding albedoTextureBinding{};
-    albedoTextureBinding.index = 5;
-    albedoTextureBinding.textureView = m_offscreen.albedoColorAttachmentTextureView.get();
+    // positionTextureBinding.index = 3;
+    // positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
+    TextureBinding positionTextureBinding{
+        { .index = 3 },
+        .textureView = *m_offscreen.positionColorAttachmentTextureView
+    };
 
-    BufferBinding uniformBufferBinding{};
-    {
-        uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-        uniformBufferBinding.index = 6;
-        uniformBufferBinding.offset = 0;
-        uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
-    }
+    TextureBinding normalTextureBinding{
+        { .index = 4 },
+        .textureView = *m_offscreen.normalColorAttachmentTextureView
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = m_composition.bindingGroupLayouts[0].get();
-    descriptor.buffers = { uniformBufferBinding };
-    descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
-    descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
+    TextureBinding albedoTextureBinding{
+        { .index = 5 },
+        .textureView = *m_offscreen.albedoColorAttachmentTextureView
+    };
+
+    BufferBinding uniformBufferBinding{
+        { .index = 6 },
+        .buffer = *m_composition.uniformBuffer,
+        .offset = 0,
+        .size = m_composition.uniformBuffer->getSize()
+    };
+
+    BindingGroupDescriptor descriptor{
+        .layout = *m_composition.bindingGroupLayouts[0],
+        .buffers = { uniformBufferBinding },
+        .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
+        .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
+    };
 
     m_composition.bindingGroups[0] = m_device->createBindingGroup(descriptor);
 }

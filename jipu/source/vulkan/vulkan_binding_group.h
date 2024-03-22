@@ -12,7 +12,7 @@ namespace jipu
 
 struct VulkanBindingGroupDescriptor
 {
-    BindingGroupLayout* layout = nullptr;
+    const BindingGroupLayout& layout;
     std::vector<VkDescriptorBufferInfo> buffers{};
     std::vector<VkDescriptorImageInfo> samplers{};
     std::vector<VkDescriptorImageInfo> textures{};
@@ -34,7 +34,7 @@ private:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const VulkanBindingGroupDescriptor m_descriptor{};
+    const VulkanBindingGroupDescriptor m_descriptor;
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
 
