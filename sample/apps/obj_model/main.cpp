@@ -570,7 +570,7 @@ void OBJModelSample::createBindingGroup()
 
 void OBJModelSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 

@@ -23,7 +23,7 @@ VulkanPhysicalDevice::~VulkanPhysicalDevice()
     // doesn't need to destroy VkPhysicalDevice.
 }
 
-std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(DeviceDescriptor descriptor)
+std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescriptor& descriptor)
 {
     return std::make_unique<VulkanDevice>(this, descriptor);
 }

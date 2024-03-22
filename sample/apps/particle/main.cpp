@@ -513,7 +513,7 @@ void ParticleSample::createComputePipeline()
 {
     // pipeline layout
     PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    pipelineLayoutDescriptor.layouts = { m_computeBindingGroupLayout.get() };
+    pipelineLayoutDescriptor.layouts = { *m_computeBindingGroupLayout };
     m_computePipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 
     // compute shader

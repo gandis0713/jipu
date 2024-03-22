@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include <functional>
 #include <stdint.h>
 #include <vector>
 
@@ -11,7 +12,7 @@ class Device;
 class BindingGroupLayout;
 struct PipelineLayoutDescriptor
 {
-    std::vector<BindingGroupLayout*> layouts = {};
+    std::vector<std::reference_wrapper<BindingGroupLayout>> layouts = {};
 };
 
 class JIPU_EXPORT PipelineLayout

@@ -36,7 +36,7 @@ public:
     VulkanPhysicalDevice(VulkanDriver* driver, const VulkanPhysicalDeviceDescriptor& descriptor);
     ~VulkanPhysicalDevice() override;
 
-    std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
+    std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) override;
 
     PhysicalDeviceInfo getInfo() const override;
 

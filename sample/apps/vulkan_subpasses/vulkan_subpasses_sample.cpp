@@ -1048,7 +1048,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.renderPasses.bindingGroupLayouts[0].get(), m_offscreen.renderPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_offscreen.renderPasses.bindingGroupLayouts[0], *m_offscreen.renderPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1057,7 +1057,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.subPasses.bindingGroupLayouts[0].get(), m_offscreen.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_offscreen.subPasses.bindingGroupLayouts[0], *m_offscreen.subPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1525,7 +1525,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.renderPasses.bindingGroupLayouts[0].get() };
+        descriptor.layouts = { *m_composition.renderPasses.bindingGroupLayouts[0] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1534,7 +1534,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.subPasses.bindingGroupLayouts[0].get(), m_composition.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_composition.subPasses.bindingGroupLayouts[0], *m_composition.subPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);

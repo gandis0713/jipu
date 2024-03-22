@@ -377,7 +377,7 @@ void TriangleSample::createRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_bindingGroupLayout.get() };
+        descriptor.layouts = { *m_bindingGroupLayout };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
