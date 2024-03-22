@@ -10,7 +10,7 @@
 namespace jipu
 {
 
-VulkanTextureDescriptor generateVulkanDescriptor(const TextureDescriptor& descriptor)
+VulkanTextureDescriptor generateVulkanTextureDescriptor(const TextureDescriptor& descriptor)
 {
     VulkanTextureDescriptor vkdescriptor{};
 
@@ -32,7 +32,7 @@ VulkanTextureDescriptor generateVulkanDescriptor(const TextureDescriptor& descri
 }
 
 VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor)
-    : VulkanTexture(device, generateVulkanDescriptor(descriptor))
+    : VulkanTexture(device, generateVulkanTextureDescriptor(descriptor))
 {
 }
 
@@ -149,13 +149,10 @@ VkImage VulkanTexture::getVkImage() const
     return m_resource.image;
 }
 
-void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout layout, VkImageSubresourceRange range)
+void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range)
 {
     if (commandBuffer == VK_NULL_HANDLE)
         throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
-
-    VkImageLayout oldLayout = m_layout;
-    VkImageLayout newLayout = layout;
 
     if (oldLayout == newLayout)
     {
@@ -182,15 +179,15 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
     VkPipelineStageFlags srcStage = GeneratePipelineStage(oldLayout);
     VkPipelineStageFlags dstStage = GeneratePipelineStage(newLayout);
 
-    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-    // set current layout.
-    m_layout = layout;
+    setPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
 }
 
-VkImageLayout VulkanTexture::getLayout() const
+void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
 {
-    return m_layout;
+    auto vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 VkImageLayout VulkanTexture::getFinalLayout() const

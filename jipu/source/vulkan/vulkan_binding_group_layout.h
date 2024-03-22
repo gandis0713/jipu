@@ -55,6 +55,9 @@ private:
 };
 DOWN_CAST(VulkanBindingGroupLayout, BindingGroupLayout);
 
+// Generate Helper
+VulkanBindingGroupLayoutDescriptor VULKAN_EXPORT generateVulkanBindingGroupLayoutDescriptor(const BindingGroupLayoutDescriptor& descriptor);
+
 // Convert Helper
 VkDescriptorType ToVkDescriptorType(BufferBindingType type, bool dynamicOffset = false);
 BufferBindingType ToBufferBindingType(VkDescriptorType type);

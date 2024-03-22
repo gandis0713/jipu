@@ -253,19 +253,19 @@ void TriangleSample::getPhysicalDevices()
 
 void TriangleSample::createDevice()
 {
-    SurfaceDescriptor descriptor{};
-    descriptor.windowHandle = getWindowHandle();
-
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void TriangleSample::createSurface()
-{
     // TODO: select suit device.
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
 
     DeviceDescriptor descriptor;
     m_device = physicalDevice->createDevice(descriptor);
+}
+
+void TriangleSample::createSurface()
+{
+    SurfaceDescriptor descriptor{};
+    descriptor.windowHandle = getWindowHandle();
+
+    m_surface = m_driver->createSurface(descriptor);
 }
 
 void TriangleSample::createSwapchain()

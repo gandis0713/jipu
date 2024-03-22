@@ -12,10 +12,7 @@
 namespace jipu
 {
 
-namespace
-{
-
-VulkanBindingGroupDescriptor generateVulkanDescriptor(const BindingGroupDescriptor& descriptor)
+VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingGroupDescriptor& descriptor)
 {
     VulkanBindingGroupDescriptor vkdescriptor{};
     vkdescriptor.layout = descriptor.layout;
@@ -67,10 +64,8 @@ VulkanBindingGroupDescriptor generateVulkanDescriptor(const BindingGroupDescript
     return vkdescriptor;
 }
 
-} // namespace
-
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
-    : VulkanBindingGroup(device, generateVulkanDescriptor(descriptor))
+    : VulkanBindingGroup(device, generateVulkanBindingGroupDescriptor(descriptor))
 {
 }
 
