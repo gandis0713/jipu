@@ -144,8 +144,8 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     // copy buffer to texture
     {
         BlitTextureBuffer blitTextureBuffer{
-            { .buffer = *m_fontBuffer,
-              .offset = 0 },
+            .buffer = *m_fontBuffer,
+            .offset = 0,
             .bytesPerRow = 0,
             .rowsPerTexture = 0,
         };

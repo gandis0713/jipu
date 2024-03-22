@@ -43,8 +43,8 @@ void CopyTest::SetUp()
     EXPECT_NE(nullptr, m_srcTexture);
 
     BlitTextureBuffer blitTextureBuffer{
-        { .buffer = *m_srcBuffer,
-          .offset = 0 },
+        .buffer = *m_srcBuffer,
+        .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
@@ -98,8 +98,8 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     EXPECT_NE(nullptr, dstBuffer);
 
     BlitTextureBuffer dstBlitBuffer{
-        { .buffer = *dstBuffer,
-          .offset = 0 },
+        .buffer = *dstBuffer,
+        .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
@@ -203,8 +203,8 @@ TEST_F(CopyTest, test_BufferToTexture)
     EXPECT_NE(nullptr, texture);
 
     BlitTextureBuffer blitTextureBuffer{
-        { .buffer = *m_srcBuffer,
-          .offset = 0 },
+        .buffer = *m_srcBuffer,
+        .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };

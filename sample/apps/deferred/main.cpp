@@ -635,8 +635,8 @@ void DeferredSample::createOffscreenColorMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            { .buffer = *stagingBuffer,
-              .offset = 0 },
+            .buffer = *stagingBuffer,
+            .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
@@ -707,8 +707,8 @@ void DeferredSample::createOffscreenNormalMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            { .buffer = *stagingBuffer,
-              .offset = 0 },
+            .buffer = *stagingBuffer,
+            .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight())
         };

@@ -641,8 +641,8 @@ void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuff
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
 
     BlitTextureBuffer blitTextureBuffer{
-        { .buffer = imageTextureStagingBuffer,
-          .offset = 0 },
+        .buffer = imageTextureStagingBuffer,
+        .offset = 0,
         .bytesPerRow = bytesPerData * imageTexture.getWidth() * channel,
         .rowsPerTexture = imageTexture.getHeight(),
     };

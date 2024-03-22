@@ -21,8 +21,10 @@ struct BlitBuffer
     uint32_t offset = 0;
 };
 
-struct BlitTextureBuffer : BlitBuffer
+struct BlitTextureBuffer
 {
+    Buffer& buffer;
+    uint32_t offset = 0;
     uint32_t bytesPerRow = 0;
     uint32_t rowsPerTexture = 0;
 };

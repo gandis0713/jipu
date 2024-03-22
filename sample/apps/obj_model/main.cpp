@@ -693,8 +693,8 @@ void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
     BlitTextureBuffer blitTextureBuffer{
-        { .buffer = imageTextureStagingBuffer,
-          .offset = 0 },
+        .buffer = imageTextureStagingBuffer,
+        .offset = 0,
         .bytesPerRow = 0,
         .rowsPerTexture = 0
     };
