@@ -80,7 +80,6 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     VkImageSubresourceRange range;
     range.aspectMask = ToVkImageAspectFlags(texture.aspect);
     range.baseMipLevel = 0;
-    // range.levelCount = texture.texture->getMipLevels();
     range.levelCount = texture.texture->getMipLevels();
     range.baseArrayLayer = 0;
     range.layerCount = 1;
