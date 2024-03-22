@@ -534,9 +534,9 @@ void OBJModelSample::createBindingGroup()
     {
         BufferBinding bufferBinding{
             .index = 0,
-            .buffer = *m_uniformBuffer,
             .offset = 0,
             .size = sizeof(UniformBufferObject),
+            .buffer = *m_uniformBuffer,
         };
 
         BindingGroupDescriptor descriptor{
