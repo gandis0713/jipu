@@ -231,7 +231,7 @@ void ParticleSample::draw()
 
         ComputePassEncoderDescriptor computePassDescriptor{};
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
-        computePassEncoder->setPipeline(m_computePipeline.get());
+        computePassEncoder->setPipeline(*m_computePipeline);
         computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
         computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
         computePassEncoder->end();

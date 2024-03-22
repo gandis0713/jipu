@@ -17,9 +17,12 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandB
     // do nothing.
 }
 
-void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
+void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
 {
-    m_pipeline = static_cast<VulkanComputePipeline*>(pipeline);
+    auto& vulkanComputePipeline = static_cast<VulkanComputePipeline&>(pipeline);
+
+    m_pipeline = vulkanComputePipeline.getVkPipeline();
+    m_pipelineLayout = downcast(vulkanComputePipeline.getPipelineLayout())->getVkPipelineLayout();
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
@@ -27,14 +30,13 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
 
     vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(),
                           VK_PIPELINE_BIND_POINT_COMPUTE,
-                          m_pipeline->getVkPipeline());
+                          m_pipeline);
 }
 
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
     auto vulkanBindingGroup = downcast(bindingGroup);
 
     const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
@@ -43,7 +45,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bin
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                m_pipelineLayout,
                                 0,
                                 1,
                                 &descriptorSet,
