@@ -143,15 +143,22 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
     // copy buffer to texture
     {
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = m_fontBuffer.get();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            { .buffer = *m_fontBuffer,
+              .offset = 0 },
+            .bytesPerRow = 0,
+            .rowsPerTexture = 0,
+        };
+
         uint32_t channel = 4;
         uint32_t bytesPerData = sizeof(FontDataType);
         blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{ .texture = m_fontTexture.get(), .aspect = TextureAspectFlagBits::kColor };
+        BlitTexture blitTexture{
+            .texture = *m_fontTexture,
+            .aspect = TextureAspectFlagBits::kColor
+        };
         Extent3D extent{};
         extent.width = m_fontTexture->getWidth();
         extent.height = m_fontTexture->getHeight();
@@ -227,7 +234,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         m_bindingGroups.resize(2);
         {
             BufferBinding uiTransformBinding{
-                { .index = 0 },
+                Binding{ .index = 0 },
                 .buffer = *m_uniformBuffer,
                 .offset = 0,
                 .size = m_uniformBuffer->getSize(),
@@ -243,12 +250,12 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
         {
             SamplerBinding fontSamplerBinding{
-                { .index = 0 },
+                Binding{ .index = 0 },
                 .sampler = *m_fontSampler,
             };
 
             TextureBinding fontTextureBinding{
-                { .index = 1 },
+                Binding{ .index = 1 },
                 .textureView = *m_fontTextureView,
             };
 

@@ -42,15 +42,17 @@ void CopyTest::SetUp()
     m_srcTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, m_srcTexture);
 
-    BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = m_srcBuffer.get();
-    blitTextureBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
-    blitTextureBuffer.rowsPerTexture = m_image.height;
-    blitTextureBuffer.offset = 0;
+    BlitTextureBuffer blitTextureBuffer{
+        { .buffer = *m_srcBuffer,
+          .offset = 0 },
+        .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
+        .rowsPerTexture = static_cast<uint32_t>(m_image.height),
+    };
 
-    BlitTexture blitTexture{};
-    blitTexture.texture = m_srcTexture.get();
-    blitTexture.aspect = TextureAspectFlagBits::kColor;
+    BlitTexture blitTexture{
+        .texture = *m_srcTexture,
+        .aspect = TextureAspectFlagBits::kColor,
+    };
 
     Extent3D extent{};
     extent.width = m_image.width;
@@ -95,15 +97,17 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     auto dstBuffer = m_device->createBuffer(dstBufferDescriptor);
     EXPECT_NE(nullptr, dstBuffer);
 
-    BlitTextureBuffer dstBlitBuffer{};
-    dstBlitBuffer.buffer = dstBuffer.get();
-    dstBlitBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
-    dstBlitBuffer.rowsPerTexture = m_image.height;
-    dstBlitBuffer.offset = 0;
+    BlitTextureBuffer dstBlitBuffer{
+        { .buffer = *dstBuffer,
+          .offset = 0 },
+        .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
+        .rowsPerTexture = static_cast<uint32_t>(m_image.height),
+    };
 
-    BlitTexture srcBlitTexture{};
-    srcBlitTexture.texture = srcTexture;
-    srcBlitTexture.aspect = TextureAspectFlagBits::kColor;
+    BlitTexture srcBlitTexture{
+        .texture = *srcTexture,
+        .aspect = TextureAspectFlagBits::kColor,
+    };
 
     Extent3D extent{};
     extent.depth = 1;
@@ -147,9 +151,10 @@ TEST_F(CopyTest, test_BufferToBuffer)
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
-    BlitBuffer srcBlitBuffer{};
-    srcBlitBuffer.buffer = m_srcBuffer.get();
-    srcBlitBuffer.offset = 0;
+    BlitBuffer srcBlitBuffer{
+        .buffer = *m_srcBuffer,
+        .offset = 0,
+    };
 
     BufferDescriptor bufferDescriptor{};
     bufferDescriptor.size = m_srcBuffer->getSize();
@@ -158,9 +163,10 @@ TEST_F(CopyTest, test_BufferToBuffer)
     auto buffer = m_device->createBuffer(bufferDescriptor);
     EXPECT_NE(nullptr, buffer);
 
-    BlitBuffer dstBlitBuffer{};
-    dstBlitBuffer.buffer = buffer.get();
-    dstBlitBuffer.offset = 0;
+    BlitBuffer dstBlitBuffer{
+        .buffer = *buffer,
+        .offset = 0,
+    };
 
     commandEncoder->copyBufferToBuffer(srcBlitBuffer, dstBlitBuffer, m_srcBuffer->getSize());
     EXPECT_EQ(commandBuffer.get(), commandEncoder->finish());
@@ -196,15 +202,17 @@ TEST_F(CopyTest, test_BufferToTexture)
     auto texture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, texture);
 
-    BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = m_srcBuffer.get();
-    blitTextureBuffer.bytesPerRow = m_image.width * m_image.channel * sizeof(char);
-    blitTextureBuffer.rowsPerTexture = m_image.height;
-    blitTextureBuffer.offset = 0;
+    BlitTextureBuffer blitTextureBuffer{
+        { .buffer = *m_srcBuffer,
+          .offset = 0 },
+        .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
+        .rowsPerTexture = static_cast<uint32_t>(m_image.height),
+    };
 
-    BlitTexture blitTexture{};
-    blitTexture.texture = texture.get();
-    blitTexture.aspect = TextureAspectFlagBits::kColor;
+    BlitTexture blitTexture{
+        .texture = *texture,
+        .aspect = TextureAspectFlagBits::kColor,
+    };
 
     Extent3D extent{};
     extent.width = m_image.width;
@@ -255,13 +263,15 @@ TEST_F(CopyTest, test_TextureToTexture)
     auto dstTexture = m_device->createTexture(textureDescriptor);
     EXPECT_NE(nullptr, dstTexture);
 
-    BlitTexture srcBlitTexture{};
-    srcBlitTexture.texture = m_srcTexture.get();
-    srcBlitTexture.aspect = TextureAspectFlagBits::kColor;
+    BlitTexture srcBlitTexture{
+        .texture = *m_srcTexture,
+        .aspect = TextureAspectFlagBits::kColor,
+    };
 
-    BlitTexture dstBlitTexture{};
-    dstBlitTexture.texture = dstTexture.get();
-    dstBlitTexture.aspect = TextureAspectFlagBits::kColor;
+    BlitTexture dstBlitTexture{
+        .texture = *dstTexture,
+        .aspect = TextureAspectFlagBits::kColor,
+    };
 
     Extent3D extent{};
     extent.depth = 1;

@@ -17,7 +17,7 @@ class RenderPassEncoder;
 
 struct BlitBuffer
 {
-    Buffer* buffer = nullptr;
+    Buffer& buffer;
     uint32_t offset = 0;
 };
 
@@ -29,7 +29,7 @@ struct BlitTextureBuffer : BlitBuffer
 
 struct BlitTexture
 {
-    Texture* texture = nullptr;
+    Texture& texture;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 

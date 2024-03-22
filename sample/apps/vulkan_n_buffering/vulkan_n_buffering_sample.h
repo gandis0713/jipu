@@ -76,8 +76,8 @@ private:
     void createPipelineLayout();
     void createRenderPipeline();
 
-    void copyBufferToBuffer(Buffer* src, Buffer* dst);
-    void copyBufferToTexture(Buffer* imageTextureBuffer, Texture* imageTexture);
+    void copyBufferToBuffer(Buffer& src, Buffer& dst);
+    void copyBufferToTexture(Buffer& imageTextureBuffer, Texture& imageTexture);
 
     void updateUniformBuffer();
 

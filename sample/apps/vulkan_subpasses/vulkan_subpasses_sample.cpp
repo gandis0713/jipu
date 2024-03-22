@@ -654,15 +654,17 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            { .buffer = *stagingBuffer,
+              .offset = 0 },
+            .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
+            .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
+        };
 
-        BlitTexture blitTexture{};
-        blitTexture.texture = m_offscreen.colorMapTexture.get();
-        blitTexture.aspect = TextureAspectFlagBits::kColor;
+        BlitTexture blitTexture{
+            .texture = *m_offscreen.colorMapTexture,
+            .aspect = TextureAspectFlagBits::kColor,
+        };
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -724,15 +726,17 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            BlitBuffer{ .buffer = *stagingBuffer,
+                        .offset = 0 },
+            .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
+            .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
+        };
 
-        BlitTexture blitTexture{};
-        blitTexture.texture = m_offscreen.normalMapTexture.get();
-        blitTexture.aspect = TextureAspectFlagBits::kColor;
+        BlitTexture blitTexture{
+            .texture = *m_offscreen.normalMapTexture,
+            .aspect = TextureAspectFlagBits::kColor,
+        };
 
         Extent3D extent{};
         extent.width = ktx.getWidth();

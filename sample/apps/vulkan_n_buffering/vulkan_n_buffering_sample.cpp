@@ -301,7 +301,7 @@ void VulkanNBufferingSample::createVertexBuffer()
     m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
     // copy staging buffer to target buffer
-    copyBufferToBuffer(vertexStagingBuffer.get(), m_vertexBuffer.get());
+    copyBufferToBuffer(*vertexStagingBuffer, *m_vertexBuffer);
 
     // unmap staging buffer.
     // vertexStagingBuffer->unmap(); // TODO: need unmap before destroy it?
@@ -363,7 +363,7 @@ void VulkanNBufferingSample::createImageTexture()
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
-    copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+    copyBufferToTexture(*imageTextureStagingBuffer, *m_imageTexture);
 
     // unmap staging buffer
     // imageTextureStagingBuffer->unmap(); // TODO: need unmap before destroy it?
@@ -612,15 +612,17 @@ void VulkanNBufferingSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void VulkanNBufferingSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
+void VulkanNBufferingSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
-    BlitBuffer srcBuffer{};
-    srcBuffer.buffer = src;
-    srcBuffer.offset = 0;
+    BlitBuffer srcBuffer{
+        .buffer = src,
+        .offset = 0,
+    };
 
-    BlitBuffer dstBuffer{};
-    dstBuffer.buffer = dst;
-    dstBuffer.offset = 0;
+    BlitBuffer dstBuffer{
+        .buffer = dst,
+        .offset = 0,
+    };
 
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
@@ -628,25 +630,27 @@ void VulkanNBufferingSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src->getSize());
+    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src.getSize());
 
     m_queue->submit({ commandEncoder->finish() });
 }
 
-void VulkanNBufferingSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
+void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = imageTextureStagingBuffer;
-    blitTextureBuffer.offset = 0;
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
-    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
-    blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
+
+    BlitTextureBuffer blitTextureBuffer{
+        { .buffer = imageTextureStagingBuffer,
+          .offset = 0 },
+        .bytesPerRow = bytesPerData * imageTexture.getWidth() * channel,
+        .rowsPerTexture = imageTexture.getHeight(),
+    };
 
     BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
-    extent.width = imageTexture->getWidth();
-    extent.height = imageTexture->getHeight();
+    extent.width = imageTexture.getWidth();
+    extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
