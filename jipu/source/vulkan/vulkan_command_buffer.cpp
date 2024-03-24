@@ -35,7 +35,7 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
 
 std::unique_ptr<CommandEncoder> VulkanCommandBuffer::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
-    return std::make_unique<VulkanCommandEncoder>(this, descriptor);
+    return std::make_unique<VulkanCommandEncoder>(*this, descriptor);
 }
 
 CommandBufferUsage VulkanCommandBuffer::getUsage() const

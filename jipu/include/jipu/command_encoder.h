@@ -52,7 +52,7 @@ public:
     virtual void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) = 0;
     virtual void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) = 0;
 
-    virtual CommandBuffer* finish() = 0;
+    virtual CommandBuffer& finish() = 0;
 };
 
 } // namespace jipu

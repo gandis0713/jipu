@@ -77,7 +77,7 @@ void CopyTest::SetUp()
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandBuffer.get() });
+    queue->submit({ *commandBuffer });
 }
 
 void CopyTest::TearDown()
@@ -132,7 +132,7 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandBuffer.get() });
+    queue->submit({ *commandBuffer });
 
     char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
     char firstData = *dstBufferPointer;
@@ -169,14 +169,13 @@ TEST_F(CopyTest, test_BufferToBuffer)
     };
 
     commandEncoder->copyBufferToBuffer(srcBlitBuffer, dstBlitBuffer, m_srcBuffer->getSize());
-    EXPECT_EQ(commandBuffer.get(), commandEncoder->finish());
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandBuffer.get() });
+    queue->submit({ *commandBuffer });
 
     void* dstBufferPointer = buffer->map();
     EXPECT_NE(nullptr, dstBufferPointer);
@@ -237,7 +236,7 @@ TEST_F(CopyTest, test_BufferToTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandBuffer.get() });
+    queue->submit({ *commandBuffer });
 
     copyTextureToBuffer(texture.get()); // to check copied texture data.
 }
@@ -289,15 +288,13 @@ TEST_F(CopyTest, test_TextureToTexture)
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyTextureToTexture(srcBlitTexture, dstBlitTexture, extent);
-    auto commandBufferPtr = commandEncoder->finish();
-    EXPECT_EQ(commandBufferPtr, commandBuffer.get());
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandBuffer.get() });
+    queue->submit({ *commandBuffer });
 
     copyTextureToBuffer(dstTexture.get()); // to check copied texture data.
 }

@@ -5,11 +5,15 @@
 #include "jipu/command_buffer.h"
 #include "jipu/swapchain.h"
 
+#include <functional>
 #include <stdint.h>
 #include <vector>
 
 namespace jipu
 {
+
+using CommandBufferRef = std::reference_wrapper<CommandBuffer>;
+using CommandBuffers = std::vector<CommandBufferRef>;
 
 struct QueueFlagBits
 {
@@ -34,8 +38,8 @@ protected:
     Queue() = default;
 
 public:
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) = 0;
+    virtual void submit(CommandBuffers commandBuffers) = 0;
+    virtual void submit(CommandBuffers commandBuffers, Swapchain* swapchain) = 0;
 };
 
 } // namespace jipu

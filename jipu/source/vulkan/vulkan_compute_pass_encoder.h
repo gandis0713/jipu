@@ -14,7 +14,7 @@ class VULKAN_EXPORT VulkanComputePassEncoder : public ComputePassEncoder
 {
 public:
     VulkanComputePassEncoder() = delete;
-    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
+    VulkanComputePassEncoder(VulkanCommandBuffer& commandBuffer, const ComputePassEncoderDescriptor& descriptor);
     ~VulkanComputePassEncoder() override = default;
 
 public:
@@ -24,7 +24,7 @@ public:
     void end() override;
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandBuffer& m_commandBuffer;
 
 private:
     VkPipeline m_pipeline = VK_NULL_HANDLE;
