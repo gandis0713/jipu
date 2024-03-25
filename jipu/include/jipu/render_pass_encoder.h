@@ -1,5 +1,7 @@
 #pragma once
 
+#include "texture_view.h"
+
 #include "export.h"
 #include <optional>
 #include <vector>
@@ -11,7 +13,6 @@ class Pipeline;
 class Buffer;
 class CommandBuffer;
 class BindingGroup;
-class TextureView;
 
 enum class LoadOp : uint8_t
 {
@@ -34,8 +35,8 @@ union ColorClearValue {
 
 struct ColorAttachment
 {
-    TextureView* renderView = nullptr;
-    TextureView* resolveView = nullptr;
+    TextureView& renderView;
+    std::optional<TextureView::Ref> resolveView;
     LoadOp loadOp = LoadOp::kDontCare;
     StoreOp storeOp = StoreOp::kDontCare;
     ColorClearValue clearValue{};
@@ -49,7 +50,7 @@ struct DepthStencilClearValue
 
 struct DepthStencilAttachment
 {
-    TextureView* textureView = nullptr;
+    TextureView& textureView;
     LoadOp depthLoadOp = LoadOp::kDontCare;
     StoreOp depthStoreOp = StoreOp::kDontCare;
     LoadOp stencilLoadOp = LoadOp::kDontCare;
@@ -80,11 +81,11 @@ protected:
     RenderPassEncoder() = default;
 
 public:
-    virtual void setPipeline(RenderPipeline* pipeline) = 0;
-    virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
+    virtual void setPipeline(RenderPipeline& pipeline) = 0;
+    virtual void setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
 
-    virtual void setVertexBuffer(uint32_t slot, Buffer* buffer) = 0;
-    virtual void setIndexBuffer(Buffer* buffer, IndexFormat format) = 0;
+    virtual void setVertexBuffer(uint32_t slot, Buffer& buffer) = 0;
+    virtual void setIndexBuffer(Buffer& buffer, IndexFormat format) = 0;
 
     virtual void setViewport(float x,
                              float y,

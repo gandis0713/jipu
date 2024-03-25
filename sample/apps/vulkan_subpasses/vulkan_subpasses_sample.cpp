@@ -148,7 +148,7 @@ void VulkanSubpassesSample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -265,50 +265,52 @@ void VulkanSubpassesSample::draw()
     auto vulkanDevice = downcast(m_device.get());
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     // render passes
     if (!m_useSubpasses)
     {
         {
-            ColorAttachment positionColorAttachment{};
+            ColorAttachment positionColorAttachment{
+                .renderView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
+            };
             positionColorAttachment.loadOp = LoadOp::kClear;
             positionColorAttachment.storeOp = StoreOp::kStore;
-            positionColorAttachment.renderView = m_offscreen.renderPasses.positionColorAttachmentTextureView.get();
-            positionColorAttachment.resolveView = nullptr;
             positionColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            ColorAttachment normalColorAttachment{};
+            ColorAttachment normalColorAttachment{
+                .renderView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
+            };
             normalColorAttachment.loadOp = LoadOp::kClear;
             normalColorAttachment.storeOp = StoreOp::kStore;
-            normalColorAttachment.renderView = m_offscreen.renderPasses.normalColorAttachmentTextureView.get();
-            normalColorAttachment.resolveView = nullptr;
             normalColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            ColorAttachment albedoColorAttachment{};
+            ColorAttachment albedoColorAttachment{
+                .renderView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
+            };
             albedoColorAttachment.loadOp = LoadOp::kClear;
             albedoColorAttachment.storeOp = StoreOp::kStore;
-            albedoColorAttachment.renderView = m_offscreen.renderPasses.albedoColorAttachmentTextureView.get();
-            albedoColorAttachment.resolveView = nullptr;
             albedoColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            DepthStencilAttachment depthStencilAttachment{};
-            depthStencilAttachment.textureView = m_depthStencilTextureView.get();
+            DepthStencilAttachment depthStencilAttachment{
+                .textureView = *m_depthStencilTextureView
+            };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-            RenderPassEncoderDescriptor renderPassDescriptor{};
-            renderPassDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment };
-            renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
-            renderPassDescriptor.sampleCount = m_sampleCount;
+            RenderPassEncoderDescriptor renderPassDescriptor{
+                .colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment },
+                .depthStencilAttachment = depthStencilAttachment,
+                .sampleCount = m_sampleCount
+            };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(m_offscreen.renderPasses.renderPipeline.get());
-            renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-            renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-            renderPassEncoder->setBindingGroup(0, m_offscreen.renderPasses.bindingGroups[0].get());
-            renderPassEncoder->setBindingGroup(1, m_offscreen.renderPasses.bindingGroups[1].get());
+            renderPassEncoder->setPipeline(*m_offscreen.renderPasses.renderPipeline);
+            renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+            renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
+            renderPassEncoder->setBindingGroup(0, *m_offscreen.renderPasses.bindingGroups[0]);
+            renderPassEncoder->setBindingGroup(1, *m_offscreen.renderPasses.bindingGroups[1]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
@@ -316,28 +318,30 @@ void VulkanSubpassesSample::draw()
         }
 
         {
-            ColorAttachment colorAttachment{};
+            ColorAttachment colorAttachment{
+                .renderView = renderView
+            };
             colorAttachment.loadOp = LoadOp::kClear;
             colorAttachment.storeOp = StoreOp::kStore;
-            colorAttachment.renderView = renderView;
-            colorAttachment.resolveView = nullptr;
             colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            DepthStencilAttachment depthStencilAttachment{};
-            depthStencilAttachment.textureView = m_depthStencilTextureView.get();
+            DepthStencilAttachment depthStencilAttachment{
+                .textureView = *m_depthStencilTextureView
+            };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-            RenderPassEncoderDescriptor renderPassDescriptor{};
-            renderPassDescriptor.colorAttachments = { colorAttachment };
-            renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
-            renderPassDescriptor.sampleCount = m_sampleCount;
+            RenderPassEncoderDescriptor renderPassDescriptor{
+                .colorAttachments = { colorAttachment },
+                .depthStencilAttachment = depthStencilAttachment,
+                .sampleCount = m_sampleCount
+            };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(m_composition.renderPasses.renderPipeline.get());
-            renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-            renderPassEncoder->setBindingGroup(0, m_composition.renderPasses.bindingGroups[0].get());
+            renderPassEncoder->setPipeline(*m_composition.renderPasses.renderPipeline);
+            renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
+            renderPassEncoder->setBindingGroup(0, *m_composition.renderPasses.bindingGroups[0]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
@@ -347,13 +351,13 @@ void VulkanSubpassesSample::draw()
     else
     {
         // subpasses
-        auto vulkanRenderPass = getSubpassesRenderPass();
-        auto vulkanFramebuffer = getSubpassesFrameBuffer(renderView);
+        auto& vulkanRenderPass = getSubpassesRenderPass();
+        auto& vulkanFramebuffer = getSubpassesFrameBuffer(renderView);
 
         // first pass
         VulkanRenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.renderPass = vulkanRenderPass->getVkRenderPass();
-        renderPassEncoderDescriptor.framebuffer = vulkanFramebuffer->getVkFrameBuffer();
+        renderPassEncoderDescriptor.renderPass = vulkanRenderPass.getVkRenderPass();
+        renderPassEncoderDescriptor.framebuffer = vulkanFramebuffer.getVkFrameBuffer();
         renderPassEncoderDescriptor.renderArea.offset = { 0, 0 };
         renderPassEncoderDescriptor.renderArea.extent = { m_swapchain->getWidth(), m_swapchain->getHeight() };
 
@@ -375,20 +379,20 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->setScissor(0, 0, m_width, m_height);
 
         // first pass
-        vulkanRenderPassEncoder->setPipeline(m_offscreen.subPasses.renderPipeline.get());
-        vulkanRenderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-        vulkanRenderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-        vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.subPasses.bindingGroups[0].get());
-        vulkanRenderPassEncoder->setBindingGroup(1, m_offscreen.subPasses.bindingGroups[1].get());
+        vulkanRenderPassEncoder->setPipeline(*m_offscreen.subPasses.renderPipeline);
+        vulkanRenderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+        vulkanRenderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
+        vulkanRenderPassEncoder->setBindingGroup(0, *m_offscreen.subPasses.bindingGroups[0]);
+        vulkanRenderPassEncoder->setBindingGroup(1, *m_offscreen.subPasses.bindingGroups[1]);
         vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
 
         vulkanRenderPassEncoder->nextPass();
 
         // second pass
-        vulkanRenderPassEncoder->setPipeline(m_composition.subPasses.renderPipeline.get());
-        vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-        vulkanRenderPassEncoder->setBindingGroup(0, m_composition.subPasses.bindingGroups[0].get());
-        vulkanRenderPassEncoder->setBindingGroup(1, m_composition.subPasses.bindingGroups[1].get());
+        vulkanRenderPassEncoder->setPipeline(*m_composition.subPasses.renderPipeline);
+        vulkanRenderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
+        vulkanRenderPassEncoder->setBindingGroup(0, *m_composition.subPasses.bindingGroups[0]);
+        vulkanRenderPassEncoder->setBindingGroup(1, *m_composition.subPasses.bindingGroups[1]);
         vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
 
         vulkanRenderPassEncoder->end();
@@ -396,7 +400,7 @@ void VulkanSubpassesSample::draw()
 
     drawImGui(commandEncoder.get(), renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
 void VulkanSubpassesSample::createDriver()
@@ -428,14 +432,14 @@ void VulkanSubpassesSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
-
-    SwapchainDescriptor descriptor;
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.textureFormat = textureFormat;
-    descriptor.presentMode = PresentMode::kFifo;
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
     m_swapchain = m_device->createSwapchain(descriptor);
 }
@@ -654,15 +658,17 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            .buffer = *stagingBuffer,
+            .offset = 0,
+            .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
+            .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
+        };
 
-        BlitTexture blitTexture{};
-        blitTexture.texture = m_offscreen.colorMapTexture.get();
-        blitTexture.aspect = TextureAspectFlagBits::kColor;
+        BlitTexture blitTexture{
+            .texture = *m_offscreen.colorMapTexture,
+            .aspect = TextureAspectFlagBits::kColor,
+        };
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -680,7 +686,7 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ commandBuffer.get() });
+        m_queue->submit({ *commandBuffer });
     }
 }
 
@@ -724,15 +730,17 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = stagingBuffer.get();
-        blitTextureBuffer.bytesPerRow = ktx.getWidth() * ktx.getChannel() * sizeof(char);
-        blitTextureBuffer.rowsPerTexture = ktx.getHeight();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            .buffer = *stagingBuffer,
+            .offset = 0,
+            .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
+            .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
+        };
 
-        BlitTexture blitTexture{};
-        blitTexture.texture = m_offscreen.normalMapTexture.get();
-        blitTexture.aspect = TextureAspectFlagBits::kColor;
+        BlitTexture blitTexture{
+            .texture = *m_offscreen.normalMapTexture,
+            .aspect = TextureAspectFlagBits::kColor,
+        };
 
         Extent3D extent{};
         extent.width = ktx.getWidth();
@@ -750,7 +758,7 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ commandBuffer.get() });
+        m_queue->submit({ *commandBuffer });
     }
 }
 
@@ -940,40 +948,47 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
     {
         m_offscreen.renderPasses.bindingGroups.resize(2);
         {
-            BufferBinding bufferBinding{};
-            bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-            bufferBinding.index = 0;
-            bufferBinding.offset = 0;
-            bufferBinding.size = sizeof(MVP);
+            BufferBinding bufferBinding{
+                .index = 0,
+                .offset = 0,
+                .size = sizeof(MVP),
+                .buffer = *m_offscreen.uniformBuffer,
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.buffers = { bufferBinding };
-            bindingGroupDescriptor.layout = m_offscreen.renderPasses.bindingGroupLayouts[0].get();
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_offscreen.renderPasses.bindingGroupLayouts[0],
+                .buffers = { bufferBinding },
+            };
 
             m_offscreen.renderPasses.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
         }
 
         {
-            SamplerBinding colorSamplerBinding{};
-            colorSamplerBinding.index = 0;
-            colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+            SamplerBinding colorSamplerBinding{
+                .index = 0,
+                .sampler = *m_offscreen.colorMapSampler
+            };
 
-            SamplerBinding normalSamplerBinding{};
-            normalSamplerBinding.index = 1;
-            normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+            SamplerBinding normalSamplerBinding{
+                .index = 1,
+                .sampler = *m_offscreen.normalMapSampler
+            };
 
-            TextureBinding colorTextureBinding{};
-            colorTextureBinding.index = 2;
-            colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+            TextureBinding colorTextureBinding{
+                .index = 2,
+                .textureView = *m_offscreen.colorMapTextureView
+            };
 
-            TextureBinding normalTextureBinding{};
-            normalTextureBinding.index = 3;
-            normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+            TextureBinding normalTextureBinding{
+                .index = 3,
+                .textureView = *m_offscreen.normalMapTextureView
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
-            bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
-            bindingGroupDescriptor.layout = m_offscreen.renderPasses.bindingGroupLayouts[1].get();
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_offscreen.renderPasses.bindingGroupLayouts[1],
+                .samplers = { colorSamplerBinding, normalSamplerBinding },
+                .textures = { colorTextureBinding, normalTextureBinding }
+            };
 
             m_offscreen.renderPasses.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
         }
@@ -983,40 +998,49 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
     {
         m_offscreen.subPasses.bindingGroups.resize(2);
         {
-            BufferBinding bufferBinding{};
-            bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-            bufferBinding.index = 0;
-            bufferBinding.offset = 0;
-            bufferBinding.size = sizeof(MVP);
+            BufferBinding bufferBinding{
+                .index = 0,
+                .offset = 0,
+                .size = sizeof(MVP),
+                .buffer = *m_offscreen.uniformBuffer,
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.buffers = { bufferBinding };
-            bindingGroupDescriptor.layout = m_offscreen.subPasses.bindingGroupLayouts[0].get();
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_offscreen.subPasses.bindingGroupLayouts[0],
+                .buffers = { bufferBinding }
+            };
 
             m_offscreen.subPasses.bindingGroups[0] = m_device->createBindingGroup(bindingGroupDescriptor);
         }
 
         {
-            SamplerBinding colorSamplerBinding{};
-            colorSamplerBinding.index = 0;
-            colorSamplerBinding.sampler = m_offscreen.colorMapSampler.get();
+            SamplerBinding colorSamplerBinding{
+                .index = 0,
+                .sampler = *m_offscreen.colorMapSampler
+            };
 
-            SamplerBinding normalSamplerBinding{};
-            normalSamplerBinding.index = 1;
-            normalSamplerBinding.sampler = m_offscreen.normalMapSampler.get();
+            SamplerBinding normalSamplerBinding{
+                .index = 1,
+                .sampler = *m_offscreen.normalMapSampler
+            };
 
-            TextureBinding colorTextureBinding{};
-            colorTextureBinding.index = 2;
-            colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+            // colorTextureBinding.index = 2;
+            // colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
+            TextureBinding colorTextureBinding{
+                .index = 2,
+                .textureView = *m_offscreen.colorMapTextureView
+            };
 
-            TextureBinding normalTextureBinding{};
-            normalTextureBinding.index = 3;
-            normalTextureBinding.textureView = m_offscreen.normalMapTextureView.get();
+            TextureBinding normalTextureBinding{
+                .index = 3,
+                .textureView = *m_offscreen.normalMapTextureView
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.samplers = { colorSamplerBinding, normalSamplerBinding };
-            bindingGroupDescriptor.textures = { colorTextureBinding, normalTextureBinding };
-            bindingGroupDescriptor.layout = m_offscreen.subPasses.bindingGroupLayouts[1].get();
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_offscreen.subPasses.bindingGroupLayouts[1],
+                .samplers = { colorSamplerBinding, normalSamplerBinding },
+                .textures = { colorTextureBinding, normalTextureBinding }
+            };
 
             m_offscreen.subPasses.bindingGroups[1] = m_device->createBindingGroup(bindingGroupDescriptor);
         }
@@ -1028,7 +1052,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.renderPasses.bindingGroupLayouts[0].get(), m_offscreen.renderPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_offscreen.renderPasses.bindingGroupLayouts[0], *m_offscreen.renderPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1037,7 +1061,7 @@ void VulkanSubpassesSample::createOffscreenPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.subPasses.bindingGroupLayouts[0].get(), m_offscreen.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_offscreen.subPasses.bindingGroupLayouts[0], *m_offscreen.subPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1064,42 +1088,38 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Vertex Shader
-        VertexStage vertexShage{};
-        {
-            // entry point
-            vertexShage.entryPoint = "main";
 
-            // input layout
-            VertexInputLayout inputLayout;
-            inputLayout.mode = VertexMode::kVertex;
-            inputLayout.stride = sizeof(Vertex);
+        // input layout
+        VertexInputLayout inputLayout;
+        inputLayout.mode = VertexMode::kVertex;
+        inputLayout.stride = sizeof(Vertex);
 
-            VertexAttribute positionAttribute;
-            positionAttribute.format = VertexFormat::kSFLOATx3;
-            positionAttribute.offset = offsetof(Vertex, pos);
-            positionAttribute.location = 0;
+        VertexAttribute positionAttribute;
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
-            VertexAttribute normalAttribute;
-            normalAttribute.format = VertexFormat::kSFLOATx3;
-            normalAttribute.offset = offsetof(Vertex, normal);
-            normalAttribute.location = 1;
+        VertexAttribute normalAttribute;
+        normalAttribute.format = VertexFormat::kSFLOATx3;
+        normalAttribute.offset = offsetof(Vertex, normal);
+        normalAttribute.location = 1;
 
-            VertexAttribute tangentAttribute;
-            tangentAttribute.format = VertexFormat::kSFLOATx4;
-            tangentAttribute.offset = offsetof(Vertex, tangent);
-            tangentAttribute.location = 2;
+        VertexAttribute tangentAttribute;
+        tangentAttribute.format = VertexFormat::kSFLOATx4;
+        tangentAttribute.offset = offsetof(Vertex, tangent);
+        tangentAttribute.location = 2;
 
-            VertexAttribute texCoordAttribute;
-            texCoordAttribute.format = VertexFormat::kSFLOATx2;
-            texCoordAttribute.offset = offsetof(Vertex, texCoord);
-            texCoordAttribute.location = 3;
+        VertexAttribute texCoordAttribute;
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(Vertex, texCoord);
+        texCoordAttribute.location = 3;
 
-            inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
+        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
-            vertexShage.layouts = { inputLayout };
-
-            vertexShage.shaderModule = m_offscreen.renderPasses.vertexShaderModule.get();
-        }
+        VertexStage vertexStage{
+            { *m_offscreen.renderPasses.vertexShaderModule, "main" },
+            { inputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1119,34 +1139,33 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Fragment Shader
-        FragmentStage fragmentStage{};
-        {
-            // entry point
-            fragmentStage.entryPoint = "main";
 
-            // targets
-            FragmentStage::Target positionTarget{};
-            positionTarget.format = m_offscreen.renderPasses.positionColorAttachmentTexture->getFormat();
+        // targets
+        FragmentStage::Target positionTarget{};
+        positionTarget.format = m_offscreen.renderPasses.positionColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target normalTarget{};
-            normalTarget.format = m_offscreen.renderPasses.normalColorAttachmentTexture->getFormat();
+        FragmentStage::Target normalTarget{};
+        normalTarget.format = m_offscreen.renderPasses.normalColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target albedoTarget{};
-            albedoTarget.format = m_offscreen.renderPasses.albedoColorAttachmentTexture->getFormat();
+        FragmentStage::Target albedoTarget{};
+        albedoTarget.format = m_offscreen.renderPasses.albedoColorAttachmentTexture->getFormat();
 
-            fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-            fragmentStage.shaderModule = m_offscreen.renderPasses.fragmentShaderModule.get();
-        }
+        FragmentStage fragmentStage{
+            { *m_offscreen.renderPasses.fragmentShaderModule, "main" },
+            { positionTarget, normalTarget, albedoTarget }
+        };
+
         DepthStencilStage depthStencil{};
         depthStencil.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_offscreen.renderPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssembly;
-        descriptor.vertex = vertexShage;
-        descriptor.depthStencil = depthStencil;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_offscreen.renderPasses.pipelineLayout },
+            inputAssembly,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencil
+        };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.renderPasses.renderPipeline = vulkanDevice->createRenderPipeline(descriptor);
@@ -1169,42 +1188,38 @@ void VulkanSubpassesSample::createOffscreenPipeline()
             m_offscreen.subPasses.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
         }
         // Vertex Shader
-        VertexStage vertexShage{};
-        {
-            // entry point
-            vertexShage.entryPoint = "main";
 
-            // input layout
-            VertexInputLayout inputLayout;
-            inputLayout.mode = VertexMode::kVertex;
-            inputLayout.stride = sizeof(Vertex);
+        // input layout
+        VertexInputLayout inputLayout;
+        inputLayout.mode = VertexMode::kVertex;
+        inputLayout.stride = sizeof(Vertex);
 
-            VertexAttribute positionAttribute;
-            positionAttribute.format = VertexFormat::kSFLOATx3;
-            positionAttribute.offset = offsetof(Vertex, pos);
-            positionAttribute.location = 0;
+        VertexAttribute positionAttribute;
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
-            VertexAttribute normalAttribute;
-            normalAttribute.format = VertexFormat::kSFLOATx3;
-            normalAttribute.offset = offsetof(Vertex, normal);
-            normalAttribute.location = 1;
+        VertexAttribute normalAttribute;
+        normalAttribute.format = VertexFormat::kSFLOATx3;
+        normalAttribute.offset = offsetof(Vertex, normal);
+        normalAttribute.location = 1;
 
-            VertexAttribute tangentAttribute;
-            tangentAttribute.format = VertexFormat::kSFLOATx4;
-            tangentAttribute.offset = offsetof(Vertex, tangent);
-            tangentAttribute.location = 2;
+        VertexAttribute tangentAttribute;
+        tangentAttribute.format = VertexFormat::kSFLOATx4;
+        tangentAttribute.offset = offsetof(Vertex, tangent);
+        tangentAttribute.location = 2;
 
-            VertexAttribute texCoordAttribute;
-            texCoordAttribute.format = VertexFormat::kSFLOATx2;
-            texCoordAttribute.offset = offsetof(Vertex, texCoord);
-            texCoordAttribute.location = 3;
+        VertexAttribute texCoordAttribute;
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(Vertex, texCoord);
+        texCoordAttribute.location = 3;
 
-            inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
+        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
-            vertexShage.layouts = { inputLayout };
-
-            vertexShage.shaderModule = m_offscreen.subPasses.vertexShaderModule.get();
-        }
+        VertexStage vertexStage{
+            { *m_offscreen.subPasses.vertexShaderModule, "main" },
+            { inputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1224,53 +1239,50 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Fragment Shader
-        FragmentStage fragmentStage{};
-        {
-            // entry point
-            fragmentStage.entryPoint = "main";
+        // targets
+        FragmentStage::Target positionTarget{};
+        positionTarget.format = m_offscreen.subPasses.positionColorAttachmentTexture->getFormat();
 
-            // targets
-            FragmentStage::Target positionTarget{};
-            positionTarget.format = m_offscreen.subPasses.positionColorAttachmentTexture->getFormat();
+        FragmentStage::Target normalTarget{};
+        normalTarget.format = m_offscreen.subPasses.normalColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target normalTarget{};
-            normalTarget.format = m_offscreen.subPasses.normalColorAttachmentTexture->getFormat();
+        FragmentStage::Target albedoTarget{};
+        albedoTarget.format = m_offscreen.subPasses.albedoColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target albedoTarget{};
-            albedoTarget.format = m_offscreen.subPasses.albedoColorAttachmentTexture->getFormat();
-
-            fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-            fragmentStage.shaderModule = m_offscreen.subPasses.fragmentShaderModule.get();
-        }
+        FragmentStage fragmentStage{
+            { *m_offscreen.subPasses.fragmentShaderModule, "main" },
+            { positionTarget, normalTarget, albedoTarget }
+        };
 
         DepthStencilStage depthStencil{};
         depthStencil.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_offscreen.subPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssembly;
-        descriptor.vertex = vertexShage;
-        descriptor.depthStencil = depthStencil;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_offscreen.subPasses.pipelineLayout },
+            inputAssembly,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencil
+        };
 
-        VulkanRenderPipelineDescriptor vkdescriptor{};
-        vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
-        vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
-        vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
-        vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
-        vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
-        vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
-        vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
-        vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
-        vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
-
-        vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesRenderPass();
-        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
-        vkdescriptor.subpass = 0;
-        vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
-        vkdescriptor.basePipelineIndex = -1;
+        VulkanRenderPipelineDescriptor vkdescriptor{
+            .stages = generateShaderStageCreateInfo(descriptor),
+            .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
+            .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
+            .viewportState = generateViewportStateCreateInfo(descriptor),
+            .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
+            .multisampleState = generateMultisampleStateCreateInfo(descriptor),
+            .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
+            .dynamicState = generateDynamicStateCreateInfo(descriptor),
+            .layout = downcast(descriptor.layout),
+            .renderPass = getSubpassesRenderPass(),
+            // .renderPass = getSubpassesCompatibleRenderPass(),
+            .subpass = 0,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = -1,
+        };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.subPasses.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
@@ -1365,7 +1377,6 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
     {
         m_composition.renderPasses.bindingGroups.resize(1);
 
-        SamplerBinding positionSamplerBinding{};
         {
             SamplerDescriptor samplerDescriptor{};
             samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1378,12 +1389,13 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             samplerDescriptor.lodMax = static_cast<float>(m_offscreen.renderPasses.positionColorAttachmentTexture->getMipLevels());
 
             m_composition.renderPasses.positionSampler = m_device->createSampler(samplerDescriptor);
-
-            positionSamplerBinding.index = 0;
-            positionSamplerBinding.sampler = m_composition.renderPasses.positionSampler.get();
         }
 
-        SamplerBinding normalSamplerBinding{};
+        SamplerBinding positionSamplerBinding{
+            .index = 0,
+            .sampler = *m_composition.renderPasses.positionSampler
+        };
+
         {
             SamplerDescriptor samplerDescriptor{};
             samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1396,12 +1408,13 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             samplerDescriptor.lodMax = static_cast<float>(m_offscreen.renderPasses.normalColorAttachmentTexture->getMipLevels());
 
             m_composition.renderPasses.normalSampler = m_device->createSampler(samplerDescriptor);
-
-            normalSamplerBinding.index = 1;
-            normalSamplerBinding.sampler = m_composition.renderPasses.normalSampler.get();
         }
 
-        SamplerBinding albedoSamplerBinding{};
+        SamplerBinding normalSamplerBinding{
+            .index = 1,
+            .sampler = *m_composition.renderPasses.normalSampler
+        };
+
         {
             SamplerDescriptor samplerDescriptor{};
             samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
@@ -1414,36 +1427,41 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             samplerDescriptor.lodMax = static_cast<float>(m_offscreen.renderPasses.albedoColorAttachmentTexture->getMipLevels());
 
             m_composition.renderPasses.albedoSampler = m_device->createSampler(samplerDescriptor);
-
-            albedoSamplerBinding.index = 2;
-            albedoSamplerBinding.sampler = m_composition.renderPasses.albedoSampler.get();
         }
 
-        TextureBinding positionTextureBinding{};
-        positionTextureBinding.index = 3;
-        positionTextureBinding.textureView = m_offscreen.renderPasses.positionColorAttachmentTextureView.get();
+        SamplerBinding albedoSamplerBinding{
+            .index = 2,
+            .sampler = *m_composition.renderPasses.albedoSampler
+        };
 
-        TextureBinding normalTextureBinding{};
-        normalTextureBinding.index = 4;
-        normalTextureBinding.textureView = m_offscreen.renderPasses.normalColorAttachmentTextureView.get();
+        TextureBinding positionTextureBinding{
+            .index = 3,
+            .textureView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
+        };
 
-        TextureBinding albedoTextureBinding{};
-        albedoTextureBinding.index = 5;
-        albedoTextureBinding.textureView = m_offscreen.renderPasses.albedoColorAttachmentTextureView.get();
+        TextureBinding normalTextureBinding{
+            .index = 4,
+            .textureView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
+        };
 
-        BufferBinding uniformBufferBinding{};
-        {
-            uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-            uniformBufferBinding.index = 6;
-            uniformBufferBinding.offset = 0;
-            uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
-        }
+        TextureBinding albedoTextureBinding{
+            .index = 5,
+            .textureView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
+        };
 
-        BindingGroupDescriptor descriptor{};
-        descriptor.layout = m_composition.renderPasses.bindingGroupLayouts[0].get();
-        descriptor.buffers = { uniformBufferBinding };
-        descriptor.samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding };
-        descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
+        BufferBinding uniformBufferBinding{
+            .index = 6,
+            .offset = 0,
+            .size = m_composition.uniformBuffer->getSize(),
+            .buffer = *m_composition.uniformBuffer,
+        };
+
+        BindingGroupDescriptor descriptor{
+            .layout = *m_composition.renderPasses.bindingGroupLayouts[0],
+            .buffers = { uniformBufferBinding },
+            .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
+            .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
+        };
 
         m_composition.renderPasses.bindingGroups[0] = m_device->createBindingGroup(descriptor);
     }
@@ -1453,36 +1471,41 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         m_composition.subPasses.bindingGroups.resize(2);
 
         {
-            BufferBinding uniformBufferBinding{};
-            uniformBufferBinding.buffer = m_composition.uniformBuffer.get();
-            uniformBufferBinding.index = 0;
-            uniformBufferBinding.offset = 0;
-            uniformBufferBinding.size = m_composition.uniformBuffer->getSize();
+            BufferBinding uniformBufferBinding{
+                .index = 0,
+                .offset = 0,
+                .size = m_composition.uniformBuffer->getSize(),
+                .buffer = *m_composition.uniformBuffer,
+            };
 
-            BindingGroupDescriptor descriptor{};
-            descriptor.layout = m_composition.subPasses.bindingGroupLayouts[0].get();
-            descriptor.buffers = { uniformBufferBinding };
+            BindingGroupDescriptor descriptor{
+                .layout = *m_composition.subPasses.bindingGroupLayouts[0],
+                .buffers = { uniformBufferBinding }
+            };
 
             m_composition.subPasses.bindingGroups[0] = m_device->createBindingGroup(descriptor);
         }
 
         {
+            TextureBinding positionTextureBinding{
+                .index = 0,
+                .textureView = *m_offscreen.subPasses.positionColorAttachmentTextureView
+            };
 
-            TextureBinding positionTextureBinding{};
-            positionTextureBinding.index = 0;
-            positionTextureBinding.textureView = m_offscreen.subPasses.positionColorAttachmentTextureView.get();
+            TextureBinding normalTextureBinding{
+                .index = 1,
+                .textureView = *m_offscreen.subPasses.normalColorAttachmentTextureView
+            };
 
-            TextureBinding normalTextureBinding{};
-            normalTextureBinding.index = 1;
-            normalTextureBinding.textureView = m_offscreen.subPasses.normalColorAttachmentTextureView.get();
+            TextureBinding albedoTextureBinding{
+                .index = 2,
+                .textureView = *m_offscreen.subPasses.albedoColorAttachmentTextureView
+            };
 
-            TextureBinding albedoTextureBinding{};
-            albedoTextureBinding.index = 2;
-            albedoTextureBinding.textureView = m_offscreen.subPasses.albedoColorAttachmentTextureView.get();
-
-            BindingGroupDescriptor descriptor{};
-            descriptor.layout = m_composition.subPasses.bindingGroupLayouts[1].get();
-            descriptor.textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding };
+            BindingGroupDescriptor descriptor{
+                .layout = *m_composition.subPasses.bindingGroupLayouts[1],
+                .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
+            };
 
             m_composition.subPasses.bindingGroups[1] = m_device->createBindingGroup(descriptor);
         }
@@ -1494,7 +1517,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // render passes
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.renderPasses.bindingGroupLayouts[0].get() };
+        descriptor.layouts = { *m_composition.renderPasses.bindingGroupLayouts[0] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.renderPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1503,7 +1526,7 @@ void VulkanSubpassesSample::createCompositionPipelineLayout()
     // subpasses
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_composition.subPasses.bindingGroupLayouts[0].get(), m_composition.subPasses.bindingGroupLayouts[1].get() };
+        descriptor.layouts = { *m_composition.subPasses.bindingGroupLayouts[0], *m_composition.subPasses.bindingGroupLayouts[1] };
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.subPasses.pipelineLayout = vulkanDevice->createPipelineLayout(descriptor);
@@ -1521,32 +1544,28 @@ void VulkanSubpassesSample::createCompositionPipeline()
         // Vertex
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
 
-        VertexStage vertexStage{};
-        vertexStage.entryPoint = "main";
-        { // vertex layout
-            VertexInputLayout vertexInputLayout{};
-            { // vertex attribute
-                std::vector<VertexAttribute> attributes(2);
+        // vertex layout
+        VertexInputLayout vertexInputLayout{};
+        { // vertex attribute
+            std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx3;
-                positionAttribute.offset = offsetof(CompositionVertex, position);
-                positionAttribute.location = 0;
-                attributes[0] = positionAttribute;
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx3;
+            positionAttribute.offset = offsetof(CompositionVertex, position);
+            positionAttribute.location = 0;
+            attributes[0] = positionAttribute;
 
-                VertexAttribute texCoordAttribute{};
-                texCoordAttribute.format = VertexFormat::kSFLOATx2;
-                texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
-                texCoordAttribute.location = 1;
-                attributes[1] = texCoordAttribute;
+            VertexAttribute texCoordAttribute{};
+            texCoordAttribute.format = VertexFormat::kSFLOATx2;
+            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            texCoordAttribute.location = 1;
+            attributes[1] = texCoordAttribute;
 
-                vertexInputLayout.attributes = attributes;
-            }
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(CompositionVertex);
-
-            vertexStage.layouts = { vertexInputLayout };
+            vertexInputLayout.attributes = attributes;
         }
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = sizeof(CompositionVertex);
+
         { // vertex shader module
             std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
 
@@ -1554,9 +1573,12 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = vertexSource.data();
             shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
             vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.shaderModule = vertexShaderModule.get();
         }
+
+        VertexStage vertexStage{
+            { *vertexShaderModule, "main" },
+            { vertexInputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1567,15 +1589,6 @@ void VulkanSubpassesSample::createCompositionPipeline()
         // Fragment
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
 
-        FragmentStage fragmentStage{};
-        fragmentStage.entryPoint = "main";
-        { // fragment shader targets
-            FragmentStage::Target target{};
-            target.format = m_swapchain->getTextureFormat();
-
-            fragmentStage.targets = { target };
-        }
-
         { // fragment shader module
             std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
 
@@ -1583,21 +1596,28 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = fragmentShaderSource.data();
             shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
             fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            fragmentStage.shaderModule = fragmentShaderModule.get();
         }
+
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+
+        FragmentStage fragmentStage{
+            { *fragmentShaderModule, "main" },
+            { target }
+        };
 
         // DepthStencil
         DepthStencilStage depthStencilStage{};
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor renderPipelineDescriptor{};
-        renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-        renderPipelineDescriptor.vertex = vertexStage;
-        renderPipelineDescriptor.rasterization = rasterizationStage;
-        renderPipelineDescriptor.fragment = fragmentStage;
-        renderPipelineDescriptor.depthStencil = depthStencilStage;
-        renderPipelineDescriptor.layout = m_composition.renderPasses.pipelineLayout.get();
+        RenderPipelineDescriptor renderPipelineDescriptor{
+            { *m_composition.renderPasses.pipelineLayout },
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencilStage
+        };
 
         m_composition.renderPasses.renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
     }
@@ -1609,32 +1629,29 @@ void VulkanSubpassesSample::createCompositionPipeline()
         inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
 
         // Vertex
-        VertexStage vertexStage{};
-        vertexStage.entryPoint = "main";
-        { // vertex layout
-            VertexInputLayout vertexInputLayout{};
-            { // vertex attribute
-                std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx3;
-                positionAttribute.offset = offsetof(CompositionVertex, position);
-                positionAttribute.location = 0;
-                attributes[0] = positionAttribute;
+        // vertex layout
+        VertexInputLayout vertexInputLayout{};
+        { // vertex attribute
+            std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute texCoordAttribute{};
-                texCoordAttribute.format = VertexFormat::kSFLOATx2;
-                texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
-                texCoordAttribute.location = 1;
-                attributes[1] = texCoordAttribute;
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx3;
+            positionAttribute.offset = offsetof(CompositionVertex, position);
+            positionAttribute.location = 0;
+            attributes[0] = positionAttribute;
 
-                vertexInputLayout.attributes = attributes;
-            }
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(CompositionVertex);
+            VertexAttribute texCoordAttribute{};
+            texCoordAttribute.format = VertexFormat::kSFLOATx2;
+            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            texCoordAttribute.location = 1;
+            attributes[1] = texCoordAttribute;
 
-            vertexStage.layouts = { vertexInputLayout };
+            vertexInputLayout.attributes = attributes;
         }
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = sizeof(CompositionVertex);
+
         { // vertex shader module
             std::vector<char> vertexSource = utils::readFile(m_appDir / "subpasses_composition.vert.spv", m_handle);
 
@@ -1642,9 +1659,12 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = vertexSource.data();
             shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
             m_composition.subPasses.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.shaderModule = m_composition.subPasses.vertexShaderModule.get();
         }
+
+        VertexStage vertexStage{
+            { *m_composition.subPasses.vertexShaderModule, "main" },
+            { vertexInputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1653,15 +1673,6 @@ void VulkanSubpassesSample::createCompositionPipeline()
         rasterizationStage.sampleCount = m_sampleCount;
 
         // Fragment
-        FragmentStage fragmentStage{};
-        fragmentStage.entryPoint = "main";
-        { // fragment shader targets
-            FragmentStage::Target target{};
-            target.format = m_swapchain->getTextureFormat();
-
-            fragmentStage.targets = { target };
-        }
-
         { // fragment shader module
             std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "subpasses_composition.frag.spv", m_handle);
 
@@ -1669,40 +1680,46 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = fragmentShaderSource.data();
             shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
             m_composition.subPasses.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            fragmentStage.shaderModule = m_composition.subPasses.fragmentShaderModule.get();
         }
+
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+        FragmentStage fragmentStage{
+            { *m_composition.subPasses.fragmentShaderModule, "main" },
+            { target }
+        };
 
         // DepthStencil
         DepthStencilStage depthStencilStage{};
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_composition.subPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssemblyStage;
-        descriptor.vertex = vertexStage;
-        descriptor.depthStencil = depthStencilStage;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_composition.subPasses.pipelineLayout },
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencilStage
+        };
 
-        VulkanRenderPipelineDescriptor vkdescriptor{};
-        vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
-        vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
-        vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
-        vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
-        vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
-        vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
-        vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
+        VulkanRenderPipelineDescriptor vkdescriptor{
+            .stages = generateShaderStageCreateInfo(descriptor),
+            .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
+            .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
+            .viewportState = generateViewportStateCreateInfo(descriptor),
+            .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
+            .multisampleState = generateMultisampleStateCreateInfo(descriptor),
+            .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
+            .dynamicState = generateDynamicStateCreateInfo(descriptor),
+            .layout = downcast(descriptor.layout),
+            .renderPass = getSubpassesRenderPass(),
+            // .renderPass = getSubpassesCompatibleRenderPass(),
+            .subpass = 1,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = -1,
+        };
         vkdescriptor.depthStencilState.depthWriteEnable = false;
-        vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
-        vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
-
-        vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesRenderPass();
-        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
-        vkdescriptor.subpass = 1;
-        vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
-        vkdescriptor.basePipelineIndex = -1;
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.subPasses.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
@@ -1789,7 +1806,7 @@ void VulkanSubpassesSample::createCompositionVertexBuffer()
     vertexBuffer->unmap();
 }
 
-VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
+VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -1800,10 +1817,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
         {
             // position
             {
-                auto texture = downcast(m_offscreen.subPasses.positionColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1817,10 +1834,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 
             // normal
             {
-                auto texture = downcast(m_offscreen.subPasses.normalColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1834,10 +1851,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 
             // albedo
             {
-                auto texture = downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1852,10 +1869,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 
         // second pass
         {
-            auto swapchain = downcast(m_swapchain.get());
+            auto& swapchain = downcast(*m_swapchain);
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(swapchain->getTextureFormat());
+            attachment.format = ToVkFormat(swapchain.getTextureFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1869,10 +1886,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 
         // depth
         {
-            auto texture = downcast(m_depthStencilTextureView.get())->getTexture();
+            auto& texture = downcast(*m_depthStencilTextureView).getTexture();
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(texture->getFormat());
+            attachment.format = ToVkFormat(texture.getFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -2032,11 +2049,11 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
         }
     }
 
-    auto vulkanDevice = downcast(m_device.get());
-    return vulkanDevice->getRenderPass(renderPassDescriptor);
+    auto& vulkanDevice = downcast(*m_device);
+    return vulkanDevice.getRenderPass(renderPassDescriptor);
 }
 
-VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
+VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 {
     VulkanRenderPassDescriptor renderPassDescriptor{};
 
@@ -2047,10 +2064,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
         {
             // position
             {
-                auto texture = downcast(m_offscreen.subPasses.positionColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2064,10 +2081,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
             // normal
             {
-                auto texture = downcast(m_offscreen.subPasses.normalColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2081,10 +2098,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
             // albedo
             {
-                auto texture = downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView.get())->getTexture();
+                auto& texture = downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getTexture();
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture->getFormat());
+                attachment.format = ToVkFormat(texture.getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2099,10 +2116,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
         // second pass
         {
-            auto swapchain = downcast(m_swapchain.get());
+            auto& swapchain = downcast(*m_swapchain);
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(swapchain->getTextureFormat());
+            attachment.format = ToVkFormat(swapchain.getTextureFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2116,10 +2133,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
         // depth
         {
-            auto texture = downcast(m_depthStencilTextureView.get())->getTexture();
+            auto& texture = downcast(*m_depthStencilTextureView).getTexture();
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(texture->getFormat());
+            attachment.format = ToVkFormat(texture.getFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2291,31 +2308,31 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
         }
     }
 
-    auto vulkanDevice = downcast(m_device.get());
-    return vulkanDevice->getRenderPass(renderPassDescriptor);
+    auto& vulkanDevice = downcast(*m_device);
+    return vulkanDevice.getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* renderView)
+VulkanFramebuffer& VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView& renderView)
 {
     VulkanFramebufferDescriptor descriptor{};
-    descriptor.renderPass = getSubpassesRenderPass()->getVkRenderPass();
+    descriptor.renderPass = getSubpassesRenderPass().getVkRenderPass();
     descriptor.width = m_swapchain->getWidth();
     descriptor.height = m_swapchain->getHeight();
     descriptor.layers = 1;
 
     // first pass
-    descriptor.attachments.push_back(downcast(m_offscreen.subPasses.positionColorAttachmentTextureView.get())->getVkImageView());
-    descriptor.attachments.push_back(downcast(m_offscreen.subPasses.normalColorAttachmentTextureView.get())->getVkImageView());
-    descriptor.attachments.push_back(downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView.get())->getVkImageView());
+    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getVkImageView());
+    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getVkImageView());
+    descriptor.attachments.push_back(downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getVkImageView());
 
     // second pass
-    descriptor.attachments.push_back(downcast(renderView)->getVkImageView());
+    descriptor.attachments.push_back(downcast(renderView).getVkImageView());
 
     // depth
-    descriptor.attachments.push_back(downcast(m_depthStencilTextureView.get())->getVkImageView());
+    descriptor.attachments.push_back(downcast(*m_depthStencilTextureView).getVkImageView());
 
-    auto vulkanDevice = downcast(m_device.get());
-    return vulkanDevice->getFrameBuffer(descriptor);
+    auto& vulkanDevice = downcast(*m_device);
+    return vulkanDevice.getFrameBuffer(descriptor);
 }
 
 void VulkanSubpassesSample::createDepthStencilTexture()

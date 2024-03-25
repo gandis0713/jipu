@@ -23,11 +23,11 @@ namespace jipu
 class Im_Gui
 {
 protected:
-    void initImGui(Device* device, Queue* queue, Swapchain* swapchain);
+    void initImGui(Device* device, Queue* queue, Swapchain& swapchain);
     void clearImGui();
     virtual void updateImGui() = 0;
     void buildImGui();
-    void drawImGui(CommandEncoder* commandEncoder, TextureView* renderView);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
 protected:
     struct Padding

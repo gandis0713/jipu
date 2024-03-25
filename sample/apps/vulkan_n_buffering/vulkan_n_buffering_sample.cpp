@@ -3,6 +3,7 @@
 #include <spdlog/spdlog.h>
 
 #include <algorithm>
+#include <optional>
 #include <random>
 #include <stdexcept>
 
@@ -90,7 +91,7 @@ void VulkanNBufferingSample::init()
     createPipelineLayout();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -171,18 +172,18 @@ void VulkanNBufferingSample::updateImGui()
 
 void VulkanNBufferingSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
-                            .resolveView = m_sampleCount > 1 ? renderView : nullptr,
-                            .loadOp = LoadOp::kClear,
-                            .storeOp = StoreOp::kStore,
-                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+    std::vector<ColorAttachment> colorAttachments{}; // in currently. use only one.
+    colorAttachments.push_back({ .renderView = m_sampleCount > 1 ? *m_colorAttachmentTextureView : renderView,
+                                 .resolveView = m_sampleCount > 1 ? std::make_optional<TextureView::Ref>(renderView) : std::nullopt,
+                                 .loadOp = LoadOp::kClear,
+                                 .storeOp = StoreOp::kStore,
+                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } });
+    DepthStencilAttachment depthStencilAttachment{ .textureView = *m_depthStencilTextureView,
                                                    .depthLoadOp = LoadOp::kClear,
                                                    .depthStoreOp = StoreOp::kStore,
                                                    .stencilLoadOp = LoadOp::kDontCare,
@@ -194,11 +195,11 @@ void VulkanNBufferingSample::draw()
                                                       .sampleCount = m_sampleCount };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-    renderPassEncoder->setPipeline(m_renderPipeline.get());
-    renderPassEncoder->setBindingGroup(0, m_bindingGroups[0].get());
-    renderPassEncoder->setBindingGroup(1, m_bindingGroups[1].get());
-    renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-    renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+    renderPassEncoder->setPipeline(*m_renderPipeline);
+    renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
+    renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
+    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+    renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
     renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
     renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
@@ -206,7 +207,7 @@ void VulkanNBufferingSample::draw()
 
     drawImGui(commandEncoder.get(), renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
 void VulkanNBufferingSample::createDriver()
@@ -229,8 +230,8 @@ void VulkanNBufferingSample::createSurface()
 
     m_surface = downcast(m_driver.get())->createSurface(vkdescriptor);
 
-    auto vulkanSurface = downcast(m_surface.get());
-    m_surfaceInfo = downcast(m_physicalDevice.get())->gatherSurfaceInfo(downcast(vulkanSurface));
+    auto& vulkanSurface = downcast(*m_surface);
+    m_surfaceInfo = downcast(m_physicalDevice.get())->gatherSurfaceInfo(vulkanSurface);
 }
 
 void VulkanNBufferingSample::createDevice()
@@ -261,23 +262,23 @@ void VulkanNBufferingSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
-    SwapchainDescriptor descriptor;
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.textureFormat = textureFormat;
-    descriptor.presentMode = PresentMode::kFifo;
-
-    auto vulkanDevice = downcast(m_device.get());
+    auto& vulkanDevice = downcast(*m_device);
     VulkanSwapchainDescriptor vkdescriptor = generateVulkanSwapchainDescriptor(vulkanDevice, descriptor);
 
     vkdescriptor.presentMode = m_presentMode;
     vkdescriptor.minImageCount = m_minImageCount;
     vkdescriptor.oldSwapchain = m_swapchain != nullptr ? downcast(m_swapchain.get())->getVkSwapchainKHR() : VK_NULL_HANDLE;
 
-    auto swapchain = vulkanDevice->createSwapchain(vkdescriptor);
+    auto swapchain = vulkanDevice.createSwapchain(vkdescriptor);
 
     m_swapchain = std::move(swapchain);
 }
@@ -301,7 +302,7 @@ void VulkanNBufferingSample::createVertexBuffer()
     m_vertexBuffer = m_device->createBuffer(vertexBufferDescriptor);
 
     // copy staging buffer to target buffer
-    copyBufferToBuffer(vertexStagingBuffer.get(), m_vertexBuffer.get());
+    copyBufferToBuffer(*vertexStagingBuffer, *m_vertexBuffer);
 
     // unmap staging buffer.
     // vertexStagingBuffer->unmap(); // TODO: need unmap before destroy it?
@@ -363,7 +364,7 @@ void VulkanNBufferingSample::createImageTexture()
     m_imageTexture = m_device->createTexture(textureDescriptor);
 
     // copy image staging buffer to texture
-    copyBufferToTexture(imageTextureStagingBuffer.get(), m_imageTexture.get());
+    copyBufferToTexture(*imageTextureStagingBuffer, *m_imageTexture);
 
     // unmap staging buffer
     // imageTextureStagingBuffer->unmap(); // TODO: need unmap before destroy it?
@@ -483,32 +484,37 @@ void VulkanNBufferingSample::createBindingGroup()
 {
     m_bindingGroups.resize(2);
     {
-        BufferBinding bufferBinding{};
-        bufferBinding.index = 0;
-        bufferBinding.buffer = m_uniformBuffer.get();
-        bufferBinding.offset = 0;
-        bufferBinding.size = sizeof(UniformBufferObject);
+        BufferBinding bufferBinding{
+            .index = 0,
+            .offset = 0,
+            .size = sizeof(UniformBufferObject),
+            .buffer = *m_uniformBuffer,
+        };
 
-        BindingGroupDescriptor descriptor{};
-        descriptor.layout = m_bindingGroupLayouts[0].get();
-        descriptor.buffers = { bufferBinding };
+        BindingGroupDescriptor descriptor{
+            .layout = *m_bindingGroupLayouts[0],
+            .buffers = { bufferBinding },
+        };
 
         m_bindingGroups[0] = m_device->createBindingGroup(descriptor);
     }
 
     {
-        SamplerBinding samplerBinding{};
-        samplerBinding.index = 0;
-        samplerBinding.sampler = m_imageSampler.get();
+        SamplerBinding samplerBinding{
+            .index = 0,
+            .sampler = *m_imageSampler,
+        };
 
-        TextureBinding textureBinding{};
-        textureBinding.index = 1;
-        textureBinding.textureView = m_imageTextureView.get();
+        TextureBinding textureBinding{
+            .index = 1,
+            .textureView = *m_imageTextureView,
+        };
 
-        BindingGroupDescriptor descriptor{};
-        descriptor.layout = m_bindingGroupLayouts[1].get();
-        descriptor.samplers = { samplerBinding };
-        descriptor.textures = { textureBinding };
+        BindingGroupDescriptor descriptor{
+            .layout = *m_bindingGroupLayouts[1],
+            .samplers = { samplerBinding },
+            .textures = { textureBinding },
+        };
 
         m_bindingGroups[1] = m_device->createBindingGroup(descriptor);
     }
@@ -516,7 +522,7 @@ void VulkanNBufferingSample::createBindingGroup()
 
 void VulkanNBufferingSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
@@ -530,42 +536,42 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
+
+    // create vertex shader
+    const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.vert.spv", m_handle);
+    ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
+                                                         .codeSize = vertShaderCode.size() };
+    m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
+
+    // layouts
+    std::vector<VertexInputLayout> layouts{};
+    layouts.resize(1);
     {
-        // create vertex shader
-        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.vert.spv", m_handle);
-        ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
-                                                             .codeSize = vertShaderCode.size() };
-        m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
-        vertexStage.shaderModule = m_vertexShaderModule.get();
-
-        // layouts
-        std::vector<VertexInputLayout> layouts{};
-        layouts.resize(1);
+        // attributes
+        std::vector<VertexAttribute> vertexAttributes{};
+        vertexAttributes.resize(2);
         {
-            // attributes
-            std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
-            {
-                // position
-                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Vertex, pos),
-                                        .location = 0 };
+            // position
+            vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+                                    .offset = offsetof(Vertex, pos),
+                                    .location = 0 };
 
-                // texture coodinate
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
-                                        .offset = offsetof(Vertex, texCoord),
-                                        .location = 1 };
-            }
-
-            VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
-                                            .stride = sizeof(Vertex),
-                                            .attributes = vertexAttributes };
-            layouts[0] = vertexLayout;
+            // texture coodinate
+            vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+                                    .offset = offsetof(Vertex, texCoord),
+                                    .location = 1 };
         }
 
-        vertexStage.layouts = layouts;
+        VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
+                                        .stride = sizeof(Vertex),
+                                        .attributes = vertexAttributes };
+        layouts[0] = vertexLayout;
     }
+
+    VertexStage vertexStage{
+        { *m_vertexShaderModule, "main" },
+        layouts
+    };
 
     // Rasterization
     RasterizationStage rasterization{};
@@ -576,19 +582,17 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     // fragment stage
-    FragmentStage fragmentStage{};
-    {
-        // create fragment shader
-        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.frag.spv", m_handle);
-        ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
-                                                               .codeSize = fragShaderCode.size() };
-        m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        fragmentStage.shaderModule = m_fragmentShaderModule.get();
+    // create fragment shader
+    const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.frag.spv", m_handle);
+    ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
+                                                           .codeSize = fragShaderCode.size() };
+    m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        // output targets
-        fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
-    }
+    FragmentStage fragmentStage{
+        { *m_fragmentShaderModule, "main" },
+        { { .format = m_swapchain->getTextureFormat() } }
+    };
 
     // Depth/Stencil stage
     DepthStencilStage depthStencilStage;
@@ -596,26 +600,29 @@ void VulkanNBufferingSample::createRenderPipeline()
         depthStencilStage.format = m_depthStencilTexture->getFormat();
     }
 
-    RenderPipelineDescriptor descriptor;
-    descriptor.layout = m_pipelineLayout.get();
-    descriptor.inputAssembly = inputAssembly;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterization;
-    descriptor.fragment = fragmentStage;
-    descriptor.depthStencil = depthStencilStage;
+    RenderPipelineDescriptor descriptor{
+        { *m_pipelineLayout }, // PipelineDescriptor
+        inputAssembly,
+        vertexStage,
+        rasterization,
+        fragmentStage,
+        depthStencilStage,
+    };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void VulkanNBufferingSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
+void VulkanNBufferingSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
-    BlitBuffer srcBuffer{};
-    srcBuffer.buffer = src;
-    srcBuffer.offset = 0;
+    BlitBuffer srcBuffer{
+        .buffer = src,
+        .offset = 0,
+    };
 
-    BlitBuffer dstBuffer{};
-    dstBuffer.buffer = dst;
-    dstBuffer.offset = 0;
+    BlitBuffer dstBuffer{
+        .buffer = dst,
+        .offset = 0,
+    };
 
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
@@ -623,25 +630,27 @@ void VulkanNBufferingSample::copyBufferToBuffer(Buffer* src, Buffer* dst)
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src->getSize());
+    commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src.getSize());
 
     m_queue->submit({ commandEncoder->finish() });
 }
 
-void VulkanNBufferingSample::copyBufferToTexture(Buffer* imageTextureStagingBuffer, Texture* imageTexture)
+void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
-    BlitTextureBuffer blitTextureBuffer{};
-    blitTextureBuffer.buffer = imageTextureStagingBuffer;
-    blitTextureBuffer.offset = 0;
     uint32_t channel = 4;                          // TODO: from texture.
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
-    blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture->getWidth() * channel;
-    blitTextureBuffer.rowsPerTexture = imageTexture->getHeight();
+
+    BlitTextureBuffer blitTextureBuffer{
+        .buffer = imageTextureStagingBuffer,
+        .offset = 0,
+        .bytesPerRow = bytesPerData * imageTexture.getWidth() * channel,
+        .rowsPerTexture = imageTexture.getHeight(),
+    };
 
     BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
-    extent.width = imageTexture->getWidth();
-    extent.height = imageTexture->getHeight();
+    extent.width = imageTexture.getWidth();
+    extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };

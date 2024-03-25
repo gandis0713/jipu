@@ -52,12 +52,12 @@ VulkanBindingGroupLayoutDescriptor generateVulkanBindingGroupLayoutDescriptor(co
     return vkdescriptor;
 }
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const BindingGroupLayoutDescriptor& descriptor)
+VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice& device, const BindingGroupLayoutDescriptor& descriptor)
     : VulkanBindingGroupLayout(device, generateVulkanBindingGroupLayoutDescriptor(descriptor))
 {
 }
 
-VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const VulkanBindingGroupLayoutDescriptor& descriptor)
+VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice& device, const VulkanBindingGroupLayoutDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -70,8 +70,8 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const V
                                                       .bindingCount = static_cast<uint32_t>(bindings.size()),
                                                       .pBindings = bindings.data() };
 
-    const VulkanAPI& vkAPI = device->vkAPI;
-    VkResult result = vkAPI.CreateDescriptorSetLayout(device->getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
+    const VulkanAPI& vkAPI = device.vkAPI;
+    VkResult result = vkAPI.CreateDescriptorSetLayout(device.getVkDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create VkDescriptorSetLayout");
@@ -80,8 +80,8 @@ VulkanBindingGroupLayout::VulkanBindingGroupLayout(VulkanDevice* device, const V
 
 VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyDescriptorSetLayout(vulkanDevice->getVkDevice(), m_descriptorSetLayout, nullptr);
+    auto& vulkanDevice = downcast(m_device);
+    vulkanDevice.vkAPI.DestroyDescriptorSetLayout(vulkanDevice.getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferBindingLayouts() const

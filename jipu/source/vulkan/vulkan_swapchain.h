@@ -24,7 +24,7 @@ struct VulkanSwapchainDescriptor
 {
     const void* next = nullptr;
     VkSwapchainCreateFlagsKHR flags = 0u;
-    VulkanSurface* surface = nullptr;
+    VulkanSurface& surface;
     uint32_t minImageCount = 0;
     VkFormat imageFormat;
     VkColorSpaceKHR imageColorSpace;
@@ -44,8 +44,8 @@ class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;
-    VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
-    VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice& device, const SwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
     VulkanSwapchain(const Swapchain&) = delete;
@@ -55,8 +55,8 @@ public:
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
 
-    void present(Queue* queue) override;
-    TextureView* acquireNextTexture() override;
+    void present(Queue& queue) override;
+    TextureView& acquireNextTexture() override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
@@ -65,8 +65,8 @@ public:
     std::pair<VkSemaphore, VkPipelineStageFlags> getRenderSemaphore() const;
 
 private:
-    VulkanDevice* m_device = nullptr;
-    const VulkanSwapchainDescriptor m_descriptor{};
+    VulkanDevice& m_device;
+    const VulkanSwapchainDescriptor m_descriptor;
 
     std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
     std::vector<std::unique_ptr<VulkanTextureView>> m_textureViews{};
@@ -81,7 +81,7 @@ private:
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Generate Helper
-VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor);
+VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice& device, const SwapchainDescriptor& descriptor);
 
 // Convert Helper
 ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace);

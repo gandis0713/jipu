@@ -31,12 +31,12 @@ VulkanTextureDescriptor generateVulkanTextureDescriptor(const TextureDescriptor&
     return vkdescriptor;
 }
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor)
+VulkanTexture::VulkanTexture(VulkanDevice& device, const TextureDescriptor& descriptor)
     : VulkanTexture(device, generateVulkanTextureDescriptor(descriptor))
 {
 }
 
-VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor)
+VulkanTexture::VulkanTexture(VulkanDevice& device, const VulkanTextureDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
@@ -73,8 +73,8 @@ VulkanTexture::VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor
         createInfo.samples = m_descriptor.samples;
         createInfo.flags = m_descriptor.flags;
 
-        auto vulkanResourceAllocator = device->getResourceAllocator();
-        m_resource = vulkanResourceAllocator->createTexture(createInfo);
+        auto& vulkanResourceAllocator = device.getResourceAllocator();
+        m_resource = vulkanResourceAllocator.createTexture(createInfo);
 
         m_owner = VulkanTextureOwner::User;
     }
@@ -89,14 +89,14 @@ VulkanTexture::~VulkanTexture()
 {
     if (m_owner == VulkanTextureOwner::User)
     {
-        auto vulkanResourceAllocator = downcast(m_device)->getResourceAllocator();
-        vulkanResourceAllocator->destroyTexture(m_resource);
+        auto& vulkanResourceAllocator = downcast(m_device).getResourceAllocator();
+        vulkanResourceAllocator.destroyTexture(m_resource);
     }
 }
 
 std::unique_ptr<TextureView> VulkanTexture::createTextureView(const TextureViewDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTextureView>(this, descriptor);
+    return std::make_unique<VulkanTextureView>(*this, descriptor);
 }
 
 TextureType VulkanTexture::getType() const
@@ -139,7 +139,7 @@ uint32_t VulkanTexture::getSampleCount() const
     return ToSampleCount(m_descriptor.samples);
 }
 
-VulkanDevice* VulkanTexture::getDevice() const
+VulkanDevice& VulkanTexture::getDevice() const
 {
     return m_device;
 }
@@ -160,8 +160,8 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
         return;
     }
 
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // set Image Memory Barrier
     VkImageMemoryBarrier barrier{};
@@ -184,8 +184,8 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
 
 void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }

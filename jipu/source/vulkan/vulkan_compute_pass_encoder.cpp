@@ -11,39 +11,42 @@
 namespace jipu
 {
 
-VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor)
+VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer& commandBuffer, const ComputePassEncoderDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
 {
     // do nothing.
 }
 
-void VulkanComputePassEncoder::setPipeline(ComputePipeline* pipeline)
+void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
 {
-    m_pipeline = static_cast<VulkanComputePipeline*>(pipeline);
+    m_pipeline = std::make_optional<VulkanComputePipeline::Ref>(downcast(pipeline));
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
 
-    vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(),
+    vkAPI.CmdBindPipeline(vulkanCommandBuffer.getVkCommandBuffer(),
                           VK_PIPELINE_BIND_POINT_COMPUTE,
-                          m_pipeline->getVkPipeline());
+                          m_pipeline.value().get().getVkPipeline());
 }
 
-void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
+void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
-    auto vulkanBindingGroup = downcast(bindingGroup);
+    if (!m_pipeline.has_value())
+        throw std::runtime_error("The pipeline is null opt");
 
-    const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto& vulkanBindingGroup = downcast(bindingGroup);
+    auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
 
-    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
 
-    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+    VkDescriptorSet descriptorSet = vulkanBindingGroup.getVkDescriptorSet();
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer.getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                vulkanPipelineLayout.getVkPipelineLayout(),
                                 0,
                                 1,
                                 &descriptorSet,
@@ -53,20 +56,20 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup* bin
 
 void VulkanComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    const VulkanAPI& vkAPI = downcast(vulkanDevice)->vkAPI;
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
 
-    vkAPI.CmdDispatch(vulkanCommandBuffer->getVkCommandBuffer(), x, y, z);
+    vkAPI.CmdDispatch(vulkanCommandBuffer.getVkCommandBuffer(), x, y, z);
 }
 
 void VulkanComputePassEncoder::end()
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
 
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-    vulkanCommandBuffer->setSignalPipelineStage(flags);
+    vulkanCommandBuffer.setSignalPipelineStage(flags);
 }
 
 } // namespace jipu

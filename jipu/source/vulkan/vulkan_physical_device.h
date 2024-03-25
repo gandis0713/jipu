@@ -33,19 +33,19 @@ class VULKAN_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;
-    VulkanPhysicalDevice(VulkanDriver* driver, const VulkanPhysicalDeviceDescriptor& descriptor);
+    VulkanPhysicalDevice(VulkanDriver& driver, const VulkanPhysicalDeviceDescriptor& descriptor);
     ~VulkanPhysicalDevice() override;
 
-    std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) override;
+    std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) override;
 
     PhysicalDeviceInfo getInfo() const override;
 
 public:
-    VulkanDriver* getDriver() const;
+    VulkanDriver& getDriver() const;
 
 public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
-    VulkanSurfaceInfo gatherSurfaceInfo(VulkanSurface* surface) const;
+    VulkanSurfaceInfo gatherSurfaceInfo(VulkanSurface& surface) const;
 
     int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
     bool isDepthStencilSupported(VkFormat format) const;
@@ -58,7 +58,7 @@ private:
     void gatherPhysicalDeviceInfo();
 
 protected:
-    VulkanDriver* m_driver = nullptr;
+    VulkanDriver& m_driver;
 
 private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;

@@ -13,17 +13,17 @@ class VULKAN_EXPORT VulkanQueue : public Queue
 {
 public:
     VulkanQueue() = delete;
-    VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
+    VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
-    void submit(std::vector<CommandBuffer*> commandBuffers) override;
-    void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) override;
+    void submit(std::vector<CommandBuffer::Ref> commandBuffers) override;
+    void submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain) override;
 
 public:
     VkQueue getVkQueue() const;
 
 protected:
-    Device* m_device;
+    VulkanDevice& m_device;
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
@@ -42,7 +42,7 @@ private:
 
     } m_submitInfo;
 
-    std::vector<SubmitInfo> gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers);
+    std::vector<SubmitInfo> gatherSubmitInfo(std::vector<CommandBuffer::Ref> commandBuffers);
     void submit(const std::vector<SubmitInfo>& submitInfos);
 };
 

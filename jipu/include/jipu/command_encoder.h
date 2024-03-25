@@ -17,19 +17,21 @@ class RenderPassEncoder;
 
 struct BlitBuffer
 {
-    Buffer* buffer = nullptr;
+    Buffer& buffer;
     uint32_t offset = 0;
 };
 
-struct BlitTextureBuffer : BlitBuffer
+struct BlitTextureBuffer
 {
+    Buffer& buffer;
+    uint32_t offset = 0;
     uint32_t bytesPerRow = 0;
     uint32_t rowsPerTexture = 0;
 };
 
 struct BlitTexture
 {
-    Texture* texture = nullptr;
+    Texture& texture;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 
@@ -50,7 +52,7 @@ public:
     virtual void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) = 0;
     virtual void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) = 0;
 
-    virtual CommandBuffer* finish() = 0;
+    virtual CommandBuffer& finish() = 0;
 };
 
 } // namespace jipu

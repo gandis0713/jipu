@@ -175,7 +175,7 @@ void ParticleSample::init()
     createQueue();
     createCommandBuffer();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -231,37 +231,39 @@ void ParticleSample::draw()
 
         ComputePassEncoderDescriptor computePassDescriptor{};
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
-        computePassEncoder->setPipeline(m_computePipeline.get());
-        computePassEncoder->setBindingGroup(0, m_computeBindingGroups[(m_vertexIndex + 1) % 2].get());
+        computePassEncoder->setPipeline(*m_computePipeline);
+        computePassEncoder->setBindingGroup(0, *m_computeBindingGroups[(m_vertexIndex + 1) % 2]);
         computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
         computePassEncoder->end();
 
         computeCommandEncoder->finish();
 
         if (separateCmdBuffer)
-            m_queue->submit({ m_computeCommandBuffer.get() });
+            m_queue->submit({ *m_computeCommandBuffer });
     }
 
     // encode render command
     {
-        auto renderView = m_swapchain->acquireNextTexture();
+        auto& renderView = m_swapchain->acquireNextTexture();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        ColorAttachment colorAttachment{};
-        colorAttachment.renderView = renderView;
+        ColorAttachment colorAttachment{
+            .renderView = renderView
+        };
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassDescriptor{};
-        renderPassDescriptor.colorAttachments = { colorAttachment };
-        renderPassDescriptor.sampleCount = m_sampleCount;
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { colorAttachment },
+            .sampleCount = m_sampleCount
+        };
 
         std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
+        renderPassEncoder->setPipeline(*m_renderPipeline);
+        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
         renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
@@ -272,11 +274,11 @@ void ParticleSample::draw()
         renderCommandEncoder->finish();
 
         if (separateCmdBuffer)
-            m_queue->submit({ m_renderCommandBuffer.get() }, m_swapchain.get());
+            m_queue->submit({ *m_renderCommandBuffer }, *m_swapchain);
     }
 
     if (!separateCmdBuffer)
-        m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, m_swapchain.get());
+        m_queue->submit({ *m_computeCommandBuffer, *m_renderCommandBuffer }, *m_swapchain);
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
@@ -320,13 +322,15 @@ void ParticleSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
-    SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
-                                    .presentMode = PresentMode::kFifo,
-                                    .colorSpace = ColorSpace::kSRGBNonLinear,
-                                    .width = m_width,
-                                    .height = m_height,
-                                    .surface = m_surface.get() };
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
@@ -435,32 +439,36 @@ void ParticleSample::createComputeBindingGroup()
     m_computeBindingGroupLayout = m_device->createBindingGroupLayout(bindingGroupLayoutDescriptor);
 
     {
-        BufferBinding bufferUBOBinding{};
-        bufferUBOBinding.buffer = m_uniformBuffer.get();
-        bufferUBOBinding.index = 0;
-        bufferUBOBinding.offset = 0;
-        bufferUBOBinding.size = m_uniformBuffer->getSize();
+        BufferBinding bufferUBOBinding{
+            .index = 0,
+            .offset = 0,
+            .size = m_uniformBuffer->getSize(),
+            .buffer = *m_uniformBuffer,
+        };
 
-        BufferBinding bufferInBinding{};
-        bufferInBinding.buffer = m_vertexBuffers[0].get();
-        bufferInBinding.index = 1;
-        bufferInBinding.offset = 0;
-        bufferInBinding.size = m_vertexBuffers[0]->getSize();
+        BufferBinding bufferInBinding{
+            .index = 1,
+            .offset = 0,
+            .size = m_vertexBuffers[0]->getSize(),
+            .buffer = *m_vertexBuffers[0],
+        };
 
-        BufferBinding bufferOutBinding{};
-        bufferOutBinding.buffer = m_vertexBuffers[1].get();
-        bufferOutBinding.index = 2;
-        bufferOutBinding.offset = 0;
-        bufferOutBinding.size = m_vertexBuffers[1]->getSize();
+        BufferBinding bufferOutBinding{
+            .index = 2,
+            .offset = 0,
+            .size = m_vertexBuffers[1]->getSize(),
+            .buffer = *m_vertexBuffers[1],
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
-        bindingGroupDescriptor.samplers = {};
-        bindingGroupDescriptor.textures = {};
-        bindingGroupDescriptor.buffers = {
-            bufferUBOBinding,
-            bufferInBinding,
-            bufferOutBinding
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .layout = *m_computeBindingGroupLayout,
+            .buffers = {
+                bufferUBOBinding,
+                bufferInBinding,
+                bufferOutBinding,
+            },
+            .samplers = {},
+            .textures = {},
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -468,32 +476,36 @@ void ParticleSample::createComputeBindingGroup()
     }
 
     {
-        BufferBinding bufferUBOBinding{};
-        bufferUBOBinding.buffer = m_uniformBuffer.get();
-        bufferUBOBinding.index = 0;
-        bufferUBOBinding.offset = 0;
-        bufferUBOBinding.size = m_uniformBuffer->getSize();
+        BufferBinding bufferUBOBinding{
+            .index = 0,
+            .offset = 0,
+            .size = m_uniformBuffer->getSize(),
+            .buffer = *m_uniformBuffer,
+        };
 
-        BufferBinding bufferInBinding{};
-        bufferInBinding.buffer = m_vertexBuffers[1].get();
-        bufferInBinding.index = 1;
-        bufferInBinding.offset = 0;
-        bufferInBinding.size = m_vertexBuffers[1]->getSize();
+        BufferBinding bufferInBinding{
+            .index = 1,
+            .offset = 0,
+            .size = m_vertexBuffers[1]->getSize(),
+            .buffer = *m_vertexBuffers[1],
+        };
 
-        BufferBinding bufferOutBinding{};
-        bufferOutBinding.buffer = m_vertexBuffers[0].get();
-        bufferOutBinding.index = 2;
-        bufferOutBinding.offset = 0;
-        bufferOutBinding.size = m_vertexBuffers[0]->getSize();
+        BufferBinding bufferOutBinding{
+            .index = 2,
+            .offset = 0,
+            .size = m_vertexBuffers[0]->getSize(),
+            .buffer = *m_vertexBuffers[0],
+        };
 
-        BindingGroupDescriptor bindingGroupDescriptor{};
-        bindingGroupDescriptor.layout = m_computeBindingGroupLayout.get();
-        bindingGroupDescriptor.samplers = {};
-        bindingGroupDescriptor.textures = {};
-        bindingGroupDescriptor.buffers = {
-            bufferUBOBinding,
-            bufferInBinding,
-            bufferOutBinding,
+        BindingGroupDescriptor bindingGroupDescriptor{
+            .layout = *m_computeBindingGroupLayout,
+            .buffers = {
+                bufferUBOBinding,
+                bufferInBinding,
+                bufferOutBinding,
+            },
+            .samplers = {},
+            .textures = {},
         };
 
         auto computeBindingGroup = m_device->createBindingGroup(bindingGroupDescriptor);
@@ -505,21 +517,22 @@ void ParticleSample::createComputePipeline()
 {
     // pipeline layout
     PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    pipelineLayoutDescriptor.layouts = { m_computeBindingGroupLayout.get() };
+    pipelineLayoutDescriptor.layouts = { *m_computeBindingGroupLayout };
     m_computePipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 
     // compute shader
-    ComputeStage computeStage{};
     const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
     ShaderModuleDescriptor shaderModuleDescriptor{ .code = computeShaderSource.data(),
                                                    .codeSize = computeShaderSource.size() };
     auto computeShader = m_device->createShaderModule(shaderModuleDescriptor);
-    computeStage.entryPoint = "main";
-    computeStage.shaderModule = computeShader.get();
+    ComputeStage computeStage{
+        { *computeShader, "main" }
+    };
 
-    ComputePipelineDescriptor computePipelineDescriptor{};
-    computePipelineDescriptor.compute = computeStage;
-    computePipelineDescriptor.layout = m_computePipelineLayout.get();
+    ComputePipelineDescriptor computePipelineDescriptor{
+        { *m_computePipelineLayout },
+        computeStage
+    };
 
     m_computePipeline = m_device->createComputePipeline(computePipelineDescriptor);
 }
@@ -536,43 +549,40 @@ void ParticleSample::createRenderPipeline()
     inputAssembly.topology = PrimitiveTopology::kPointList;
 
     // vertex shader
-    VertexStage vertexStage{};
+
+    // create vertex shader module.
     {
-        // create vertex shader module.
-        {
-            const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
-            ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
-                                                           .codeSize = vertexShaderSource.size() };
-            m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.entryPoint = "main";
-            vertexStage.shaderModule = m_vertexShaderModule.get();
-        }
-
-        // create vertex shader layouts
-        {
-            std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
-            {
-                // position
-                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Particle, position),
-                                        .location = 0 };
-
-                // texture coodinate
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
-                                        .offset = offsetof(Particle, color),
-                                        .location = 1 };
-            }
-
-            VertexInputLayout vertexInputLayout{};
-            vertexInputLayout.attributes = vertexAttributes;
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(Particle);
-
-            vertexStage.layouts = { vertexInputLayout };
-        }
+        const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
+        ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
+                                                       .codeSize = vertexShaderSource.size() };
+        m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
+
+    // create vertex shader layouts
+
+    std::vector<VertexAttribute> vertexAttributes{};
+    vertexAttributes.resize(2);
+    {
+        // position
+        vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+                                .offset = offsetof(Particle, position),
+                                .location = 0 };
+
+        // texture coodinate
+        vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
+                                .offset = offsetof(Particle, color),
+                                .location = 1 };
+    }
+
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.attributes = vertexAttributes;
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Particle);
+
+    VertexStage vertexStage{
+        { *m_vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -583,27 +593,27 @@ void ParticleSample::createRenderPipeline()
     }
 
     // fragment shader
-    FragmentStage fragmentStage{};
-    {
-        const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
-        ShaderModuleDescriptor shaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
-        m_fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = m_fragmentShaderModule.get();
+    const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
+    ShaderModuleDescriptor fragShaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
+    m_fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
 
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-    }
+    FragmentStage fragmentStage{
+        { *m_fragmentShaderModule, "main" },
+        { target }
+    };
 
-    RenderPipelineDescriptor renderPipelineDescriptor{};
-    renderPipelineDescriptor.inputAssembly = inputAssembly;
-    renderPipelineDescriptor.vertex = vertexStage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
+    RenderPipelineDescriptor renderPipelineDescriptor{
+        { *m_renderPipelineLayout },
+        inputAssembly,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
+
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 

@@ -53,11 +53,10 @@ void main()
 */
 
 static std::vector<uint32_t> fragmentShaderSourceSpv = { 0x07230203, 0x00010000, 0x000d000b, 0x0000001d, 0x00000000, 0x00020011, 0x00000001, 0x0006000b, 0x00000001, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00000000, 0x0003000e, 0x00000000, 0x00000001, 0x0008000f, 0x00000004, 0x00000004, 0x6e69616d, 0x00000000, 0x00000009, 0x0000000b, 0x00000019, 0x00030010, 0x00000004, 0x00000007, 0x00030003, 0x00000002, 0x000001c2, 0x000a0004, 0x475f4c47, 0x4c474f4f, 0x70635f45, 0x74735f70, 0x5f656c79, 0x656e696c, 0x7269645f, 0x69746365, 0x00006576, 0x00080004, 0x475f4c47, 0x4c474f4f, 0x6e695f45, 0x64756c63, 0x69645f65, 0x74636572, 0x00657669, 0x00040005, 0x00000004, 0x6e69616d, 0x00000000, 0x00050005, 0x00000009, 0x4374756f, 0x726f6c6f, 0x00000000, 0x00040005, 0x0000000b, 0x6f436e69, 0x00726f6c, 0x00050005, 0x0000000f, 0x746e6f66, 0x74786554, 0x00657275, 0x00050005, 0x00000013, 0x746e6f66, 0x706d6153, 0x0072656c, 0x00040005, 0x00000019, 0x56556e69, 0x00000000, 0x00040047, 0x00000009, 0x0000001e, 0x00000000, 0x00040047, 0x0000000b, 0x0000001e, 0x00000001, 0x00040047, 0x0000000f, 0x00000022, 0x00000001, 0x00040047, 0x0000000f, 0x00000021, 0x00000001, 0x00040047, 0x00000013, 0x00000022, 0x00000001, 0x00040047, 0x00000013, 0x00000021, 0x00000000, 0x00040047, 0x00000019, 0x0000001e, 0x00000000, 0x00020013, 0x00000002, 0x00030021, 0x00000003, 0x00000002, 0x00030016, 0x00000006, 0x00000020, 0x00040017, 0x00000007, 0x00000006, 0x00000004, 0x00040020, 0x00000008, 0x00000003, 0x00000007, 0x0004003b, 0x00000008, 0x00000009, 0x00000003, 0x00040020, 0x0000000a, 0x00000001, 0x00000007, 0x0004003b, 0x0000000a, 0x0000000b, 0x00000001, 0x00090019, 0x0000000d, 0x00000006, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00040020, 0x0000000e, 0x00000000, 0x0000000d, 0x0004003b, 0x0000000e, 0x0000000f, 0x00000000, 0x0002001a, 0x00000011, 0x00040020, 0x00000012, 0x00000000, 0x00000011, 0x0004003b, 0x00000012, 0x00000013, 0x00000000, 0x0003001b, 0x00000015, 0x0000000d, 0x00040017, 0x00000017, 0x00000006, 0x00000002, 0x00040020, 0x00000018, 0x00000001, 0x00000017, 0x0004003b, 0x00000018, 0x00000019, 0x00000001, 0x00050036, 0x00000002, 0x00000004, 0x00000000, 0x00000003, 0x000200f8, 0x00000005, 0x0004003d, 0x00000007, 0x0000000c, 0x0000000b, 0x0004003d, 0x0000000d, 0x00000010, 0x0000000f, 0x0004003d, 0x00000011, 0x00000014, 0x00000013, 0x00050056, 0x00000015, 0x00000016, 0x00000010, 0x00000014, 0x0004003d, 0x00000017, 0x0000001a, 0x00000019, 0x00050057, 0x00000007, 0x0000001b, 0x00000016, 0x0000001a, 0x00050085, 0x00000007, 0x0000001c, 0x0000000c, 0x0000001b, 0x0003003e, 0x00000009, 0x0000001c, 0x000100fd, 0x00010038 };
-void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
+void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain& swapchain)
 {
     m_device = device;
     m_queue = queue;
-    m_swapchain = swapchain;
 
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
@@ -82,7 +81,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 #else
     io.FontGlobalScale = 1.0;
 #endif
-    io.DisplaySize = ImVec2(swapchain->getWidth(), swapchain->getHeight());
+    io.DisplaySize = ImVec2(swapchain.getWidth(), swapchain.getHeight());
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
     ImGuiStyle& style = ImGui::GetStyle();
@@ -143,15 +142,22 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
 
     // copy buffer to texture
     {
-        BlitTextureBuffer blitTextureBuffer{};
-        blitTextureBuffer.buffer = m_fontBuffer.get();
-        blitTextureBuffer.offset = 0;
+        BlitTextureBuffer blitTextureBuffer{
+            .buffer = *m_fontBuffer,
+            .offset = 0,
+            .bytesPerRow = 0,
+            .rowsPerTexture = 0,
+        };
+
         uint32_t channel = 4;
         uint32_t bytesPerData = sizeof(FontDataType);
         blitTextureBuffer.bytesPerRow = bytesPerData * m_fontTexture->getWidth() * channel;
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
-        BlitTexture blitTexture{ .texture = m_fontTexture.get(), .aspect = TextureAspectFlagBits::kColor };
+        BlitTexture blitTexture{
+            .texture = *m_fontTexture,
+            .aspect = TextureAspectFlagBits::kColor
+        };
         Extent3D extent{};
         extent.width = m_fontTexture->getWidth();
         extent.height = m_fontTexture->getHeight();
@@ -226,32 +232,37 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     {
         m_bindingGroups.resize(2);
         {
-            BufferBinding uiTransformBinding{};
-            uiTransformBinding.buffer = m_uniformBuffer.get();
-            uiTransformBinding.index = 0;
-            uiTransformBinding.offset = 0;
-            uiTransformBinding.size = m_uniformBuffer->getSize();
+            BufferBinding uiTransformBinding{
+                .index = 0,
+                .offset = 0,
+                .size = m_uniformBuffer->getSize(),
+                .buffer = *m_uniformBuffer,
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.layout = m_bindingGroupLayouts[0].get();
-            bindingGroupDescriptor.buffers = { uiTransformBinding };
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_bindingGroupLayouts[0],
+                .buffers = { uiTransformBinding },
+            };
 
             m_bindingGroups[0] = device->createBindingGroup(bindingGroupDescriptor);
         }
 
         {
-            SamplerBinding fontSamplerBinding{};
-            fontSamplerBinding.index = 0;
-            fontSamplerBinding.sampler = m_fontSampler.get();
+            SamplerBinding fontSamplerBinding{
+                .index = 0,
+                .sampler = *m_fontSampler,
+            };
 
-            TextureBinding fontTextureBinding{};
-            fontTextureBinding.index = 1;
-            fontTextureBinding.textureView = m_fontTextureView.get();
+            TextureBinding fontTextureBinding{
+                .index = 1,
+                .textureView = *m_fontTextureView,
+            };
 
-            BindingGroupDescriptor bindingGroupDescriptor{};
-            bindingGroupDescriptor.layout = m_bindingGroupLayouts[1].get();
-            bindingGroupDescriptor.samplers = { fontSamplerBinding };
-            bindingGroupDescriptor.textures = { fontTextureBinding };
+            BindingGroupDescriptor bindingGroupDescriptor{
+                .layout = *m_bindingGroupLayouts[1],
+                .samplers = { fontSamplerBinding },
+                .textures = { fontTextureBinding },
+            };
 
             m_bindingGroups[1] = device->createBindingGroup(bindingGroupDescriptor);
         }
@@ -260,7 +271,7 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
     // create pipeline layout
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-        pipelineLayoutDescriptor.layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() };
+        pipelineLayoutDescriptor.layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] };
 
         m_pipelineLayout = device->createPipelineLayout(pipelineLayoutDescriptor);
     }
@@ -273,43 +284,41 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         }
 
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-        VertexStage vertexStage{};
+
+        VertexInputLayout vertexInputLayout{};
         {
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx2;
+            positionAttribute.offset = offsetof(ImDrawVert, pos);
+            positionAttribute.location = 0;
 
-            VertexInputLayout vertexInputLayout{};
-            {
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx2;
-                positionAttribute.offset = offsetof(ImDrawVert, pos);
-                positionAttribute.location = 0;
+            VertexAttribute uiAttribute{};
+            uiAttribute.format = VertexFormat::kSFLOATx2;
+            uiAttribute.offset = offsetof(ImDrawVert, uv);
+            uiAttribute.location = 1;
 
-                VertexAttribute uiAttribute{};
-                uiAttribute.format = VertexFormat::kSFLOATx2;
-                uiAttribute.offset = offsetof(ImDrawVert, uv);
-                uiAttribute.location = 1;
+            VertexAttribute colorAttribute{};
+            colorAttribute.format = VertexFormat::kUNORM8x4;
+            colorAttribute.offset = offsetof(ImDrawVert, col);
+            colorAttribute.location = 2;
 
-                VertexAttribute colorAttribute{};
-                colorAttribute.format = VertexFormat::kUNORM8x4;
-                colorAttribute.offset = offsetof(ImDrawVert, col);
-                colorAttribute.location = 2;
-
-                vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
-                vertexInputLayout.mode = VertexMode::kVertex;
-                vertexInputLayout.stride = sizeof(ImDrawVert);
-            }
-
-            {
-                ShaderModuleDescriptor vertexShaderModuleDescriptor{};
-                vertexShaderModuleDescriptor.code = reinterpret_cast<const char*>(vertexShaderSourceSpv.data());
-                vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSourceSpv.size() * 4);
-
-                vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
-            }
-
-            vertexStage.entryPoint = "main";
-            vertexStage.layouts = { vertexInputLayout };
-            vertexStage.shaderModule = vertexShaderModule.get();
+            vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
+            vertexInputLayout.mode = VertexMode::kVertex;
+            vertexInputLayout.stride = sizeof(ImDrawVert);
         }
+
+        {
+            ShaderModuleDescriptor vertexShaderModuleDescriptor{};
+            vertexShaderModuleDescriptor.code = reinterpret_cast<const char*>(vertexShaderSourceSpv.data());
+            vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSourceSpv.size() * 4);
+
+            vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
+        }
+
+        VertexStage vertexStage{
+            { *vertexShaderModule, "main" },
+            { vertexInputLayout },
+        };
 
         RasterizationStage rasterizationStage{};
         {
@@ -319,43 +328,43 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         }
 
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-        FragmentStage fragmentStage{};
-        {
-            FragmentStage::Target target{};
-            target.format = swapchain->getTextureFormat();
-            target.blend = {
-                .color = {
-                    .srcFactor = BlendFactor::kSrcAlpha,
-                    .dstFactor = BlendFactor::kOneMinusSrcAlpha,
-                    .operation = BlendOperation::kAdd,
-                },
-                .alpha = {
 
-                    .srcFactor = BlendFactor::kOneMinusSrcAlpha,
-                    .dstFactor = BlendFactor::kZero,
-                    .operation = BlendOperation::kAdd,
-                }
-            };
+        FragmentStage::Target target{};
+        target.format = swapchain.getTextureFormat();
+        target.blend = {
+            .color = {
+                .srcFactor = BlendFactor::kSrcAlpha,
+                .dstFactor = BlendFactor::kOneMinusSrcAlpha,
+                .operation = BlendOperation::kAdd,
+            },
+            .alpha = {
 
-            {
-                ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
-                fragmentShaderModuleDescriptor.code = reinterpret_cast<const char*>(fragmentShaderSourceSpv.data());
-                fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSourceSpv.size() * 4);
-
-                fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
+                .srcFactor = BlendFactor::kOneMinusSrcAlpha,
+                .dstFactor = BlendFactor::kZero,
+                .operation = BlendOperation::kAdd,
             }
+        };
 
-            fragmentStage.targets = { target };
-            fragmentStage.entryPoint = "main";
-            fragmentStage.shaderModule = fragmentShaderModule.get();
+        {
+            ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
+            fragmentShaderModuleDescriptor.code = reinterpret_cast<const char*>(fragmentShaderSourceSpv.data());
+            fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSourceSpv.size() * 4);
+
+            fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
         }
 
-        RenderPipelineDescriptor renderPipelineDescriptor{};
-        renderPipelineDescriptor.layout = m_pipelineLayout.get();
-        renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-        renderPipelineDescriptor.vertex = vertexStage;
-        renderPipelineDescriptor.rasterization = rasterizationStage;
-        renderPipelineDescriptor.fragment = fragmentStage;
+        FragmentStage fragmentStage{
+            { *fragmentShaderModule, "main" }, // ProgramableStage
+            { target }
+        };
+
+        RenderPipelineDescriptor renderPipelineDescriptor{
+            { *m_pipelineLayout }, // PipelineDescriptor
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+        };
 
         m_pipeline = device->createRenderPipeline(renderPipelineDescriptor);
     }
@@ -453,7 +462,7 @@ void Im_Gui::buildImGui()
     }
 }
 
-void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
+void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -461,22 +470,24 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        ColorAttachment colorAttachment{};
-        colorAttachment.renderView = renderView;
+        ColorAttachment colorAttachment{
+            .renderView = renderView
+        };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassDescriptor{};
-        renderPassDescriptor.colorAttachments = { colorAttachment };
-        renderPassDescriptor.sampleCount = 1;
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { colorAttachment },
+            .sampleCount = 1
+        };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_pipeline.get());
-        renderPassEncoder->setBindingGroup(0, m_bindingGroups[0].get());
-        renderPassEncoder->setBindingGroup(1, m_bindingGroups[1].get());
+        renderPassEncoder->setPipeline(*m_pipeline);
+        renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
+        renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
-        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
 
         int32_t vertexOffset = 0;
         int32_t indexOffset = 0;

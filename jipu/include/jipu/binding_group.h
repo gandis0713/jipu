@@ -7,37 +7,36 @@
 namespace jipu
 {
 
-struct BindingLayout;
-struct Binding
+class Buffer;
+struct BufferBinding
 {
     /// @brief The index of binding.
     uint32_t index = 0;
-};
-
-class Buffer;
-struct BufferBinding : Binding
-{
-    Buffer* buffer = nullptr;
     uint64_t offset = 0;
     uint64_t size = 0;
+    const Buffer& buffer;
 };
 
 class Sampler;
 class TextureView;
-struct SamplerBinding : Binding
+struct SamplerBinding
 {
-    Sampler* sampler = nullptr;
+    /// @brief The index of binding.
+    uint32_t index = 0;
+    const Sampler& sampler;
 };
 
-struct TextureBinding : Binding
+struct TextureBinding
 {
-    TextureView* textureView = nullptr;
+    /// @brief The index of binding.
+    uint32_t index = 0;
+    const TextureView& textureView;
 };
 
 class BindingGroupLayout;
 struct BindingGroupDescriptor
 {
-    BindingGroupLayout* layout = nullptr;
+    const BindingGroupLayout& layout;
     std::vector<BufferBinding> buffers{};
     std::vector<SamplerBinding> samplers{};
     std::vector<TextureBinding> textures{};

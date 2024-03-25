@@ -64,7 +64,6 @@ void OffscreenSample::init()
     createOffscreenBindingGroup();
     createOffscreenRenderPipeline();
 
-    createOnscreenSwapchain();
     createOnscreenVertexBuffer();
     createOnscreenIndexBuffer();
     createOnscreenSampler();
@@ -74,7 +73,7 @@ void OffscreenSample::init()
 
     createCamera();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -115,29 +114,30 @@ void OffscreenSample::update()
 
 void OffscreenSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     // offscreen pass
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = *m_offscreen.renderTextureView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = m_offscreen.renderTextureView.get();
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setPipeline(*m_offscreen.renderPipeline);
+        renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroup);
+        renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
@@ -148,25 +148,26 @@ void OffscreenSample::draw()
 
     // onscreen pass
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = renderView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = renderView;
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, m_onscreen.bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(0, m_onscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_onscreen.indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setPipeline(*m_onscreen.renderPipeline);
+        renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
+        renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_onscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
@@ -174,7 +175,7 @@ void OffscreenSample::draw()
 
         drawImGui(commadEncoder.get(), renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }
 }
 
@@ -223,25 +224,6 @@ void OffscreenSample::createSurface()
     descriptor.windowHandle = getWindowHandle();
 
     m_surface = m_driver->createSurface(descriptor);
-}
-
-void OffscreenSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
-
-    // m_onScreen.swapchain = m_device->createSwapchain(descriptor);
 }
 
 void OffscreenSample::createCommandBuffer()
@@ -344,15 +326,17 @@ void OffscreenSample::createOffscreenBindingGroupLayout()
 
 void OffscreenSample::createOffscreenBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_offscreen.uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = m_offscreen.uniformBuffer->getSize();
+    BufferBinding bufferBinding{
+        .index = 0,
+        .offset = 0,
+        .size = m_offscreen.uniformBuffer->getSize(),
+        .buffer = *m_offscreen.uniformBuffer,
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_offscreen.bindingGroupLayout.get() };
-    descriptor.buffers = { bufferBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_offscreen.bindingGroupLayout,
+        .buffers = { bufferBinding }
+    };
 
     m_offscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }
@@ -362,7 +346,7 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
+        descriptor.layouts = { *m_offscreen.bindingGroupLayout };
 
         m_offscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -385,27 +369,26 @@ void OffscreenSample::createOffscreenRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(OffscreenVertex, pos);
-        positionAttribute.location = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(OffscreenVertex, color);
-        colorAttribute.location = 1;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(OffscreenVertex, pos);
+    positionAttribute.location = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(OffscreenVertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(OffscreenVertex, color);
+    colorAttribute.location = 1;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(OffscreenVertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -427,44 +410,43 @@ void OffscreenSample::createOffscreenRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_offscreen.renderTexture->getFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_offscreen.renderTexture->getFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" }, { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_offscreen.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_offscreen.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void OffscreenSample::createOnscreenSwapchain()
+void OffscreenSample::createSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
     m_swapchain = m_device->createSwapchain(descriptor);
 }
@@ -529,18 +511,21 @@ void OffscreenSample::createOnscreenBindingGroupLayout()
 
 void OffscreenSample::createOnscreenBindingGroup()
 {
-    SamplerBinding samplerBinding{};
-    samplerBinding.index = 0;
-    samplerBinding.sampler = m_onscreen.sampler.get();
+    SamplerBinding samplerBinding{
+        .index = 0,
+        .sampler = *m_onscreen.sampler
+    };
 
-    TextureBinding textureBinding{};
-    textureBinding.index = 1;
-    textureBinding.textureView = m_offscreen.renderTextureView.get();
+    TextureBinding textureBinding{
+        .index = 1,
+        .textureView = *m_offscreen.renderTextureView
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_onscreen.bindingGroupLayout.get() };
-    descriptor.samplers = { samplerBinding };
-    descriptor.textures = { textureBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_onscreen.bindingGroupLayout,
+        .samplers = { samplerBinding },
+        .textures = { textureBinding }
+    };
 
     m_onscreen.bindingGroup = m_device->createBindingGroup(descriptor);
 }
@@ -550,7 +535,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_onscreen.bindingGroupLayout.get() };
+        descriptor.layouts = { *m_onscreen.bindingGroupLayout };
 
         m_onscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -573,27 +558,26 @@ void OffscreenSample::createOnscreenRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(OnscreenVertex, pos);
-        positionAttribute.location = 0;
 
-        VertexAttribute texCoordAttribute{};
-        texCoordAttribute.format = VertexFormat::kSFLOATx2;
-        texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
-        texCoordAttribute.location = 1;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(OnscreenVertex, pos);
+    positionAttribute.location = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(OnscreenVertex);
-        vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
+    VertexAttribute texCoordAttribute{};
+    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
+    texCoordAttribute.location = 1;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(OnscreenVertex);
+    vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -615,25 +599,25 @@ void OffscreenSample::createOnscreenRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_onscreen.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_onscreen.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }

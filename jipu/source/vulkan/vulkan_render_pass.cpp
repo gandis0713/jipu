@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassDescriptor& descriptor)
     : m_device(device)
 {
     std::vector<VkSubpassDescription> subpassDescriptions{};
@@ -40,7 +40,7 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassD
     renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(descriptor.subpassDependencies.size());
     renderPassCreateInfo.pDependencies = descriptor.subpassDependencies.data();
 
-    if (device->vkAPI.CreateRenderPass(device->getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
+    if (device.vkAPI.CreateRenderPass(device.getVkDevice(), &renderPassCreateInfo, nullptr, &m_renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create render pass!");
     }
@@ -48,9 +48,9 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice* device, const VulkanRenderPassD
 
 VulkanRenderPass::~VulkanRenderPass()
 {
-    auto vulkanDevice = downcast(m_device);
+    auto& vulkanDevice = downcast(m_device);
 
-    vulkanDevice->vkAPI.DestroyRenderPass(vulkanDevice->getVkDevice(), m_renderPass, nullptr);
+    vulkanDevice.vkAPI.DestroyRenderPass(vulkanDevice.getVkDevice(), m_renderPass, nullptr);
 }
 
 void VulkanRenderPass::initialize(const VulkanRenderPassDescriptor& descriptors)
@@ -161,17 +161,17 @@ bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor
     return true;
 }
 
-VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice* device)
+VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice& device)
     : m_device(device)
 {
 }
 
-VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass& VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return (it->second).get();
+        return *(it->second);
     }
 
     // create new renderpass
@@ -181,7 +181,7 @@ VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
     VulkanRenderPass* renderPassPtr = renderPass.get();
     auto result = m_cache.emplace(descriptor, std::move(renderPass));
 
-    return renderPassPtr;
+    return *renderPassPtr;
 }
 
 void VulkanRenderPassCache::clear()

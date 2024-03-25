@@ -7,7 +7,7 @@
 namespace jipu
 {
 
-VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleDescriptor& descriptor)
+VulkanShaderModule::VulkanShaderModule(VulkanDevice& device, const ShaderModuleDescriptor& descriptor)
     : m_device(device)
 {
     VkShaderModuleCreateInfo shaderModuleCreateInfo{};
@@ -15,8 +15,8 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleD
     shaderModuleCreateInfo.codeSize = descriptor.codeSize;
     shaderModuleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(descriptor.code);
 
-    auto vulkanDevice = downcast(m_device);
-    if (vulkanDevice->vkAPI.CreateShaderModule(vulkanDevice->getVkDevice(), &shaderModuleCreateInfo, nullptr, &m_shaderModule) != VK_SUCCESS)
+    auto& vulkanDevice = downcast(m_device);
+    if (vulkanDevice.vkAPI.CreateShaderModule(vulkanDevice.getVkDevice(), &shaderModuleCreateInfo, nullptr, &m_shaderModule) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create shader module");
     }
@@ -24,8 +24,8 @@ VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const ShaderModuleD
 
 VulkanShaderModule::~VulkanShaderModule()
 {
-    auto vulkanDevice = downcast(m_device);
-    vulkanDevice->vkAPI.DestroyShaderModule(vulkanDevice->getVkDevice(), m_shaderModule, nullptr);
+    auto& vulkanDevice = downcast(m_device);
+    vulkanDevice.vkAPI.DestroyShaderModule(vulkanDevice.getVkDevice(), m_shaderModule, nullptr);
 }
 
 VkShaderModule VulkanShaderModule::getVkShaderModule() const

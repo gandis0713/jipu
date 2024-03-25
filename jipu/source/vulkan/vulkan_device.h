@@ -26,7 +26,7 @@ class VULKAN_EXPORT VulkanDevice : public Device
 {
 public:
     VulkanDevice() = delete;
-    VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor);
+    VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor);
     ~VulkanDevice() override;
 
     VulkanDevice(const VulkanDevice&) = delete;
@@ -53,12 +53,12 @@ public:
     std::unique_ptr<Swapchain> createSwapchain(const VulkanSwapchainDescriptor& descriptor);
 
 public:
-    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
-    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
-    VulkanResourceAllocator* getResourceAllocator() const;
+    VulkanRenderPass& getRenderPass(const VulkanRenderPassDescriptor& descriptor);
+    VulkanFramebuffer& getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanResourceAllocator& getResourceAllocator();
 
 public:
-    VulkanPhysicalDevice* getPhysicalDevice() const;
+    VulkanPhysicalDevice& getPhysicalDevice() const;
 
 public:
     VkDevice getVkDevice() const;
@@ -74,11 +74,10 @@ public:
 
 private:
     void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
-    void createResourceAllocator();
     const std::vector<const char*> getRequiredDeviceExtensions();
 
 private:
-    VulkanPhysicalDevice* m_physicalDevice = nullptr;
+    VulkanPhysicalDevice& m_physicalDevice;
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;
@@ -89,7 +88,7 @@ private:
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFramebufferCache m_frameBufferCache;
-    std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
+    VulkanResourceAllocator m_resourceAllocator;
 };
 
 DOWN_CAST(VulkanDevice, Device);

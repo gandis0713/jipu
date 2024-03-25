@@ -19,7 +19,7 @@ class VULKAN_EXPORT VulkanBuffer : public Buffer
 {
 public:
     VulkanBuffer() = delete;
-    VulkanBuffer(VulkanDevice* device, const BufferDescriptor& descriptor) noexcept(false);
+    VulkanBuffer(VulkanDevice& device, const BufferDescriptor& descriptor) noexcept(false);
     ~VulkanBuffer() override;
 
     void* map() override;
@@ -29,7 +29,7 @@ public:
     uint64_t getSize() const override;
 
 public:
-    void setTransition(CommandBuffer* commandBuffer, VkPipelineStageFlags flags);
+    void setTransition(CommandBuffer& commandBuffer, VkPipelineStageFlags flags);
 
     VkBuffer getVkBuffer() const;
 
@@ -40,7 +40,7 @@ private:
     void* m_mappedPtr = nullptr;
 
 private:
-    Device* m_device = nullptr;
+    Device& m_device;
     BufferDescriptor m_descriptor{};
 };
 

@@ -24,7 +24,7 @@ protected:
     PhysicalDevice() = default;
 
 public:
-    virtual std::unique_ptr<Device> createDevice(DeviceDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) = 0;
 
 public:
     virtual PhysicalDeviceInfo getInfo() const = 0;

@@ -55,7 +55,6 @@ private:
     void createOffscreenBindingGroup();
     void createOffscreenRenderPipeline();
 
-    void createOnscreenSwapchain();
     void createOnscreenVertexBuffer();
     void createOnscreenIndexBuffer();
     void createOnscreenSampler();

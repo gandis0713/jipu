@@ -5,6 +5,7 @@
 #include "jipu/command_buffer.h"
 #include "jipu/swapchain.h"
 
+#include <functional>
 #include <stdint.h>
 #include <vector>
 
@@ -34,8 +35,8 @@ protected:
     Queue() = default;
 
 public:
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain) = 0;
+    virtual void submit(std::vector<CommandBuffer::Ref> commandBuffers) = 0;
+    virtual void submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain) = 0;
 };
 
 } // namespace jipu

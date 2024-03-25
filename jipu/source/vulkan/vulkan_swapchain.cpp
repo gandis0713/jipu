@@ -38,14 +38,12 @@ VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR su
 }
 } // namespace
 
-VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor)
+VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice& device, const SwapchainDescriptor& descriptor)
 {
-    VulkanSwapchainDescriptor vkdescriptor{};
+    VulkanSurface& surface = downcast(descriptor.surface);
 
-    VulkanSurface* surface = downcast(descriptor.surface);
-
-    auto vulkanPhysicalDevice = device->getPhysicalDevice();
-    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice->gatherSurfaceInfo(surface);
+    auto& vulkanPhysicalDevice = device.getPhysicalDevice();
+    VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice.gatherSurfaceInfo(surface);
 
     // Check surface formats supports.
     auto surfaceFormatIter = std::find_if(surfaceInfo.formats.begin(),
@@ -91,7 +89,9 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
         height = surfaceCapabilities.currentExtent.height;
     }
 
-    vkdescriptor.surface = surface;
+    VulkanSwapchainDescriptor vkdescriptor{
+        .surface = surface
+    };
     vkdescriptor.minImageCount = imageCount;
     vkdescriptor.imageFormat = surfaceFormat.format;
     vkdescriptor.imageColorSpace = surfaceFormat.colorSpace;
@@ -122,18 +122,18 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
     return vkdescriptor;
 }
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const SwapchainDescriptor& descriptor) noexcept(false)
     : VulkanSwapchain(device, generateVulkanSwapchainDescriptor(device, descriptor))
 {
 }
 
-VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false)
+VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDescriptor& descriptor) noexcept(false)
     : m_device(device)
     , m_descriptor(descriptor)
 {
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = descriptor.surface->getVkSurface();
+    swapchainCreateInfo.surface = descriptor.surface.getVkSurface();
     swapchainCreateInfo.minImageCount = descriptor.minImageCount;
     swapchainCreateInfo.imageFormat = descriptor.imageFormat;
     swapchainCreateInfo.imageColorSpace = descriptor.imageColorSpace;
@@ -149,18 +149,18 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
     swapchainCreateInfo.clipped = descriptor.clipped;
     swapchainCreateInfo.oldSwapchain = descriptor.oldSwapchain;
 
-    const VulkanAPI& vkAPI = m_device->vkAPI;
-    if (vkAPI.CreateSwapchainKHR(m_device->getVkDevice(), &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+    const VulkanAPI& vkAPI = m_device.vkAPI;
+    if (vkAPI.CreateSwapchainKHR(m_device.getVkDevice(), &swapchainCreateInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create swap chain");
     }
 
     // get swapchain image.
-    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, nullptr);
+    vkAPI.GetSwapchainImagesKHR(m_device.getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, nullptr);
 
     std::vector<VkImage> images{};
     images.resize(swapchainCreateInfo.minImageCount);
-    vkAPI.GetSwapchainImagesKHR(m_device->getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, images.data());
+    vkAPI.GetSwapchainImagesKHR(m_device.getVkDevice(), m_swapchain, &swapchainCreateInfo.minImageCount, images.data());
 
     // create Textures by VkImage.
     for (VkImage image : images)
@@ -190,7 +190,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
         TextureViewDescriptor descriptor{};
         descriptor.type = TextureViewType::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
-        auto textureView = std::make_unique<VulkanTextureView>(downcast(texture.get()), descriptor);
+        auto textureView = std::make_unique<VulkanTextureView>(*texture, descriptor);
         m_textureViews.push_back(std::move(textureView));
     }
 
@@ -200,12 +200,12 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
     semaphoreCreateInfo.pNext = nullptr;
     semaphoreCreateInfo.flags = 0;
 
-    if (vkAPI.CreateSemaphore(m_device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_presentSemaphore) != VK_SUCCESS)
+    if (vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_presentSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create semephore for present.");
     }
 
-    if (vkAPI.CreateSemaphore(m_device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
+    if (vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create semaphore for rendering.");
     }
@@ -213,15 +213,15 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_presentSemaphore, nullptr);
-    vkAPI.DestroySemaphore(vulkanDevice->getVkDevice(), m_renderSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_presentSemaphore, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_renderSemaphore, nullptr);
 
     /* do not delete VkImages from swapchain. */
 
-    vkAPI.DestroySwapchainKHR(downcast(m_device)->getVkDevice(), m_swapchain, nullptr);
+    vkAPI.DestroySwapchainKHR(downcast(m_device).getVkDevice(), m_swapchain, nullptr);
 }
 
 TextureFormat VulkanSwapchain::getTextureFormat() const
@@ -239,11 +239,11 @@ uint32_t VulkanSwapchain::getHeight() const
     return m_descriptor.imageExtent.height;
 }
 
-void VulkanSwapchain::present(Queue* queue)
+void VulkanSwapchain::present(Queue& queue)
 {
-    VulkanDevice* vulkanDevice = downcast(m_device);
-    VulkanQueue* vulkanQueue = downcast(queue);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    VulkanDevice& vulkanDevice = downcast(m_device);
+    VulkanQueue& vulkanQueue = downcast(queue);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // present
     VkPresentInfoKHR presentInfo{};
@@ -258,22 +258,21 @@ void VulkanSwapchain::present(Queue* queue)
     presentInfo.pImageIndices = &m_acquiredImageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
+    vkAPI.QueuePresentKHR(vulkanQueue.getVkQueue(), &presentInfo);
 }
 
-TextureView* VulkanSwapchain::acquireNextTexture()
+TextureView& VulkanSwapchain::acquireNextTexture()
 {
-    VulkanDevice* vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    VulkanDevice& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice->getVkDevice(), m_swapchain, UINT64_MAX, m_presentSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
+    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice.getVkDevice(), m_swapchain, UINT64_MAX, m_presentSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
     if (result != VK_SUCCESS)
     {
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
-        return nullptr;
     }
 
-    return m_textureViews[m_acquiredImageIndex].get();
+    return *m_textureViews[m_acquiredImageIndex];
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

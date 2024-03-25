@@ -45,8 +45,8 @@ class VULKAN_EXPORT VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanDriver* driver, const SurfaceDescriptor& descriptor);
-    VulkanSurface(VulkanDriver* driver, const VulkanSurfaceDescriptor& descriptor);
+    VulkanSurface(VulkanDriver& driver, const SurfaceDescriptor& descriptor);
+    VulkanSurface(VulkanDriver& driver, const VulkanSurfaceDescriptor& descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getVkSurface() const;
@@ -55,7 +55,7 @@ private:
     void createSurfaceKHR();
 
 private:
-    VulkanDriver* m_driver = nullptr;
+    VulkanDriver& m_driver;
     const VulkanSurfaceDescriptor m_descriptor{};
 
 private:

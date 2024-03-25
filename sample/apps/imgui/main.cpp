@@ -93,7 +93,7 @@ void ImGuiSample::init()
     createVertexBuffer();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -106,26 +106,27 @@ void ImGuiSample::update()
 
 void ImGuiSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = renderView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = renderView;
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
+        renderPassEncoder->setPipeline(*m_renderPipeline);
+        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
@@ -133,7 +134,7 @@ void ImGuiSample::draw()
 
         drawImGui(commandEncoder.get(), renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
     }
 }
 
@@ -192,13 +193,14 @@ void ImGuiSample::createSwapchain()
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
 
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
     m_swapchain = m_device->createSwapchain(descriptor);
 }
@@ -260,27 +262,26 @@ void ImGuiSample::createRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(Vertex, pos);
-        positionAttribute.location = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(Vertex, color);
-        colorAttribute.location = 1;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(Vertex, pos);
+    positionAttribute.location = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(Vertex, color);
+    colorAttribute.location = 1;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Vertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -302,25 +303,25 @@ void ImGuiSample::createRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
@@ -343,7 +344,7 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::SampleDescriptor descriptor{
-        { 1000, 2000, "Triangle", app },
+        { 1000, 2000, "ImGui", app },
         ""
     };
 
@@ -359,7 +360,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::SampleDescriptor descriptor{
-        { 800, 600, "Triangle", nullptr },
+        { 800, 600, "ImGui", nullptr },
         argv[0]
     };
 

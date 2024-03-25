@@ -18,7 +18,7 @@ class VULKAN_EXPORT VulkanCommandEncoder : public CommandEncoder
 {
 public:
     VulkanCommandEncoder() = delete;
-    VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
+    VulkanCommandEncoder(VulkanCommandBuffer& commandBuffer, const CommandEncoderDescriptor& descriptor);
     ~VulkanCommandEncoder() override = default;
 
     std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) override;
@@ -29,16 +29,16 @@ public:
     void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) override;
     void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) override;
 
-    CommandBuffer* finish() override;
+    CommandBuffer& finish() override;
 
 public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor);
 
 public:
-    VulkanCommandBuffer* getCommandBuffer() const;
+    VulkanCommandBuffer& getCommandBuffer() const;
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandBuffer& m_commandBuffer;
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

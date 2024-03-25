@@ -4,6 +4,7 @@
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_pipeline.h"
 #include "vulkan_render_pass.h"
 
 #include "utils/cast.h"
@@ -23,20 +24,19 @@ struct VulkanRenderPassEncoderDescriptor
 class VulkanDevice;
 class VulkanRenderPass;
 class VulkanFramebuffer;
-class VulkanRenderPipeline;
 class VulkanCommandBuffer;
 class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuffer, const RenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
-    void setPipeline(RenderPipeline* pipeline) override;
-    void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
-    void setVertexBuffer(uint32_t slot, Buffer* buffer) override;
-    void setIndexBuffer(Buffer* buffer, IndexFormat format) override;
+    void setPipeline(RenderPipeline& pipeline) override;
+    void setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
+    void setVertexBuffer(uint32_t slot, Buffer& buffer) override;
+    void setIndexBuffer(Buffer& buffer, IndexFormat format) override;
     void setViewport(float x,
                      float y,
                      float width,
@@ -64,8 +64,8 @@ private:
     void initialize();
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
-    VulkanRenderPipeline* m_pipeline = nullptr;
+    VulkanCommandBuffer& m_commandBuffer;
+    std::optional<VulkanRenderPipeline::Ref> m_pipeline = std::nullopt;
 
     uint32_t m_passIndex = 0;
 
@@ -75,8 +75,8 @@ DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
 // Generate Helper
 VulkanRenderPassDescriptor VULKAN_EXPORT generateVulkanRenderPassDescriptor(const RenderPassEncoderDescriptor& descriptor);
-VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(VulkanRenderPass* renderPass, const RenderPassEncoderDescriptor& descriptor);
-VulkanRenderPassEncoderDescriptor VULKAN_EXPORT generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor);
+VulkanFramebufferDescriptor VULKAN_EXPORT generateVulkanFramebufferDescriptor(VulkanRenderPass& renderPass, const RenderPassEncoderDescriptor& descriptor);
+VulkanRenderPassEncoderDescriptor VULKAN_EXPORT generateVulkanRenderPassEncoderDescriptor(VulkanDevice& device, const RenderPassEncoderDescriptor& descriptor);
 
 // Convert Helper
 VkIndexType ToVkIndexType(IndexFormat format);

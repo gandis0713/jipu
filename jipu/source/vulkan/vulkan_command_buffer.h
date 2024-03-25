@@ -15,14 +15,14 @@ class VULKAN_EXPORT VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;
-    VulkanCommandBuffer(VulkanDevice* device, const CommandBufferDescriptor& descriptor);
+    VulkanCommandBuffer(VulkanDevice& device, const CommandBufferDescriptor& descriptor);
     ~VulkanCommandBuffer() override;
 
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
     CommandBufferUsage getUsage() const override;
 
 public:
-    VulkanDevice* getDevice() const;
+    VulkanDevice& getDevice() const;
 
 public:
     VkCommandBuffer getVkCommandBuffer() const;
@@ -34,7 +34,7 @@ public:
     std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> ejectWaitSemaphores();
 
 private:
-    VulkanDevice* m_device = nullptr;
+    VulkanDevice& m_device;
     const CommandBufferDescriptor m_descriptor{};
 
 private:

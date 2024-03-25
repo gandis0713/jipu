@@ -27,15 +27,16 @@ void WindowTest::SetUp()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
-    SwapchainDescriptor swapchainDescriptor{};
-    swapchainDescriptor.width = m_width;
-    swapchainDescriptor.height = m_height;
-    swapchainDescriptor.surface = m_surface.get();
-    swapchainDescriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    swapchainDescriptor.textureFormat = textureFormat;
-    swapchainDescriptor.presentMode = PresentMode::kFifo;
-    m_swapchain = m_device->createSwapchain(swapchainDescriptor);
+    m_swapchain = m_device->createSwapchain(descriptor);
     EXPECT_NE(nullptr, m_swapchain);
 }
 

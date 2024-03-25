@@ -148,7 +148,7 @@ void TriangleSample::init()
     createBindingGroup();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -189,27 +189,28 @@ void TriangleSample::update()
 
 void TriangleSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = renderView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = renderView;
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setBindingGroup(0, m_bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setPipeline(*m_renderPipeline);
+        renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
+        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
@@ -217,7 +218,7 @@ void TriangleSample::draw()
 
         drawImGui(commadEncoder.get(), renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }
 }
 
@@ -275,14 +276,14 @@ void TriangleSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
+    SwapchainDescriptor descriptor{
+        .surface = *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
     m_swapchain = m_device->createSwapchain(descriptor);
 }
@@ -357,15 +358,17 @@ void TriangleSample::createBindingGroupLayout()
 
 void TriangleSample::createBindingGroup()
 {
-    BufferBinding bufferBinding{};
-    bufferBinding.buffer = m_uniformBuffer.get();
-    bufferBinding.index = 0;
-    bufferBinding.offset = 0;
-    bufferBinding.size = m_uniformBuffer->getSize();
+    BufferBinding bufferBinding{
+        .index = 0,
+        .offset = 0,
+        .size = m_uniformBuffer->getSize(),
+        .buffer = *m_uniformBuffer,
+    };
 
-    BindingGroupDescriptor descriptor{};
-    descriptor.layout = { m_bindingGroupLayout.get() };
-    descriptor.buffers = { bufferBinding };
+    BindingGroupDescriptor descriptor{
+        .layout = *m_bindingGroupLayout,
+        .buffers = { bufferBinding },
+    };
 
     m_bindingGroup = m_device->createBindingGroup(descriptor);
 }
@@ -375,7 +378,7 @@ void TriangleSample::createRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_bindingGroupLayout.get() };
+        descriptor.layouts = { *m_bindingGroupLayout };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -398,27 +401,26 @@ void TriangleSample::createRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(Vertex, pos);
-        positionAttribute.location = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(Vertex, color);
-        colorAttribute.location = 1;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(Vertex, pos);
+    positionAttribute.location = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(Vertex, color);
+    colorAttribute.location = 1;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Vertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -440,25 +442,24 @@ void TriangleSample::createRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }

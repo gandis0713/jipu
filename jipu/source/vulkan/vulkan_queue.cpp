@@ -10,12 +10,12 @@
 namespace jipu
 {
 
-VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false)
+VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false)
     : m_device(device)
 {
-    VulkanPhysicalDevice* physicalDevice = device->getPhysicalDevice();
+    VulkanPhysicalDevice& physicalDevice = device.getPhysicalDevice();
 
-    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice->getVulkanPhysicalDeviceInfo();
+    const VulkanPhysicalDeviceInfo& deviceInfo = physicalDevice.getVulkanPhysicalDeviceInfo();
 
     const uint64_t queueFamilyPropertiesSize = deviceInfo.queueFamilyProperties.size();
     if (queueFamilyPropertiesSize <= 0)
@@ -34,7 +34,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
         }
     }
 
-    device->vkAPI.GetDeviceQueue(device->getVkDevice(), m_index, 0, &m_queue);
+    device.vkAPI.GetDeviceQueue(device.getVkDevice(), m_index, 0, &m_queue);
 
     // create fence.
     VkFenceCreateInfo fenceCreateInfo{};
@@ -43,7 +43,7 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
     fenceCreateInfo.flags = 0;
     // fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    if (device->vkAPI.CreateFence(device->getVkDevice(), &fenceCreateInfo, nullptr, &m_fence) != VK_SUCCESS)
+    if (device.vkAPI.CreateFence(device.getVkDevice(), &fenceCreateInfo, nullptr, &m_fence) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to create render queue fence.");
     }
@@ -51,38 +51,38 @@ VulkanQueue::VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor
 
 VulkanQueue::~VulkanQueue()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // wait idle state before destroy semaphore.
     vkAPI.QueueWaitIdle(m_queue);
 
     // Doesn't need to destroy VkQueue.
-    vkAPI.DestroyFence(vulkanDevice->getVkDevice(), m_fence, nullptr);
+    vkAPI.DestroyFence(vulkanDevice.getVkDevice(), m_fence, nullptr);
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
+void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     submit(submits);
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* swapchain)
+void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
-    auto vulkanDevice = downcast(m_device);
-    auto vulkanSwapchain = downcast(swapchain);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    auto& vulkanSwapchain = downcast(swapchain);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     auto commandBufferCount = commandBuffers.size();
     // we assume the last command buffer is for rendering.
     auto renderCommandBufferIndex = commandBufferCount - 1;
 
-    auto renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
-    auto acquireImageSemaphore = vulkanSwapchain->getPresentSemaphore();
-    auto renderSemaphore = vulkanSwapchain->getRenderSemaphore();
+    auto& renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
+    auto acquireImageSemaphore = vulkanSwapchain.getPresentSemaphore();
+    auto renderSemaphore = vulkanSwapchain.getRenderSemaphore();
 
     // add signal semaphore to signal that render command buffer is finished.
     submits[renderCommandBufferIndex].signal.first.push_back(renderSemaphore.first);
@@ -93,7 +93,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain* 
 
     submit(submits);
 
-    swapchain->present(this);
+    swapchain.present(*this);
 }
 
 VkQueue VulkanQueue::getVkQueue() const
@@ -101,10 +101,10 @@ VkQueue VulkanQueue::getVkQueue() const
     return m_queue;
 }
 
-std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
+std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer::Ref> commandBuffers)
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     std::vector<SubmitInfo> submitInfo{};
 
@@ -113,12 +113,12 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
 
     for (auto i = 0; i < commandBufferSize; ++i)
     {
-        submitInfo[i].cmdBuf = downcast(commandBuffers[i])->getVkCommandBuffer();
+        submitInfo[i].cmdBuf = downcast(commandBuffers[i]).getVkCommandBuffer();
 
         auto nextIndex = i + 1;
         if (nextIndex < commandBufferSize)
         {
-            auto signalSemaphore = downcast(commandBuffers[i])->getSignalSemaphore();
+            auto signalSemaphore = downcast(commandBuffers[i]).getSignalSemaphore();
             submitInfo[i].signal.first.push_back(signalSemaphore.first);
             submitInfo[i].signal.second.push_back(signalSemaphore.second);
         }
@@ -130,7 +130,7 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
             submitInfo[i].wait.second.push_back(submitInfo[preIndex].signal.second[0]);
         }
 
-        auto waitSems = downcast(commandBuffers[i])->ejectWaitSemaphores();
+        auto waitSems = downcast(commandBuffers[i]).ejectWaitSemaphores();
         for (auto sem : waitSems)
         {
             submitInfo[i].wait.first.push_back(sem.first);
@@ -143,8 +143,8 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
 
 void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     auto submitInfoSize = submits.size();
 
@@ -174,13 +174,13 @@ void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)
         throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.WaitForFences(vulkanDevice->getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
+    result = vkAPI.WaitForFences(vulkanDevice.getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.ResetFences(vulkanDevice->getVkDevice(), 1, &m_fence);
+    result = vkAPI.ResetFences(vulkanDevice.getVkDevice(), 1, &m_fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));

@@ -8,12 +8,12 @@
 namespace jipu
 {
 
-VulkanSurface::VulkanSurface(VulkanDriver* driver, const SurfaceDescriptor& descriptor)
+VulkanSurface::VulkanSurface(VulkanDriver& driver, const SurfaceDescriptor& descriptor)
     : VulkanSurface(driver, generateVulkanSurfaceDescriptor(descriptor))
 {
 }
 
-VulkanSurface::VulkanSurface(VulkanDriver* driver, const VulkanSurfaceDescriptor& descriptor)
+VulkanSurface::VulkanSurface(VulkanDriver& driver, const VulkanSurfaceDescriptor& descriptor)
     : m_driver(driver)
     , m_descriptor(descriptor)
 {
@@ -22,10 +22,10 @@ VulkanSurface::VulkanSurface(VulkanDriver* driver, const VulkanSurfaceDescriptor
 
 VulkanSurface::~VulkanSurface()
 {
-    auto vulkanDriver = downcast(m_driver);
-    const VulkanAPI& vkAPI = vulkanDriver->vkAPI;
+    auto& vulkanDriver = downcast(m_driver);
+    const VulkanAPI& vkAPI = vulkanDriver.vkAPI;
 
-    vkAPI.DestroySurfaceKHR(vulkanDriver->getVkInstance(), m_surface, nullptr);
+    vkAPI.DestroySurfaceKHR(vulkanDriver.getVkInstance(), m_surface, nullptr);
 }
 
 VkSurfaceKHR VulkanSurface::getVkSurface() const
