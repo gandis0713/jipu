@@ -181,7 +181,7 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
 
     auto srcImage = vulkanTexture.getVkImage();
 
-    auto vulkanBuffer = downcast(buffer.buffer);
+    auto& vulkanBuffer = downcast(buffer.buffer);
     auto dstBuffer = vulkanBuffer.getVkBuffer();
 
     VkBufferImageCopy region{};

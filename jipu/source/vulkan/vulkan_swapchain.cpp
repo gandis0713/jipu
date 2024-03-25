@@ -40,9 +40,7 @@ VkCompositeAlphaFlagBitsKHR getCompositeAlphaFlagBit(VkCompositeAlphaFlagsKHR su
 
 VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor)
 {
-    VulkanSwapchainDescriptor vkdescriptor{};
-
-    VulkanSurface* surface = downcast(descriptor.surface);
+    VulkanSurface& surface = downcast(descriptor.surface);
 
     auto vulkanPhysicalDevice = device->getPhysicalDevice();
     VulkanSurfaceInfo surfaceInfo = vulkanPhysicalDevice->gatherSurfaceInfo(surface);
@@ -91,7 +89,9 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice* device
         height = surfaceCapabilities.currentExtent.height;
     }
 
-    vkdescriptor.surface = surface;
+    VulkanSwapchainDescriptor vkdescriptor{
+        .surface = surface
+    };
     vkdescriptor.minImageCount = imageCount;
     vkdescriptor.imageFormat = surfaceFormat.format;
     vkdescriptor.imageColorSpace = surfaceFormat.colorSpace;
@@ -133,7 +133,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDesc
 {
     VkSwapchainCreateInfoKHR swapchainCreateInfo{};
     swapchainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCreateInfo.surface = descriptor.surface->getVkSurface();
+    swapchainCreateInfo.surface = descriptor.surface.getVkSurface();
     swapchainCreateInfo.minImageCount = descriptor.minImageCount;
     swapchainCreateInfo.imageFormat = descriptor.imageFormat;
     swapchainCreateInfo.imageColorSpace = descriptor.imageColorSpace;

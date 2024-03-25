@@ -28,12 +28,12 @@ enum class ColorSpace
 class Surface;
 struct SwapchainDescriptor
 {
+    Surface& surface;
     TextureFormat textureFormat = TextureFormat::kUndefined;
     PresentMode presentMode = PresentMode::kUndefined;
     ColorSpace colorSpace = ColorSpace::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
-    Surface* surface = nullptr;
 };
 
 class Queue;

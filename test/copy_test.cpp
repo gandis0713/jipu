@@ -70,14 +70,13 @@ void CopyTest::SetUp()
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-    commandEncoder->finish();
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ *commandBuffer });
+    queue->submit({ commandEncoder->finish() });
 }
 
 void CopyTest::TearDown()
@@ -125,14 +124,13 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
-    commandEncoder->finish();
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ *commandBuffer });
+    queue->submit({ commandEncoder->finish() });
 
     char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
     char firstData = *dstBufferPointer;
@@ -175,7 +173,7 @@ TEST_F(CopyTest, test_BufferToBuffer)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ *commandBuffer });
+    queue->submit({ commandEncoder->finish() });
 
     void* dstBufferPointer = buffer->map();
     EXPECT_NE(nullptr, dstBufferPointer);
@@ -229,14 +227,13 @@ TEST_F(CopyTest, test_BufferToTexture)
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-    commandEncoder->finish();
 
     QueueDescriptor queueDescriptor{};
     queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ *commandBuffer });
+    queue->submit({ commandEncoder->finish() });
 
     copyTextureToBuffer(texture.get()); // to check copied texture data.
 }
@@ -294,7 +291,7 @@ TEST_F(CopyTest, test_TextureToTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ *commandBuffer });
+    queue->submit({ commandEncoder->finish() });
 
     copyTextureToBuffer(dstTexture.get()); // to check copied texture data.
 }

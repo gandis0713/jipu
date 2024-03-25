@@ -24,7 +24,7 @@ struct VulkanSwapchainDescriptor
 {
     const void* next = nullptr;
     VkSwapchainCreateFlagsKHR flags = 0u;
-    VulkanSurface* surface = nullptr;
+    VulkanSurface& surface;
     uint32_t minImageCount = 0;
     VkFormat imageFormat;
     VkColorSpaceKHR imageColorSpace;
@@ -66,7 +66,7 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
-    const VulkanSwapchainDescriptor m_descriptor{};
+    const VulkanSwapchainDescriptor m_descriptor;
 
     std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
     std::vector<std::unique_ptr<VulkanTextureView>> m_textureViews{};

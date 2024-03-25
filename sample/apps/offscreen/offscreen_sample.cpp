@@ -64,7 +64,6 @@ void OffscreenSample::init()
     createOffscreenBindingGroup();
     createOffscreenRenderPipeline();
 
-    createOnscreenSwapchain();
     createOnscreenVertexBuffer();
     createOnscreenIndexBuffer();
     createOnscreenSampler();
@@ -225,25 +224,6 @@ void OffscreenSample::createSurface()
     descriptor.windowHandle = getWindowHandle();
 
     m_surface = m_driver->createSurface(descriptor);
-}
-
-void OffscreenSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
-
-    // m_onScreen.swapchain = m_device->createSwapchain(descriptor);
 }
 
 void OffscreenSample::createCommandBuffer()
@@ -452,21 +432,21 @@ void OffscreenSample::createOffscreenRenderPipeline()
     m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void OffscreenSample::createOnscreenSwapchain()
+void OffscreenSample::createSwapchain()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
+    SwapchainDescriptor descriptor{
+        *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
     m_swapchain = m_device->createSwapchain(descriptor);
 }

@@ -336,7 +336,6 @@ void VulkanPipelineBarrierSample::init()
     createOffscreenBindingGroup();
     createOffscreenRenderPipeline();
 
-    createOnscreenSwapchain();
     createOnscreenVertexBuffer();
     createOnscreenIndexBuffer();
     createOnscreenSampler();
@@ -547,16 +546,16 @@ void VulkanPipelineBarrierSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
+    SwapchainDescriptor descriptor{
+        *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
-
-    // m_onScreen.swapchain = m_device->createSwapchain(descriptor);
+    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void VulkanPipelineBarrierSample::createCommandBuffer()
@@ -770,25 +769,6 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
         vkdescriptor.renderPass = getOffscreenRenderPass(stage);
         m_offscreen.renderPipelines[stage] = downcast(m_device.get())->createRenderPipeline(vkdescriptor);
     }
-}
-
-void VulkanPipelineBarrierSample::createOnscreenSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-
-    SwapchainDescriptor descriptor{};
-    descriptor.width = m_width;
-    descriptor.height = m_height;
-    descriptor.surface = m_surface.get();
-    descriptor.textureFormat = textureFormat;
-    descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
-    descriptor.presentMode = PresentMode::kFifo;
-
-    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void VulkanPipelineBarrierSample::createOnscreenVertexBuffer()

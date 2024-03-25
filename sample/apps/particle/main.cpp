@@ -322,13 +322,15 @@ void ParticleSample::createSwapchain()
 #else
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
+    SwapchainDescriptor descriptor{
+        *m_surface,
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_width,
+        .height = m_height
+    };
 
-    SwapchainDescriptor descriptor{ .textureFormat = textureFormat,
-                                    .presentMode = PresentMode::kFifo,
-                                    .colorSpace = ColorSpace::kSRGBNonLinear,
-                                    .width = m_width,
-                                    .height = m_height,
-                                    .surface = m_surface.get() };
     m_swapchain = m_device->createSwapchain(descriptor);
 }
 
