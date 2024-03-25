@@ -517,17 +517,18 @@ void ParticleSample::createComputePipeline()
     m_computePipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 
     // compute shader
-    ComputeStage computeStage{};
     const std::vector<char> computeShaderSource = utils::readFile(m_appDir / "particle.comp.spv", m_handle);
     ShaderModuleDescriptor shaderModuleDescriptor{ .code = computeShaderSource.data(),
                                                    .codeSize = computeShaderSource.size() };
     auto computeShader = m_device->createShaderModule(shaderModuleDescriptor);
-    computeStage.entryPoint = "main";
-    computeStage.shaderModule = computeShader.get();
+    ComputeStage computeStage{
+        { *computeShader, "main" }
+    };
 
-    ComputePipelineDescriptor computePipelineDescriptor{};
-    computePipelineDescriptor.compute = computeStage;
-    computePipelineDescriptor.layout = m_computePipelineLayout.get();
+    ComputePipelineDescriptor computePipelineDescriptor{
+        { *m_computePipelineLayout },
+        computeStage
+    };
 
     m_computePipeline = m_device->createComputePipeline(computePipelineDescriptor);
 }
@@ -544,43 +545,40 @@ void ParticleSample::createRenderPipeline()
     inputAssembly.topology = PrimitiveTopology::kPointList;
 
     // vertex shader
-    VertexStage vertexStage{};
+
+    // create vertex shader module.
     {
-        // create vertex shader module.
-        {
-            const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
-            ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
-                                                           .codeSize = vertexShaderSource.size() };
-            m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.entryPoint = "main";
-            vertexStage.shaderModule = m_vertexShaderModule.get();
-        }
-
-        // create vertex shader layouts
-        {
-            std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
-            {
-                // position
-                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Particle, position),
-                                        .location = 0 };
-
-                // texture coodinate
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
-                                        .offset = offsetof(Particle, color),
-                                        .location = 1 };
-            }
-
-            VertexInputLayout vertexInputLayout{};
-            vertexInputLayout.attributes = vertexAttributes;
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(Particle);
-
-            vertexStage.layouts = { vertexInputLayout };
-        }
+        const std::vector<char> vertexShaderSource = utils::readFile(m_appDir / "particle.vert.spv", m_handle);
+        ShaderModuleDescriptor shaderModuleDescriptor{ .code = vertexShaderSource.data(),
+                                                       .codeSize = vertexShaderSource.size() };
+        m_vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
     }
+
+    // create vertex shader layouts
+
+    std::vector<VertexAttribute> vertexAttributes{};
+    vertexAttributes.resize(2);
+    {
+        // position
+        vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+                                .offset = offsetof(Particle, position),
+                                .location = 0 };
+
+        // texture coodinate
+        vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
+                                .offset = offsetof(Particle, color),
+                                .location = 1 };
+    }
+
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.attributes = vertexAttributes;
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Particle);
+
+    VertexStage vertexStage{
+        { *m_vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -591,27 +589,27 @@ void ParticleSample::createRenderPipeline()
     }
 
     // fragment shader
-    FragmentStage fragmentStage{};
-    {
-        const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
-        ShaderModuleDescriptor shaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
-        m_fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = m_fragmentShaderModule.get();
+    const std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "particle.frag.spv", m_handle);
+    ShaderModuleDescriptor fragShaderModuleDescriptor{ .code = fragmentShaderSource.data(), .codeSize = fragmentShaderSource.size() };
+    m_fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
 
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-    }
+    FragmentStage fragmentStage{
+        { *m_fragmentShaderModule, "main" },
+        { target }
+    };
 
-    RenderPipelineDescriptor renderPipelineDescriptor{};
-    renderPipelineDescriptor.inputAssembly = inputAssembly;
-    renderPipelineDescriptor.vertex = vertexStage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.layout = m_renderPipelineLayout.get();
+    RenderPipelineDescriptor renderPipelineDescriptor{
+        { *m_renderPipelineLayout },
+        inputAssembly,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
+
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }
 

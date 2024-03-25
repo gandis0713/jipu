@@ -22,7 +22,7 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
     auto& vulkanComputePipeline = static_cast<VulkanComputePipeline&>(pipeline);
 
     m_pipeline = vulkanComputePipeline.getVkPipeline();
-    m_pipelineLayout = downcast(vulkanComputePipeline.getPipelineLayout())->getVkPipelineLayout();
+    m_pipelineLayout = downcast(vulkanComputePipeline.getPipelineLayout()).getVkPipelineLayout();
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());

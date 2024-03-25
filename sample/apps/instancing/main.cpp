@@ -545,40 +545,39 @@ void InstancingSample::createInstancingRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(Vertex, pos);
-        positionAttribute.location = 0;
-        positionAttribute.slot = VERTEX_SLOT;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(Vertex, color);
-        colorAttribute.location = 1;
-        colorAttribute.slot = VERTEX_SLOT;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(Vertex, pos);
+    positionAttribute.location = 0;
+    positionAttribute.slot = VERTEX_SLOT;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(Vertex, color);
+    colorAttribute.location = 1;
+    colorAttribute.slot = VERTEX_SLOT;
 
-        VertexAttribute shiftAttribute{};
-        shiftAttribute.format = VertexFormat::kSFLOATx3;
-        shiftAttribute.offset = offsetof(Transform, translation);
-        shiftAttribute.location = 2;
-        shiftAttribute.slot = INSTANCING_SLOT;
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Vertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
-        VertexInputLayout instancingInputLayout{};
-        instancingInputLayout.mode = VertexMode::kInstance;
-        instancingInputLayout.stride = sizeof(Transform);
-        instancingInputLayout.attributes = { shiftAttribute };
+    VertexAttribute shiftAttribute{};
+    shiftAttribute.format = VertexFormat::kSFLOATx3;
+    shiftAttribute.offset = offsetof(Transform, translation);
+    shiftAttribute.location = 2;
+    shiftAttribute.slot = INSTANCING_SLOT;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout, instancingInputLayout };
-    }
+    VertexInputLayout instancingInputLayout{};
+    instancingInputLayout.mode = VertexMode::kInstance;
+    instancingInputLayout.stride = sizeof(Transform);
+    instancingInputLayout.attributes = { shiftAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout, instancingInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -600,25 +599,25 @@ void InstancingSample::createInstancingRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_instancing.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_instancing.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_instancing.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
@@ -726,29 +725,28 @@ void InstancingSample::createNonInstancingRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(Vertex, pos);
-        positionAttribute.location = 0;
-        positionAttribute.slot = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(Vertex, color);
-        colorAttribute.location = 1;
-        colorAttribute.slot = 0;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(Vertex, pos);
+    positionAttribute.location = 0;
+    positionAttribute.slot = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(Vertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(Vertex, color);
+    colorAttribute.location = 1;
+    colorAttribute.slot = 0;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(Vertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -770,25 +768,25 @@ void InstancingSample::createNonInstancingRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_nonInstancing.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_nonInstancing.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_nonInstancing.renderPipeline = m_device->createRenderPipeline(descriptor);
 }

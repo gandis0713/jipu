@@ -701,27 +701,26 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(OffscreenVertex, pos);
-        positionAttribute.location = 0;
 
-        VertexAttribute colorAttribute{};
-        colorAttribute.format = VertexFormat::kSFLOATx3;
-        colorAttribute.offset = offsetof(OffscreenVertex, color);
-        colorAttribute.location = 1;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(OffscreenVertex, pos);
+    positionAttribute.location = 0;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(OffscreenVertex);
-        vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    VertexAttribute colorAttribute{};
+    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.offset = offsetof(OffscreenVertex, color);
+    colorAttribute.location = 1;
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(OffscreenVertex);
+    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -743,25 +742,25 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_offscreen.renderTexture->getFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage::Target target{};
+    target.format = m_offscreen.renderTexture->getFormat();
+
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_offscreen.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_offscreen.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     VulkanRenderPipelineDescriptor vkdescriptor = generateVulkanRenderPipelineDescriptor(downcast(m_device.get()), descriptor);
 
@@ -898,27 +897,25 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
-    {
-        VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(OnscreenVertex, pos);
-        positionAttribute.location = 0;
+    VertexAttribute positionAttribute{};
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(OnscreenVertex, pos);
+    positionAttribute.location = 0;
 
-        VertexAttribute texCoordAttribute{};
-        texCoordAttribute.format = VertexFormat::kSFLOATx2;
-        texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
-        texCoordAttribute.location = 1;
+    VertexAttribute texCoordAttribute{};
+    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
+    texCoordAttribute.location = 1;
 
-        VertexInputLayout vertexInputLayout{};
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(OnscreenVertex);
-        vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
+    VertexInputLayout vertexInputLayout{};
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(OnscreenVertex);
+    vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
-        vertexStage.entryPoint = "main";
-        vertexStage.shaderModule = vertexShaderModule.get();
-        vertexStage.layouts = { vertexInputLayout };
-    }
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // rasterization
     RasterizationStage rasterizationStage{};
@@ -940,25 +937,24 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
     }
 
     // fragment
-    FragmentStage fragmentStage{};
-    {
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
 
-        fragmentStage.targets = { target };
-        fragmentStage.entryPoint = "main";
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // depth/stencil
 
     // render pipeline
-    RenderPipelineDescriptor descriptor{};
-    descriptor.inputAssembly = inputAssemblyStage;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
-    descriptor.layout = m_onscreen.renderPipelineLayout.get();
+    RenderPipelineDescriptor descriptor{
+        { *m_onscreen.renderPipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage
+    };
 
     m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }

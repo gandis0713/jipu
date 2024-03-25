@@ -25,12 +25,12 @@ protected:
     Pipeline() = default;
 
 public:
-    virtual PipelineLayout* getPipelineLayout() const = 0;
+    virtual PipelineLayout& getPipelineLayout() const = 0;
 };
 
 struct ProgrammableStage
 {
-    ShaderModule* shaderModule = nullptr;
+    ShaderModule& shaderModule;
     std::string entryPoint = "main";
 };
 
@@ -181,15 +181,15 @@ struct DepthStencilStage
 struct PipelineDescriptor
 {
     /// @brief pipeline layout
-    PipelineLayout* layout = nullptr;
+    PipelineLayout& layout;
 };
 
 struct RenderPipelineDescriptor : PipelineDescriptor
 {
     InputAssemblyStage inputAssembly{};
-    VertexStage vertex{};
+    VertexStage vertex;
     RasterizationStage rasterization{};
-    FragmentStage fragment{};
+    FragmentStage fragment;
     std::optional<DepthStencilStage> depthStencil = std::nullopt;
 };
 
@@ -213,7 +213,7 @@ struct ComputeStage : ProgrammableStage
 
 struct ComputePipelineDescriptor : PipelineDescriptor
 {
-    ComputeStage compute{};
+    ComputeStage compute;
 };
 
 class JIPU_EXPORT ComputePipeline : public Pipeline

@@ -535,42 +535,42 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     // vertex stage
-    VertexStage vertexStage{};
+
+    // create vertex shader
+    const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.vert.spv", m_handle);
+    ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
+                                                         .codeSize = vertShaderCode.size() };
+    m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
+
+    // layouts
+    std::vector<VertexInputLayout> layouts{};
+    layouts.resize(1);
     {
-        // create vertex shader
-        const std::vector<char> vertShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.vert.spv", m_handle);
-        ShaderModuleDescriptor vertexShaderModuleDescriptor{ .code = vertShaderCode.data(),
-                                                             .codeSize = vertShaderCode.size() };
-        m_vertexShaderModule = m_device->createShaderModule(vertexShaderModuleDescriptor);
-        vertexStage.shaderModule = m_vertexShaderModule.get();
-
-        // layouts
-        std::vector<VertexInputLayout> layouts{};
-        layouts.resize(1);
+        // attributes
+        std::vector<VertexAttribute> vertexAttributes{};
+        vertexAttributes.resize(2);
         {
-            // attributes
-            std::vector<VertexAttribute> vertexAttributes{};
-            vertexAttributes.resize(2);
-            {
-                // position
-                vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
-                                        .offset = offsetof(Vertex, pos),
-                                        .location = 0 };
+            // position
+            vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+                                    .offset = offsetof(Vertex, pos),
+                                    .location = 0 };
 
-                // texture coodinate
-                vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
-                                        .offset = offsetof(Vertex, texCoord),
-                                        .location = 1 };
-            }
-
-            VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
-                                            .stride = sizeof(Vertex),
-                                            .attributes = vertexAttributes };
-            layouts[0] = vertexLayout;
+            // texture coodinate
+            vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+                                    .offset = offsetof(Vertex, texCoord),
+                                    .location = 1 };
         }
 
-        vertexStage.layouts = layouts;
+        VertexInputLayout vertexLayout{ .mode = VertexMode::kVertex,
+                                        .stride = sizeof(Vertex),
+                                        .attributes = vertexAttributes };
+        layouts[0] = vertexLayout;
     }
+
+    VertexStage vertexStage{
+        { *m_vertexShaderModule, "main" },
+        layouts
+    };
 
     // Rasterization
     RasterizationStage rasterization{};
@@ -581,19 +581,17 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     // fragment stage
-    FragmentStage fragmentStage{};
-    {
-        // create fragment shader
-        const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.frag.spv", m_handle);
-        ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
-                                                               .codeSize = fragShaderCode.size() };
-        m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        fragmentStage.shaderModule = m_fragmentShaderModule.get();
+    // create fragment shader
+    const std::vector<char> fragShaderCode = utils::readFile(m_appDir / "vulkan_n_buffering.frag.spv", m_handle);
+    ShaderModuleDescriptor fragmentShaderModuleDescriptor{ .code = fragShaderCode.data(),
+                                                           .codeSize = fragShaderCode.size() };
+    m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
-        // output targets
-        fragmentStage.targets = { { .format = m_swapchain->getTextureFormat() } };
-    }
+    FragmentStage fragmentStage{
+        { *m_fragmentShaderModule, "main" },
+        { { .format = m_swapchain->getTextureFormat() } }
+    };
 
     // Depth/Stencil stage
     DepthStencilStage depthStencilStage;
@@ -601,13 +599,14 @@ void VulkanNBufferingSample::createRenderPipeline()
         depthStencilStage.format = m_depthStencilTexture->getFormat();
     }
 
-    RenderPipelineDescriptor descriptor;
-    descriptor.layout = m_pipelineLayout.get();
-    descriptor.inputAssembly = inputAssembly;
-    descriptor.vertex = vertexStage;
-    descriptor.rasterization = rasterization;
-    descriptor.fragment = fragmentStage;
-    descriptor.depthStencil = depthStencilStage;
+    RenderPipelineDescriptor descriptor{
+        { *m_pipelineLayout }, // PipelineDescriptor
+        inputAssembly,
+        vertexStage,
+        rasterization,
+        fragmentStage,
+        depthStencilStage,
+    };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }

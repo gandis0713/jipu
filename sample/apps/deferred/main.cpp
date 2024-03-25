@@ -950,42 +950,38 @@ void DeferredSample::createOffscreenPipeline()
     }
 
     // Vertex Shader
-    VertexStage vertexShage{};
-    {
-        // entry point
-        vertexShage.entryPoint = "main";
 
-        // input layout
-        VertexInputLayout inputLayout;
-        inputLayout.mode = VertexMode::kVertex;
-        inputLayout.stride = sizeof(Vertex);
+    // input layout
+    VertexInputLayout inputLayout;
+    inputLayout.mode = VertexMode::kVertex;
+    inputLayout.stride = sizeof(Vertex);
 
-        VertexAttribute positionAttribute;
-        positionAttribute.format = VertexFormat::kSFLOATx3;
-        positionAttribute.offset = offsetof(Vertex, pos);
-        positionAttribute.location = 0;
+    VertexAttribute positionAttribute;
+    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.offset = offsetof(Vertex, pos);
+    positionAttribute.location = 0;
 
-        VertexAttribute normalAttribute;
-        normalAttribute.format = VertexFormat::kSFLOATx3;
-        normalAttribute.offset = offsetof(Vertex, normal);
-        normalAttribute.location = 1;
+    VertexAttribute normalAttribute;
+    normalAttribute.format = VertexFormat::kSFLOATx3;
+    normalAttribute.offset = offsetof(Vertex, normal);
+    normalAttribute.location = 1;
 
-        VertexAttribute tangentAttribute;
-        tangentAttribute.format = VertexFormat::kSFLOATx4;
-        tangentAttribute.offset = offsetof(Vertex, tangent);
-        tangentAttribute.location = 2;
+    VertexAttribute tangentAttribute;
+    tangentAttribute.format = VertexFormat::kSFLOATx4;
+    tangentAttribute.offset = offsetof(Vertex, tangent);
+    tangentAttribute.location = 2;
 
-        VertexAttribute texCoordAttribute;
-        texCoordAttribute.format = VertexFormat::kSFLOATx2;
-        texCoordAttribute.offset = offsetof(Vertex, texCoord);
-        texCoordAttribute.location = 3;
+    VertexAttribute texCoordAttribute;
+    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.offset = offsetof(Vertex, texCoord);
+    texCoordAttribute.location = 3;
 
-        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
+    inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
-        vertexShage.layouts = { inputLayout };
-
-        vertexShage.shaderModule = m_offscreen.vertexShaderModule.get();
-    }
+    VertexStage vertexShage{
+        { *m_offscreen.vertexShaderModule, "main" },
+        { inputLayout }
+    };
 
     // Rasterization
     RasterizationStage rasterizationStage{};
@@ -1005,34 +1001,33 @@ void DeferredSample::createOffscreenPipeline()
     }
 
     // Fragment Shader
-    FragmentStage fragmentStage{};
-    {
-        // entry point
-        fragmentStage.entryPoint = "main";
 
-        // targets
-        FragmentStage::Target positionTarget{};
-        positionTarget.format = m_offscreen.positionColorAttachmentTexture->getFormat();
+    // targets
+    FragmentStage::Target positionTarget{};
+    positionTarget.format = m_offscreen.positionColorAttachmentTexture->getFormat();
 
-        FragmentStage::Target normalTarget{};
-        normalTarget.format = m_offscreen.normalColorAttachmentTexture->getFormat();
+    FragmentStage::Target normalTarget{};
+    normalTarget.format = m_offscreen.normalColorAttachmentTexture->getFormat();
 
-        FragmentStage::Target albedoTarget{};
-        albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
+    FragmentStage::Target albedoTarget{};
+    albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
 
-        fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-        fragmentStage.shaderModule = m_offscreen.fragmentShaderModule.get();
-    }
+    FragmentStage fragmentStage{
+        { *m_offscreen.fragmentShaderModule, "main" },
+        { positionTarget, normalTarget, albedoTarget }
+    };
+
     DepthStencilStage depthStencil{};
     depthStencil.format = m_depthStencilTexture->getFormat();
 
-    RenderPipelineDescriptor descriptor{};
-    descriptor.layout = m_offscreen.pipelineLayout.get();
-    descriptor.inputAssembly = inputAssembly;
-    descriptor.vertex = vertexShage;
-    descriptor.depthStencil = depthStencil;
-    descriptor.rasterization = rasterizationStage;
-    descriptor.fragment = fragmentStage;
+    RenderPipelineDescriptor descriptor{
+        { *m_offscreen.pipelineLayout },
+        inputAssembly,
+        vertexShage,
+        rasterizationStage,
+        fragmentStage,
+        depthStencil
+    };
 
     m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
@@ -1193,42 +1188,40 @@ void DeferredSample::createCompositionPipeline()
     // Vertex
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
 
-    VertexStage vertexStage{};
-    vertexStage.entryPoint = "main";
-    { // vertex layout
-        VertexInputLayout vertexInputLayout{};
-        { // vertex attribute
-            std::vector<VertexAttribute> attributes(2);
+    // vertex layout
+    VertexInputLayout vertexInputLayout{};
+    { // vertex attribute
+        std::vector<VertexAttribute> attributes(2);
 
-            VertexAttribute positionAttribute{};
-            positionAttribute.format = VertexFormat::kSFLOATx3;
-            positionAttribute.offset = offsetof(CompositionVertex, position);
-            positionAttribute.location = 0;
-            attributes[0] = positionAttribute;
+        VertexAttribute positionAttribute{};
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(CompositionVertex, position);
+        positionAttribute.location = 0;
+        attributes[0] = positionAttribute;
 
-            VertexAttribute texCoordAttribute{};
-            texCoordAttribute.format = VertexFormat::kSFLOATx2;
-            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
-            texCoordAttribute.location = 1;
-            attributes[1] = texCoordAttribute;
+        VertexAttribute texCoordAttribute{};
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+        texCoordAttribute.location = 1;
+        attributes[1] = texCoordAttribute;
 
-            vertexInputLayout.attributes = attributes;
-        }
-        vertexInputLayout.mode = VertexMode::kVertex;
-        vertexInputLayout.stride = sizeof(CompositionVertex);
-
-        vertexStage.layouts = { vertexInputLayout };
+        vertexInputLayout.attributes = attributes;
     }
-    { // vertex shader module
-        std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
+    vertexInputLayout.mode = VertexMode::kVertex;
+    vertexInputLayout.stride = sizeof(CompositionVertex);
 
-        ShaderModuleDescriptor shaderModuleDescriptor{};
-        shaderModuleDescriptor.code = vertexSource.data();
-        shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
-        vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+    // vertex shader module
+    std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
 
-        vertexStage.shaderModule = vertexShaderModule.get();
-    }
+    ShaderModuleDescriptor shaderModuleDescriptor{};
+    shaderModuleDescriptor.code = vertexSource.data();
+    shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
+    vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
+
+    VertexStage vertexStage{
+        { *vertexShaderModule, "main" },
+        { vertexInputLayout }
+    };
 
     // Rasterization
     RasterizationStage rasterizationStage{};
@@ -1237,39 +1230,36 @@ void DeferredSample::createCompositionPipeline()
     rasterizationStage.sampleCount = m_sampleCount;
 
     // Fragment
+
+    // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
+    std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
 
-    FragmentStage fragmentStage{};
-    fragmentStage.entryPoint = "main";
-    { // fragment shader targets
-        FragmentStage::Target target{};
-        target.format = m_swapchain->getTextureFormat();
+    ShaderModuleDescriptor fragShaderModuleDescriptor{};
+    fragShaderModuleDescriptor.code = fragmentShaderSource.data();
+    fragShaderModuleDescriptor.codeSize = fragmentShaderSource.size();
+    fragmentShaderModule = m_device->createShaderModule(fragShaderModuleDescriptor);
 
-        fragmentStage.targets = { target };
-    }
+    FragmentStage::Target target{};
+    target.format = m_swapchain->getTextureFormat();
 
-    { // fragment shader module
-        std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
-
-        ShaderModuleDescriptor shaderModuleDescriptor{};
-        shaderModuleDescriptor.code = fragmentShaderSource.data();
-        shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
-        fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-        fragmentStage.shaderModule = fragmentShaderModule.get();
-    }
+    FragmentStage fragmentStage{
+        { *fragmentShaderModule, "main" },
+        { target }
+    };
 
     // DepthStencil
     DepthStencilStage depthStencilStage{};
     depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-    RenderPipelineDescriptor renderPipelineDescriptor{};
-    renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-    renderPipelineDescriptor.vertex = vertexStage;
-    renderPipelineDescriptor.rasterization = rasterizationStage;
-    renderPipelineDescriptor.fragment = fragmentStage;
-    renderPipelineDescriptor.depthStencil = depthStencilStage;
-    renderPipelineDescriptor.layout = m_composition.pipelineLayout.get();
+    RenderPipelineDescriptor renderPipelineDescriptor{
+        { *m_composition.pipelineLayout },
+        inputAssemblyStage,
+        vertexStage,
+        rasterizationStage,
+        fragmentStage,
+        depthStencilStage
+    };
 
     m_composition.renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
 }

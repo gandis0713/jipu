@@ -285,43 +285,42 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         }
 
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
-        VertexStage vertexStage{};
+
+        VertexInputLayout vertexInputLayout{};
         {
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx2;
+            positionAttribute.offset = offsetof(ImDrawVert, pos);
+            positionAttribute.location = 0;
 
-            VertexInputLayout vertexInputLayout{};
-            {
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx2;
-                positionAttribute.offset = offsetof(ImDrawVert, pos);
-                positionAttribute.location = 0;
+            VertexAttribute uiAttribute{};
+            uiAttribute.format = VertexFormat::kSFLOATx2;
+            uiAttribute.offset = offsetof(ImDrawVert, uv);
+            uiAttribute.location = 1;
 
-                VertexAttribute uiAttribute{};
-                uiAttribute.format = VertexFormat::kSFLOATx2;
-                uiAttribute.offset = offsetof(ImDrawVert, uv);
-                uiAttribute.location = 1;
+            VertexAttribute colorAttribute{};
+            colorAttribute.format = VertexFormat::kUNORM8x4;
+            colorAttribute.offset = offsetof(ImDrawVert, col);
+            colorAttribute.location = 2;
 
-                VertexAttribute colorAttribute{};
-                colorAttribute.format = VertexFormat::kUNORM8x4;
-                colorAttribute.offset = offsetof(ImDrawVert, col);
-                colorAttribute.location = 2;
-
-                vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
-                vertexInputLayout.mode = VertexMode::kVertex;
-                vertexInputLayout.stride = sizeof(ImDrawVert);
-            }
-
-            {
-                ShaderModuleDescriptor vertexShaderModuleDescriptor{};
-                vertexShaderModuleDescriptor.code = reinterpret_cast<const char*>(vertexShaderSourceSpv.data());
-                vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSourceSpv.size() * 4);
-
-                vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
-            }
-
-            vertexStage.entryPoint = "main";
-            vertexStage.layouts = { vertexInputLayout };
-            vertexStage.shaderModule = vertexShaderModule.get();
+            vertexInputLayout.attributes = { positionAttribute, uiAttribute, colorAttribute };
+            vertexInputLayout.mode = VertexMode::kVertex;
+            vertexInputLayout.stride = sizeof(ImDrawVert);
         }
+
+        {
+            ShaderModuleDescriptor vertexShaderModuleDescriptor{};
+            vertexShaderModuleDescriptor.code = reinterpret_cast<const char*>(vertexShaderSourceSpv.data());
+            vertexShaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexShaderSourceSpv.size() * 4);
+
+            vertexShaderModule = device->createShaderModule(vertexShaderModuleDescriptor);
+        }
+
+        VertexStage vertexStage{
+            { *vertexShaderModule, // shader module
+              "main" },            // entry point
+            .layouts = { vertexInputLayout },
+        };
 
         RasterizationStage rasterizationStage{};
         {
@@ -331,43 +330,44 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain* swapchain)
         }
 
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
-        FragmentStage fragmentStage{};
-        {
-            FragmentStage::Target target{};
-            target.format = swapchain->getTextureFormat();
-            target.blend = {
-                .color = {
-                    .srcFactor = BlendFactor::kSrcAlpha,
-                    .dstFactor = BlendFactor::kOneMinusSrcAlpha,
-                    .operation = BlendOperation::kAdd,
-                },
-                .alpha = {
 
-                    .srcFactor = BlendFactor::kOneMinusSrcAlpha,
-                    .dstFactor = BlendFactor::kZero,
-                    .operation = BlendOperation::kAdd,
-                }
-            };
+        FragmentStage::Target target{};
+        target.format = swapchain->getTextureFormat();
+        target.blend = {
+            .color = {
+                .srcFactor = BlendFactor::kSrcAlpha,
+                .dstFactor = BlendFactor::kOneMinusSrcAlpha,
+                .operation = BlendOperation::kAdd,
+            },
+            .alpha = {
 
-            {
-                ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
-                fragmentShaderModuleDescriptor.code = reinterpret_cast<const char*>(fragmentShaderSourceSpv.data());
-                fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSourceSpv.size() * 4);
-
-                fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
+                .srcFactor = BlendFactor::kOneMinusSrcAlpha,
+                .dstFactor = BlendFactor::kZero,
+                .operation = BlendOperation::kAdd,
             }
+        };
 
-            fragmentStage.targets = { target };
-            fragmentStage.entryPoint = "main";
-            fragmentStage.shaderModule = fragmentShaderModule.get();
+        {
+            ShaderModuleDescriptor fragmentShaderModuleDescriptor{};
+            fragmentShaderModuleDescriptor.code = reinterpret_cast<const char*>(fragmentShaderSourceSpv.data());
+            fragmentShaderModuleDescriptor.codeSize = static_cast<uint32_t>(fragmentShaderSourceSpv.size() * 4);
+
+            fragmentShaderModule = device->createShaderModule(fragmentShaderModuleDescriptor);
         }
 
-        RenderPipelineDescriptor renderPipelineDescriptor{};
-        renderPipelineDescriptor.layout = m_pipelineLayout.get();
-        renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-        renderPipelineDescriptor.vertex = vertexStage;
-        renderPipelineDescriptor.rasterization = rasterizationStage;
-        renderPipelineDescriptor.fragment = fragmentStage;
+        FragmentStage fragmentStage{
+            { *fragmentShaderModule,
+              "main" }, // ProgramableStage
+            .targets = { target }
+        };
+
+        RenderPipelineDescriptor renderPipelineDescriptor{
+            { *m_pipelineLayout }, // PipelineDescriptor
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+        };
 
         m_pipeline = device->createRenderPipeline(renderPipelineDescriptor);
     }

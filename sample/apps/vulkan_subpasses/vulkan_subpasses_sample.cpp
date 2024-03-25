@@ -1084,42 +1084,38 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Vertex Shader
-        VertexStage vertexShage{};
-        {
-            // entry point
-            vertexShage.entryPoint = "main";
 
-            // input layout
-            VertexInputLayout inputLayout;
-            inputLayout.mode = VertexMode::kVertex;
-            inputLayout.stride = sizeof(Vertex);
+        // input layout
+        VertexInputLayout inputLayout;
+        inputLayout.mode = VertexMode::kVertex;
+        inputLayout.stride = sizeof(Vertex);
 
-            VertexAttribute positionAttribute;
-            positionAttribute.format = VertexFormat::kSFLOATx3;
-            positionAttribute.offset = offsetof(Vertex, pos);
-            positionAttribute.location = 0;
+        VertexAttribute positionAttribute;
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
-            VertexAttribute normalAttribute;
-            normalAttribute.format = VertexFormat::kSFLOATx3;
-            normalAttribute.offset = offsetof(Vertex, normal);
-            normalAttribute.location = 1;
+        VertexAttribute normalAttribute;
+        normalAttribute.format = VertexFormat::kSFLOATx3;
+        normalAttribute.offset = offsetof(Vertex, normal);
+        normalAttribute.location = 1;
 
-            VertexAttribute tangentAttribute;
-            tangentAttribute.format = VertexFormat::kSFLOATx4;
-            tangentAttribute.offset = offsetof(Vertex, tangent);
-            tangentAttribute.location = 2;
+        VertexAttribute tangentAttribute;
+        tangentAttribute.format = VertexFormat::kSFLOATx4;
+        tangentAttribute.offset = offsetof(Vertex, tangent);
+        tangentAttribute.location = 2;
 
-            VertexAttribute texCoordAttribute;
-            texCoordAttribute.format = VertexFormat::kSFLOATx2;
-            texCoordAttribute.offset = offsetof(Vertex, texCoord);
-            texCoordAttribute.location = 3;
+        VertexAttribute texCoordAttribute;
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(Vertex, texCoord);
+        texCoordAttribute.location = 3;
 
-            inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
+        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
-            vertexShage.layouts = { inputLayout };
-
-            vertexShage.shaderModule = m_offscreen.renderPasses.vertexShaderModule.get();
-        }
+        VertexStage vertexStage{
+            { *m_offscreen.renderPasses.vertexShaderModule, "main" },
+            { inputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1139,34 +1135,33 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Fragment Shader
-        FragmentStage fragmentStage{};
-        {
-            // entry point
-            fragmentStage.entryPoint = "main";
 
-            // targets
-            FragmentStage::Target positionTarget{};
-            positionTarget.format = m_offscreen.renderPasses.positionColorAttachmentTexture->getFormat();
+        // targets
+        FragmentStage::Target positionTarget{};
+        positionTarget.format = m_offscreen.renderPasses.positionColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target normalTarget{};
-            normalTarget.format = m_offscreen.renderPasses.normalColorAttachmentTexture->getFormat();
+        FragmentStage::Target normalTarget{};
+        normalTarget.format = m_offscreen.renderPasses.normalColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target albedoTarget{};
-            albedoTarget.format = m_offscreen.renderPasses.albedoColorAttachmentTexture->getFormat();
+        FragmentStage::Target albedoTarget{};
+        albedoTarget.format = m_offscreen.renderPasses.albedoColorAttachmentTexture->getFormat();
 
-            fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-            fragmentStage.shaderModule = m_offscreen.renderPasses.fragmentShaderModule.get();
-        }
+        FragmentStage fragmentStage{
+            { *m_offscreen.renderPasses.fragmentShaderModule, "main" },
+            { positionTarget, normalTarget, albedoTarget }
+        };
+
         DepthStencilStage depthStencil{};
         depthStencil.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_offscreen.renderPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssembly;
-        descriptor.vertex = vertexShage;
-        descriptor.depthStencil = depthStencil;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_offscreen.renderPasses.pipelineLayout },
+            inputAssembly,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencil
+        };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.renderPasses.renderPipeline = vulkanDevice->createRenderPipeline(descriptor);
@@ -1189,42 +1184,38 @@ void VulkanSubpassesSample::createOffscreenPipeline()
             m_offscreen.subPasses.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
         }
         // Vertex Shader
-        VertexStage vertexShage{};
-        {
-            // entry point
-            vertexShage.entryPoint = "main";
 
-            // input layout
-            VertexInputLayout inputLayout;
-            inputLayout.mode = VertexMode::kVertex;
-            inputLayout.stride = sizeof(Vertex);
+        // input layout
+        VertexInputLayout inputLayout;
+        inputLayout.mode = VertexMode::kVertex;
+        inputLayout.stride = sizeof(Vertex);
 
-            VertexAttribute positionAttribute;
-            positionAttribute.format = VertexFormat::kSFLOATx3;
-            positionAttribute.offset = offsetof(Vertex, pos);
-            positionAttribute.location = 0;
+        VertexAttribute positionAttribute;
+        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.offset = offsetof(Vertex, pos);
+        positionAttribute.location = 0;
 
-            VertexAttribute normalAttribute;
-            normalAttribute.format = VertexFormat::kSFLOATx3;
-            normalAttribute.offset = offsetof(Vertex, normal);
-            normalAttribute.location = 1;
+        VertexAttribute normalAttribute;
+        normalAttribute.format = VertexFormat::kSFLOATx3;
+        normalAttribute.offset = offsetof(Vertex, normal);
+        normalAttribute.location = 1;
 
-            VertexAttribute tangentAttribute;
-            tangentAttribute.format = VertexFormat::kSFLOATx4;
-            tangentAttribute.offset = offsetof(Vertex, tangent);
-            tangentAttribute.location = 2;
+        VertexAttribute tangentAttribute;
+        tangentAttribute.format = VertexFormat::kSFLOATx4;
+        tangentAttribute.offset = offsetof(Vertex, tangent);
+        tangentAttribute.location = 2;
 
-            VertexAttribute texCoordAttribute;
-            texCoordAttribute.format = VertexFormat::kSFLOATx2;
-            texCoordAttribute.offset = offsetof(Vertex, texCoord);
-            texCoordAttribute.location = 3;
+        VertexAttribute texCoordAttribute;
+        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.offset = offsetof(Vertex, texCoord);
+        texCoordAttribute.location = 3;
 
-            inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
+        inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
-            vertexShage.layouts = { inputLayout };
-
-            vertexShage.shaderModule = m_offscreen.subPasses.vertexShaderModule.get();
-        }
+        VertexStage vertexStage{
+            { *m_offscreen.subPasses.vertexShaderModule, "main" },
+            { inputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1244,53 +1235,50 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         }
 
         // Fragment Shader
-        FragmentStage fragmentStage{};
-        {
-            // entry point
-            fragmentStage.entryPoint = "main";
+        // targets
+        FragmentStage::Target positionTarget{};
+        positionTarget.format = m_offscreen.subPasses.positionColorAttachmentTexture->getFormat();
 
-            // targets
-            FragmentStage::Target positionTarget{};
-            positionTarget.format = m_offscreen.subPasses.positionColorAttachmentTexture->getFormat();
+        FragmentStage::Target normalTarget{};
+        normalTarget.format = m_offscreen.subPasses.normalColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target normalTarget{};
-            normalTarget.format = m_offscreen.subPasses.normalColorAttachmentTexture->getFormat();
+        FragmentStage::Target albedoTarget{};
+        albedoTarget.format = m_offscreen.subPasses.albedoColorAttachmentTexture->getFormat();
 
-            FragmentStage::Target albedoTarget{};
-            albedoTarget.format = m_offscreen.subPasses.albedoColorAttachmentTexture->getFormat();
-
-            fragmentStage.targets = { positionTarget, normalTarget, albedoTarget };
-            fragmentStage.shaderModule = m_offscreen.subPasses.fragmentShaderModule.get();
-        }
+        FragmentStage fragmentStage{
+            { *m_offscreen.subPasses.fragmentShaderModule, "main" },
+            { positionTarget, normalTarget, albedoTarget }
+        };
 
         DepthStencilStage depthStencil{};
         depthStencil.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_offscreen.subPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssembly;
-        descriptor.vertex = vertexShage;
-        descriptor.depthStencil = depthStencil;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_offscreen.subPasses.pipelineLayout },
+            inputAssembly,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencil
+        };
 
-        VulkanRenderPipelineDescriptor vkdescriptor{};
-        vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
-        vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
-        vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
-        vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
-        vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
-        vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
-        vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
-        vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
-        vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
-
-        vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesRenderPass();
-        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
-        vkdescriptor.subpass = 0;
-        vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
-        vkdescriptor.basePipelineIndex = -1;
+        VulkanRenderPipelineDescriptor vkdescriptor{
+            .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
+            .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
+            .viewportState = generateViewportStateCreateInfo(descriptor),
+            .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
+            .multisampleState = generateMultisampleStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
+            .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .dynamicState = generateDynamicStateCreateInfo(descriptor),
+            .stages = generateShaderStageCreateInfo(descriptor),
+            .layout = downcast(descriptor.layout),
+            .renderPass = getSubpassesRenderPass(),
+            // .renderPass = getSubpassesCompatibleRenderPass(),
+            .subpass = 0,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = -1,
+        };
 
         auto vulkanDevice = downcast(m_device.get());
         m_offscreen.subPasses.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
@@ -1552,32 +1540,28 @@ void VulkanSubpassesSample::createCompositionPipeline()
         // Vertex
         std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
 
-        VertexStage vertexStage{};
-        vertexStage.entryPoint = "main";
-        { // vertex layout
-            VertexInputLayout vertexInputLayout{};
-            { // vertex attribute
-                std::vector<VertexAttribute> attributes(2);
+        // vertex layout
+        VertexInputLayout vertexInputLayout{};
+        { // vertex attribute
+            std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx3;
-                positionAttribute.offset = offsetof(CompositionVertex, position);
-                positionAttribute.location = 0;
-                attributes[0] = positionAttribute;
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx3;
+            positionAttribute.offset = offsetof(CompositionVertex, position);
+            positionAttribute.location = 0;
+            attributes[0] = positionAttribute;
 
-                VertexAttribute texCoordAttribute{};
-                texCoordAttribute.format = VertexFormat::kSFLOATx2;
-                texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
-                texCoordAttribute.location = 1;
-                attributes[1] = texCoordAttribute;
+            VertexAttribute texCoordAttribute{};
+            texCoordAttribute.format = VertexFormat::kSFLOATx2;
+            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            texCoordAttribute.location = 1;
+            attributes[1] = texCoordAttribute;
 
-                vertexInputLayout.attributes = attributes;
-            }
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(CompositionVertex);
-
-            vertexStage.layouts = { vertexInputLayout };
+            vertexInputLayout.attributes = attributes;
         }
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = sizeof(CompositionVertex);
+
         { // vertex shader module
             std::vector<char> vertexSource = utils::readFile(m_appDir / "composition.vert.spv", m_handle);
 
@@ -1585,9 +1569,12 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = vertexSource.data();
             shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
             vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.shaderModule = vertexShaderModule.get();
         }
+
+        VertexStage vertexStage{
+            { *vertexShaderModule, "main" },
+            { vertexInputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1598,15 +1585,6 @@ void VulkanSubpassesSample::createCompositionPipeline()
         // Fragment
         std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
 
-        FragmentStage fragmentStage{};
-        fragmentStage.entryPoint = "main";
-        { // fragment shader targets
-            FragmentStage::Target target{};
-            target.format = m_swapchain->getTextureFormat();
-
-            fragmentStage.targets = { target };
-        }
-
         { // fragment shader module
             std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "composition.frag.spv", m_handle);
 
@@ -1614,21 +1592,28 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = fragmentShaderSource.data();
             shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
             fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            fragmentStage.shaderModule = fragmentShaderModule.get();
         }
+
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+
+        FragmentStage fragmentStage{
+            { *fragmentShaderModule, "main" },
+            { target }
+        };
 
         // DepthStencil
         DepthStencilStage depthStencilStage{};
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor renderPipelineDescriptor{};
-        renderPipelineDescriptor.inputAssembly = inputAssemblyStage;
-        renderPipelineDescriptor.vertex = vertexStage;
-        renderPipelineDescriptor.rasterization = rasterizationStage;
-        renderPipelineDescriptor.fragment = fragmentStage;
-        renderPipelineDescriptor.depthStencil = depthStencilStage;
-        renderPipelineDescriptor.layout = m_composition.renderPasses.pipelineLayout.get();
+        RenderPipelineDescriptor renderPipelineDescriptor{
+            { *m_composition.renderPasses.pipelineLayout },
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencilStage
+        };
 
         m_composition.renderPasses.renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
     }
@@ -1640,32 +1625,29 @@ void VulkanSubpassesSample::createCompositionPipeline()
         inputAssemblyStage.topology = PrimitiveTopology::kTriangleList;
 
         // Vertex
-        VertexStage vertexStage{};
-        vertexStage.entryPoint = "main";
-        { // vertex layout
-            VertexInputLayout vertexInputLayout{};
-            { // vertex attribute
-                std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute positionAttribute{};
-                positionAttribute.format = VertexFormat::kSFLOATx3;
-                positionAttribute.offset = offsetof(CompositionVertex, position);
-                positionAttribute.location = 0;
-                attributes[0] = positionAttribute;
+        // vertex layout
+        VertexInputLayout vertexInputLayout{};
+        { // vertex attribute
+            std::vector<VertexAttribute> attributes(2);
 
-                VertexAttribute texCoordAttribute{};
-                texCoordAttribute.format = VertexFormat::kSFLOATx2;
-                texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
-                texCoordAttribute.location = 1;
-                attributes[1] = texCoordAttribute;
+            VertexAttribute positionAttribute{};
+            positionAttribute.format = VertexFormat::kSFLOATx3;
+            positionAttribute.offset = offsetof(CompositionVertex, position);
+            positionAttribute.location = 0;
+            attributes[0] = positionAttribute;
 
-                vertexInputLayout.attributes = attributes;
-            }
-            vertexInputLayout.mode = VertexMode::kVertex;
-            vertexInputLayout.stride = sizeof(CompositionVertex);
+            VertexAttribute texCoordAttribute{};
+            texCoordAttribute.format = VertexFormat::kSFLOATx2;
+            texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
+            texCoordAttribute.location = 1;
+            attributes[1] = texCoordAttribute;
 
-            vertexStage.layouts = { vertexInputLayout };
+            vertexInputLayout.attributes = attributes;
         }
+        vertexInputLayout.mode = VertexMode::kVertex;
+        vertexInputLayout.stride = sizeof(CompositionVertex);
+
         { // vertex shader module
             std::vector<char> vertexSource = utils::readFile(m_appDir / "subpasses_composition.vert.spv", m_handle);
 
@@ -1673,9 +1655,12 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = vertexSource.data();
             shaderModuleDescriptor.codeSize = static_cast<uint32_t>(vertexSource.size());
             m_composition.subPasses.vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            vertexStage.shaderModule = m_composition.subPasses.vertexShaderModule.get();
         }
+
+        VertexStage vertexStage{
+            { *m_composition.subPasses.vertexShaderModule, "main" },
+            { vertexInputLayout }
+        };
 
         // Rasterization
         RasterizationStage rasterizationStage{};
@@ -1684,15 +1669,6 @@ void VulkanSubpassesSample::createCompositionPipeline()
         rasterizationStage.sampleCount = m_sampleCount;
 
         // Fragment
-        FragmentStage fragmentStage{};
-        fragmentStage.entryPoint = "main";
-        { // fragment shader targets
-            FragmentStage::Target target{};
-            target.format = m_swapchain->getTextureFormat();
-
-            fragmentStage.targets = { target };
-        }
-
         { // fragment shader module
             std::vector<char> fragmentShaderSource = utils::readFile(m_appDir / "subpasses_composition.frag.spv", m_handle);
 
@@ -1700,40 +1676,46 @@ void VulkanSubpassesSample::createCompositionPipeline()
             shaderModuleDescriptor.code = fragmentShaderSource.data();
             shaderModuleDescriptor.codeSize = fragmentShaderSource.size();
             m_composition.subPasses.fragmentShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
-
-            fragmentStage.shaderModule = m_composition.subPasses.fragmentShaderModule.get();
         }
+
+        FragmentStage::Target target{};
+        target.format = m_swapchain->getTextureFormat();
+        FragmentStage fragmentStage{
+            { *m_composition.subPasses.fragmentShaderModule, "main" },
+            { target }
+        };
 
         // DepthStencil
         DepthStencilStage depthStencilStage{};
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
-        RenderPipelineDescriptor descriptor{};
-        descriptor.layout = m_composition.subPasses.pipelineLayout.get();
-        descriptor.inputAssembly = inputAssemblyStage;
-        descriptor.vertex = vertexStage;
-        descriptor.depthStencil = depthStencilStage;
-        descriptor.rasterization = rasterizationStage;
-        descriptor.fragment = fragmentStage;
+        RenderPipelineDescriptor descriptor{
+            { *m_composition.subPasses.pipelineLayout },
+            inputAssemblyStage,
+            vertexStage,
+            rasterizationStage,
+            fragmentStage,
+            depthStencilStage
+        };
 
-        VulkanRenderPipelineDescriptor vkdescriptor{};
-        vkdescriptor.inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor);
-        vkdescriptor.vertexInputState = generateVertexInputStateCreateInfo(descriptor);
-        vkdescriptor.viewportState = generateViewportStateCreateInfo(descriptor);
-        vkdescriptor.rasterizationState = generateRasterizationStateCreateInfo(descriptor);
-        vkdescriptor.multisampleState = generateMultisampleStateCreateInfo(descriptor);
-        vkdescriptor.colorBlendState = generateColorBlendStateCreateInfo(descriptor);
-        vkdescriptor.depthStencilState = generateDepthStencilStateCreateInfo(descriptor);
+        VulkanRenderPipelineDescriptor vkdescriptor{
+            .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
+            .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
+            .viewportState = generateViewportStateCreateInfo(descriptor),
+            .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
+            .multisampleState = generateMultisampleStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
+            .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .dynamicState = generateDynamicStateCreateInfo(descriptor),
+            .stages = generateShaderStageCreateInfo(descriptor),
+            .layout = downcast(descriptor.layout),
+            .renderPass = getSubpassesRenderPass(),
+            // .renderPass = getSubpassesCompatibleRenderPass(),
+            .subpass = 1,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = -1,
+        };
         vkdescriptor.depthStencilState.depthWriteEnable = false;
-        vkdescriptor.dynamicState = generateDynamicStateCreateInfo(descriptor);
-        vkdescriptor.stages = generateShaderStageCreateInfo(descriptor);
-
-        vkdescriptor.layout = downcast(descriptor.layout);
-        vkdescriptor.renderPass = getSubpassesRenderPass();
-        // vkdescriptor.renderPass = getSubpassesCompatibleRenderPass();
-        vkdescriptor.subpass = 1;
-        vkdescriptor.basePipelineHandle = VK_NULL_HANDLE;
-        vkdescriptor.basePipelineIndex = -1;
 
         auto vulkanDevice = downcast(m_device.get());
         m_composition.subPasses.renderPipeline = vulkanDevice->createRenderPipeline(vkdescriptor);
