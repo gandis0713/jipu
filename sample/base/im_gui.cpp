@@ -316,9 +316,8 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         VertexStage vertexStage{
-            { *vertexShaderModule, // shader module
-              "main" },            // entry point
-            .layouts = { vertexInputLayout },
+            { *vertexShaderModule, "main" },
+            { vertexInputLayout },
         };
 
         RasterizationStage rasterizationStage{};
@@ -355,9 +354,8 @@ void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         FragmentStage fragmentStage{
-            { *fragmentShaderModule,
-              "main" }, // ProgramableStage
-            .targets = { target }
+            { *fragmentShaderModule, "main" }, // ProgramableStage
+            { target }
         };
 
         RenderPipelineDescriptor renderPipelineDescriptor{
