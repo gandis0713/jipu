@@ -262,7 +262,7 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline& pipeline)
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.value().get().getVkPipeline());
 }
 
-void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
+void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     if (!m_pipeline.has_value())
         throw std::runtime_error("The pipeline is null opt");
@@ -270,8 +270,8 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bind
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
     auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
-    auto vulkanBindingGroup = downcast(bindingGroup);
-    VkDescriptorSet set = vulkanBindingGroup->getVkDescriptorSet();
+    auto& vulkanBindingGroup = downcast(bindingGroup);
+    VkDescriptorSet set = vulkanBindingGroup.getVkDescriptorSet();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer.getVkCommandBuffer(),
@@ -284,24 +284,24 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bind
                                 dynamicOffset.data());
 }
 
-void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer* buffer)
+void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    auto vulkanBuffer = downcast(buffer);
-    VkBuffer vertexBuffers[] = { vulkanBuffer->getVkBuffer() };
+    auto& vulkanBuffer = downcast(buffer);
+    VkBuffer vertexBuffers[] = { vulkanBuffer.getVkBuffer() };
     VkDeviceSize offsets[] = { 0 };
     vulkanDevice->vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer.getVkCommandBuffer(), slot, 1, vertexBuffers, offsets);
 }
 
-void VulkanRenderPassEncoder::setIndexBuffer(Buffer* buffer, IndexFormat format)
+void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    auto vulkanBuffer = downcast(buffer);
-    vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer.getVkCommandBuffer(), vulkanBuffer->getVkBuffer(), 0, ToVkIndexType(format));
+    auto& vulkanBuffer = downcast(buffer);
+    vulkanDevice->vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer.getVkCommandBuffer(), vulkanBuffer.getVkBuffer(), 0, ToVkIndexType(format));
 }
 
 void VulkanRenderPassEncoder::setViewport(float x,

@@ -307,10 +307,10 @@ void VulkanSubpassesSample::draw()
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(*m_offscreen.renderPasses.renderPipeline);
-            renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-            renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-            renderPassEncoder->setBindingGroup(0, m_offscreen.renderPasses.bindingGroups[0].get());
-            renderPassEncoder->setBindingGroup(1, m_offscreen.renderPasses.bindingGroups[1].get());
+            renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+            renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
+            renderPassEncoder->setBindingGroup(0, *m_offscreen.renderPasses.bindingGroups[0]);
+            renderPassEncoder->setBindingGroup(1, *m_offscreen.renderPasses.bindingGroups[1]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
@@ -340,8 +340,8 @@ void VulkanSubpassesSample::draw()
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(*m_composition.renderPasses.renderPipeline);
-            renderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-            renderPassEncoder->setBindingGroup(0, m_composition.renderPasses.bindingGroups[0].get());
+            renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
+            renderPassEncoder->setBindingGroup(0, *m_composition.renderPasses.bindingGroups[0]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
@@ -380,19 +380,19 @@ void VulkanSubpassesSample::draw()
 
         // first pass
         vulkanRenderPassEncoder->setPipeline(*m_offscreen.subPasses.renderPipeline);
-        vulkanRenderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-        vulkanRenderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-        vulkanRenderPassEncoder->setBindingGroup(0, m_offscreen.subPasses.bindingGroups[0].get());
-        vulkanRenderPassEncoder->setBindingGroup(1, m_offscreen.subPasses.bindingGroups[1].get());
+        vulkanRenderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+        vulkanRenderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
+        vulkanRenderPassEncoder->setBindingGroup(0, *m_offscreen.subPasses.bindingGroups[0]);
+        vulkanRenderPassEncoder->setBindingGroup(1, *m_offscreen.subPasses.bindingGroups[1]);
         vulkanRenderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreen.polygon.indices.size()), 1, 0, 0, 0);
 
         vulkanRenderPassEncoder->nextPass();
 
         // second pass
         vulkanRenderPassEncoder->setPipeline(*m_composition.subPasses.renderPipeline);
-        vulkanRenderPassEncoder->setVertexBuffer(0, m_composition.vertexBuffer.get());
-        vulkanRenderPassEncoder->setBindingGroup(0, m_composition.subPasses.bindingGroups[0].get());
-        vulkanRenderPassEncoder->setBindingGroup(1, m_composition.subPasses.bindingGroups[1].get());
+        vulkanRenderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
+        vulkanRenderPassEncoder->setBindingGroup(0, *m_composition.subPasses.bindingGroups[0]);
+        vulkanRenderPassEncoder->setBindingGroup(1, *m_composition.subPasses.bindingGroups[1]);
         vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
 
         vulkanRenderPassEncoder->end();

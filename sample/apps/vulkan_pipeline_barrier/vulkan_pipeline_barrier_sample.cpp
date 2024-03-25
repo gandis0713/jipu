@@ -409,9 +409,9 @@ void VulkanPipelineBarrierSample::draw()
 
         auto renderPassEncoder = vulkanCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
         renderPassEncoder->setPipeline(*m_offscreen.renderPipelines[m_stage]);
-        renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroup);
+        renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
@@ -439,9 +439,9 @@ void VulkanPipelineBarrierSample::draw()
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(*m_onscreen.renderPipeline);
-        renderPassEncoder->setBindingGroup(0, m_onscreen.bindingGroup.get());
-        renderPassEncoder->setVertexBuffer(0, m_onscreen.vertexBuffer.get());
-        renderPassEncoder->setIndexBuffer(m_onscreen.indexBuffer.get(), IndexFormat::kUint16);
+        renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
+        renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
+        renderPassEncoder->setIndexBuffer(*m_onscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);

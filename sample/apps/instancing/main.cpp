@@ -289,10 +289,10 @@ void InstancingSample::draw()
         {
             auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(*m_instancing.renderPipeline);
-            renderPassEncoder->setBindingGroup(0, m_instancing.bindingGroup.get());
-            renderPassEncoder->setVertexBuffer(VERTEX_SLOT, m_vertexBuffer.get());
-            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.transformBuffer.get());
-            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+            renderPassEncoder->setBindingGroup(0, *m_instancing.bindingGroup);
+            renderPassEncoder->setVertexBuffer(VERTEX_SLOT, *m_vertexBuffer);
+            renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, *m_instancing.transformBuffer);
+            renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
@@ -306,14 +306,14 @@ void InstancingSample::draw()
         {
             auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(*m_nonInstancing.renderPipeline);
-            renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
-            renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
+            renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
+            renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             for (auto i = 0; i < m_imguiSettings.objectCount; ++i)
             {
                 uint32_t offset = i * sizeof(Transform);
-                renderPassEncoder->setBindingGroup(0, m_nonInstancing.bindingGroup.get(), { offset });
+                renderPassEncoder->setBindingGroup(0, *m_nonInstancing.bindingGroup, { offset });
                 renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
             }
             renderPassEncoder->end();
