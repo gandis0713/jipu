@@ -68,12 +68,12 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers)
     submit(submits);
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain* swapchain)
+void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     auto vulkanDevice = downcast(m_device);
-    auto vulkanSwapchain = downcast(swapchain);
+    auto& vulkanSwapchain = downcast(swapchain);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     auto commandBufferCount = commandBuffers.size();
@@ -81,8 +81,8 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapcha
     auto renderCommandBufferIndex = commandBufferCount - 1;
 
     auto& renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
-    auto acquireImageSemaphore = vulkanSwapchain->getPresentSemaphore();
-    auto renderSemaphore = vulkanSwapchain->getRenderSemaphore();
+    auto acquireImageSemaphore = vulkanSwapchain.getPresentSemaphore();
+    auto renderSemaphore = vulkanSwapchain.getRenderSemaphore();
 
     // add signal semaphore to signal that render command buffer is finished.
     submits[renderCommandBufferIndex].signal.first.push_back(renderSemaphore.first);
@@ -93,7 +93,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapcha
 
     submit(submits);
 
-    swapchain->present(*this);
+    swapchain.present(*this);
 }
 
 VkQueue VulkanQueue::getVkQueue() const

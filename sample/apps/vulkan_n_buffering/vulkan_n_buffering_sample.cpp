@@ -91,7 +91,7 @@ void VulkanNBufferingSample::init()
     createPipelineLayout();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -207,7 +207,7 @@ void VulkanNBufferingSample::draw()
 
     drawImGui(commandEncoder.get(), renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
 void VulkanNBufferingSample::createDriver()

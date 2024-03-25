@@ -148,7 +148,7 @@ void VulkanSubpassesSample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -400,7 +400,7 @@ void VulkanSubpassesSample::draw()
 
     drawImGui(commandEncoder.get(), renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
 void VulkanSubpassesSample::createDriver()
@@ -1869,10 +1869,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesRenderPass()
 
         // second pass
         {
-            auto swapchain = downcast(m_swapchain.get());
+            auto& swapchain = downcast(*m_swapchain);
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(swapchain->getTextureFormat());
+            attachment.format = ToVkFormat(swapchain.getTextureFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -2116,10 +2116,10 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
         // second pass
         {
-            auto swapchain = downcast(m_swapchain.get());
+            auto& swapchain = downcast(*m_swapchain);
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(swapchain->getTextureFormat());
+            attachment.format = ToVkFormat(swapchain.getTextureFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;

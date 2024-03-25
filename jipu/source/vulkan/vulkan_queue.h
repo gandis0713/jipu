@@ -17,7 +17,7 @@ public:
     ~VulkanQueue() override;
 
     void submit(std::vector<CommandBuffer::Ref> commandBuffers) override;
-    void submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain* swapchain) override;
+    void submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain) override;
 
 public:
     VkQueue getVkQueue() const;

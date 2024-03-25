@@ -175,7 +175,7 @@ void ParticleSample::init()
     createQueue();
     createCommandBuffer();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -274,11 +274,11 @@ void ParticleSample::draw()
         renderCommandEncoder->finish();
 
         if (separateCmdBuffer)
-            m_queue->submit({ *m_renderCommandBuffer }, m_swapchain.get());
+            m_queue->submit({ *m_renderCommandBuffer }, *m_swapchain);
     }
 
     if (!separateCmdBuffer)
-        m_queue->submit({ *m_computeCommandBuffer, *m_renderCommandBuffer }, m_swapchain.get());
+        m_queue->submit({ *m_computeCommandBuffer, *m_renderCommandBuffer }, *m_swapchain);
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }

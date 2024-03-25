@@ -93,7 +93,7 @@ void ImGuiSample::init()
     createVertexBuffer();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -134,7 +134,7 @@ void ImGuiSample::draw()
 
         drawImGui(commandEncoder.get(), renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, m_swapchain.get());
+        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
     }
 }
 

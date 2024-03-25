@@ -234,7 +234,7 @@ void InstancingSample::init()
     createNonInstancingBindingGroup();
     createNonInstancingRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -300,7 +300,7 @@ void InstancingSample::draw()
 
             drawImGui(commadEncoder.get(), renderView);
 
-            m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
         else
         {
@@ -320,7 +320,7 @@ void InstancingSample::draw()
 
             drawImGui(commadEncoder.get(), renderView);
 
-            m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
     }
 }

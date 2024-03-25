@@ -345,7 +345,7 @@ void VulkanPipelineBarrierSample::init()
 
     createCamera();
 
-    initImGui(m_device.get(), m_queue.get(), m_swapchain.get());
+    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
 
     m_initialized = true;
 }
@@ -449,7 +449,7 @@ void VulkanPipelineBarrierSample::draw()
 
         drawImGui(commadEncoder.get(), renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, m_swapchain.get());
+        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }
 }
 
