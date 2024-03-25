@@ -433,7 +433,7 @@ void VulkanSubpassesSample::createSwapchain()
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
     SwapchainDescriptor descriptor{
-        *m_surface,
+        .surface = *m_surface,
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
@@ -1267,15 +1267,15 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         };
 
         VulkanRenderPipelineDescriptor vkdescriptor{
+            .stages = generateShaderStageCreateInfo(descriptor),
             .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
             .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
             .viewportState = generateViewportStateCreateInfo(descriptor),
             .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
             .multisampleState = generateMultisampleStateCreateInfo(descriptor),
-            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
             .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
             .dynamicState = generateDynamicStateCreateInfo(descriptor),
-            .stages = generateShaderStageCreateInfo(descriptor),
             .layout = downcast(descriptor.layout),
             .renderPass = getSubpassesRenderPass(),
             // .renderPass = getSubpassesCompatibleRenderPass(),
@@ -1703,15 +1703,15 @@ void VulkanSubpassesSample::createCompositionPipeline()
         };
 
         VulkanRenderPipelineDescriptor vkdescriptor{
+            .stages = generateShaderStageCreateInfo(descriptor),
             .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
             .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
             .viewportState = generateViewportStateCreateInfo(descriptor),
             .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
             .multisampleState = generateMultisampleStateCreateInfo(descriptor),
-            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
             .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
             .dynamicState = generateDynamicStateCreateInfo(descriptor),
-            .stages = generateShaderStageCreateInfo(descriptor),
             .layout = downcast(descriptor.layout),
             .renderPass = getSubpassesRenderPass(),
             // .renderPass = getSubpassesCompatibleRenderPass(),

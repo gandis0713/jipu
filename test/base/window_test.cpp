@@ -28,7 +28,7 @@ void WindowTest::SetUp()
     TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
 #endif
     SwapchainDescriptor descriptor{
-        *m_surface,
+        .surface = *m_surface,
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
