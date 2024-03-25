@@ -76,8 +76,8 @@ struct VulkanRenderPipelineDescriptor
     const void* next = nullptr;
     VkPipelineCreateFlags flags = 0u;
     std::vector<VkPipelineShaderStageCreateInfo> stages{};
-    VulkanPipelineVertexInputStateCreateInfo vertexInputState{};
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState{};
+    VulkanPipelineVertexInputStateCreateInfo vertexInputState{};
     VkPipelineTessellationStateCreateInfo tessellationState{};
     VkPipelineViewportStateCreateInfo viewportState{};
     VkPipelineRasterizationStateCreateInfo rasterizationState{};
