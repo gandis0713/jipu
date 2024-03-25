@@ -19,10 +19,7 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandBuffer& commandB
 
 void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
 {
-    auto& vulkanComputePipeline = static_cast<VulkanComputePipeline&>(pipeline);
-
-    m_pipeline = vulkanComputePipeline.getVkPipeline();
-    m_pipelineLayout = downcast(vulkanComputePipeline.getPipelineLayout()).getVkPipelineLayout();
+    m_pipeline = std::make_optional<VulkanComputePipeline::Ref>(downcast(pipeline));
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
@@ -30,14 +27,18 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
 
     vkAPI.CmdBindPipeline(vulkanCommandBuffer.getVkCommandBuffer(),
                           VK_PIPELINE_BIND_POINT_COMPUTE,
-                          m_pipeline);
+                          m_pipeline.value().get().getVkPipeline());
 }
 
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
+    if (!m_pipeline.has_value())
+        throw std::runtime_error("The pipeline is null opt");
+
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
     auto& vulkanBindingGroup = downcast(bindingGroup);
+    auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
 
     const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
 
@@ -45,7 +46,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bin
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer.getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                m_pipelineLayout,
+                                vulkanPipelineLayout.getVkPipelineLayout(),
                                 0,
                                 1,
                                 &descriptorSet,

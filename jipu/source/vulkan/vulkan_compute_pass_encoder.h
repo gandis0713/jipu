@@ -3,6 +3,7 @@
 #include "jipu/compute_pass_encoder.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
+#include "vulkan_pipeline.h"
 
 namespace jipu
 {
@@ -27,8 +28,7 @@ private:
     VulkanCommandBuffer& m_commandBuffer;
 
 private:
-    VkPipeline m_pipeline = VK_NULL_HANDLE;
-    VkPipelineLayout m_pipelineLayout = VK_NULL_HANDLE;
+    std::optional<VulkanComputePipeline::Ref> m_pipeline = std::nullopt;
 };
 
 } // namespace jipu
