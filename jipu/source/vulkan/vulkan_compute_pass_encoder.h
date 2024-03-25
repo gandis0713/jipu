@@ -19,7 +19,7 @@ public:
 
 public:
     void setPipeline(ComputePipeline& pipeline) override;
-    void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
+    void setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
     void dispatch(uint32_t x, uint32_t y = 1, uint32_t z = 1) override;
     void end() override;
 
