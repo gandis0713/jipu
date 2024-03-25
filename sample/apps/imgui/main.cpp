@@ -344,7 +344,7 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::SampleDescriptor descriptor{
-        { 1000, 2000, "Triangle", app },
+        { 1000, 2000, "ImGui", app },
         ""
     };
 
@@ -360,7 +360,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::SampleDescriptor descriptor{
-        { 800, 600, "Triangle", nullptr },
+        { 800, 600, "ImGui", nullptr },
         argv[0]
     };
 
