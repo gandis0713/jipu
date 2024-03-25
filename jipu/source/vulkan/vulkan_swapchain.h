@@ -55,7 +55,7 @@ public:
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
 
-    void present(Queue* queue) override;
+    void present(Queue& queue) override;
     TextureView* acquireNextTexture() override;
 
 public:

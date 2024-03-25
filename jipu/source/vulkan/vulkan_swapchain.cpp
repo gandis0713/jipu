@@ -239,10 +239,10 @@ uint32_t VulkanSwapchain::getHeight() const
     return m_descriptor.imageExtent.height;
 }
 
-void VulkanSwapchain::present(Queue* queue)
+void VulkanSwapchain::present(Queue& queue)
 {
     VulkanDevice* vulkanDevice = downcast(m_device);
-    VulkanQueue* vulkanQueue = downcast(queue);
+    VulkanQueue& vulkanQueue = downcast(queue);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
     // present
@@ -258,7 +258,7 @@ void VulkanSwapchain::present(Queue* queue)
     presentInfo.pImageIndices = &m_acquiredImageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
+    vkAPI.QueuePresentKHR(vulkanQueue.getVkQueue(), &presentInfo);
 }
 
 TextureView* VulkanSwapchain::acquireNextTexture()
