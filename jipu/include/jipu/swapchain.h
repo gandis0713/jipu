@@ -54,7 +54,7 @@ public:
     virtual uint32_t getHeight() const = 0;
 
     virtual void present(Queue& queue) = 0;
-    virtual TextureView* acquireNextTexture() = 0;
+    virtual TextureView& acquireNextTexture() = 0;
 };
 
 } // namespace jipu

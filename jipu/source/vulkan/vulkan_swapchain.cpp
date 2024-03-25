@@ -261,7 +261,7 @@ void VulkanSwapchain::present(Queue& queue)
     vkAPI.QueuePresentKHR(vulkanQueue.getVkQueue(), &presentInfo);
 }
 
-TextureView* VulkanSwapchain::acquireNextTexture()
+TextureView& VulkanSwapchain::acquireNextTexture()
 {
     VulkanDevice* vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
@@ -270,10 +270,9 @@ TextureView* VulkanSwapchain::acquireNextTexture()
     if (result != VK_SUCCESS)
     {
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
-        return nullptr;
     }
 
-    return m_textureViews[m_acquiredImageIndex].get();
+    return *m_textureViews[m_acquiredImageIndex];
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const

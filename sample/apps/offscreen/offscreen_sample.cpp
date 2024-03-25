@@ -115,7 +115,7 @@ void OffscreenSample::update()
 
 void OffscreenSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     // offscreen pass
     {
@@ -150,7 +150,7 @@ void OffscreenSample::draw()
     // onscreen pass
     {
         ColorAttachment attachment{
-            .renderView = *renderView
+            .renderView = renderView
         };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;

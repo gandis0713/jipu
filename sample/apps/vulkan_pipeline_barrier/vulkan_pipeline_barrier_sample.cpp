@@ -387,7 +387,7 @@ void VulkanPipelineBarrierSample::update()
 
 void VulkanPipelineBarrierSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     // offscreen pass
     {
@@ -424,7 +424,7 @@ void VulkanPipelineBarrierSample::draw()
     // onscreen pass
     {
         ColorAttachment attachment{
-            .renderView = *renderView
+            .renderView = renderView
         };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;

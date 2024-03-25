@@ -265,7 +265,7 @@ void VulkanSubpassesSample::draw()
     auto vulkanDevice = downcast(m_device.get());
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     // render passes
     if (!m_useSubpasses)
@@ -319,7 +319,7 @@ void VulkanSubpassesSample::draw()
 
         {
             ColorAttachment colorAttachment{
-                .renderView = *renderView
+                .renderView = renderView
             };
             colorAttachment.loadOp = LoadOp::kClear;
             colorAttachment.storeOp = StoreOp::kStore;
@@ -2312,7 +2312,7 @@ VulkanRenderPass* VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
     return vulkanDevice->getRenderPass(renderPassDescriptor);
 }
 
-VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* renderView)
+VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView& renderView)
 {
     VulkanFramebufferDescriptor descriptor{};
     descriptor.renderPass = getSubpassesRenderPass()->getVkRenderPass();
@@ -2326,7 +2326,7 @@ VulkanFramebuffer* VulkanSubpassesSample::getSubpassesFrameBuffer(TextureView* r
     descriptor.attachments.push_back(downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView.get())->getVkImageView());
 
     // second pass
-    descriptor.attachments.push_back(downcast(renderView)->getVkImageView());
+    descriptor.attachments.push_back(downcast(renderView).getVkImageView());
 
     // depth
     descriptor.attachments.push_back(downcast(m_depthStencilTextureView.get())->getVkImageView());

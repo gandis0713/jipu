@@ -89,7 +89,7 @@ private:
 
     VulkanRenderPass* getSubpassesRenderPass();
     VulkanRenderPass* getSubpassesCompatibleRenderPass();
-    VulkanFramebuffer* getSubpassesFrameBuffer(TextureView* renderView);
+    VulkanFramebuffer* getSubpassesFrameBuffer(TextureView& renderView);
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;

@@ -399,7 +399,7 @@ void DeferredSample::draw()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
 
     {
         ColorAttachment positionColorAttachment{
@@ -450,7 +450,7 @@ void DeferredSample::draw()
 
     {
         ColorAttachment colorAttachment{
-            .renderView = *renderView
+            .renderView = renderView
         };
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;

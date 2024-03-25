@@ -244,13 +244,13 @@ void ParticleSample::draw()
 
     // encode render command
     {
-        auto renderView = m_swapchain->acquireNextTexture();
+        auto& renderView = m_swapchain->acquireNextTexture();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
         ColorAttachment colorAttachment{
-            .renderView = *renderView
+            .renderView = renderView
         };
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
         colorAttachment.loadOp = LoadOp::kClear;

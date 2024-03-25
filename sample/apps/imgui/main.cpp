@@ -106,10 +106,10 @@ void ImGuiSample::update()
 
 void ImGuiSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto& renderView = m_swapchain->acquireNextTexture();
     {
         ColorAttachment attachment{
-            .renderView = *renderView
+            .renderView = renderView
         };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
