@@ -262,7 +262,7 @@ void ParticleSample::draw()
         };
 
         std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
+        renderPassEncoder->setPipeline(*m_renderPipeline);
         renderPassEncoder->setVertexBuffer(0, m_vertexBuffers[m_vertexIndex].get());
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
         renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.

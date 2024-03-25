@@ -195,7 +195,7 @@ void VulkanNBufferingSample::draw()
                                                       .sampleCount = m_sampleCount };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setPipeline(*m_renderPipeline);
     renderPassEncoder->setBindingGroup(0, m_bindingGroups[0].get());
     renderPassEncoder->setBindingGroup(1, m_bindingGroups[1].get());
     renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());

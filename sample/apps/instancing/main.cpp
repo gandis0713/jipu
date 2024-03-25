@@ -288,7 +288,7 @@ void InstancingSample::draw()
         if (m_imguiSettings.useInstancing)
         {
             auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
+            renderPassEncoder->setPipeline(*m_instancing.renderPipeline);
             renderPassEncoder->setBindingGroup(0, m_instancing.bindingGroup.get());
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, m_vertexBuffer.get());
             renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, m_instancing.transformBuffer.get());
@@ -305,7 +305,7 @@ void InstancingSample::draw()
         else
         {
             auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
+            renderPassEncoder->setPipeline(*m_nonInstancing.renderPipeline);
             renderPassEncoder->setVertexBuffer(0, m_vertexBuffer.get());
             renderPassEncoder->setIndexBuffer(m_indexBuffer.get(), IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);

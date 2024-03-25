@@ -252,21 +252,24 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuf
     initialize();
 }
 
-void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
+void VulkanRenderPassEncoder::setPipeline(RenderPipeline& pipeline)
 {
-    m_pipeline = static_cast<VulkanRenderPipeline*>(pipeline);
+    m_pipeline = std::make_optional<VulkanRenderPipeline::Ref>(downcast(pipeline));
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.value().get().getVkPipeline());
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
+    if (!m_pipeline.has_value())
+        throw std::runtime_error("The pipeline is null opt");
+
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    auto& vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
     auto vulkanBindingGroup = downcast(bindingGroup);
     VkDescriptorSet set = vulkanBindingGroup->getVkDescriptorSet();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;

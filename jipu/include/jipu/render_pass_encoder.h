@@ -81,7 +81,7 @@ protected:
     RenderPassEncoder() = default;
 
 public:
-    virtual void setPipeline(RenderPipeline* pipeline) = 0;
+    virtual void setPipeline(RenderPipeline& pipeline) = 0;
     virtual void setBindingGroup(uint32_t index, BindingGroup* bindingGroup, std::vector<uint32_t> dynamicOffset = {}) = 0;
 
     virtual void setVertexBuffer(uint32_t slot, Buffer* buffer) = 0;

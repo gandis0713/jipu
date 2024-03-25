@@ -408,7 +408,7 @@ void VulkanPipelineBarrierSample::draw()
         auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
         auto renderPassEncoder = vulkanCommandEncoder->beginRenderPass(renderPassEncoderDescriptor);
-        renderPassEncoder->setPipeline(m_offscreen.renderPipelines[m_stage].get());
+        renderPassEncoder->setPipeline(*m_offscreen.renderPipelines[m_stage]);
         renderPassEncoder->setBindingGroup(0, m_offscreen.bindingGroup.get());
         renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
@@ -438,7 +438,7 @@ void VulkanPipelineBarrierSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
+        renderPassEncoder->setPipeline(*m_onscreen.renderPipeline);
         renderPassEncoder->setBindingGroup(0, m_onscreen.bindingGroup.get());
         renderPassEncoder->setVertexBuffer(0, m_onscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_onscreen.indexBuffer.get(), IndexFormat::kUint16);

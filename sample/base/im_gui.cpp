@@ -484,7 +484,7 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_pipeline.get());
+        renderPassEncoder->setPipeline(*m_pipeline);
         renderPassEncoder->setBindingGroup(0, m_bindingGroups[0].get());
         renderPassEncoder->setBindingGroup(1, m_bindingGroups[1].get());
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
