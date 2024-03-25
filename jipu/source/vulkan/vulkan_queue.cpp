@@ -61,14 +61,14 @@ VulkanQueue::~VulkanQueue()
     vkAPI.DestroyFence(vulkanDevice->getVkDevice(), m_fence, nullptr);
 }
 
-void VulkanQueue::submit(CommandBuffers commandBuffers)
+void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     submit(submits);
 }
 
-void VulkanQueue::submit(CommandBuffers commandBuffers, Swapchain* swapchain)
+void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain* swapchain)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
@@ -101,7 +101,7 @@ VkQueue VulkanQueue::getVkQueue() const
     return m_queue;
 }
 
-std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(CommandBuffers commandBuffers)
+std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer::Ref> commandBuffers)
 {
     auto vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;

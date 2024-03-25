@@ -12,9 +12,6 @@
 namespace jipu
 {
 
-using CommandBufferRef = std::reference_wrapper<CommandBuffer>;
-using CommandBuffers = std::vector<CommandBufferRef>;
-
 struct QueueFlagBits
 {
     static constexpr uint8_t kUndefined = 1 << 0; // 0x00000000
@@ -38,8 +35,8 @@ protected:
     Queue() = default;
 
 public:
-    virtual void submit(CommandBuffers commandBuffers) = 0;
-    virtual void submit(CommandBuffers commandBuffers, Swapchain* swapchain) = 0;
+    virtual void submit(std::vector<CommandBuffer::Ref> commandBuffers) = 0;
+    virtual void submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain* swapchain) = 0;
 };
 
 } // namespace jipu

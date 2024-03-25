@@ -249,15 +249,17 @@ void ParticleSample::draw()
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-        ColorAttachment colorAttachment{};
-        colorAttachment.renderView = renderView;
+        ColorAttachment colorAttachment{
+            .renderView = *renderView
+        };
         colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassDescriptor{};
-        renderPassDescriptor.colorAttachments = { colorAttachment };
-        renderPassDescriptor.sampleCount = m_sampleCount;
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { colorAttachment },
+            .sampleCount = m_sampleCount
+        };
 
         std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());

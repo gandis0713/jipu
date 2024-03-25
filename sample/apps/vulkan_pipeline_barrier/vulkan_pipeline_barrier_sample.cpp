@@ -423,16 +423,17 @@ void VulkanPipelineBarrierSample::draw()
 
     // onscreen pass
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = *renderView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = renderView;
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);

@@ -108,16 +108,17 @@ void ImGuiSample::draw()
 {
     auto renderView = m_swapchain->acquireNextTexture();
     {
-        ColorAttachment attachment{};
+        ColorAttachment attachment{
+            .renderView = *renderView
+        };
         attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
-        attachment.renderView = renderView;
-        attachment.resolveView = nullptr;
 
-        RenderPassEncoderDescriptor renderPassDescriptor;
-        renderPassDescriptor.sampleCount = m_sampleCount;
-        renderPassDescriptor.colorAttachments = { attachment };
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { attachment },
+            .sampleCount = m_sampleCount
+        };
 
         CommandEncoderDescriptor commandDescriptor{};
         auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);

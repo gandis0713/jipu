@@ -29,5 +29,8 @@ public:
 
 public:
     virtual CommandBufferUsage getUsage() const = 0;
+
+public:
+    using Ref = std::reference_wrapper<CommandBuffer>;
 };
 } // namespace jipu

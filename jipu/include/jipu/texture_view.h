@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include <functional>
 #include <stdint.h>
 
 namespace jipu
@@ -48,6 +49,9 @@ public:
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
     virtual uint32_t getDepth() const = 0;
+
+public:
+    using Ref = std::reference_wrapper<TextureView>;
 };
 
 } // namespace jipu

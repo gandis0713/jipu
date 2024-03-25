@@ -282,13 +282,13 @@ void OBJModelSample::draw()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    std::vector<ColorAttachment> colorAttachments(1); // in currently. use only one.
-    colorAttachments[0] = { .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
-                            .resolveView = m_sampleCount > 1 ? renderView : nullptr,
-                            .loadOp = LoadOp::kClear,
-                            .storeOp = StoreOp::kStore,
-                            .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } };
-    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
+    std::vector<ColorAttachment> colorAttachments{}; // in currently. use only one.
+    colorAttachments.push_back({ .renderView = m_sampleCount > 1 ? *m_colorAttachmentTextureView : *renderView,
+                                 .resolveView = m_sampleCount > 1 ? std::make_optional<TextureView::Ref>(*renderView) : std::nullopt,
+                                 .loadOp = LoadOp::kClear,
+                                 .storeOp = StoreOp::kStore,
+                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } });
+    DepthStencilAttachment depthStencilAttachment{ .textureView = *m_depthStencilTextureView,
                                                    .depthLoadOp = LoadOp::kClear,
                                                    .depthStoreOp = StoreOp::kStore,
                                                    .stencilLoadOp = LoadOp::kDontCare,

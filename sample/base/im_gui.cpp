@@ -473,14 +473,16 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
     {
         ImGuiIO& io = ImGui::GetIO();
 
-        ColorAttachment colorAttachment{};
-        colorAttachment.renderView = renderView;
+        ColorAttachment colorAttachment{
+            .renderView = *renderView
+        };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
 
-        RenderPassEncoderDescriptor renderPassDescriptor{};
-        renderPassDescriptor.colorAttachments = { colorAttachment };
-        renderPassDescriptor.sampleCount = 1;
+        RenderPassEncoderDescriptor renderPassDescriptor{
+            .colorAttachments = { colorAttachment },
+            .sampleCount = 1
+        };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_pipeline.get());

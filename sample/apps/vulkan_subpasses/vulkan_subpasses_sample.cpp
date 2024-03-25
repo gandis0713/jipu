@@ -271,37 +271,39 @@ void VulkanSubpassesSample::draw()
     if (!m_useSubpasses)
     {
         {
-            ColorAttachment positionColorAttachment{};
+            ColorAttachment positionColorAttachment{
+                .renderView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
+            };
             positionColorAttachment.loadOp = LoadOp::kClear;
             positionColorAttachment.storeOp = StoreOp::kStore;
-            positionColorAttachment.renderView = m_offscreen.renderPasses.positionColorAttachmentTextureView.get();
-            positionColorAttachment.resolveView = nullptr;
             positionColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            ColorAttachment normalColorAttachment{};
+            ColorAttachment normalColorAttachment{
+                .renderView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
+            };
             normalColorAttachment.loadOp = LoadOp::kClear;
             normalColorAttachment.storeOp = StoreOp::kStore;
-            normalColorAttachment.renderView = m_offscreen.renderPasses.normalColorAttachmentTextureView.get();
-            normalColorAttachment.resolveView = nullptr;
             normalColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            ColorAttachment albedoColorAttachment{};
+            ColorAttachment albedoColorAttachment{
+                .renderView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
+            };
             albedoColorAttachment.loadOp = LoadOp::kClear;
             albedoColorAttachment.storeOp = StoreOp::kStore;
-            albedoColorAttachment.renderView = m_offscreen.renderPasses.albedoColorAttachmentTextureView.get();
-            albedoColorAttachment.resolveView = nullptr;
             albedoColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            DepthStencilAttachment depthStencilAttachment{};
-            depthStencilAttachment.textureView = m_depthStencilTextureView.get();
+            DepthStencilAttachment depthStencilAttachment{
+                .textureView = *m_depthStencilTextureView
+            };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-            RenderPassEncoderDescriptor renderPassDescriptor{};
-            renderPassDescriptor.colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment };
-            renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
-            renderPassDescriptor.sampleCount = m_sampleCount;
+            RenderPassEncoderDescriptor renderPassDescriptor{
+                .colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment },
+                .depthStencilAttachment = depthStencilAttachment,
+                .sampleCount = m_sampleCount
+            };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_offscreen.renderPasses.renderPipeline.get());
@@ -316,23 +318,25 @@ void VulkanSubpassesSample::draw()
         }
 
         {
-            ColorAttachment colorAttachment{};
+            ColorAttachment colorAttachment{
+                .renderView = *renderView
+            };
             colorAttachment.loadOp = LoadOp::kClear;
             colorAttachment.storeOp = StoreOp::kStore;
-            colorAttachment.renderView = renderView;
-            colorAttachment.resolveView = nullptr;
             colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
 
-            DepthStencilAttachment depthStencilAttachment{};
-            depthStencilAttachment.textureView = m_depthStencilTextureView.get();
+            DepthStencilAttachment depthStencilAttachment{
+                .textureView = *m_depthStencilTextureView
+            };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
-            RenderPassEncoderDescriptor renderPassDescriptor{};
-            renderPassDescriptor.colorAttachments = { colorAttachment };
-            renderPassDescriptor.depthStencilAttachment = depthStencilAttachment;
-            renderPassDescriptor.sampleCount = m_sampleCount;
+            RenderPassEncoderDescriptor renderPassDescriptor{
+                .colorAttachments = { colorAttachment },
+                .depthStencilAttachment = depthStencilAttachment,
+                .sampleCount = m_sampleCount
+            };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_composition.renderPasses.renderPipeline.get());
