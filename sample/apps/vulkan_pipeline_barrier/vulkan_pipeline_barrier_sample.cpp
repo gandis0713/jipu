@@ -391,8 +391,8 @@ void VulkanPipelineBarrierSample::draw()
     // offscreen pass
     {
         VulkanRenderPassEncoderDescriptor renderPassEncoderDescriptor{};
-        renderPassEncoderDescriptor.renderPass = getOffscreenRenderPass(m_stage)->getVkRenderPass();
-        renderPassEncoderDescriptor.framebuffer = getOffscreenFramebuffer(m_offscreen.renderTextureView.get())->getVkFrameBuffer();
+        renderPassEncoderDescriptor.renderPass = getOffscreenRenderPass(m_stage).getVkRenderPass();
+        renderPassEncoderDescriptor.framebuffer = getOffscreenFramebuffer(*m_offscreen.renderTextureView).getVkFrameBuffer();
         renderPassEncoderDescriptor.renderArea.offset = { 0, 0 };
         renderPassEncoderDescriptor.renderArea.extent = { m_swapchain->getWidth(), m_swapchain->getHeight() };
 
@@ -762,11 +762,29 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
         fragmentStage
     };
 
-    VulkanRenderPipelineDescriptor vkdescriptor = generateVulkanRenderPipelineDescriptor(downcast(m_device.get()), descriptor);
+    VulkanRenderPipelineDescriptor vkdescriptor = generateVulkanRenderPipelineDescriptor(downcast(*m_device), descriptor);
 
     for (auto stage : STAGES)
     {
-        vkdescriptor.renderPass = getOffscreenRenderPass(stage);
+        VulkanRenderPipelineDescriptor vkdescriptor{
+            .next = nullptr,
+            .flags = 0u,
+            .stages = generateShaderStageCreateInfo(descriptor),
+            .inputAssemblyState = generateInputAssemblyStateCreateInfo(descriptor),
+            .vertexInputState = generateVertexInputStateCreateInfo(descriptor),
+            .viewportState = generateViewportStateCreateInfo(descriptor),
+            .rasterizationState = generateRasterizationStateCreateInfo(descriptor),
+            .multisampleState = generateMultisampleStateCreateInfo(descriptor),
+            .depthStencilState = generateDepthStencilStateCreateInfo(descriptor),
+            .colorBlendState = generateColorBlendStateCreateInfo(descriptor),
+            .dynamicState = generateDynamicStateCreateInfo(descriptor),
+            .layout = downcast(descriptor.layout),
+            .renderPass = getOffscreenRenderPass(stage),
+            .subpass = 0,
+            .basePipelineHandle = VK_NULL_HANDLE, // Optional
+            .basePipelineIndex = -1,              // Optional
+        };
+
         m_offscreen.renderPipelines[stage] = downcast(m_device.get())->createRenderPipeline(vkdescriptor);
     }
 }
@@ -940,7 +958,7 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
     m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-VulkanRenderPass* VulkanPipelineBarrierSample::getOffscreenRenderPass(Stage stage)
+VulkanRenderPass& VulkanPipelineBarrierSample::getOffscreenRenderPass(Stage stage)
 {
     VulkanRenderPassDescriptor vkdescriptor{};
 
@@ -983,26 +1001,16 @@ VulkanRenderPass* VulkanPipelineBarrierSample::getOffscreenRenderPass(Stage stag
     return downcast(m_device.get())->getRenderPass(vkdescriptor);
 }
 
-VulkanRenderPass* VulkanPipelineBarrierSample::getOnscreenRenderPass(Stage stage)
-{
-    return nullptr;
-}
-
-VulkanFramebuffer* VulkanPipelineBarrierSample::getOffscreenFramebuffer(TextureView* renderView)
+VulkanFramebuffer& VulkanPipelineBarrierSample::getOffscreenFramebuffer(TextureView& renderView)
 {
     VulkanFramebufferDescriptor vkdescriptor{};
-    vkdescriptor.renderPass = getOffscreenRenderPass(m_stage)->getVkRenderPass();
+    vkdescriptor.renderPass = getOffscreenRenderPass(m_stage).getVkRenderPass();
     vkdescriptor.width = m_swapchain->getWidth();
     vkdescriptor.height = m_swapchain->getHeight();
     vkdescriptor.layers = 1;
-    vkdescriptor.attachments.push_back(downcast(m_offscreen.renderTextureView.get())->getVkImageView());
+    vkdescriptor.attachments.push_back(downcast(renderView).getVkImageView());
 
     return downcast(m_device.get())->getFrameBuffer(vkdescriptor);
-}
-
-VulkanFramebuffer* VulkanPipelineBarrierSample::getOnscreenFramebuffer(TextureView* renderView)
-{
-    return nullptr;
 }
 
 } // namespace jipu

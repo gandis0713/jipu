@@ -22,10 +22,10 @@ void VulkanSurface::createSurfaceKHR()
                                               .flags = 0,
                                               .window = m_descriptor.window };
 
-    VulkanDriver* driver = downcast(m_driver);
-    VkResult result = driver->vkAPI.CreateAndroidSurfaceKHR(driver->getVkInstance(),
-                                                            &createInfo, nullptr,
-                                                            &m_surface);
+    VulkanDriver& driver = downcast(m_driver);
+    VkResult result = driver.vkAPI.CreateAndroidSurfaceKHR(driver.getVkInstance(),
+                                                           &createInfo, nullptr,
+                                                           &m_surface);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("Failed to create VkSurfaceKHR.: {}", static_cast<int32_t>(result)));

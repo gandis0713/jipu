@@ -13,7 +13,7 @@ class VULKAN_EXPORT VulkanQueue : public Queue
 {
 public:
     VulkanQueue() = delete;
-    VulkanQueue(VulkanDevice* device, const QueueDescriptor& descriptor) noexcept(false);
+    VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor) noexcept(false);
     ~VulkanQueue() override;
 
     void submit(std::vector<CommandBuffer::Ref> commandBuffers) override;
@@ -23,7 +23,7 @@ public:
     VkQueue getVkQueue() const;
 
 protected:
-    Device* m_device;
+    VulkanDevice& m_device;
 
 private:
     VkQueue m_queue = VK_NULL_HANDLE;

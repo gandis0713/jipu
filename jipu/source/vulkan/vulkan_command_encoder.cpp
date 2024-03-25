@@ -27,8 +27,8 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer& commandBuffer, c
     commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer.getUsage());
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    if (vulkanDevice->vkAPI.BeginCommandBuffer(vulkanCommandBuffer.getVkCommandBuffer(), &commandBufferBeginInfo) != VK_SUCCESS)
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    if (vulkanDevice.vkAPI.BeginCommandBuffer(vulkanCommandBuffer.getVkCommandBuffer(), &commandBufferBeginInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to begin command buffer.");
     }
@@ -52,8 +52,8 @@ std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const V
 void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     VkBufferCopy copyRegion{};
     copyRegion.srcOffset = 0; // Optional
@@ -74,8 +74,8 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     VkCommandBuffer commandBuffer = vulkanCommandBuffer.getVkCommandBuffer();
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     VkImageSubresourceRange range;
     range.aspectMask = ToVkImageAspectFlags(texture.aspect);
@@ -166,8 +166,8 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
 void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // set pipeline barrier to change image layout
     auto& vulkanTexture = downcast(texture.texture);
@@ -208,8 +208,8 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
 void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // set pipeline barrier to change image layout for src
     VkImageSubresourceRange srcSubresourceRange{};
@@ -270,9 +270,9 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
 CommandBuffer& VulkanCommandEncoder::finish()
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    if (vulkanDevice->vkAPI.EndCommandBuffer(vulkanCommandBuffer.getVkCommandBuffer()) != VK_SUCCESS)
+    if (vulkanDevice.vkAPI.EndCommandBuffer(vulkanCommandBuffer.getVkCommandBuffer()) != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to end command buffer.");
     }

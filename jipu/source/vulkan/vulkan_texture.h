@@ -39,8 +39,8 @@ class VULKAN_EXPORT VulkanTexture : public Texture
 {
 public:
     VulkanTexture() = delete;
-    VulkanTexture(VulkanDevice* device, const TextureDescriptor& descriptor);
-    VulkanTexture(VulkanDevice* device, const VulkanTextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice& device, const TextureDescriptor& descriptor);
+    VulkanTexture(VulkanDevice& device, const VulkanTextureDescriptor& descriptor);
     ~VulkanTexture() override;
 
     std::unique_ptr<TextureView> createTextureView(const TextureViewDescriptor& descriptor) override;
@@ -56,7 +56,7 @@ public:
     uint32_t getSampleCount() const override;
 
 public:
-    VulkanDevice* getDevice() const;
+    VulkanDevice& getDevice() const;
 
 public:
     VkImage getVkImage() const;
@@ -70,7 +70,7 @@ public:
     VkImageLayout getFinalLayout() const;
 
 private:
-    VulkanDevice* m_device = nullptr;
+    VulkanDevice& m_device;
     const VulkanTextureDescriptor m_descriptor{};
 
 private:

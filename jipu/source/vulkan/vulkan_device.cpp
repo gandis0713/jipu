@@ -15,13 +15,14 @@
 namespace jipu
 {
 
-VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDescriptor& descriptor)
-    : vkAPI(downcast(physicalDevice->getDriver())->vkAPI)
+VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
+    : vkAPI(downcast(physicalDevice.getDriver()).vkAPI)
     , m_physicalDevice(physicalDevice)
-    , m_renderPassCache(this)
-    , m_frameBufferCache(this)
+    , m_renderPassCache(*this)
+    , m_frameBufferCache(*this)
+    , m_resourceAllocator(*this, {})
 {
-    const VulkanPhysicalDeviceInfo& info = physicalDevice->getVulkanPhysicalDeviceInfo();
+    const VulkanPhysicalDeviceInfo& info = physicalDevice.getVulkanPhysicalDeviceInfo();
 
     // GRAPHICS and COMPUTE imply TRANSFER
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
@@ -51,15 +52,11 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice* physicalDevice, const DeviceDes
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
         m_queues[index] = queue;
     }
-
-    createResourceAllocator();
 }
 
 VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
-
-    m_resourceAllocator.reset();
 
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
@@ -72,100 +69,100 @@ VulkanDevice::~VulkanDevice()
 
 std::unique_ptr<Buffer> VulkanDevice::createBuffer(const BufferDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBuffer>(this, descriptor);
+    return std::make_unique<VulkanBuffer>(*this, descriptor);
 }
 
 std::unique_ptr<BindingGroup> VulkanDevice::createBindingGroup(const BindingGroupDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroup>(this, descriptor);
+    return std::make_unique<VulkanBindingGroup>(*this, descriptor);
 }
 
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
+    return std::make_unique<VulkanBindingGroupLayout>(*this, descriptor);
 }
 
 std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
 {
-    return std::make_unique<VulkanCommandBuffer>(this, descriptor);
+    return std::make_unique<VulkanCommandBuffer>(*this, descriptor);
 }
 
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanPipelineLayout>(this, descriptor);
+    return std::make_unique<VulkanPipelineLayout>(*this, descriptor);
 }
 
 std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const ComputePipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanComputePipeline>(this, descriptor);
+    return std::make_unique<VulkanComputePipeline>(*this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
+    return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
 }
 
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
 {
-    return std::make_unique<VulkanQueue>(this, descriptor);
+    return std::make_unique<VulkanQueue>(*this, descriptor);
 }
 
 std::unique_ptr<Sampler> VulkanDevice::createSampler(const SamplerDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSampler>(this, descriptor);
+    return std::make_unique<VulkanSampler>(*this, descriptor);
 }
 
 std::unique_ptr<ShaderModule> VulkanDevice::createShaderModule(const ShaderModuleDescriptor& descriptor)
 {
-    return std::make_unique<VulkanShaderModule>(this, descriptor);
+    return std::make_unique<VulkanShaderModule>(*this, descriptor);
 }
 
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const SwapchainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapchain>(this, descriptor);
+    return std::make_unique<VulkanSwapchain>(*this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const TextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(this, descriptor);
+    return std::make_unique<VulkanTexture>(*this, descriptor);
 }
 
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor)
 {
-    return std::make_unique<VulkanRenderPipeline>(this, descriptor);
+    return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
 }
 
 std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor)
 {
-    return std::make_unique<VulkanBindingGroupLayout>(this, descriptor);
+    return std::make_unique<VulkanBindingGroupLayout>(*this, descriptor);
 }
 
 std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescriptor& descriptor)
 {
-    return std::make_unique<VulkanTexture>(this, descriptor);
+    return std::make_unique<VulkanTexture>(*this, descriptor);
 }
 
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
 {
-    return std::make_unique<VulkanSwapchain>(this, descriptor);
+    return std::make_unique<VulkanSwapchain>(*this, descriptor);
 }
 
-VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass& VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
 }
 
-VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer& VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }
 
-VulkanResourceAllocator* VulkanDevice::getResourceAllocator() const
+VulkanResourceAllocator& VulkanDevice::getResourceAllocator()
 {
-    return m_resourceAllocator.get();
+    return m_resourceAllocator;
 }
 
-VulkanPhysicalDevice* VulkanDevice::getPhysicalDevice() const
+VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
 {
     return m_physicalDevice;
 }
@@ -177,9 +174,9 @@ VkDevice VulkanDevice::getVkDevice() const
 
 VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
 {
-    VulkanPhysicalDevice* vulkanPhysicalDevice = downcast(m_physicalDevice);
+    VulkanPhysicalDevice& vulkanPhysicalDevice = downcast(m_physicalDevice);
 
-    return vulkanPhysicalDevice->getVkPhysicalDevice();
+    return vulkanPhysicalDevice.getVkPhysicalDevice();
 }
 
 VkQueue VulkanDevice::getVkQueue(uint32_t index) const
@@ -225,8 +222,8 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
                                                    .poolSizeCount = descriptorPoolCount,
                                                    .pPoolSizes = poolSizes.data() };
 
-        auto vulkanPhysicalDevice = downcast(m_physicalDevice);
-        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo();
+        auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
+        const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
         // TODO: set correct max value.
@@ -264,13 +261,13 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
     }
 
-    auto vulkanPhysicalDevice = downcast(m_physicalDevice);
+    auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
 
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
     deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
-    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo().physicalDeviceFeatures;
 
     std::vector<const char*> requiredDeviceExtensions = getRequiredDeviceExtensions();
 
@@ -279,18 +276,12 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
 
     // TODO: Layer.
 
-    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice)->getVkPhysicalDevice();
+    VkPhysicalDevice physicalDevice = downcast(m_physicalDevice).getVkPhysicalDevice();
     VkResult result = vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to create logical device. {}", static_cast<uint32_t>(result)));
     }
-}
-
-void VulkanDevice::createResourceAllocator()
-{
-    VulkanResourceAllocatorDescriptor descriptor{};
-    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(this, descriptor);
 }
 
 const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
@@ -300,8 +291,8 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
     requiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
     // TODO: check extension supported.
-    auto vulkanPhysicalDevice = downcast(m_physicalDevice);
-    if (vulkanPhysicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
+    auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
+    if (vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo().portabilitySubset)
     {
         // TODO: define "VK_KHR_portability_subset"
         requiredDeviceExtensions.push_back("VK_KHR_portability_subset");

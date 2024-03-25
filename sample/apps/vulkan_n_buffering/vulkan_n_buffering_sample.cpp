@@ -271,14 +271,14 @@ void VulkanNBufferingSample::createSwapchain()
         .height = m_height
     };
 
-    auto vulkanDevice = downcast(m_device.get());
+    auto& vulkanDevice = downcast(*m_device);
     VulkanSwapchainDescriptor vkdescriptor = generateVulkanSwapchainDescriptor(vulkanDevice, descriptor);
 
     vkdescriptor.presentMode = m_presentMode;
     vkdescriptor.minImageCount = m_minImageCount;
     vkdescriptor.oldSwapchain = m_swapchain != nullptr ? downcast(m_swapchain.get())->getVkSwapchainKHR() : VK_NULL_HANDLE;
 
-    auto swapchain = vulkanDevice->createSwapchain(vkdescriptor);
+    auto swapchain = vulkanDevice.createSwapchain(vkdescriptor);
 
     m_swapchain = std::move(swapchain);
 }

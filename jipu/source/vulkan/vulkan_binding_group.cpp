@@ -53,11 +53,11 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
         const TextureBinding& texture = descriptor.textures[i];
 
         auto& vulkanTextureView = downcast(texture.textureView);
-        auto vulkanTexture = downcast(vulkanTextureView.getTexture());
+        auto& vulkanTexture = downcast(vulkanTextureView.getTexture());
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageView = vulkanTextureView.getVkImageView();
-        imageInfo.imageLayout = vulkanTextureView.getTexture()->getFinalLayout();
+        imageInfo.imageLayout = vulkanTextureView.getTexture().getFinalLayout();
 
         vkdescriptor.textures[i] = imageInfo;
     }
@@ -65,27 +65,27 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
     return vkdescriptor;
 }
 
-VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const BindingGroupDescriptor& descriptor)
+VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const BindingGroupDescriptor& descriptor)
     : VulkanBindingGroup(device, generateVulkanBindingGroupDescriptor(descriptor))
 {
 }
 
-VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const VulkanBindingGroupDescriptor& descriptor)
+VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBindingGroupDescriptor& descriptor)
     : m_device(device)
     , m_descriptor(descriptor)
 {
-    auto vulkanDevice = downcast(device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
     auto& vulkanBindingGroupLayout = downcast(m_descriptor.layout);
     auto descriptorSetLayout = vulkanBindingGroupLayout.getVkDescriptorSetLayout();
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    descriptorSetAllocateInfo.descriptorPool = downcast(device)->getVkDescriptorPool();
+    descriptorSetAllocateInfo.descriptorPool = downcast(device).getVkDescriptorPool();
     descriptorSetAllocateInfo.descriptorSetCount = 1;
     descriptorSetAllocateInfo.pSetLayouts = &descriptorSetLayout;
 
-    VkResult result = vkAPI.AllocateDescriptorSets(vulkanDevice->getVkDevice(), &descriptorSetAllocateInfo, &m_descriptorSet);
+    VkResult result = vkAPI.AllocateDescriptorSets(vulkanDevice.getVkDevice(), &descriptorSetAllocateInfo, &m_descriptorSet);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Failed to allocate descriptor sets.");
@@ -158,15 +158,15 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice* device, const VulkanBinding
         descriptorWrites[bufferSize + samplerSize + i] = descriptorWrite;
     }
 
-    vkAPI.UpdateDescriptorSets(vulkanDevice->getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    vkAPI.UpdateDescriptorSets(vulkanDevice.getVkDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 VulkanBindingGroup::~VulkanBindingGroup()
 {
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+    auto& vulkanDevice = downcast(m_device);
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    vkAPI.FreeDescriptorSets(vulkanDevice->getVkDevice(), vulkanDevice->getVkDescriptorPool(), 1, &m_descriptorSet);
+    vkAPI.FreeDescriptorSets(vulkanDevice.getVkDevice(), vulkanDevice.getVkDescriptorPool(), 1, &m_descriptorSet);
 }
 
 VkDescriptorSet VulkanBindingGroup::getVkDescriptorSet() const

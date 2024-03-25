@@ -44,8 +44,8 @@ class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
     VulkanSwapchain() = delete;
-    VulkanSwapchain(VulkanDevice* device, const SwapchainDescriptor& descriptor) noexcept(false);
-    VulkanSwapchain(VulkanDevice* device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice& device, const SwapchainDescriptor& descriptor) noexcept(false);
+    VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDescriptor& descriptor) noexcept(false);
     ~VulkanSwapchain() override;
 
     VulkanSwapchain(const Swapchain&) = delete;
@@ -65,7 +65,7 @@ public:
     std::pair<VkSemaphore, VkPipelineStageFlags> getRenderSemaphore() const;
 
 private:
-    VulkanDevice* m_device = nullptr;
+    VulkanDevice& m_device;
     const VulkanSwapchainDescriptor m_descriptor;
 
     std::vector<std::unique_ptr<VulkanTexture>> m_textures{};
@@ -81,7 +81,7 @@ private:
 DOWN_CAST(VulkanSwapchain, Swapchain);
 
 // Generate Helper
-VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice* device, const SwapchainDescriptor& descriptor);
+VulkanSwapchainDescriptor VULKAN_EXPORT generateVulkanSwapchainDescriptor(VulkanDevice& device, const SwapchainDescriptor& descriptor);
 
 // Convert Helper
 ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace);

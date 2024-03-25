@@ -85,11 +85,10 @@ private:
     void createCamera();
 
 private:
-    VulkanRenderPass* getOffscreenRenderPass(Stage stage);
-    VulkanRenderPass* getOnscreenRenderPass(Stage stage);
+    VulkanRenderPass& getOffscreenRenderPass(Stage stage);
+    VulkanRenderPass& getOnscreenRenderPass(Stage stage);
 
-    VulkanFramebuffer* getOffscreenFramebuffer(TextureView* renderView);
-    VulkanFramebuffer* getOnscreenFramebuffer(TextureView* renderView);
+    VulkanFramebuffer& getOffscreenFramebuffer(TextureView& renderView);
 
 private:
     std::unique_ptr<Driver> m_driver = nullptr;

@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver* driver, const VulkanPhysicalDeviceDescriptor& descriptor)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver& driver, const VulkanPhysicalDeviceDescriptor& descriptor)
     : m_driver(driver)
 {
     m_physicalDevice = descriptor.physicalDevice;
@@ -25,7 +25,7 @@ VulkanPhysicalDevice::~VulkanPhysicalDevice()
 
 std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescriptor& descriptor)
 {
-    return std::make_unique<VulkanDevice>(this, descriptor);
+    return std::make_unique<VulkanDevice>(*this, descriptor);
 }
 
 PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
@@ -35,14 +35,14 @@ PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
     return info;
 }
 
-VulkanDriver* VulkanPhysicalDevice::getDriver() const
+VulkanDriver& VulkanPhysicalDevice::getDriver() const
 {
     return m_driver;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
-    return downcast(m_driver)->getVkInstance();
+    return downcast(m_driver).getVkInstance();
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
@@ -57,7 +57,7 @@ const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInf
 
 void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 {
-    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
@@ -147,7 +147,7 @@ VulkanSurfaceInfo VulkanPhysicalDevice::gatherSurfaceInfo(VulkanSurface& surface
 {
     VulkanSurfaceInfo surfaceInfo{};
 
-    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
     VkResult result = vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface.getVkSurface(), &surfaceInfo.capabilities);
     if (result != VK_SUCCESS)
     {
@@ -216,7 +216,7 @@ int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 
 bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
 {
-    const VulkanAPI& vkAPI = downcast(m_driver)->vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
 
     VkFormatProperties formatProperties{};
     vkAPI.GetPhysicalDeviceFormatProperties(m_physicalDevice, format, &formatProperties);
