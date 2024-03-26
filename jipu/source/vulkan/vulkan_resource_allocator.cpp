@@ -15,6 +15,35 @@ namespace jipu
 
 namespace
 {
+
+static void VKAPI_PTR myInternalAllocationNotification(
+    void* pUserData,
+    size_t size,
+    VkInternalAllocationType allocationType,
+    VkSystemAllocationScope allocationScope)
+{
+    // std::cout << "Internal allocation of size " << size << " occurred\n";
+}
+
+// 내부 메모리 해제 알림 콜백 함수
+static void VKAPI_PTR myInternalFreeNotification(
+    void* pUserData,
+    size_t size,
+    VkInternalAllocationType allocationType,
+    VkSystemAllocationScope allocationScope)
+{
+    // std::cout << "Internal free of size " << size << " occurred\n";
+}
+
+VkAllocationCallbacks allocCallbacks = {
+    nullptr,                          // pUserData
+    nullptr,                          // pfnAllocation
+    nullptr,                          // pfnReallocation
+    nullptr,                          // pfnFree
+    myInternalAllocationNotification, // 내부 할당 알림
+    myInternalFreeNotification        // 내부 해제 알림
+};
+
 #if defined(USE_VMA)
 VulkanBufferResource createBufferResource(VmaAllocator allocator, const VkBufferCreateInfo& createInfo)
 {

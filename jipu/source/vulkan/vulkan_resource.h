@@ -2,7 +2,7 @@
 
 #include "vulkan_api.h" // should be included before 'vk_mem_alloc.h'
 
-// #define USE_VMA 1
+#define USE_VMA 1
 
 #if defined(USE_VMA)
 #define VMA_STATIC_VULKAN_FUNCTIONS 0

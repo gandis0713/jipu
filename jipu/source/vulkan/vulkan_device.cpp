@@ -20,7 +20,6 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     , m_physicalDevice(physicalDevice)
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)
-    , m_resourceAllocator(*this, {})
 {
     const VulkanPhysicalDeviceInfo& info = physicalDevice.getVulkanPhysicalDeviceInfo();
 
@@ -52,6 +51,9 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
         m_queues[index] = queue;
     }
+
+    VulkanResourceAllocatorDescriptor allocatorDescriptor{};
+    m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(*this, allocatorDescriptor);
 }
 
 VulkanDevice::~VulkanDevice()
@@ -63,6 +65,8 @@ VulkanDevice::~VulkanDevice()
 
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
+
+    m_resourceAllocator.reset();
 
     vkAPI.DestroyDevice(m_device, nullptr);
 }
@@ -159,7 +163,7 @@ VulkanFramebuffer& VulkanDevice::getFrameBuffer(const VulkanFramebufferDescripto
 
 VulkanResourceAllocator& VulkanDevice::getResourceAllocator()
 {
-    return m_resourceAllocator;
+    return *m_resourceAllocator;
 }
 
 VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const

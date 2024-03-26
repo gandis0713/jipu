@@ -88,7 +88,7 @@ private:
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFramebufferCache m_frameBufferCache;
-    VulkanResourceAllocator m_resourceAllocator;
+    std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
 };
 
 DOWN_CAST(VulkanDevice, Device);
