@@ -16,6 +16,7 @@ namespace jipu
 namespace
 {
 
+#if defined(DISABLE)
 void* VKAPI_PTR allocateCB(void* data, size_t size, size_t alignment, VkSystemAllocationScope scope)
 {
     void* p = aligned_alloc(alignment, size);
@@ -56,6 +57,7 @@ void VKAPI_PTR internalFreeNotificationCB(void* data,
 {
     spdlog::trace("internal free of size {}, type {}, scope", size, static_cast<uint32_t>(type), static_cast<uint32_t>(scope));
 }
+#endif
 
 #if defined(USE_VMA)
 VulkanBufferResource createBufferResource(VmaAllocator allocator, const VkBufferCreateInfo& createInfo)
@@ -252,25 +254,24 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const Vul
     createInfo.vulkanApiVersion = vulkanDriver.getDriverInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 
-    // disable allocation callbacks.
-    if (false)
-    {
-        VkAllocationCallbacks allocCallbacks = {
-            nullptr,
-            allocateCB,
-            reallocateCB,
-            freeCB,
-            internalAllocationNotificationCB,
-            internalFreeNotificationCB
-        };
-        createInfo.pAllocationCallbacks = &allocCallbacks;
-    }
+#if defined(DISABLE)
+    VkAllocationCallbacks allocCallbacks = {
+        nullptr,
+        allocateCB,
+        reallocateCB,
+        freeCB,
+        internalAllocationNotificationCB,
+        internalFreeNotificationCB
+    };
+    createInfo.pAllocationCallbacks = &allocCallbacks;
+}
+#endif
 
-    VkResult result = vmaCreateAllocator(&createInfo, &m_allocator);
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create vma allocator");
-    }
+VkResult result = vmaCreateAllocator(&createInfo, &m_allocator);
+if (result != VK_SUCCESS)
+{
+    throw std::runtime_error("Failed to create vma allocator");
+}
 #endif
 }
 
