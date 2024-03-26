@@ -16,6 +16,47 @@ namespace jipu
 namespace
 {
 
+void* VKAPI_PTR allocateCB(void* data, size_t size, size_t alignment, VkSystemAllocationScope scope)
+{
+    void* p = aligned_alloc(alignment, size);
+
+    spdlog::trace("allocate of size {}, alignment {}, scope {}, address {}", size, alignment, static_cast<uint32_t>(scope), p);
+
+    return p;
+}
+
+void VKAPI_PTR freeCB(void* data, void* memory)
+{
+    spdlog::trace("free address {}", memory);
+    free(memory);
+}
+
+void* VKAPI_PTR reallocateCB(void* data, void* original, size_t size, size_t alignment, VkSystemAllocationScope scope)
+{
+    free(original);
+    void* p = aligned_alloc(alignment, size);
+
+    spdlog::trace("reallocate of size {}, alignment {}, scope {}, original address {}, reallocate address {}", size, alignment, static_cast<uint32_t>(scope), original, p);
+
+    return p;
+}
+
+void VKAPI_PTR internalAllocationNotificationCB(void* data,
+                                                size_t size,
+                                                VkInternalAllocationType type,
+                                                VkSystemAllocationScope scope)
+{
+    spdlog::trace("internal allocation of size {}, type {}, scope", size, static_cast<uint32_t>(type), static_cast<uint32_t>(scope));
+}
+
+void VKAPI_PTR internalFreeNotificationCB(void* data,
+                                          size_t size,
+                                          VkInternalAllocationType type,
+                                          VkSystemAllocationScope scope)
+{
+    spdlog::trace("internal free of size {}, type {}, scope", size, static_cast<uint32_t>(type), static_cast<uint32_t>(scope));
+}
+
 #if defined(USE_VMA)
 VulkanBufferResource createBufferResource(VmaAllocator allocator, const VkBufferCreateInfo& createInfo)
 {
@@ -210,6 +251,20 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const Vul
     createInfo.device = m_device.getVkDevice();
     createInfo.vulkanApiVersion = vulkanDriver.getDriverInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
+
+    // disable allocation callbacks.
+    if (false)
+    {
+        VkAllocationCallbacks allocCallbacks = {
+            nullptr,
+            allocateCB,
+            reallocateCB,
+            freeCB,
+            internalAllocationNotificationCB,
+            internalFreeNotificationCB
+        };
+        createInfo.pAllocationCallbacks = &allocCallbacks;
+    }
 
     VkResult result = vmaCreateAllocator(&createInfo, &m_allocator);
     if (result != VK_SUCCESS)
