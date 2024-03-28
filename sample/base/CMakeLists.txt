@@ -49,6 +49,8 @@ list(APPEND SRC_FILES
 if(ANDROID)
     list(APPEND SRC_FILES
         window_android.cpp
+        hwcpipe.cpp
+        hwcpipe.h
     )
 else()
     list(APPEND SRC_FILES
@@ -99,6 +101,8 @@ else()
         android
         ${log-lib}
     )
+    find_package(hwcpipe CONFIG REQUIRED)
+    target_link_libraries(jipu_sample_base PRIVATE hwcpipe::device hwcpipe::hwcpipe hwcpipe::device_private)
 endif()
 
 target_include_directories(jipu
