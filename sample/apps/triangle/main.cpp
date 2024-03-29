@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "file.h"
-#include "im_gui.h"
 #include "sample.h"
 
 #include "jipu/buffer.h"
@@ -24,7 +23,7 @@
 namespace jipu
 {
 
-class TriangleSample : public Sample, public Im_Gui
+class TriangleSample : public Sample
 {
 public:
     TriangleSample() = delete;
@@ -36,7 +35,7 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
     void createCamera();
@@ -44,13 +43,7 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createDevier();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
     void createCommandBuffer();
-    void createQueue();
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
@@ -59,13 +52,7 @@ private:
     void createRenderPipeline();
 
 private:
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
@@ -111,8 +98,6 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
-    clear();
-
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
     m_bindingGroup.reset();
@@ -120,24 +105,14 @@ TriangleSample::~TriangleSample()
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
-    m_queue.reset();
     m_commandBuffer.reset();
-    m_swapchain.reset();
-    m_device.reset();
-    m_surface.reset();
-    m_physicalDevices.clear();
-    m_driver.reset();
 }
 
 void TriangleSample::init()
 {
-    createDevier();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
+    Sample::init();
+
     createCommandBuffer();
-    createQueue();
 
     createCamera(); // need size and aspect ratio from swapchain.
 
@@ -147,10 +122,6 @@ void TriangleSample::init()
     createBindingGroupLayout();
     createBindingGroup();
     createRenderPipeline();
-
-    init(m_device.get(), m_queue.get(), *m_swapchain);
-
-    Sample::init();
 }
 
 void TriangleSample::createCamera()
@@ -184,7 +155,6 @@ void TriangleSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    build();
 }
 
 void TriangleSample::draw()
@@ -216,7 +186,7 @@ void TriangleSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        draw(commadEncoder.get(), renderView);
+        drawImGui(commadEncoder.get(), renderView);
 
         m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }
@@ -224,68 +194,6 @@ void TriangleSample::draw()
 
 void TriangleSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
-
-    ImGui::NewFrame();
-    debugWindow();
-    ImGui::Render();
-}
-
-void TriangleSample::createDevier()
-{
-    DriverDescriptor descriptor{};
-    descriptor.type = DriverType::kVulkan;
-
-    m_driver = Driver::create(descriptor);
-}
-
-void TriangleSample::getPhysicalDevices()
-{
-    m_physicalDevices = m_driver->getPhysicalDevices();
-}
-
-void TriangleSample::createDevice()
-{
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-    DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
-}
-
-void TriangleSample::createSurface()
-{
-    SurfaceDescriptor descriptor{};
-    descriptor.windowHandle = getWindowHandle();
-
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void TriangleSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-
-    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void TriangleSample::createCommandBuffer()
@@ -294,14 +202,6 @@ void TriangleSample::createCommandBuffer()
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
-void TriangleSample::createQueue()
-{
-    QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
-
-    m_queue = m_device->createQueue(descriptor);
 }
 
 void TriangleSample::createVertexBuffer()
