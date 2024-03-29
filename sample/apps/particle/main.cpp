@@ -1,6 +1,5 @@
 
 #include "file.h"
-#include "im_gui.h"
 #include "sample.h"
 
 #include "jipu/buffer.h"
@@ -32,7 +31,7 @@ uint64_t getCurrentTime()
 
 } // namespace
 
-class ParticleSample : public Sample, public Im_Gui
+class ParticleSample : public Sample
 {
 public:
     ParticleSample() = delete;
@@ -45,14 +44,9 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
-    void createDriver();
-    void getPhysicalDevices();
-    void createDevice();
-    void createSurface();
-    void createSwapchain();
     void createUniformBuffer();
     void createShaderStorageBuffer();
     void createColorAttachmentTexture();
@@ -60,7 +54,6 @@ private:
     void createComputeBindingGroup();
     void createComputePipeline();
     void createRenderPipeline();
-    void createQueue();
     void createCommandBuffer();
 
     void updateUniformBuffer();
@@ -72,12 +65,6 @@ private:
         glm::vec2 velocity;
         glm::vec4 color;
     };
-
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
     std::unique_ptr<BindingGroupLayout> m_computeBindingGroupLayout = nullptr;
     std::vector<std::unique_ptr<BindingGroup>> m_computeBindingGroups{};
@@ -99,7 +86,6 @@ private:
 
     std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
     std::unique_ptr<CommandBuffer> m_computeCommandBuffer = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
 
     std::vector<Particle> m_vertices{};
 
@@ -120,10 +106,6 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    clear();
-
-    m_queue.reset();
-
     // release command buffer after finishing queue.
     m_renderCommandBuffer.reset();
     m_computeCommandBuffer.reset();
@@ -144,23 +126,11 @@ ParticleSample::~ParticleSample()
     m_colorAttachmentTexture.reset();
     m_uniformBuffer.reset();
     m_vertexBuffers.clear();
-
-    m_swapchain.reset();
-    m_surface.reset();
-
-    m_device.reset();
-    m_physicalDevices.clear();
-    m_driver.reset();
 }
 
 void ParticleSample::init()
 {
-    createDriver();
-    getPhysicalDevices();
-    createDevice();
-
-    createSurface();
-    createSwapchain();
+    Sample::init();
 
     createShaderStorageBuffer();
     createUniformBuffer();
@@ -172,12 +142,7 @@ void ParticleSample::init()
     createComputePipeline();
     createRenderPipeline();
 
-    createQueue();
     createCommandBuffer();
-
-    init(m_device.get(), m_queue.get(), *m_swapchain);
-
-    Sample::init();
 }
 
 void ParticleSample::update()
@@ -185,41 +150,15 @@ void ParticleSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    build();
 }
 
 void ParticleSample::updateImGui()
 {
-
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
-
-    ImGui::NewFrame();
-
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Settings");
-        ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
-        ImGui::End();
-    }
-
-    debugWindow();
-
-    ImGui::Render();
+    recordImGui([&]() {
+        windowImGui("Settings", [&]() {
+            ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
+        });
+    });
 }
 
 void ParticleSample::draw()
@@ -269,7 +208,7 @@ void ParticleSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
-        draw(renderCommandEncoder.get(), renderView);
+        drawImGui(renderCommandEncoder.get(), renderView);
 
         renderCommandEncoder->finish();
 
@@ -281,57 +220,6 @@ void ParticleSample::draw()
         m_queue->submit({ *m_computeCommandBuffer, *m_renderCommandBuffer }, *m_swapchain);
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
-}
-
-void ParticleSample::createDriver()
-{
-    DriverDescriptor descriptor{ .type = DriverType::kVulkan };
-    m_driver = Driver::create(descriptor);
-}
-
-void ParticleSample::getPhysicalDevices()
-{
-    m_physicalDevices = m_driver->getPhysicalDevices();
-}
-
-void ParticleSample::createDevice()
-{
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-    DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
-}
-
-void ParticleSample::createSurface()
-{
-    if (!m_driver)
-        throw std::runtime_error("The driver instance is null pointer for surface.");
-
-    SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void ParticleSample::createSwapchain()
-{
-    if (!m_device)
-        throw std::runtime_error("The device instance is null pointer for swapchain.");
-
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-
-    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void ParticleSample::createShaderStorageBuffer()
@@ -622,12 +510,6 @@ void ParticleSample::createCommandBuffer()
     CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
     m_renderCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     m_computeCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-}
-
-void ParticleSample::createQueue()
-{
-    QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer | QueueFlagBits::kCompute };
-    m_queue = m_device->createQueue(rednerQueueDescriptor);
 }
 
 void ParticleSample::updateUniformBuffer()
