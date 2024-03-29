@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "file.h"
-#include "im_gui.h"
 #include "sample.h"
 
 #include "jipu/buffer.h"
@@ -29,7 +28,7 @@ static const uint32_t INSTANCING_SLOT = 1;
 namespace jipu
 {
 
-class InstancingSample : public Sample, public Im_Gui
+class InstancingSample : public Sample
 {
 public:
     InstancingSample() = delete;
@@ -41,18 +40,12 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
     void updateUniformBuffer();
 
 private:
-    void createDevier();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
     void createCommandBuffer();
-    void createQueue();
     void createVertexBuffer();
     void createIndexBuffer();
 
@@ -113,13 +106,7 @@ private:
     };
 
 private:
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
@@ -179,8 +166,6 @@ InstancingSample::InstancingSample(const SampleDescriptor& descriptor)
 
 InstancingSample::~InstancingSample()
 {
-    clear();
-
     m_instancing.renderPipeline.reset();
     m_instancing.renderPipelineLayout.reset();
     m_instancing.uniformBuffer.reset();
@@ -197,24 +182,14 @@ InstancingSample::~InstancingSample()
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-    m_queue.reset();
     m_commandBuffer.reset();
-    m_swapchain.reset();
-    m_device.reset();
-    m_surface.reset();
-    m_physicalDevices.clear();
-    m_driver.reset();
 }
 
 void InstancingSample::init()
 {
-    createDevier();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
+    Sample::init();
+
     createCommandBuffer();
-    createQueue();
 
     createCamera(); // need size and aspect ratio from swapchain.
     createTransforms();
@@ -233,10 +208,6 @@ void InstancingSample::init()
     createNonInstancingBindingGroupLayout();
     createNonInstancingBindingGroup();
     createNonInstancingRenderPipeline();
-
-    init(m_device.get(), m_queue.get(), *m_swapchain);
-
-    Sample::init();
 }
 
 void InstancingSample::updateUniformBuffer()
@@ -263,7 +234,6 @@ void InstancingSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    build();
 }
 
 void InstancingSample::draw()
@@ -298,7 +268,7 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            draw(commadEncoder.get(), renderView);
+            drawImGui(commadEncoder.get(), renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
@@ -318,7 +288,7 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            draw(commadEncoder.get(), renderView);
+            drawImGui(commadEncoder.get(), renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
@@ -327,83 +297,12 @@ void InstancingSample::draw()
 
 void InstancingSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
-
-    ImGui::NewFrame();
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Settings");
-        ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
-        ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
-        ImGui::End();
-    }
-
-    debugWindow();
-    ImGui::Render();
-}
-
-void InstancingSample::createDevier()
-{
-    DriverDescriptor descriptor{};
-    descriptor.type = DriverType::kVulkan;
-
-    m_driver = Driver::create(descriptor);
-}
-
-void InstancingSample::getPhysicalDevices()
-{
-    m_physicalDevices = m_driver->getPhysicalDevices();
-}
-
-void InstancingSample::createDevice()
-{
-    SurfaceDescriptor descriptor{};
-    descriptor.windowHandle = getWindowHandle();
-
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void InstancingSample::createSurface()
-{
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-    DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
-}
-
-void InstancingSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-
-    m_swapchain = m_device->createSwapchain(descriptor);
+    recordImGui([&]() {
+        windowImGui("Settings", [&]() {
+            ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
+            ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
+        });
+    });
 }
 
 void InstancingSample::createCommandBuffer()
@@ -412,14 +311,6 @@ void InstancingSample::createCommandBuffer()
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
-void InstancingSample::createQueue()
-{
-    QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
-
-    m_queue = m_device->createQueue(descriptor);
 }
 
 void InstancingSample::createVertexBuffer()
