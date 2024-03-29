@@ -1,7 +1,6 @@
 
 
 #include "file.h"
-#include "im_gui.h"
 #include "image.h"
 #include "model.h"
 #include "sample.h"
@@ -33,7 +32,7 @@
 namespace jipu
 {
 
-class OBJModelSample : public Sample, public Im_Gui
+class OBJModelSample : public Sample
 {
 public:
     OBJModelSample() = delete;
@@ -45,7 +44,7 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
     void createSwapchain();
@@ -87,17 +86,6 @@ private:
     Polygon m_polygon{};
     std::unique_ptr<Image> m_image = nullptr;
 
-    // wrapper
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-
-    std::unique_ptr<Queue> m_queue = nullptr;
-
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
-
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
@@ -134,8 +122,6 @@ OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
 
 OBJModelSample::~OBJModelSample()
 {
-    clear();
-
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
@@ -160,55 +146,13 @@ OBJModelSample::~OBJModelSample()
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_queue.reset();
-
     // release command buffer after finising queue.
     m_renderCommandBuffer.reset();
-    m_swapchain.reset();
-
-    m_physicalDevices.clear();
-    m_device.reset();
-
-    m_surface.reset();
-    m_driver.reset();
 }
 
 void OBJModelSample::init()
 {
-    // create Driver.
-    {
-        DriverDescriptor descriptor{ .type = DriverType::kVulkan };
-        m_driver = Driver::create(descriptor);
-    }
-
-    // create surface
-    {
-        SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
-        m_surface = m_driver->createSurface(descriptor);
-    }
-
-    // create PhysicalDevice.
-    {
-        m_physicalDevices = m_driver->getPhysicalDevices();
-    }
-
-    // create Device.
-    {
-        // TODO: select suit device.
-        PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-        DeviceDescriptor descriptor;
-        m_device = physicalDevice->createDevice(descriptor);
-    }
-
-    // create queue
-    {
-        QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
-        m_queue = m_device->createQueue(rednerQueueDescriptor);
-    }
-
-    // create swapchain
-    createSwapchain();
+    Sample::init();
 
     // create buffer
     createVertexBuffer();
@@ -230,10 +174,6 @@ void OBJModelSample::init()
     createPipelineLayout();
     createRenderPipeline();
     createCommandBuffers();
-
-    init(m_device.get(), m_queue.get(), *m_swapchain);
-
-    Sample::init();
 }
 
 void OBJModelSample::update()
@@ -241,38 +181,10 @@ void OBJModelSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    build();
 }
 
 void OBJModelSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
-
-    ImGui::NewFrame();
-
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Settings");
-        ImGui::End();
-    }
-
-    debugWindow();
-    ImGui::Render();
 }
 
 void OBJModelSample::draw()
@@ -310,7 +222,7 @@ void OBJModelSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    draw(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
