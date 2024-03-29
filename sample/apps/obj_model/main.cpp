@@ -134,7 +134,7 @@ OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
 
 OBJModelSample::~OBJModelSample()
 {
-    clearImGui();
+    clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
@@ -231,9 +231,9 @@ void OBJModelSample::init()
     createRenderPipeline();
     createCommandBuffers();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void OBJModelSample::update()
@@ -241,7 +241,7 @@ void OBJModelSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void OBJModelSample::updateImGui()
@@ -310,7 +310,7 @@ void OBJModelSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), renderView);
+    draw(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }

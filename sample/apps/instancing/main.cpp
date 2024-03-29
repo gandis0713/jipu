@@ -179,7 +179,7 @@ InstancingSample::InstancingSample(const SampleDescriptor& descriptor)
 
 InstancingSample::~InstancingSample()
 {
-    clearImGui();
+    clear();
 
     m_instancing.renderPipeline.reset();
     m_instancing.renderPipelineLayout.reset();
@@ -234,9 +234,9 @@ void InstancingSample::init()
     createNonInstancingBindingGroup();
     createNonInstancingRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void InstancingSample::updateUniformBuffer()
@@ -263,7 +263,7 @@ void InstancingSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void InstancingSample::draw()
@@ -298,7 +298,7 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            draw(commadEncoder.get(), renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
@@ -318,7 +318,7 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            draw(commadEncoder.get(), renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }

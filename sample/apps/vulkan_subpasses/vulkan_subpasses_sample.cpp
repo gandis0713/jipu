@@ -34,7 +34,7 @@ VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
 
 VulkanSubpassesSample::~VulkanSubpassesSample()
 {
-    clearImGui();
+    clear();
 
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
@@ -148,9 +148,9 @@ void VulkanSubpassesSample::init()
     createCompositionPipelineLayout();
     createCompositionPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void VulkanSubpassesSample::update()
@@ -159,7 +159,9 @@ void VulkanSubpassesSample::update()
     updateCompositionUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
+
+    Sample::update();
 }
 
 void VulkanSubpassesSample::updateOffscreenUniformBuffer()
@@ -398,7 +400,7 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), renderView);
+    draw(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }

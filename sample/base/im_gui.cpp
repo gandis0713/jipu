@@ -79,7 +79,16 @@ void Im_Gui::window(const char* title, std::function<void()> ui)
     }
 }
 
-void Im_Gui::initImGui(Device* device, Queue* queue, Swapchain& swapchain)
+void Im_Gui::record(std::function<void()> cmd)
+{
+    ImGui::NewFrame();
+
+    cmd();
+
+    ImGui::Render();
+}
+
+void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 {
     m_device = device;
     m_queue = queue;
@@ -404,7 +413,7 @@ void Im_Gui::debugWindow()
     });
 }
 
-void Im_Gui::buildImGui()
+void Im_Gui::build()
 {
     // update transfrom buffer
     {
@@ -472,7 +481,7 @@ void Im_Gui::buildImGui()
     }
 }
 
-void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
@@ -521,7 +530,7 @@ void Im_Gui::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
     }
 }
 
-void Im_Gui::clearImGui()
+void Im_Gui::clear()
 {
     ImGui::DestroyContext();
 

@@ -120,7 +120,7 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    clearImGui();
+    clear();
 
     m_queue.reset();
 
@@ -175,9 +175,9 @@ void ParticleSample::init()
     createQueue();
     createCommandBuffer();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void ParticleSample::update()
@@ -185,7 +185,7 @@ void ParticleSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void ParticleSample::updateImGui()
@@ -269,7 +269,7 @@ void ParticleSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
-        drawImGui(renderCommandEncoder.get(), renderView);
+        draw(renderCommandEncoder.get(), renderView);
 
         renderCommandEncoder->finish();
 

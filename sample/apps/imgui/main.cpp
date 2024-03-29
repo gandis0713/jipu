@@ -68,7 +68,7 @@ ImGuiSample::ImGuiSample(const SampleDescriptor& descriptor)
 
 ImGuiSample::~ImGuiSample()
 {
-    clearImGui();
+    clear();
 
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
@@ -93,15 +93,15 @@ void ImGuiSample::init()
     createVertexBuffer();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void ImGuiSample::update()
 {
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void ImGuiSample::draw()
@@ -132,7 +132,7 @@ void ImGuiSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), renderView);
+        draw(commandEncoder.get(), renderView);
 
         m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
     }

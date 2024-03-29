@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "im_gui.h"
+
 namespace jipu
 {
 
@@ -30,11 +32,9 @@ public:
     uint32_t getWidth() const;
     uint32_t getHeight() const;
 
-    virtual void init() = 0;
+    virtual void init();
     virtual void update() = 0;
     virtual void draw() = 0;
-
-    bool isInitialized() const;
 
     int exec();
     void* getWindowHandle();

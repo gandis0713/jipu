@@ -16,7 +16,7 @@ OffscreenSample::OffscreenSample(const SampleDescriptor& descriptor)
 
 OffscreenSample::~OffscreenSample()
 {
-    clearImGui();
+    clear();
 
     m_offscreen.renderPipeline.reset();
     m_offscreen.renderPipelineLayout.reset();
@@ -73,9 +73,9 @@ void OffscreenSample::init()
 
     createCamera();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void OffscreenSample::createCamera()
@@ -109,7 +109,7 @@ void OffscreenSample::update()
     updateOffscreenUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void OffscreenSample::draw()
@@ -173,7 +173,7 @@ void OffscreenSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), renderView);
+        draw(commadEncoder.get(), renderView);
 
         m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }

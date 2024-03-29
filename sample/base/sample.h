@@ -2,6 +2,14 @@
 
 #include "window.h"
 #include <filesystem>
+#include <optional>
+
+#include <jipu/device.h>
+#include <jipu/driver.h>
+#include <jipu/physical_device.h>
+#include <jipu/queue.h>
+#include <jipu/surface.h>
+#include <jipu/swapchain.h>
 
 namespace jipu
 {
@@ -19,9 +27,35 @@ public:
     Sample(const SampleDescriptor& descriptor);
     virtual ~Sample();
 
+    void init() override;
+
+    void recordImGui(std::function<void()> cmd);
+    void windowImGui(const char* title, std::function<void()> ui);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+
+    void createDriver();
+    void getPhysicalDevices();
+    void createSurface();
+    void createDevice();
+    void createSwapchain();
+    void createQueue();
+
 protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
+
+    std::unique_ptr<Driver> m_driver = nullptr;
+    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
+    std::unique_ptr<Device> m_device = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
+    std::unique_ptr<Surface> m_surface = nullptr;
+    std::unique_ptr<Queue> m_queue = nullptr;
+
+    std::optional<Im_Gui> m_imgui = std::nullopt;
+
+protected:
+    std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
+    TextureView* m_renderView = nullptr;
 };
 
 } // namespace jipu

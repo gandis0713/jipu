@@ -22,7 +22,7 @@ VulkanNBufferingSample::VulkanNBufferingSample(const SampleDescriptor& descripto
 
 VulkanNBufferingSample::~VulkanNBufferingSample()
 {
-    clearImGui();
+    clear();
 
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
@@ -91,9 +91,9 @@ void VulkanNBufferingSample::init()
     createPipelineLayout();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void VulkanNBufferingSample::update()
@@ -101,7 +101,7 @@ void VulkanNBufferingSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void VulkanNBufferingSample::updateImGui()
@@ -205,7 +205,7 @@ void VulkanNBufferingSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), renderView);
+    draw(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }

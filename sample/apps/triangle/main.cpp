@@ -111,7 +111,7 @@ TriangleSample::TriangleSample(const SampleDescriptor& descriptor)
 
 TriangleSample::~TriangleSample()
 {
-    clearImGui();
+    clear();
 
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
@@ -148,9 +148,9 @@ void TriangleSample::init()
     createBindingGroup();
     createRenderPipeline();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void TriangleSample::createCamera()
@@ -184,7 +184,7 @@ void TriangleSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void TriangleSample::draw()
@@ -216,7 +216,7 @@ void TriangleSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), renderView);
+        draw(commadEncoder.get(), renderView);
 
         m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }

@@ -22,12 +22,17 @@ namespace jipu
 
 class Im_Gui
 {
-protected:
-    void initImGui(Device* device, Queue* queue, Swapchain& swapchain);
-    void clearImGui();
-    virtual void updateImGui() = 0;
-    void buildImGui();
-    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+    friend class Sample;
+
+public:
+    void window(const char* title, std::function<void()> ui);
+    void record(std::function<void()> cmd);
+
+public:
+    void init(Device* device, Queue* queue, Swapchain& swapchain);
+    void clear();
+    void build();
+    void draw(CommandEncoder* commandEncoder, TextureView& renderView);
 
 protected:
     struct Padding

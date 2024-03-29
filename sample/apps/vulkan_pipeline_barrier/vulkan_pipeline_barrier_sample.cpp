@@ -288,7 +288,7 @@ VulkanPipelineBarrierSample::VulkanPipelineBarrierSample(const SampleDescriptor&
 
 VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
 {
-    clearImGui();
+    clear();
 
     m_offscreen.renderPipelines.clear();
     m_offscreen.renderPipelineLayout.reset();
@@ -345,9 +345,9 @@ void VulkanPipelineBarrierSample::init()
 
     createCamera();
 
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
+    init(m_device.get(), m_queue.get(), *m_swapchain);
 
-    m_initialized = true;
+    Sample::init();
 }
 
 void VulkanPipelineBarrierSample::createCamera()
@@ -381,7 +381,7 @@ void VulkanPipelineBarrierSample::update()
     updateOffscreenUniformBuffer();
 
     updateImGui();
-    buildImGui();
+    build();
 }
 
 void VulkanPipelineBarrierSample::draw()
@@ -447,7 +447,7 @@ void VulkanPipelineBarrierSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), renderView);
+        draw(commadEncoder.get(), renderView);
 
         m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }
