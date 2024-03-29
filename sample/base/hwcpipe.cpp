@@ -144,7 +144,7 @@ HWCPipe::HWCPipe()
         spdlog::debug("GPU {} Supported counters:", gpu.get_device_number());
         spdlog::debug("------------------------------------------------------------");
 
-        m_gpus.emplace_back(gpu.get_device_number());
+        m_gpus.emplace_back(MaliGPU(gpu.get_device_number()));
     }
 }
 
