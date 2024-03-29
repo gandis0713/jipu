@@ -15,9 +15,14 @@ class MaliGPU
 {
 public:
     explicit MaliGPU(int deviceNumber);
+    ~MaliGPU();
+
+    MaliGPU(const MaliGPU&) = delete;
+    MaliGPU& operator=(const MaliGPU&) = delete;
 
 public:
-    const std::vector<hwcpipe_counter>& getCounters(hwcpipe::gpu gpu) const;
+    hwcpipe::device::constants getInfo() const;
+    const std::vector<hwcpipe_counter>& getCounters() const;
     hwcpipe::counter_sample getSample(hwcpipe_counter counter) const;
 
     std::error_code startSampling();

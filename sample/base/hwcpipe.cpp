@@ -95,7 +95,16 @@ MaliGPU::MaliGPU(int deviceNumber)
     m_sampler = hwcpipe::sampler<>(config);
 }
 
-const std::vector<hwcpipe_counter>& MaliGPU::getCounters(hwcpipe::gpu gpu) const
+MaliGPU::~MaliGPU()
+{
+}
+
+hwcpipe::device::constants MaliGPU::getInfo() const
+{
+    return m_gpu.get_constants();
+}
+
+const std::vector<hwcpipe_counter>& MaliGPU::getCounters() const
 {
     return m_counters;
 }
