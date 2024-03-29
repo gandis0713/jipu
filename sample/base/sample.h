@@ -33,12 +33,12 @@ public:
     void windowImGui(const char* title, std::function<void()> ui);
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
-    void createDriver();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
-    void createQueue();
+    virtual void createDriver();
+    virtual void getPhysicalDevices();
+    virtual void createSurface();
+    virtual void createDevice();
+    virtual void createSwapchain();
+    virtual void createQueue();
 
 protected:
     std::filesystem::path m_appPath;
