@@ -321,46 +321,23 @@ void DeferredSample::updateCompositionUniformBuffer()
 
 void DeferredSample::updateImGui()
 {
-    recordImGui([&]() {
-        windowImGui("Settings", [&]() {
-            ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
-            // 라디오 버튼 1
-            if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
-                m_composition.ubo.showTexture = 0;
-            else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
-                m_composition.ubo.showTexture = 1;
-            else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
-                m_composition.ubo.showTexture = 2;
-            else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
-                m_composition.ubo.showTexture = 3;
-        });
-    });
-
-    // // set windows position and size
-    // {
-    //     auto scale = ImGui::GetIO().FontGlobalScale;
-    //     ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-    //     ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    // }
-
-    // // set ui
-    // {
-    //     ImGui::Begin("Settings");
-    //     ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
-    //     // 라디오 버튼 1
-    //     if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
-    //         m_composition.ubo.showTexture = 0;
-    //     else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
-    //         m_composition.ubo.showTexture = 1;
-    //     else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
-    //         m_composition.ubo.showTexture = 2;
-    //     else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
-    //         m_composition.ubo.showTexture = 3;
-    //     ImGui::End();
-    // }
-
-    // debugWindow();
-    // ImGui::Render();
+    recordImGui({ [&]() {
+        windowImGui("Settings",
+                    { [&]() {
+                         ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
+                     },
+                      [&]() {
+                          if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
+                              m_composition.ubo.showTexture = 0;
+                          else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
+                              m_composition.ubo.showTexture = 1;
+                          else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
+                              m_composition.ubo.showTexture = 2;
+                          else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
+                              m_composition.ubo.showTexture = 3;
+                      } });
+        performanceWindow();
+    } });
 }
 
 void DeferredSample::draw()

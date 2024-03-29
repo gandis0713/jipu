@@ -29,8 +29,8 @@ public:
 
     void init() override;
 
-    void recordImGui(std::function<void()> cmd);
-    void windowImGui(const char* title, std::function<void()> ui);
+    void recordImGui(std::vector<std::function<void()>> cmds);
+    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
     virtual void createDriver();
@@ -56,6 +56,18 @@ protected:
 protected:
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
     TextureView* m_renderView = nullptr;
+
+protected:
+    void performanceWindow();
+
+private:
+    struct FPS
+    {
+        std::chrono::milliseconds time = std::chrono::milliseconds::zero();
+        uint64_t frame = 0;
+        float fps = 0.0f;
+    } m_fps;
+    void updateFPS();
 };
 
 } // namespace jipu

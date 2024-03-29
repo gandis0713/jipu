@@ -154,11 +154,12 @@ void ParticleSample::update()
 
 void ParticleSample::updateImGui()
 {
-    recordImGui([&]() {
-        windowImGui("Settings", [&]() {
-            ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
-        });
-    });
+    recordImGui({ [&]() {
+        windowImGui("Settings", { [&]() {
+                        ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
+                    } });
+        performanceWindow();
+    } });
 }
 
 void ParticleSample::draw()

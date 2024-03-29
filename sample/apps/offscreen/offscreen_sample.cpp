@@ -164,6 +164,9 @@ void OffscreenSample::draw()
 
 void OffscreenSample::updateImGui()
 {
+    recordImGui({ [&]() {
+        performanceWindow();
+    } });
 }
 
 void OffscreenSample::createCommandBuffer()

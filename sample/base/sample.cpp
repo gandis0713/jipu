@@ -1,5 +1,6 @@
 #include "sample.h"
 
+#include <fmt/format.h>
 #include <stdexcept>
 
 namespace jipu
@@ -28,7 +29,7 @@ Sample::~Sample()
     m_driver.reset();
 }
 
-void Sample::recordImGui(std::function<void()> cmd)
+void Sample::recordImGui(std::vector<std::function<void()>> cmds)
 {
     if (m_imgui.has_value())
     {
@@ -42,16 +43,16 @@ void Sample::recordImGui(std::function<void()> cmd)
             io.MouseDown[2] = m_middleMouseButton;
         }
 
-        m_imgui.value().record(cmd);
+        m_imgui.value().record(cmds);
         m_imgui.value().build();
     }
 }
 
-void Sample::windowImGui(const char* title, std::function<void()> ui)
+void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
 {
     if (m_imgui.has_value())
     {
-        m_imgui.value().window(title, ui);
+        m_imgui.value().window(title, uis);
     }
 }
 
@@ -59,6 +60,7 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
 {
     if (m_imgui.has_value())
     {
+        updateFPS();
         m_imgui.value().draw(commandEncoder, renderView);
     }
 }
@@ -136,6 +138,35 @@ void Sample::createQueue()
     descriptor.flags = QueueFlagBits::kGraphics;
 
     m_queue = m_device->createQueue(descriptor);
+}
+
+void Sample::performanceWindow()
+{
+    windowImGui(
+        "Performance", { [&]() { ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps).c_str()); } });
+}
+
+void Sample::updateFPS()
+{
+    using namespace std::chrono;
+
+    if (m_fps.time.count() != 0)
+    {
+        auto currentTime = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+        auto durationTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - m_fps.time).count();
+
+        m_fps.frame++;
+        if (durationTime > 1000)
+        {
+            m_fps.fps = m_fps.frame * 1000.0 / durationTime;
+            m_fps.time = currentTime;
+            m_fps.frame = 0;
+        }
+    }
+    else
+    {
+        m_fps.time = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
+    }
 }
 
 } // namespace jipu

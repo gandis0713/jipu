@@ -25,8 +25,8 @@ class Im_Gui
     friend class Sample;
 
 public:
-    void window(const char* title, std::function<void()> ui);
-    void record(std::function<void()> cmd);
+    void record(std::vector<std::function<void()>> cmds);
+    void window(const char* title, std::vector<std::function<void()>> uis);
 
 public:
     void init(Device* device, Queue* queue, Swapchain& swapchain);
@@ -62,18 +62,6 @@ private:
     std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
-
-protected:
-    void debugWindow();
-
-private:
-    struct FPS
-    {
-        std::chrono::milliseconds time = std::chrono::milliseconds::zero();
-        uint64_t frame = 0;
-        float fps = 0.0f;
-    } m_fps;
-    void updateFPS();
 };
 
 } // namespace jipu

@@ -438,32 +438,33 @@ void VulkanPipelineBarrierSample::draw()
 
 void VulkanPipelineBarrierSample::updateImGui()
 {
-    recordImGui([&]() {
-        windowImGui("Source Stage", [&]() {
-            std::set<VkPipelineStageFlags> srcStageMasks{};
-            for (auto stage : STAGES)
-            {
-                srcStageMasks.insert(stage.srcStageMask);
-            }
 
-            for (auto srcStageMask : srcStageMasks)
-            {
-                if (ImGui::RadioButton(STAGE_STRINGS[srcStageMask], m_stage.srcStageMask == srcStageMask))
-                    m_stage.srcStageMask = srcStageMask;
-            }
-        });
+    recordImGui({ [&]() {
+        windowImGui("Source Stage", { [&]() {
+                        std::set<VkPipelineStageFlags> srcStageMasks{};
+                        for (auto stage : STAGES)
+                        {
+                            srcStageMasks.insert(stage.srcStageMask);
+                        }
 
-        windowImGui("Destination Stage", [&]() {
-            for (auto stage : STAGES)
-            {
-                if (stage.srcStageMask == m_stage.srcStageMask)
-                {
-                    if (ImGui::RadioButton(STAGE_STRINGS[stage.dstStageMask], m_stage.dstStageMask == stage.dstStageMask))
-                        m_stage.dstStageMask = stage.dstStageMask;
-                }
-            }
-        });
-    });
+                        for (auto srcStageMask : srcStageMasks)
+                        {
+                            if (ImGui::RadioButton(STAGE_STRINGS[srcStageMask], m_stage.srcStageMask == srcStageMask))
+                                m_stage.srcStageMask = srcStageMask;
+                        }
+                    } });
+        windowImGui("Destination Stage", { [&]() {
+                        for (auto stage : STAGES)
+                        {
+                            if (stage.srcStageMask == m_stage.srcStageMask)
+                            {
+                                if (ImGui::RadioButton(STAGE_STRINGS[stage.dstStageMask], m_stage.dstStageMask == stage.dstStageMask))
+                                    m_stage.dstStageMask = stage.dstStageMask;
+                            }
+                        }
+                    } });
+        performanceWindow();
+    } });
 }
 
 void VulkanPipelineBarrierSample::createCommandBuffer()

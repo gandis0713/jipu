@@ -194,6 +194,9 @@ void TriangleSample::draw()
 
 void TriangleSample::updateImGui()
 {
+    recordImGui({ [&]() {
+        performanceWindow();
+    } });
 }
 
 void TriangleSample::createCommandBuffer()

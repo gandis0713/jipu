@@ -179,12 +179,14 @@ void OBJModelSample::init()
 void OBJModelSample::update()
 {
     updateUniformBuffer();
-
     updateImGui();
 }
 
 void OBJModelSample::updateImGui()
 {
+    recordImGui({ [&]() {
+        performanceWindow();
+    } });
 }
 
 void OBJModelSample::draw()

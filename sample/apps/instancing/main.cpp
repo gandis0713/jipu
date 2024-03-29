@@ -297,12 +297,13 @@ void InstancingSample::draw()
 
 void InstancingSample::updateImGui()
 {
-    recordImGui([&]() {
-        windowImGui("Settings", [&]() {
-            ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
-            ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
-        });
-    });
+    recordImGui({ [&]() {
+        windowImGui("Settings", { [&]() {
+                        ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
+                        ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
+                    } });
+        performanceWindow();
+    } });
 }
 
 void InstancingSample::createCommandBuffer()

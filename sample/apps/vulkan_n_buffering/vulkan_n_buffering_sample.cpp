@@ -86,44 +86,45 @@ void VulkanNBufferingSample::update()
 
 void VulkanNBufferingSample::updateImGui()
 {
-    recordImGui([&]() {
-        windowImGui("Settings", [&]() {
-            auto presentModeUI = [&](const char* name, VkPresentModeKHR presentMode) {
-                auto it = std::find(m_surfaceInfo.presentModes.begin(), m_surfaceInfo.presentModes.end(), presentMode);
-                if (it == m_surfaceInfo.presentModes.end())
-                    ImGui::BeginDisabled();
+    recordImGui({ [&]() {
+        windowImGui("Settings", { [&]() {
+                        auto presentModeUI = [&](const char* name, VkPresentModeKHR presentMode) {
+                            auto it = std::find(m_surfaceInfo.presentModes.begin(), m_surfaceInfo.presentModes.end(), presentMode);
+                            if (it == m_surfaceInfo.presentModes.end())
+                                ImGui::BeginDisabled();
 
-                if (ImGui::RadioButton(name, m_presentMode == presentMode))
-                {
-                    m_presentMode = presentMode;
-                    recreateSwapchain();
-                }
+                            if (ImGui::RadioButton(name, m_presentMode == presentMode))
+                            {
+                                m_presentMode = presentMode;
+                                recreateSwapchain();
+                            }
 
-                if (it == m_surfaceInfo.presentModes.end())
-                    ImGui::EndDisabled();
-            };
+                            if (it == m_surfaceInfo.presentModes.end())
+                                ImGui::EndDisabled();
+                        };
 
-            ImGui::Text("Present Mode");
-            presentModeUI("FIFO", VK_PRESENT_MODE_FIFO_KHR);
-            presentModeUI("FIFO RELAXED", VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-            presentModeUI("MAILBOX", VK_PRESENT_MODE_MAILBOX_KHR);
-            presentModeUI("IMMEDIATE", VK_PRESENT_MODE_IMMEDIATE_KHR);
+                        ImGui::Text("Present Mode");
+                        presentModeUI("FIFO", VK_PRESENT_MODE_FIFO_KHR);
+                        presentModeUI("FIFO RELAXED", VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+                        presentModeUI("MAILBOX", VK_PRESENT_MODE_MAILBOX_KHR);
+                        presentModeUI("IMMEDIATE", VK_PRESENT_MODE_IMMEDIATE_KHR);
 
-            ImGui::Separator();
-            ImGui::Text("Min Image Count");
+                        ImGui::Separator();
+                        ImGui::Text("Min Image Count");
 
-            auto minCount = std::max(m_surfaceInfo.capabilities.minImageCount, 1u);
-            auto maxCount = std::min(m_surfaceInfo.capabilities.maxImageCount, 3u);
-            for (auto i = minCount; i <= maxCount; ++i)
-            {
-                if (ImGui::RadioButton(std::to_string(i).c_str(), m_minImageCount == i))
-                {
-                    m_minImageCount = i;
-                    recreateSwapchain();
-                }
-            }
-        });
-    });
+                        auto minCount = std::max(m_surfaceInfo.capabilities.minImageCount, 1u);
+                        auto maxCount = std::min(m_surfaceInfo.capabilities.maxImageCount, 3u);
+                        for (auto i = minCount; i <= maxCount; ++i)
+                        {
+                            if (ImGui::RadioButton(std::to_string(i).c_str(), m_minImageCount == i))
+                            {
+                                m_minImageCount = i;
+                                recreateSwapchain();
+                            }
+                        }
+                    } });
+        performanceWindow();
+    } });
 }
 
 void VulkanNBufferingSample::draw()
