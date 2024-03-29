@@ -34,8 +34,6 @@ VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
 
 VulkanSubpassesSample::~VulkanSubpassesSample()
 {
-    clear();
-
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
 
@@ -96,27 +94,14 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_offscreen.renderPasses.positionColorAttachmentTextureView.reset();
     m_offscreen.renderPasses.positionColorAttachmentTexture.reset();
 
-    m_queue.reset();
     m_commandBuffer.reset();
-
-    m_swapchain.reset();
-    m_device.reset();
-
-    m_surface.reset();
-    m_physicalDevices.clear();
-    m_driver.reset();
 }
 
 void VulkanSubpassesSample::init()
 {
-    createDriver();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
+    Sample::init();
 
     createCommandBuffer();
-    createQueue();
 
     createDepthStencilTexture();
     createDepthStencilTextureView();
@@ -147,10 +132,6 @@ void VulkanSubpassesSample::init()
     createCompositionBindingGroup();
     createCompositionPipelineLayout();
     createCompositionPipeline();
-
-    init(m_device.get(), m_queue.get(), *m_swapchain);
-
-    Sample::init();
 }
 
 void VulkanSubpassesSample::update()
@@ -159,9 +140,6 @@ void VulkanSubpassesSample::update()
     updateCompositionUniformBuffer();
 
     updateImGui();
-    build();
-
-    Sample::update();
 }
 
 void VulkanSubpassesSample::updateOffscreenUniformBuffer()
@@ -220,44 +198,21 @@ void VulkanSubpassesSample::updateCompositionUniformBuffer()
 
 void VulkanSubpassesSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
-
-    ImGui::NewFrame();
-
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Settings");
-        ImGui::Checkbox("Use Subpasses", &m_useSubpasses);
-        ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
-        // 라디오 버튼 1
-        if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
-            m_composition.ubo.showTexture = 0;
-        else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
-            m_composition.ubo.showTexture = 1;
-        else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
-            m_composition.ubo.showTexture = 2;
-        else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
-            m_composition.ubo.showTexture = 3;
-        ImGui::End();
-    }
-
-    debugWindow();
-    ImGui::Render();
+    recordImGui([&]() {
+        windowImGui("Settings", [&]() {
+            ImGui::Checkbox("Use Subpasses", &m_useSubpasses);
+            ImGui::SliderInt("Number of Light", &m_composition.ubo.lightCount, 1, m_lightMax);
+            // 라디오 버튼 1
+            if (ImGui::RadioButton("Deferred", m_composition.ubo.showTexture == 0))
+                m_composition.ubo.showTexture = 0;
+            else if (ImGui::RadioButton("Position", m_composition.ubo.showTexture == 1))
+                m_composition.ubo.showTexture = 1;
+            else if (ImGui::RadioButton("Normal", m_composition.ubo.showTexture == 2))
+                m_composition.ubo.showTexture = 2;
+            else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
+                m_composition.ubo.showTexture = 3;
+        });
+    });
 }
 
 void VulkanSubpassesSample::draw()
@@ -400,59 +355,9 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->end();
     }
 
-    draw(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
-}
-
-void VulkanSubpassesSample::createDriver()
-{
-    DriverDescriptor descriptor;
-    descriptor.type = DriverType::kVulkan;
-    m_driver = Driver::create(descriptor);
-}
-
-void VulkanSubpassesSample::getPhysicalDevices()
-{
-    m_physicalDevices = m_driver->getPhysicalDevices();
-}
-
-void VulkanSubpassesSample::createSurface()
-{
-    SurfaceDescriptor descriptor;
-    descriptor.windowHandle = getWindowHandle();
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void VulkanSubpassesSample::createSwapchain()
-{
-    if (m_surface == nullptr)
-        throw std::runtime_error("Surface is null pointer.");
-
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-
-    m_swapchain = m_device->createSwapchain(descriptor);
-}
-
-void VulkanSubpassesSample::createDevice()
-{
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-    DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
 }
 
 void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTexture()
@@ -2367,14 +2272,6 @@ void VulkanSubpassesSample::createCommandBuffer()
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
-void VulkanSubpassesSample::createQueue()
-{
-    QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
-
-    m_queue = m_device->createQueue(descriptor);
 }
 
 } // namespace jipu
