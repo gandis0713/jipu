@@ -485,7 +485,7 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
 {
     ImDrawData* imDrawData = ImGui::GetDrawData();
 
-    if (imDrawData->CmdListsCount > 0)
+    if (imDrawData && imDrawData->CmdListsCount > 0)
     {
         ImGuiIO& io = ImGui::GetIO();
 
