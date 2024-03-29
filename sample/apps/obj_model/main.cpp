@@ -47,7 +47,7 @@ private:
     void updateImGui();
 
 private:
-    void createSwapchain();
+    void createCommandBuffer();
 
     void createVertexBuffer();
     void createIndexBuffer();
@@ -67,7 +67,6 @@ private:
 
     void createPipelineLayout();
     void createRenderPipeline();
-    void createCommandBuffers();
 
     void copyBufferToBuffer(Buffer& src, Buffer& dst);
     void copyBufferToTexture(Buffer& imageTextureBuffer, Texture& imageTexture);
@@ -154,6 +153,8 @@ void OBJModelSample::init()
 {
     Sample::init();
 
+    createCommandBuffer();
+
     // create buffer
     createVertexBuffer();
     createIndexBuffer();
@@ -173,7 +174,6 @@ void OBJModelSample::init()
 
     createPipelineLayout();
     createRenderPipeline();
-    createCommandBuffers();
 }
 
 void OBJModelSample::update()
@@ -225,24 +225,6 @@ void OBJModelSample::draw()
     drawImGui(commandEncoder.get(), renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
-}
-
-void OBJModelSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-    m_swapchain = m_device->createSwapchain(descriptor);
 }
 
 void OBJModelSample::createVertexBuffer()
@@ -576,7 +558,7 @@ void OBJModelSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void OBJModelSample::createCommandBuffers()
+void OBJModelSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
     m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
