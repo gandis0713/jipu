@@ -28,6 +28,8 @@ list(APPEND SRC_FILES
     camera.h
     sample.cpp
     sample.h
+    fps.cpp
+    fps.h
     window.cpp
     window.h
     vertex.cpp
