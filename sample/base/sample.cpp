@@ -10,7 +10,8 @@ Sample::Sample(const SampleDescriptor& descriptor)
     : Window(descriptor.windowDescriptor)
     , m_appPath(descriptor.path)
     , m_appDir(descriptor.path.parent_path())
-    , m_imgui(Im_Gui())
+    , m_imgui{}
+
 {
 }
 
@@ -27,6 +28,27 @@ Sample::~Sample()
     m_device.reset();
     m_physicalDevices.clear();
     m_driver.reset();
+}
+
+void Sample::init()
+{
+    createDriver();
+    getPhysicalDevices();
+    createSurface();
+    createDevice();
+    createSwapchain();
+    createQueue();
+
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+    }
+
+#if defined(HWC_PIPE_ENABLED)
+    createHWCPipe();
+#endif
+
+    Window::init();
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -60,26 +82,9 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
 {
     if (m_imgui.has_value())
     {
-        updateFPS();
+        m_fps.update();
         m_imgui.value().draw(commandEncoder, renderView);
     }
-}
-
-void Sample::init()
-{
-    createDriver();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
-    createQueue();
-
-    if (m_imgui.has_value())
-    {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
-    }
-
-    Window::init();
 }
 
 void Sample::createDriver()
@@ -143,30 +148,20 @@ void Sample::createQueue()
 void Sample::performanceWindow()
 {
     windowImGui(
-        "Performance", { [&]() { ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps).c_str()); } });
+        "Performance", { [&]() {
+            ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps()).c_str());
+            ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps()).c_str());
+        } });
 }
 
-void Sample::updateFPS()
+#if defined(HWC_PIPE_ENABLED)
+void Sample::createHWCPipe()
 {
-    using namespace std::chrono;
-
-    if (m_fps.time.count() != 0)
-    {
-        auto currentTime = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-        auto durationTime = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - m_fps.time).count();
-
-        m_fps.frame++;
-        if (durationTime > 1000)
-        {
-            m_fps.fps = m_fps.frame * 1000.0 / durationTime;
-            m_fps.time = currentTime;
-            m_fps.frame = 0;
-        }
-    }
-    else
-    {
-        m_fps.time = duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch());
-    }
+    m_hwcpipe = HWCPipe();
+    std::vector<MaliGPU>& maliGPUs = m_hwcpipe.getGpus();
+    if (!maliGPUs.empty())
+        m_maliGPU = maliGPUs[0];
 }
+#endif
 
 } // namespace jipu

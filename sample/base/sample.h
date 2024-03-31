@@ -1,6 +1,9 @@
 #pragma once
 
+#include "fps.h"
+#include "hwcpipe.h"
 #include "window.h"
+
 #include <filesystem>
 #include <optional>
 
@@ -61,13 +64,16 @@ protected:
     void performanceWindow();
 
 private:
-    struct FPS
-    {
-        std::chrono::milliseconds time = std::chrono::milliseconds::zero();
-        uint64_t frame = 0;
-        float fps = 0.0f;
-    } m_fps;
-    void updateFPS();
+    FPS m_fps{};
+
+#if defined(HWC_PIPE_ENABLED)
+private:
+    void createHWCPipe();
+
+private:
+    HWCPipe m_hwcpipe{};
+    std::optional<MaliGPU::Ref> m_maliGPU = std::nullopt;
+#endif
 };
 
 } // namespace jipu
