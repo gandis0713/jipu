@@ -10,7 +10,7 @@ Sample::Sample(const SampleDescriptor& descriptor)
     : Window(descriptor.windowDescriptor)
     , m_appPath(descriptor.path)
     , m_appDir(descriptor.path.parent_path())
-    , m_imgui{}
+    , m_imgui(Im_Gui())
 
 {
 }
@@ -149,7 +149,6 @@ void Sample::performanceWindow()
 {
     windowImGui(
         "Performance", { [&]() {
-            ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps()).c_str());
             ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps()).c_str());
         } });
 }
