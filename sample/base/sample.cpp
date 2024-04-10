@@ -159,7 +159,12 @@ void Sample::createHWCPipe()
     m_hwcpipe = HWCPipe();
     std::vector<MaliGPU>& maliGPUs = m_hwcpipe.getGpus();
     if (!maliGPUs.empty())
-        m_maliGPU = maliGPUs[0];
+    {
+        auto& maliGPU = maliGPUs[0];
+        maliGPU.configureSampler({ MaliGPUActiveCy, MaliFragActiveCy, MaliGeomSampleCullRate });
+
+        m_maliGPU = maliGPU;
+    }
 }
 #endif
 
