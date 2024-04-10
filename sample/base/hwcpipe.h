@@ -6,7 +6,7 @@
 #include <hwcpipe/gpu.hpp>
 #include <hwcpipe/sampler.hpp>
 
-#include <map>
+#include <unordered_set>
 
 namespace jipu
 {
@@ -25,7 +25,8 @@ public:
 
 public:
     hwcpipe::device::constants getInfo() const;
-    const std::vector<hwcpipe_counter>& getCounters() const;
+    const std::unordered_set<hwcpipe_counter>& getCounters() const;
+    void configureSampler(const std::unordered_set<hwcpipe_counter> counters);
     hwcpipe::counter_sample getSample(hwcpipe_counter counter) const;
 
     std::error_code startSampling();
@@ -33,11 +34,10 @@ public:
 
 private:
     void gatherCounters();
-    void configureSampler();
 
 private:
     hwcpipe::gpu m_gpu;
-    std::vector<hwcpipe_counter> m_counters{};
+    std::unordered_set<hwcpipe_counter> m_counters{};
     hwcpipe::sampler_config m_config;
     hwcpipe::sampler<> m_sampler;
 

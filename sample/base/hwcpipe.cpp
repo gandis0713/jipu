@@ -46,7 +46,6 @@ MaliGPU::MaliGPU(int deviceNumber)
     , m_sampler(m_config) // empty counter sampler
 {
     gatherCounters();
-    configureSampler();
 }
 
 MaliGPU::~MaliGPU()
@@ -58,7 +57,7 @@ hwcpipe::device::constants MaliGPU::getInfo() const
     return m_gpu.get_constants();
 }
 
-const std::vector<hwcpipe_counter>& MaliGPU::getCounters() const
+const std::unordered_set<hwcpipe_counter>& MaliGPU::getCounters() const
 {
     return m_counters;
 }
@@ -115,38 +114,23 @@ void MaliGPU::gatherCounters()
 
         spdlog::debug("    {}", meta.name);
 
-        m_counters.push_back(counter);
+        m_counters.emplace(counter);
     }
 }
 
-void MaliGPU::configureSampler()
+void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter> counters)
 {
     m_config = hwcpipe::sampler_config(m_gpu);
 
     std::error_code ec;
-    if (false)
+    for (const auto& counter : counters)
     {
-        for (const auto& counter : m_counters)
+        if (m_counters.contains(counter))
         {
             ec = m_config.add_counter(counter);
             if (ec)
-                spdlog::error("GPU {} counter not supported by this GPU.", static_cast<uint32_t>(MaliGPUActiveCy));
+                spdlog::error("GPU {} counter not supported by this GPU.", static_cast<uint32_t>(counter));
         }
-    }
-    else
-    {
-        std::error_code ec;
-        ec = m_config.add_counter(MaliGPUActiveCy);
-        if (ec)
-            spdlog::error("GPU Active Cycles counter not supported by this GPU.");
-
-        ec = m_config.add_counter(MaliFragActiveCy);
-        if (ec)
-            spdlog::error("Fragment Active Cycles counter not supported by this GPU.");
-
-        ec = m_config.add_counter(MaliGeomSampleCullRate);
-        if (ec)
-            spdlog::error("Geometry Sample Cull Rate counter not supported by this GPU.");
     }
 
     m_sampler = hwcpipe::sampler<>(m_config);
