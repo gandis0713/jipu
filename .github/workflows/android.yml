@@ -33,8 +33,9 @@ jobs:
           local-cache: true
 
       # https://github.com/marketplace/actions/get-cmake
-      # - name: Setup CMake
-      #   uses: lukka/get-cmake@latest
+      - uses: lukka/get-cmake@v3.27.7
+        with:
+            cmakeVersion: '3.27.7'
 
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup vcpkg and install them.
