@@ -1,4 +1,5 @@
 #include "fps.h"
+#include <numeric>
 
 using namespace std::chrono;
 
@@ -10,9 +11,32 @@ FPS::FPS()
 {
 }
 
-float FPS::fps()
+float FPS::current()
+{
+    if (m_fps.empty())
+        return 0;
+
+    return m_fps[m_fps.size() - 1];
+}
+
+const std::deque<float>& FPS::getAll()
 {
     return m_fps;
+}
+
+float FPS::min()
+{
+    return *std::min_element(m_fps.begin(), m_fps.end());
+}
+
+float FPS::max()
+{
+    return *std::max_element(m_fps.begin(), m_fps.end());
+}
+
+float FPS::average()
+{
+    return std::accumulate(m_fps.begin(), m_fps.end(), 0.0f) / m_fps.size();
 }
 
 void FPS::update()
@@ -23,7 +47,7 @@ void FPS::update()
     ++m_frame;
     if (durationTime > 1000)
     {
-        m_fps = m_frame * 1000.0 / durationTime;
+        m_fps.push_back(m_frame * 1000.0 / durationTime);
         m_time = currentTime;
         m_frame = 0;
     }

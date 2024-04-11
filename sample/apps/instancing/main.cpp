@@ -302,7 +302,7 @@ void InstancingSample::updateImGui()
                         ImGui::Checkbox("Use Instancing", &m_imguiSettings.useInstancing);
                         ImGui::SliderInt("Number of Object", &m_imguiSettings.objectCount, 1, m_imguiSettings.maxObjectCount);
                     } });
-        performanceWindow();
+        debuggingWindow();
     } });
 }
 

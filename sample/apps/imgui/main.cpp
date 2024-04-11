@@ -111,7 +111,7 @@ void ImGuiSample::draw()
 void ImGuiSample::updateImGui()
 {
     recordImGui({ [&]() {
-        performanceWindow();
+        debuggingWindow();
     } });
 }
 

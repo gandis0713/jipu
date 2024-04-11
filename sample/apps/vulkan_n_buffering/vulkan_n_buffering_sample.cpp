@@ -123,7 +123,7 @@ void VulkanNBufferingSample::updateImGui()
                             }
                         }
                     } });
-        performanceWindow();
+        debuggingWindow();
     } });
 }
 

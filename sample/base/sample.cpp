@@ -145,11 +145,29 @@ void Sample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-void Sample::performanceWindow()
+void Sample::debuggingWindow()
 {
     windowImGui(
-        "Performance", { [&]() {
-            ImGui::Text("FPS: %s", fmt::format("{:.2f}", m_fps.fps()).c_str());
+        "Debugging", { [&]() {
+            const auto& fpss = m_fps.getAll();
+            if (!fpss.empty())
+            {
+                const auto size = fpss.size();
+                const std::string title = fmt::format("FPS {:.1f}/{:.1f}/{:.1f}", m_fps.min(), m_fps.max(), m_fps.average());
+                if (size <= 20)
+                {
+                    ImGui::PlotLines(title.c_str(), &fpss[0], size, 0, nullptr, 0, 120);
+                }
+                else
+                {
+                    ImGui::PlotLines(title.c_str(), &fpss[size - 20], 20, 0, nullptr, 0, 120);
+                }
+            }
+
+#if defined(HWC_PIPE_ENABLED)
+            if (m_maliGPU.has_value())
+                ImGui::Checkbox("Profiler", &m_profiling);
+#endif
         } });
 }
 

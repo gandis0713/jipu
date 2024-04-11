@@ -463,7 +463,7 @@ void VulkanPipelineBarrierSample::updateImGui()
                             }
                         }
                     } });
-        performanceWindow();
+        debuggingWindow();
     } });
 }
 

@@ -1,9 +1,13 @@
 #pragma once
 
 #include "fps.h"
-#include "hwcpipe.h"
 #include "window.h"
 
+#if defined(__ANDROID__) || defined(ANDROID)
+#include "hwcpipe.h"
+#endif
+
+#include <deque>
 #include <filesystem>
 #include <optional>
 
@@ -61,12 +65,19 @@ protected:
     TextureView* m_renderView = nullptr;
 
 protected:
-    void performanceWindow();
+    void debuggingWindow();
 
 private:
     FPS m_fps{};
+    std::deque<float> m_fpss{};
+
+    bool m_profiling = false;
 
 #if defined(HWC_PIPE_ENABLED)
+
+public:
+    void configure(std::unordered_set<hwcpipe_counter> counters);
+
 private:
     void createHWCPipe();
 

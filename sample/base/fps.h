@@ -1,4 +1,5 @@
 #include <chrono>
+#include <deque>
 
 namespace jipu
 {
@@ -10,12 +11,16 @@ public:
 
 public:
     void update();
-    float fps();
+    float current();
+    float min();
+    float max();
+    float average();
+    const std::deque<float>& getAll();
 
 private:
     std::chrono::milliseconds m_time = std::chrono::milliseconds::zero();
     uint64_t m_frame = 0;
-    float m_fps = 0.0f;
+    std::deque<float> m_fps{};
 };
 
 } // namespace jipu

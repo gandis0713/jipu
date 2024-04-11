@@ -1,5 +1,3 @@
-#if defined(__ANDROID__) || defined(ANDROID)
-
 #define HWC_PIPE_ENABLED 1
 #include <device/product_id.hpp>
 #include <hwcpipe/counter_database.hpp>
@@ -58,5 +56,3 @@ private:
 };
 
 } // namespace jipu
-
-#endif

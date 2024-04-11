@@ -158,7 +158,7 @@ void ParticleSample::updateImGui()
         windowImGui("Settings", { [&]() {
                         ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
                     } });
-        performanceWindow();
+        debuggingWindow();
     } });
 }
 
