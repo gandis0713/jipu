@@ -153,15 +153,12 @@ void Sample::debuggingWindow()
             if (!fpss.empty())
             {
                 const auto size = fpss.size();
-                const std::string title = fmt::format("FPS {:.1f}/{:.1f}/{:.1f}", m_fps.min(), m_fps.max(), m_fps.average());
-                if (size <= 20)
-                {
-                    ImGui::PlotLines(title.c_str(), &fpss[0], size, 0, nullptr, 0, 120);
-                }
-                else
-                {
-                    ImGui::PlotLines(title.c_str(), &fpss[size - 20], 20, 0, nullptr, 0, 120);
-                }
+                const std::string title = fmt::format("FPS Average: {:.1f}", m_fps.average());
+                const std::string description = fmt::format("{:.1f}", m_fps.current());
+                int offset = 0;
+                if (size > 15)
+                    offset = size - 15;
+                ImGui::PlotLines(title.c_str(), &fpss[offset], size - offset, 0, description.c_str());
             }
 
 #if defined(HWC_PIPE_ENABLED)
@@ -169,6 +166,13 @@ void Sample::debuggingWindow()
                 ImGui::Checkbox("Profiler", &m_profiling);
 #endif
         } });
+
+#if defined(HWC_PIPE_ENABLED)
+    if (m_profiling)
+    {
+        // show profiling.
+    }
+#endif
 }
 
 #if defined(HWC_PIPE_ENABLED)

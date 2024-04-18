@@ -69,17 +69,16 @@ protected:
 
 private:
     FPS m_fps{};
-    std::deque<float> m_fpss{};
-
-    bool m_profiling = false;
 
 #if defined(HWC_PIPE_ENABLED)
-
 public:
     void configure(std::unordered_set<hwcpipe_counter> counters);
 
 private:
     void createHWCPipe();
+
+private:
+    bool m_profiling = false;
 
 private:
     HWCPipe m_hwcpipe{};
