@@ -176,6 +176,16 @@ void Sample::debuggingWindow()
 }
 
 #if defined(HWC_PIPE_ENABLED)
+
+void Sample::setCounters(std::unordered_set<hwcpipe_counter> counters)
+{
+    if (m_maliGPU.has_value())
+    {
+        auto& maliGPU = m_maliGPU.value().get();
+        maliGPU.configureSampler(counters);
+    }
+}
+
 void Sample::createHWCPipe()
 {
     m_hwcpipe = HWCPipe();

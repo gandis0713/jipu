@@ -72,7 +72,7 @@ private:
 
 #if defined(HWC_PIPE_ENABLED)
 public:
-    void configure(std::unordered_set<hwcpipe_counter> counters);
+    void setCounters(std::unordered_set<hwcpipe_counter> counters);
 
 private:
     void createHWCPipe();
