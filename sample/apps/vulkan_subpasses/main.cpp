@@ -23,6 +23,7 @@ void android_main(struct android_app* app)
     };
 
     jipu::VulkanSubpassesSample sample(descriptor);
+    sample.setCounters({ MaliGPUActiveCy });
 
     sample.exec();
 }

@@ -2,7 +2,6 @@
 
 #include "camera.h"
 #include "file.h"
-#include "im_gui.h"
 #include "sample.h"
 
 #include "jipu/buffer.h"
@@ -20,7 +19,7 @@
 namespace jipu
 {
 
-class OffscreenSample : public Sample, public Im_Gui
+class OffscreenSample : public Sample
 {
 public:
     OffscreenSample() = delete;
@@ -32,19 +31,13 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
     void updateOffscreenUniformBuffer();
 
 private:
-    void createDevier();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
     void createCommandBuffer();
-    void createQueue();
 
     void createOffscreenTexture();
     void createOffscreenTextureView();
@@ -65,13 +58,7 @@ private:
     void createCamera();
 
 private:
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
 
     struct
     {

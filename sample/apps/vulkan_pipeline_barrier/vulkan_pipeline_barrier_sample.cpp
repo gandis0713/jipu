@@ -288,8 +288,6 @@ VulkanPipelineBarrierSample::VulkanPipelineBarrierSample(const SampleDescriptor&
 
 VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
 {
-    clearImGui();
-
     m_offscreen.renderPipelines.clear();
     m_offscreen.renderPipelineLayout.reset();
     m_offscreen.bindingGroup.reset();
@@ -308,24 +306,14 @@ VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
     m_onscreen.indexBuffer.reset();
     m_onscreen.sampler.reset();
 
-    m_queue.reset();
     m_commandBuffer.reset();
-    m_swapchain.reset();
-    m_device.reset();
-    m_surface.reset();
-    m_physicalDevices.clear();
-    m_driver.reset();
 }
 
 void VulkanPipelineBarrierSample::init()
 {
-    createDevier();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
+    Sample::init();
+
     createCommandBuffer();
-    createQueue();
 
     createOffscreenTexture();
     createOffscreenTextureView();
@@ -344,10 +332,6 @@ void VulkanPipelineBarrierSample::init()
     createOnscreenRenderPipeline();
 
     createCamera();
-
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
-
-    m_initialized = true;
 }
 
 void VulkanPipelineBarrierSample::createCamera()
@@ -381,7 +365,6 @@ void VulkanPipelineBarrierSample::update()
     updateOffscreenUniformBuffer();
 
     updateImGui();
-    buildImGui();
 }
 
 void VulkanPipelineBarrierSample::draw()
@@ -455,107 +438,33 @@ void VulkanPipelineBarrierSample::draw()
 
 void VulkanPipelineBarrierSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
 
-    ImGui::NewFrame();
+    recordImGui({ [&]() {
+        windowImGui("Source Stage", { [&]() {
+                        std::set<VkPipelineStageFlags> srcStageMasks{};
+                        for (auto stage : STAGES)
+                        {
+                            srcStageMasks.insert(stage.srcStageMask);
+                        }
 
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
-
-    // set ui
-    {
-        ImGui::Begin("Source Stage");
-
-        std::set<VkPipelineStageFlags> srcStageMasks{};
-        for (auto stage : STAGES)
-        {
-            srcStageMasks.insert(stage.srcStageMask);
-        }
-
-        for (auto srcStageMask : srcStageMasks)
-        {
-            if (ImGui::RadioButton(STAGE_STRINGS[srcStageMask], m_stage.srcStageMask == srcStageMask))
-                m_stage.srcStageMask = srcStageMask;
-        }
-
-        ImGui::End();
-
-        ImGui::Begin("Destination Stage");
-        for (auto stage : STAGES)
-        {
-            if (stage.srcStageMask == m_stage.srcStageMask)
-            {
-                if (ImGui::RadioButton(STAGE_STRINGS[stage.dstStageMask], m_stage.dstStageMask == stage.dstStageMask))
-                    m_stage.dstStageMask = stage.dstStageMask;
-            }
-        }
-
-        ImGui::End();
-    }
-
-    debugWindow();
-    ImGui::Render();
-}
-
-void VulkanPipelineBarrierSample::createDevier()
-{
-    DriverDescriptor descriptor{};
-    descriptor.type = DriverType::kVulkan;
-
-    m_driver = Driver::create(descriptor);
-}
-
-void VulkanPipelineBarrierSample::getPhysicalDevices()
-{
-    m_physicalDevices = m_driver->getPhysicalDevices();
-}
-
-void VulkanPipelineBarrierSample::createDevice()
-{
-    // TODO: select suit device.
-    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
-
-    DeviceDescriptor descriptor;
-    m_device = physicalDevice->createDevice(descriptor);
-}
-
-void VulkanPipelineBarrierSample::createSurface()
-{
-    SurfaceDescriptor descriptor{};
-    descriptor.windowHandle = getWindowHandle();
-
-    m_surface = m_driver->createSurface(descriptor);
-}
-
-void VulkanPipelineBarrierSample::createSwapchain()
-{
-#if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
-#else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
-#endif
-    SwapchainDescriptor descriptor{
-        .surface = *m_surface,
-        .textureFormat = textureFormat,
-        .presentMode = PresentMode::kFifo,
-        .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_width,
-        .height = m_height
-    };
-
-    m_swapchain = m_device->createSwapchain(descriptor);
+                        for (auto srcStageMask : srcStageMasks)
+                        {
+                            if (ImGui::RadioButton(STAGE_STRINGS[srcStageMask], m_stage.srcStageMask == srcStageMask))
+                                m_stage.srcStageMask = srcStageMask;
+                        }
+                    } });
+        windowImGui("Destination Stage", { [&]() {
+                        for (auto stage : STAGES)
+                        {
+                            if (stage.srcStageMask == m_stage.srcStageMask)
+                            {
+                                if (ImGui::RadioButton(STAGE_STRINGS[stage.dstStageMask], m_stage.dstStageMask == stage.dstStageMask))
+                                    m_stage.dstStageMask = stage.dstStageMask;
+                            }
+                        }
+                    } });
+        debuggingWindow();
+    } });
 }
 
 void VulkanPipelineBarrierSample::createCommandBuffer()
@@ -564,14 +473,6 @@ void VulkanPipelineBarrierSample::createCommandBuffer()
     descriptor.usage = CommandBufferUsage::kOneTime;
 
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
-void VulkanPipelineBarrierSample::createQueue()
-{
-    QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
-
-    m_queue = m_device->createQueue(descriptor);
 }
 
 void VulkanPipelineBarrierSample::createOffscreenTexture()

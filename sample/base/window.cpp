@@ -5,6 +5,11 @@
 namespace jipu
 {
 
+void Window::init()
+{
+    m_initialized = true;
+}
+
 void Window::setWidth(uint32_t width)
 {
     m_width = width;
@@ -23,11 +28,6 @@ uint32_t Window::getWidth() const
 uint32_t Window::getHeight() const
 {
     return m_height;
-}
-
-bool Window::isInitialized() const
-{
-    return m_initialized;
 }
 
 } // namespace jipu

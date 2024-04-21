@@ -1,5 +1,4 @@
 #include "file.h"
-#include "im_gui.h"
 #include "image.h"
 #include "model.h"
 #include "sample.h"
@@ -34,7 +33,7 @@
 namespace jipu
 {
 
-class VulkanNBufferingSample : public Sample, public Im_Gui
+class VulkanNBufferingSample : public Sample
 {
 public:
     VulkanNBufferingSample() = delete;
@@ -46,16 +45,12 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
-    void createDriver();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
+    void createSurface() override;
+    void createSwapchain() override;
     void createCommandBuffer();
-    void createQueue();
 
     void createVertexBuffer();
     void createIndexBuffer();
@@ -94,17 +89,6 @@ private:
     // data
     Polygon m_polygon{};
     std::unique_ptr<Image> m_image = nullptr;
-
-    // wrapper
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::unique_ptr<PhysicalDevice> m_physicalDevice = nullptr;
-
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-
-    std::unique_ptr<Queue> m_queue = nullptr;
-
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
 
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;

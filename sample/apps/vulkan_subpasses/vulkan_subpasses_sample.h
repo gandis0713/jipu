@@ -5,7 +5,6 @@
 
 #include "camera.h"
 #include "file.h"
-#include "im_gui.h"
 #include "light.h"
 #include "model.h"
 #include "sample.h"
@@ -31,7 +30,7 @@ namespace jipu
 
 class VulkanFramebuffer;
 class VulkanRenderPass;
-class VulkanSubpassesSample : public Sample, public Im_Gui
+class VulkanSubpassesSample : public Sample
 {
 public:
     VulkanSubpassesSample() = delete;
@@ -44,16 +43,10 @@ public:
     void draw() override;
 
 private:
-    void updateImGui() override;
+    void updateImGui();
 
 private:
-    void createDriver();
-    void getPhysicalDevices();
-    void createSurface();
-    void createDevice();
-    void createSwapchain();
     void createCommandBuffer();
-    void createQueue();
 
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
@@ -92,12 +85,6 @@ private:
     VulkanFramebuffer& getSubpassesFrameBuffer(TextureView& renderView);
 
 private:
-    std::unique_ptr<Driver> m_driver = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
-
     struct CompositionUBO
     {
         struct Light
@@ -213,7 +200,6 @@ private:
     } m_composition;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 

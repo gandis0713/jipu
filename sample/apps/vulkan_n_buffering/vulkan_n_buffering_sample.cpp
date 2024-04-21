@@ -22,8 +22,6 @@ VulkanNBufferingSample::VulkanNBufferingSample(const SampleDescriptor& descripto
 
 VulkanNBufferingSample::~VulkanNBufferingSample()
 {
-    clearImGui();
-
     m_vertexShaderModule.reset();
     m_fragmentShaderModule.reset();
 
@@ -48,28 +46,15 @@ VulkanNBufferingSample::~VulkanNBufferingSample()
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
 
-    m_queue.reset();
-
     // release command buffer after finising queue.
     m_renderCommandBuffer.reset();
-    m_swapchain.reset();
-
-    m_physicalDevice.reset();
-    m_device.reset();
-
-    m_surface.reset();
-    m_driver.reset();
 }
 
 void VulkanNBufferingSample::init()
 {
-    createDriver();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
+    Sample::init();
+
     createCommandBuffer();
-    createQueue();
 
     // create buffer
     createVertexBuffer();
@@ -90,10 +75,6 @@ void VulkanNBufferingSample::init()
 
     createPipelineLayout();
     createRenderPipeline();
-
-    initImGui(m_device.get(), m_queue.get(), *m_swapchain);
-
-    m_initialized = true;
 }
 
 void VulkanNBufferingSample::update()
@@ -101,73 +82,49 @@ void VulkanNBufferingSample::update()
     updateUniformBuffer();
 
     updateImGui();
-    buildImGui();
 }
 
 void VulkanNBufferingSample::updateImGui()
 {
-    // set display size and mouse state.
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-        io.MousePos = ImVec2(m_mouseX, m_mouseY);
-        io.MouseDown[0] = m_leftMouseButton;
-        io.MouseDown[1] = m_rightMouseButton;
-        io.MouseDown[2] = m_middleMouseButton;
-    }
+    recordImGui({ [&]() {
+        windowImGui("Settings", { [&]() {
+                        auto presentModeUI = [&](const char* name, VkPresentModeKHR presentMode) {
+                            auto it = std::find(m_surfaceInfo.presentModes.begin(), m_surfaceInfo.presentModes.end(), presentMode);
+                            if (it == m_surfaceInfo.presentModes.end())
+                                ImGui::BeginDisabled();
 
-    ImGui::NewFrame();
+                            if (ImGui::RadioButton(name, m_presentMode == presentMode))
+                            {
+                                m_presentMode = presentMode;
+                                recreateSwapchain();
+                            }
 
-    // set windows position and size
-    {
-        auto scale = ImGui::GetIO().FontGlobalScale;
-        ImGui::SetNextWindowPos(ImVec2(20, 20 + m_padding.top), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300 * scale, 100 * scale), ImGuiCond_FirstUseEver);
-    }
+                            if (it == m_surfaceInfo.presentModes.end())
+                                ImGui::EndDisabled();
+                        };
 
-    // set ui
-    {
-        ImGui::Begin("Settings");
+                        ImGui::Text("Present Mode");
+                        presentModeUI("FIFO", VK_PRESENT_MODE_FIFO_KHR);
+                        presentModeUI("FIFO RELAXED", VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+                        presentModeUI("MAILBOX", VK_PRESENT_MODE_MAILBOX_KHR);
+                        presentModeUI("IMMEDIATE", VK_PRESENT_MODE_IMMEDIATE_KHR);
 
-        auto presentModeUI = [&](const char* name, VkPresentModeKHR presentMode) {
-            auto it = std::find(m_surfaceInfo.presentModes.begin(), m_surfaceInfo.presentModes.end(), presentMode);
-            if (it == m_surfaceInfo.presentModes.end())
-                ImGui::BeginDisabled();
+                        ImGui::Separator();
+                        ImGui::Text("Min Image Count");
 
-            if (ImGui::RadioButton(name, m_presentMode == presentMode))
-            {
-                m_presentMode = presentMode;
-                recreateSwapchain();
-            }
-
-            if (it == m_surfaceInfo.presentModes.end())
-                ImGui::EndDisabled();
-        };
-
-        ImGui::Text("Present Mode");
-        presentModeUI("FIFO", VK_PRESENT_MODE_FIFO_KHR);
-        presentModeUI("FIFO RELAXED", VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-        presentModeUI("MAILBOX", VK_PRESENT_MODE_MAILBOX_KHR);
-        presentModeUI("IMMEDIATE", VK_PRESENT_MODE_IMMEDIATE_KHR);
-
-        ImGui::Separator();
-        ImGui::Text("Min Image Count");
-
-        auto minCount = std::max(m_surfaceInfo.capabilities.minImageCount, 1u);
-        auto maxCount = std::min(m_surfaceInfo.capabilities.maxImageCount, 3u);
-        for (auto i = minCount; i <= maxCount; ++i)
-        {
-            if (ImGui::RadioButton(std::to_string(i).c_str(), m_minImageCount == i))
-            {
-                m_minImageCount = i;
-                recreateSwapchain();
-            }
-        }
-        ImGui::End();
-    }
-
-    debugWindow();
-    ImGui::Render();
+                        auto minCount = std::max(m_surfaceInfo.capabilities.minImageCount, 1u);
+                        auto maxCount = std::min(m_surfaceInfo.capabilities.maxImageCount, 3u);
+                        for (auto i = minCount; i <= maxCount; ++i)
+                        {
+                            if (ImGui::RadioButton(std::to_string(i).c_str(), m_minImageCount == i))
+                            {
+                                m_minImageCount = i;
+                                recreateSwapchain();
+                            }
+                        }
+                    } });
+        debuggingWindow();
+    } });
 }
 
 void VulkanNBufferingSample::draw()
@@ -210,18 +167,6 @@ void VulkanNBufferingSample::draw()
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
-void VulkanNBufferingSample::createDriver()
-{
-    DriverDescriptor descriptor{ .type = DriverType::kVulkan };
-    m_driver = Driver::create(descriptor);
-}
-
-void VulkanNBufferingSample::getPhysicalDevices()
-{
-    auto physicalDevices = m_driver->getPhysicalDevices();
-    m_physicalDevice = std::move(physicalDevices[0]);
-}
-
 void VulkanNBufferingSample::createSurface()
 {
     SurfaceDescriptor descriptor{ .windowHandle = getWindowHandle() };
@@ -231,25 +176,13 @@ void VulkanNBufferingSample::createSurface()
     m_surface = downcast(m_driver.get())->createSurface(vkdescriptor);
 
     auto& vulkanSurface = downcast(*m_surface);
-    m_surfaceInfo = downcast(m_physicalDevice.get())->gatherSurfaceInfo(vulkanSurface);
-}
-
-void VulkanNBufferingSample::createDevice()
-{
-    DeviceDescriptor descriptor;
-    m_device = m_physicalDevice->createDevice(descriptor);
+    m_surfaceInfo = downcast(m_physicalDevices[0].get())->gatherSurfaceInfo(vulkanSurface);
 }
 
 void VulkanNBufferingSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
     m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
-void VulkanNBufferingSample::createQueue()
-{
-    QueueDescriptor rednerQueueDescriptor{ .flags = QueueFlagBits::kGraphics | QueueFlagBits::kTransfer };
-    m_queue = m_device->createQueue(rednerQueueDescriptor);
 }
 
 void VulkanNBufferingSample::createSwapchain()

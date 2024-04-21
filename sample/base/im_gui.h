@@ -22,12 +22,17 @@ namespace jipu
 
 class Im_Gui
 {
-protected:
-    void initImGui(Device* device, Queue* queue, Swapchain& swapchain);
-    void clearImGui();
-    virtual void updateImGui() = 0;
-    void buildImGui();
-    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+    friend class Sample;
+
+public:
+    void record(std::vector<std::function<void()>> cmds);
+    void window(const char* title, std::vector<std::function<void()>> uis);
+
+public:
+    void init(Device* device, Queue* queue, Swapchain& swapchain);
+    void clear();
+    void build();
+    void draw(CommandEncoder* commandEncoder, TextureView& renderView);
 
 protected:
     struct Padding
@@ -57,18 +62,6 @@ private:
     std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
-
-protected:
-    void debugWindow();
-
-private:
-    struct FPS
-    {
-        std::chrono::milliseconds time = std::chrono::milliseconds::zero();
-        uint64_t frame = 0;
-        float fps = 0.0f;
-    } m_fps;
-    void updateFPS();
 };
 
 } // namespace jipu
