@@ -8,4 +8,5 @@ project(
 )
 
 add_subdirectory(base)
+add_subdirectory(utils)
 add_subdirectory(apps)
