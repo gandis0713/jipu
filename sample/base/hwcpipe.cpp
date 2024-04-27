@@ -59,6 +59,11 @@ hwcpipe::device::constants MaliGPU::getInfo() const
 
 const std::unordered_set<hwcpipe_counter>& MaliGPU::getAvailableCounters() const
 {
+    return m_availableCounters;
+}
+
+const std::unordered_set<hwcpipe_counter>& MaliGPU::getCounters() const
+{
     return m_counters;
 }
 
@@ -130,11 +135,11 @@ void MaliGPU::gatherCounters()
 
         spdlog::debug("    {}", meta.name);
 
-        m_counters.emplace(counter);
+        m_availableCounters.emplace(counter);
     }
 }
 
-void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter> counters)
+void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter>& counters)
 {
     if (isSamplingInProgress())
     {
@@ -142,12 +147,13 @@ void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter> counter
         m_sampler.stop_sampling();
     }
 
+    m_counters = counters;
     m_config = hwcpipe::sampler_config(m_gpu);
 
     std::error_code ec;
-    for (const auto& counter : counters)
+    for (const auto& counter : m_counters)
     {
-        if (m_counters.contains(counter))
+        if (m_availableCounters.contains(counter))
         {
             ec = m_config.add_counter(counter);
             if (ec)

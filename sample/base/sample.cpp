@@ -68,15 +68,19 @@ void Sample::update()
 
         maliGPU.sampling();
 
-        auto value = maliGPU.getValue(MaliGPUActiveCy);
-        switch (value.type)
+        auto& counters = maliGPU.getCounters();
+        for (auto& counter : counters)
         {
-        case hwcpipe::counter_sample::type::uint64:
-            spdlog::error("charles value {}", value.value.uint64);
-            return;
-        case hwcpipe::counter_sample::type::float64:
-            spdlog::error("charles value {}", value.value.float64);
-            return;
+            auto value = maliGPU.getValue(counter);
+            switch (value.type)
+            {
+            case hwcpipe::counter_sample::type::uint64:
+                spdlog::error("charles value {}", value.value.uint64);
+                return;
+            case hwcpipe::counter_sample::type::float64:
+                spdlog::error("charles value {}", value.value.float64);
+                return;
+            }
         }
     }
 #endif
@@ -208,7 +212,7 @@ void Sample::debuggingWindow()
 
 #if defined(HWC_PIPE_ENABLED)
 
-void Sample::setCounters(std::unordered_set<hwcpipe_counter> counters)
+void Sample::setCounters(std::unordered_set<hwcpipe_counter>& counters)
 {
     if (m_maliGPU.has_value())
     {

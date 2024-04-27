@@ -24,7 +24,8 @@ public:
 public:
     hwcpipe::device::constants getInfo() const;
     const std::unordered_set<hwcpipe_counter>& getAvailableCounters() const;
-    void configureSampler(const std::unordered_set<hwcpipe_counter> counters);
+    const std::unordered_set<hwcpipe_counter>& getCounters() const;
+    void configureSampler(const std::unordered_set<hwcpipe_counter>& counters);
 
     std::error_code startSampling();
     std::error_code stopSampling();
@@ -37,9 +38,10 @@ private:
 
 private:
     hwcpipe::gpu m_gpu;
-    std::unordered_set<hwcpipe_counter> m_counters{};
+    std::unordered_set<hwcpipe_counter> m_availableCounters{};
     hwcpipe::sampler_config m_config;
     hwcpipe::sampler<> m_sampler;
+    std::unordered_set<hwcpipe_counter> m_counters{};
 
     bool m_samplingInProgress = false;
 
