@@ -136,6 +136,8 @@ void VulkanSubpassesSample::init()
 
 void VulkanSubpassesSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 

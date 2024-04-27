@@ -23,7 +23,8 @@ void android_main(struct android_app* app)
     };
 
     jipu::VulkanSubpassesSample sample(descriptor);
-    sample.setCounters({ MaliGPUActiveCy });
+    std::unordered_set<hwcpipe_counter> counters = { MaliGPUActiveCy };
+    sample.setCounters(counters);
 
     sample.exec();
 }
