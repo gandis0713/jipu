@@ -23,12 +23,14 @@ public:
 
 public:
     hwcpipe::device::constants getInfo() const;
-    const std::unordered_set<hwcpipe_counter>& getCounters() const;
+    const std::unordered_set<hwcpipe_counter>& getAvailableCounters() const;
     void configureSampler(const std::unordered_set<hwcpipe_counter> counters);
-    hwcpipe::counter_sample getSample(hwcpipe_counter counter) const;
 
     std::error_code startSampling();
     std::error_code stopSampling();
+    bool isSamplingInProgress();
+    void sampling();
+    hwcpipe::counter_sample getValue(hwcpipe_counter counter) const;
 
 private:
     void gatherCounters();
@@ -38,6 +40,8 @@ private:
     std::unordered_set<hwcpipe_counter> m_counters{};
     hwcpipe::sampler_config m_config;
     hwcpipe::sampler<> m_sampler;
+
+    bool m_samplingInProgress = false;
 
 public:
     using Ref = std::reference_wrapper<MaliGPU>;
