@@ -152,6 +152,8 @@ void TriangleSample::updateUniformBuffer()
 
 void TriangleSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();

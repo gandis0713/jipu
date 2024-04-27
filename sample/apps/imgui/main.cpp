@@ -71,6 +71,8 @@ void ImGuiSample::init()
 
 void ImGuiSample::update()
 {
+    Sample::update();
+
     updateImGui();
 }
 

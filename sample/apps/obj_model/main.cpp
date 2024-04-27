@@ -178,6 +178,8 @@ void OBJModelSample::init()
 
 void OBJModelSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
     updateImGui();
 }

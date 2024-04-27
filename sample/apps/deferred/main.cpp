@@ -259,6 +259,8 @@ void DeferredSample::init()
 
 void DeferredSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 

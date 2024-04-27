@@ -231,6 +231,8 @@ void InstancingSample::updateUniformBuffer()
 
 void InstancingSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();

@@ -362,6 +362,8 @@ void VulkanPipelineBarrierSample::updateOffscreenUniformBuffer()
 
 void VulkanPipelineBarrierSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
 
     updateImGui();

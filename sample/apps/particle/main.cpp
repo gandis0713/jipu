@@ -147,6 +147,8 @@ void ParticleSample::init()
 
 void ParticleSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();

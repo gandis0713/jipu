@@ -79,6 +79,8 @@ void VulkanNBufferingSample::init()
 
 void VulkanNBufferingSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();

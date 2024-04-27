@@ -90,6 +90,8 @@ void OffscreenSample::updateOffscreenUniformBuffer()
 
 void OffscreenSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
 
     updateImGui();
