@@ -216,7 +216,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
     if (m_descriptorPool == VK_NULL_HANDLE)
     {
         const uint32_t maxSets = 30; // TODO: set correct max value.
-        const uint64_t descriptorPoolCount = 7;
+        const uint64_t descriptorPoolCount = 8;
         const uint64_t maxDescriptorSetSize = descriptorPoolCount;
         std::array<VkDescriptorPoolSize, descriptorPoolCount> poolSizes;
         VkDescriptorPoolCreateInfo poolCreateInfo{ .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
@@ -230,15 +230,14 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         const VulkanPhysicalDeviceInfo& physicalDeviceInfo = vulkanPhysicalDevice.getVulkanPhysicalDeviceInfo();
         const VkPhysicalDeviceLimits& devicePropertyLimists = physicalDeviceInfo.physicalDeviceProperties.limits;
 
-        // TODO: set correct max value.
-        uint32_t poolSize = devicePropertyLimists.maxBoundDescriptorSets;
-        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, poolSize };
-        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, poolSize };
-        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, poolSize };
-        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, poolSize };
-        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolSize };
-        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, poolSize };
-        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, poolSize };
+        poolSizes[0] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, devicePropertyLimists.maxDescriptorSetUniformBuffers };
+        poolSizes[1] = { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, devicePropertyLimists.maxDescriptorSetUniformBuffersDynamic };
+        poolSizes[2] = { VK_DESCRIPTOR_TYPE_SAMPLER, devicePropertyLimists.maxDescriptorSetSamplers };
+        poolSizes[3] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, devicePropertyLimists.maxDescriptorSetSampledImages };
+        poolSizes[4] = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, devicePropertyLimists.maxDescriptorSetSampledImages }; // TODO: need check
+        poolSizes[5] = { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, devicePropertyLimists.maxDescriptorSetInputAttachments };
+        poolSizes[6] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, devicePropertyLimists.maxDescriptorSetStorageBuffers };
+        poolSizes[7] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, devicePropertyLimists.maxDescriptorSetStorageBuffersDynamic };
 
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)
