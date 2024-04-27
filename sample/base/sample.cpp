@@ -1,6 +1,7 @@
 #include "sample.h"
 
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace jipu
@@ -17,6 +18,10 @@ Sample::Sample(const SampleDescriptor& descriptor)
 
 Sample::~Sample()
 {
+#if defined(HWC_PIPE_ENABLED)
+    destroyHWCPipe();
+#endif
+
     if (m_imgui.has_value())
     {
         m_imgui.value().clear();
@@ -49,6 +54,32 @@ void Sample::init()
 #endif
 
     Window::init();
+}
+
+void Sample::update()
+{
+#if defined(HWC_PIPE_ENABLED)
+    if (m_maliGPU.has_value())
+    {
+        auto& maliGPU = m_maliGPU.value().get();
+
+        if (!maliGPU.isSamplingInProgress())
+            maliGPU.startSampling();
+
+        maliGPU.sampling();
+
+        auto value = maliGPU.getValue(MaliGPUActiveCy);
+        switch (value.type)
+        {
+        case hwcpipe::counter_sample::type::uint64:
+            spdlog::error("charles value {}", value.value.uint64);
+            return;
+        case hwcpipe::counter_sample::type::float64:
+            spdlog::error("charles value {}", value.value.float64);
+            return;
+        }
+    }
+#endif
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -196,6 +227,18 @@ void Sample::createHWCPipe()
         maliGPU.configureSampler({ MaliGPUActiveCy, MaliFragActiveCy, MaliGeomSampleCullRate });
 
         m_maliGPU = maliGPU;
+    }
+}
+
+void Sample::destroyHWCPipe()
+{
+    if (m_maliGPU.has_value())
+    {
+        auto& maliGPU = m_maliGPU.value().get();
+        if (maliGPU.isSamplingInProgress())
+            maliGPU.stopSampling();
+
+        m_maliGPU = std::nullopt;
     }
 }
 #endif

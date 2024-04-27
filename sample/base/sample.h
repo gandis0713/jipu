@@ -35,6 +35,7 @@ public:
     virtual ~Sample();
 
     void init() override;
+    void update() override;
 
     void recordImGui(std::vector<std::function<void()>> cmds);
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
@@ -76,6 +77,7 @@ public:
 
 private:
     void createHWCPipe();
+    void destroyHWCPipe();
 
 private:
     bool m_profiling = false;
