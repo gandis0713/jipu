@@ -1,8 +1,11 @@
 #include "vulkan_subpasses_sample.h"
 
+#include "hpc_watcher.h"
+#include "hpc/hpc.h"
+
 #include <spdlog/spdlog.h>
 
-#if defined(__ANDROID__) || defined(ANDROID)
+ #if defined(__ANDROID__) || defined(ANDROID)
 
 // GameActivity's C/C++ code
 #include <game-activity/GameActivity.cpp>
@@ -23,13 +26,23 @@ void android_main(struct android_app* app)
     };
 
     jipu::VulkanSubpassesSample sample(descriptor);
-    std::unordered_set<hwcpipe_counter> counters = { MaliGPUActiveCy };
-    sample.setCounters(counters);
+
+    auto gpus = jipu::hpc::gpus();
+    if (!gpus.empty())
+    {
+        auto gpu = gpus[0].get();
+        jipu::hpc::Counter::Ptr counter = gpu->create();
+        jipu::hpc::Sampler::Ptr sampler = counter->create();
+
+        jipu::HPCWatcher::Ptr watcher = std::make_unique<jipu::HPCWatcher>(std::move(sampler));
+
+        sample.setHPCWatcher(std::move(watcher));
+    }
 
     sample.exec();
 }
 
-#else
+ #else
 
 int main(int argc, char** argv)
 {
@@ -45,4 +58,4 @@ int main(int argc, char** argv)
     return sample.exec();
 }
 
-#endif
+ #endif
