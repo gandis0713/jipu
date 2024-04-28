@@ -4,11 +4,15 @@ namespace jipu
 {
 namespace hpc
 {
+namespace mali
+{
 
-MaliSampler::MaliSampler(Counter counter)
-    : Sampler(counter)
+MaliSampler::MaliSampler(MaliCounter counter)
+    : Sampler()
+    , m_counter(counter)
 {
 }
 
+} // namespace mali
 } // namespace hpc
 } // namespace jipu

@@ -2,16 +2,24 @@
 
 #include "sampler.h"
 
+#include "mali_counter.h"
+
 namespace jipu
 {
 namespace hpc
 {
+namespace mali
+{
 
-class MaliSampler : public Sampler
+class MaliSampler final : public Sampler
 {
 public:
-    explicit MaliSampler(Counter counter);
+    explicit MaliSampler(MaliCounter counter);
+
+private:
+    const MaliCounter m_counter;
 };
 
+} // namespace mali
 } // namespace hpc
 } // namespace jipu
