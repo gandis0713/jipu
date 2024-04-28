@@ -36,6 +36,7 @@ function(configure_sample target)
         glm::glm
         jipu::jipu
         jipu::sample_base
+        jipu::hpc
     )
 
     # set compile options
