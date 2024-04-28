@@ -46,6 +46,8 @@ list(APPEND SRC_FILES
     khronos_texture.h
     image.cpp
     image.h
+    hpc_watcher.cpp
+    hpc_watcher.h
 )
 
 if(ANDROID)
