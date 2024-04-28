@@ -1,16 +1,12 @@
-#pragma once
-
-#include <stdint.h>
+#include "mali_gpu.h"
 
 namespace jipu
 {
 namespace hpc
 {
 
-class GPU
+class MaliGPU : GPU
 {
-protected:
-    uint32_t id{};
 };
 
 } // namespace hpc

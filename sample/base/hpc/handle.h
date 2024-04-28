@@ -7,10 +7,10 @@ namespace jipu
 namespace hpc
 {
 
-class GPU
+class Handle
 {
-protected:
-    uint32_t id{};
+private:
+    int m_fd{ -1 };
 };
 
 } // namespace hpc

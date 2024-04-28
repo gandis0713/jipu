@@ -1,16 +1,17 @@
 #pragma once
 
-#include <stdint.h>
+#include "handle.h"
 
 namespace jipu
 {
 namespace hpc
 {
 
-class GPU
+class Device
 {
-protected:
-    uint32_t id{};
+
+private:
+    Handle m_handle{};
 };
 
 } // namespace hpc

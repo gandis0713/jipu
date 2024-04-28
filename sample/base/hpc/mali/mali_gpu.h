@@ -1,16 +1,16 @@
 #pragma once
 
-#include <stdint.h>
+#include "gpu.h"
 
 namespace jipu
 {
 namespace hpc
 {
 
-class GPU
+class MaliGPU final : public GPU
 {
-protected:
-    uint32_t id{};
+private:
+    int m_deviceNumber{ -1 };
 };
 
 } // namespace hpc

@@ -9,7 +9,7 @@ namespace jipu
 namespace hpc
 {
 
-std::vector<GPU::Ptr> gpus();
+std::vector<GPU> gpus();
 
 } // namespace hpc
 } // namespace jipu

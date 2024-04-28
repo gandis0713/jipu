@@ -7,13 +7,10 @@ namespace jipu
 namespace hpc
 {
 
-class Sampler
+class MaliCounter : public Counter
 {
 public:
-    explicit Sampler(Counter counter);
-
-private:
-    Counter m_counter;
+    explicit MaliCounter(std::unordered_set<Type> types);
 };
 
 } // namespace hpc
