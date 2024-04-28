@@ -122,6 +122,11 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
     }
 }
 
+void Sample::setHPCWatcher(HPCWatcher::Ptr watcher)
+{
+    m_hpcWatcher = std::move(watcher);
+}
+
 void Sample::createDriver()
 {
     DriverDescriptor descriptor;

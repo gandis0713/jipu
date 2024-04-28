@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fps.h"
+#include "hpc_watcher.h"
 #include "window.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -41,6 +42,8 @@ public:
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
+    void setHPCWatcher(HPCWatcher::Ptr watcher);
+
     virtual void createDriver();
     virtual void getPhysicalDevices();
     virtual void createSurface();
@@ -60,6 +63,7 @@ protected:
     std::unique_ptr<Queue> m_queue = nullptr;
 
     std::optional<Im_Gui> m_imgui = std::nullopt;
+    HPCWatcher::Ptr m_hpcWatcher = nullptr;
 
 protected:
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
