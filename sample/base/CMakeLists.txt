@@ -54,6 +54,8 @@ if(ANDROID)
         hwcpipe.cpp
         hwcpipe.h
     )
+
+    add_subdirectory(hpc)
 else()
     list(APPEND SRC_FILES
         window_sdl.cpp
