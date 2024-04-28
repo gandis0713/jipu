@@ -1,6 +1,6 @@
 #pragma once
 
-#include "counter.h"
+#include <memory>
 
 namespace jipu
 {
@@ -9,11 +9,11 @@ namespace hpc
 
 class Sampler
 {
-public:
-    explicit Sampler(Counter counter);
+protected:
+    Sampler() = default;
 
-private:
-    Counter m_counter;
+public:
+    using Ptr = std::unique_ptr<Sampler>;
 };
 
 } // namespace hpc

@@ -1,6 +1,6 @@
 #include "hpc.h"
 
-#include <hwcpipe/gpu.hpp>
+#include "mali/mali_gpus.h"
 
 namespace jipu
 {
@@ -9,7 +9,7 @@ namespace hpc
 
 std::vector<GPU::Ptr> gpus()
 {
-    return {};
+    return mali::gpus();
 }
 
 } // namespace hpc
