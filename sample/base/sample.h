@@ -38,7 +38,7 @@ public:
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
-    void onHPCListner(std::unordered_map<hpc::Counter, hpc::Sample> samples);
+    void onHPCListner(std::vector<hpc::Sample> samples);
 
     virtual void createDriver();
     virtual void getPhysicalDevices();
@@ -67,6 +67,7 @@ protected:
     TextureView* m_renderView = nullptr;
 
 protected:
+    void createHPCWatcher();
     void debuggingWindow();
 
 private:
