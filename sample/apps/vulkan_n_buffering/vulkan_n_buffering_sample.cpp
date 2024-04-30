@@ -54,6 +54,9 @@ void VulkanNBufferingSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization });
+
     createCommandBuffer();
 
     // create buffer

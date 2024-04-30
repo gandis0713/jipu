@@ -41,6 +41,9 @@ void OffscreenSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization });
+
     createCommandBuffer();
 
     createOffscreenTexture();

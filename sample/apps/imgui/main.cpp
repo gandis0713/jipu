@@ -64,6 +64,9 @@ void ImGuiSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization });
+
     createCommandBuffer();
     createVertexBuffer();
     createRenderPipeline();

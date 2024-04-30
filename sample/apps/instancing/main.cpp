@@ -189,6 +189,9 @@ void InstancingSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization });
+
     createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.

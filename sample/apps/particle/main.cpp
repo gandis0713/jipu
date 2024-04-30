@@ -132,6 +132,9 @@ void ParticleSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization });
+
     createShaderStorageBuffer();
     createUniformBuffer();
     createColorAttachmentTexture();
