@@ -5,6 +5,8 @@
 
 #include "mali_gpu.h"
 
+#include <hwcpipe/sampler.hpp>
+
 namespace jipu
 {
 namespace hpc
@@ -18,10 +20,13 @@ public:
     explicit MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor);
 
 public:
-    Sample getSample(Counter counter) override;
+    void start() override;
+    void stop() override;
+    std::vector<Sample> samples(std::vector<Counter> counters = {}) override;
 
 private:
     const MaliGPU m_gpu{ -1 };
+    hwcpipe::sampler<> m_sampler;
 };
 DOWN_CAST(MaliSampler, Sampler);
 

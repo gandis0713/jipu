@@ -53,7 +53,12 @@ protected:
     Sampler(SamplerDescriptor descriptor);
 
 public:
-    virtual Sample getSample(Counter counter) = 0;
+    virtual void start() = 0;
+    virtual void stop() = 0;
+    /**
+     * get samples with counters
+     */
+    virtual std::vector<Sample> samples(std::vector<Counter> counters = {}) = 0;
 
 public:
     const std::vector<Counter>& counters() const;
@@ -61,7 +66,7 @@ public:
 public:
     using Ptr = std::unique_ptr<Sampler>;
 
-private:
+protected:
     SamplerDescriptor m_descriptor{};
 };
 

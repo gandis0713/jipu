@@ -27,6 +27,11 @@ Sampler::Ptr MaliGPU::create(SamplerDescriptor descriptor)
     return std::make_unique<MaliSampler>(*this, descriptor);
 }
 
+int MaliGPU::getDeviceNumber() const
+{
+    return m_deviceNumber;
+}
+
 void MaliGPU::collectCounters()
 {
     auto gpu = hwcpipe::gpu(m_deviceNumber);

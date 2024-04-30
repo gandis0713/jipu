@@ -382,5 +382,7 @@ enum class Counter
     GeomScissorCullRate
 };
 
+const char* counterName(Counter counter);
+
 } // namespace hpc
 } // namespace jipu

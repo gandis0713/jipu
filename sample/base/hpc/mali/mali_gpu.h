@@ -20,6 +20,9 @@ public:
      */
     Sampler::Ptr create(SamplerDescriptor descriptor) override;
 
+public:
+    int getDeviceNumber() const;
+
 private:
     void collectCounters();
 
