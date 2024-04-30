@@ -21,10 +21,11 @@ Sample::Sample(const SampleDescriptor& descriptor)
 
 Sample::~Sample()
 {
+    if (m_hpcWatcher)
+        m_hpcWatcher->stop();
+
     if (m_imgui.has_value())
-    {
         m_imgui.value().clear();
-    }
 
     m_queue.reset();
     m_swapchain.reset();
@@ -32,75 +33,6 @@ Sample::~Sample()
     m_device.reset();
     m_physicalDevices.clear();
     m_driver.reset();
-}
-
-void Sample::init()
-{
-    createDriver();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
-    createQueue();
-
-    if (m_imgui.has_value())
-    {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
-    }
-
-    Window::init();
-}
-
-void Sample::update()
-{
-    if (m_hpcWatcher)
-    {
-        m_hpcWatcher->update();
-    }
-}
-
-void Sample::recordImGui(std::vector<std::function<void()>> cmds)
-{
-    if (m_imgui.has_value())
-    {
-        // set display size and mouse state.
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-            io.MousePos = ImVec2(m_mouseX, m_mouseY);
-            io.MouseDown[0] = m_leftMouseButton;
-            io.MouseDown[1] = m_rightMouseButton;
-            io.MouseDown[2] = m_middleMouseButton;
-        }
-
-        m_imgui.value().record(cmds);
-        m_imgui.value().build();
-    }
-}
-
-void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
-{
-    if (m_imgui.has_value())
-    {
-        m_imgui.value().window(title, uis);
-    }
-}
-
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
-{
-    if (m_imgui.has_value())
-    {
-        m_fps.update();
-        m_imgui.value().draw(commandEncoder, renderView);
-    }
-}
-
-void Sample::onHPCListner(std::unordered_map<Counter, double> values)
-{
-    for (const auto& [k, v] : values)
-    {
-        spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
-    }
 }
 
 void Sample::createDriver()
@@ -161,6 +93,88 @@ void Sample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
+void Sample::init()
+{
+    createDriver();
+    getPhysicalDevices();
+    createSurface();
+    createDevice();
+    createSwapchain();
+    createQueue();
+
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+    }
+
+    Window::init();
+}
+
+void Sample::update()
+{
+    m_fps.update();
+    if (m_hpcWatcher)
+    {
+        m_hpcWatcher->update();
+    }
+}
+
+void Sample::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        // set display size and mouse state.
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+            io.MousePos = ImVec2(m_mouseX, m_mouseY);
+            io.MouseDown[0] = m_leftMouseButton;
+            io.MouseDown[1] = m_rightMouseButton;
+            io.MouseDown[2] = m_middleMouseButton;
+        }
+
+        m_imgui.value().record(cmds);
+        m_imgui.value().build();
+    }
+}
+
+void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().window(title, uis);
+    }
+}
+
+void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().draw(commandEncoder, renderView);
+    }
+}
+
+void Sample::onHPCListner(Values values)
+{
+    for (const auto& [k, v] : values)
+    {
+        switch (k)
+        {
+        case Counter::FragmentUtilization:
+            m_profiling.framgmentUtilization.push_back(v);
+            break;
+        case Counter::NonFragmentUtilization:
+            m_profiling.nonFramgmentUtilization.push_back(v);
+            break;
+        case Counter::TilerUtilization:
+            m_profiling.tilerUtilization.push_back(v);
+            break;
+        }
+
+        // spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
+    }
+}
+
 void Sample::createHPCWatcher(std::vector<Counter> counters)
 {
     auto gpus = hpc::gpus();
@@ -168,11 +182,11 @@ void Sample::createHPCWatcher(std::vector<Counter> counters)
         return;
 
     // TODO: select gpu.
-    auto gpu = *gpus[0];
+    auto gpu = gpus[0].get();
 
-    const auto& hpcCounters = gpu.counters();
+    const auto& hpcCounters = gpu->counters();
     hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
-    hpc::Sampler::Ptr sampler = gpu.create(descriptor);
+    hpc::Sampler::Ptr sampler = gpu->create(descriptor);
 
     HPCWatcherDescriptor watcherDescriptor{
         .sampler = std::move(sampler),
@@ -183,30 +197,35 @@ void Sample::createHPCWatcher(std::vector<Counter> counters)
     m_hpcWatcher->start();
 }
 
-void Sample::debuggingWindow()
+void Sample::profilingWindow()
 {
     windowImGui(
-        "Debugging", { [&]() {
-            const auto& fpss = m_fps.getAll();
-            if (!fpss.empty())
-            {
-                const auto size = fpss.size();
-                const std::string title = fmt::format("FPS", m_fps.average());
-                const std::string description = fmt::format("{:.1f}", m_fps.current());
-                int offset = 0;
-                if (size > 15)
-                    offset = size - 15;
-                ImGui::PlotLines(title.c_str(), &fpss[offset], size - offset, 0, description.c_str());
-            }
+        "Profiling", { [&]() {
+            ImGui::Text("Common");
+            ImGui::Separator();
+            drawPolyline("FPS", m_fps.getAll());
+            ImGui::Separator();
 
-            if (m_hpcWatcher)
-                ImGui::Checkbox("Profiler", &m_profiling);
+            ImGui::Text("GPU Profiling");
+            ImGui::Separator();
+            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization);
+            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization);
+            drawPolyline("Tiler Usage", m_profiling.tilerUtilization);
+            ImGui::Separator();
         } });
+}
 
-    if (m_profiling)
-    {
-        // show profiling.
-    }
+void Sample::drawPolyline(std::string title, std::deque<float> data)
+{
+    if (data.empty())
+        return;
+
+    const auto size = data.size();
+    const std::string description = fmt::format("{:.1f}", data[data.size() - 1]);
+    int offset = 0;
+    if (size > 15)
+        offset = size - 15;
+    ImGui::PlotLines(title.c_str(), &data[offset], size - offset, 0, description.c_str());
 }
 
 } // namespace jipu

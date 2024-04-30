@@ -338,7 +338,7 @@ void DeferredSample::updateImGui()
                           else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
                               m_composition.ubo.showTexture = 3;
                       } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

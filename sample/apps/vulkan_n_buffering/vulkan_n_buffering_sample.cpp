@@ -125,7 +125,7 @@ void VulkanNBufferingSample::updateImGui()
                             }
                         }
                     } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

@@ -17,7 +17,8 @@ enum class Counter
     TilerUtilization
 };
 
-using Listner = std::function<void(std::unordered_map<Counter, double>)>;
+using Values = std::unordered_map<Counter, float>;
+using Listner = std::function<void(Values)>;
 
 struct HPCWatcherDescriptor
 {

@@ -187,7 +187,7 @@ void OBJModelSample::update()
 void OBJModelSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

@@ -167,7 +167,7 @@ void OffscreenSample::draw()
 void OffscreenSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

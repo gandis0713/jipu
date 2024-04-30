@@ -10,75 +10,75 @@ namespace jipu
 namespace
 {
 
-double convertToDouble(const hpc::Sample& sample)
+float convertToFloat(const hpc::Sample& sample)
 {
     switch (sample.type)
     {
-        case hpc::Sample::Type::uint64:
-            return static_cast<double>(sample.value.uint64);
-        case hpc::Sample::Type::float64:
-            return sample.value.float64;
+    case hpc::Sample::Type::uint64:
+        return static_cast<float>(sample.value.uint64);
+    case hpc::Sample::Type::float64:
+        return static_cast<float>(sample.value.float64);
     }
 }
 
-double fragmentQueueUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+float fragmentQueueUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
     auto it = samples.find(hpc::Counter::FragQueueActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for FragQueueActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
     it = samples.find(hpc::Counter::GPUActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for GPUActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
-    auto value = (convertToDouble(samples[hpc::Counter::FragQueueActiveCy]) / convertToDouble(samples[hpc::Counter::GPUActiveCy])) * 100;
-    return std::max(std::min(value, 100.0), 0.0);
+    auto value = (convertToFloat(samples[hpc::Counter::FragQueueActiveCy]) / convertToFloat(samples[hpc::Counter::GPUActiveCy])) * 100;
+    return std::max(std::min(value, 100.0f), 0.0f);
 }
 
-double nonFragmentQueueUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+float nonFragmentQueueUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
     auto it = samples.find(hpc::Counter::NonFragQueueActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for NonFragQueueActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
     it = samples.find(hpc::Counter::GPUActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for GPUActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
-    auto value = (convertToDouble(samples[hpc::Counter::NonFragQueueActiveCy]) / convertToDouble(samples[hpc::Counter::GPUActiveCy])) * 100;
-    return std::max(std::min(value, 100.0), 0.0);
+    float value = (convertToFloat(samples[hpc::Counter::NonFragQueueActiveCy]) / convertToFloat(samples[hpc::Counter::GPUActiveCy])) * 100;
+    return std::max(std::min(value, 100.0f), 0.0f);
 }
 
-double tilerUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+float tilerUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
     auto it = samples.find(hpc::Counter::TilerActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for TilerActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
     it = samples.find(hpc::Counter::GPUActiveCy);
     if (it == samples.end())
     {
         spdlog::debug("No sample value for GPUActiveCy");
-        return 0.0;
+        return 0.0f;
     }
 
-    auto value = (convertToDouble(samples[hpc::Counter::TilerActiveCy]) / convertToDouble(samples[hpc::Counter::GPUActiveCy])) * 100;
-    return std::max(std::min(value, 100.0), 0.0);
+    auto value = (convertToFloat(samples[hpc::Counter::TilerActiveCy]) / convertToFloat(samples[hpc::Counter::GPUActiveCy])) * 100;
+    return std::max(std::min(value, 100.0f), 0.0f);
 }
 
 } // namespace
@@ -128,16 +128,26 @@ void HPCWatcher::update()
             }
         }
 
-        std::unordered_map<Counter, double> values = {
-            { Counter::FragmentUtilization, fragmentQueueUtilization(sampleMap) },
-            { Counter::NonFragmentUtilization, nonFragmentQueueUtilization(sampleMap) },
-            { Counter::TilerUtilization, tilerUtilization(sampleMap) }
-        };
-
+        std::unordered_map<Counter, float> values{};
+        for (const auto& counter : m_descriptor.counters)
+        {
+            switch (counter)
+            {
+            case Counter::FragmentUtilization:
+                values[counter] = fragmentQueueUtilization(sampleMap);
+                break;
+            case Counter::NonFragmentUtilization:
+                values[counter] = nonFragmentQueueUtilization(sampleMap);
+                break;
+            case Counter::TilerUtilization:
+                values[counter] = tilerUtilization(sampleMap);
+                break;
+            }
+        }
         m_descriptor.listner(values);
-    }
 
-    m_time = currentTime;
+        m_time = currentTime;
+    }
 }
 
 } // namespace jipu

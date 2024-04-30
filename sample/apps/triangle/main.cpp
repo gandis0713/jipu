@@ -113,8 +113,7 @@ void TriangleSample::init()
     Sample::init();
 
     createHPCWatcher({ Counter::FragmentUtilization,
-                       Counter::NonFragmentUtilization,
-                       Counter::TilerUtilization });
+                       Counter::NonFragmentUtilization });
 
     createCommandBuffer();
 
@@ -201,7 +200,7 @@ void TriangleSample::draw()
 void TriangleSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

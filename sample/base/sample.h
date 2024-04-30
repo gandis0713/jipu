@@ -49,7 +49,7 @@ public:
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
 public:
-    void onHPCListner(std::unordered_map<Counter, double> values);
+    void onHPCListner(Values values);
 
 protected:
     std::filesystem::path m_appPath;
@@ -61,22 +61,28 @@ protected:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-
-    std::optional<Im_Gui> m_imgui = std::nullopt;
-
-    std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;
-
-protected:
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
     TextureView* m_renderView = nullptr;
 
 protected:
+    std::optional<Im_Gui> m_imgui = std::nullopt;
+
+protected:
+    std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;
+
+protected:
     void createHPCWatcher(std::vector<Counter> counters);
-    void debuggingWindow();
+    void drawPolyline(std::string title, std::deque<float> data);
+    void profilingWindow();
 
 private:
     FPS m_fps{};
-    bool m_profiling{ false };
+    struct Profiling
+    {
+        std::deque<float> framgmentUtilization{};
+        std::deque<float> nonFramgmentUtilization{};
+        std::deque<float> tilerUtilization{};
+    } m_profiling{};
 };
 
 } // namespace jipu
