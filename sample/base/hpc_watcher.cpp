@@ -81,6 +81,30 @@ float tilerUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
     return std::max(std::min(value, 100.0f), 0.0f);
 }
 
+float outputExternalReadBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdBy);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdBy");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdBy]);
+}
+
+float outputExternalWriteBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusWrBy);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusWrBy");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusWrBy]);
+}
+
 } // namespace
 
 HPCWatcher::HPCWatcher(HPCWatcherDescriptor descriptor)
@@ -141,6 +165,12 @@ void HPCWatcher::update()
                 break;
             case Counter::TilerUtilization:
                 values[counter] = tilerUtilization(sampleMap);
+                break;
+            case Counter::OutputExternalReadBytes:
+                values[counter] = outputExternalReadBytes(sampleMap);
+                break;
+            case Counter::OutputExternalWriteBytes:
+                values[counter] = outputExternalWriteBytes(sampleMap);
                 break;
             }
         }

@@ -169,6 +169,12 @@ void Sample::onHPCListner(Values values)
         case Counter::TilerUtilization:
             m_profiling.tilerUtilization.push_back(v);
             break;
+        case Counter::OutputExternalReadBytes:
+            m_profiling.outputExternalReadBytes.push_back(v);
+            break;
+        case Counter::OutputExternalWriteBytes:
+            m_profiling.outputExternalWriteBytes.push_back(v);
+            break;
         }
 
         // spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
@@ -208,20 +214,22 @@ void Sample::profilingWindow()
 
             ImGui::Text("GPU Profiling");
             ImGui::Separator();
-            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization);
-            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization);
-            drawPolyline("Tiler Usage", m_profiling.tilerUtilization);
+            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization, "%");
+            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization, "%");
+            drawPolyline("Tiler Usage", m_profiling.tilerUtilization, "%");
+            drawPolyline("External Read Bytes", m_profiling.outputExternalReadBytes);
+            drawPolyline("External Write Bytes", m_profiling.outputExternalWriteBytes);
             ImGui::Separator();
         } });
 }
 
-void Sample::drawPolyline(std::string title, std::deque<float> data)
+void Sample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
 {
     if (data.empty())
         return;
 
     const auto size = data.size();
-    const std::string description = fmt::format("{:.1f}", data[data.size() - 1]);
+    const std::string description = fmt::format("{:.1f} {}", data[data.size() - 1], unit.c_str());
     int offset = 0;
     if (size > 15)
         offset = size - 15;

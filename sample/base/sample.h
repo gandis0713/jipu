@@ -72,7 +72,7 @@ protected:
 
 protected:
     void createHPCWatcher(std::vector<Counter> counters);
-    void drawPolyline(std::string title, std::deque<float> data);
+    void drawPolyline(std::string title, std::deque<float> data, std::string unit = "");
     void profilingWindow();
 
 private:
@@ -82,6 +82,8 @@ private:
         std::deque<float> framgmentUtilization{};
         std::deque<float> nonFramgmentUtilization{};
         std::deque<float> tilerUtilization{};
+        std::deque<float> outputExternalReadBytes{};
+        std::deque<float> outputExternalWriteBytes{};
     } m_profiling{};
 };
 

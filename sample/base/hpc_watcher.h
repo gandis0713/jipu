@@ -14,7 +14,9 @@ enum class Counter
 {
     NonFragmentUtilization,
     FragmentUtilization,
-    TilerUtilization
+    TilerUtilization,
+    OutputExternalReadBytes,
+    OutputExternalWriteBytes
 };
 
 using Values = std::unordered_map<Counter, float>;
