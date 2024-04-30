@@ -1,5 +1,6 @@
 #include "sample.h"
 
+#include <algorithm>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -94,39 +95,11 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
     }
 }
 
-void Sample::onHPCListner(std::vector<hpc::Sample> samples)
+void Sample::onHPCListner(std::unordered_map<Counter, double> values)
 {
-    for (const auto& sample : samples)
+    for (const auto& [k, v] : values)
     {
-        // spdlog::error("counter name {}", hpc::counterName(sample.counter));
-        switch (sample.counter)
-        {
-        // case hpc::Counter::ExtBusRdBy:
-        // case hpc::Counter::ExtBusWrBy:
-        // case hpc::Counter::ExtBusRdStallRate:
-        // case hpc::Counter::ExtBusWrStallRate:
-        // case hpc::Counter::ExtBusRdBt:
-        // case hpc::Counter::ExtBusWrBt:
-        // case hpc::Counter::ExtBusRdStallCy:
-        // case hpc::Counter::ExtBusWrStallCy:
-        // case hpc::Counter::FragActiveCy:
-        case hpc::Counter::GPUActiveCy:
-        case hpc::Counter::NonFragQueueActiveCy:
-        case hpc::Counter::FragQueueActiveCy:
-        case hpc::Counter::TilerActiveCy:
-
-            switch (sample.type)
-            {
-            case hpc::Sample::Type::uint64:
-                spdlog::error("{}: {}", hpc::counterName(sample.counter), sample.value.uint64);
-                break;
-            case hpc::Sample::Type::float64:
-                spdlog::error("{}: {:.3f}", hpc::counterName(sample.counter), sample.value.float64);
-                break;
-            }
-
-            break;
-        }
+        spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
     }
 }
 
@@ -188,18 +161,23 @@ void Sample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-void Sample::createHPCWatcher()
+void Sample::createHPCWatcher(std::vector<Counter> counters)
 {
     auto gpus = hpc::gpus();
     if (!gpus.empty())
     {
-        // TODO: set gpus.
+        // TODO: select gpu.
         auto gpu = gpus[0].get();
-        const auto& counters = gpu->counters();
-        hpc::SamplerDescriptor descriptor{ .counters = counters };
+        const auto& hpcCounters = gpu->counters();
+        hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
         hpc::Sampler::Ptr sampler = gpu->create(descriptor);
 
-        m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(sampler), std::bind(&Sample::onHPCListner, this, std::placeholders::_1));
+        HPCWatcherDescriptor watcherDescriptor{
+            .sampler = std::move(sampler),
+            .counters = counters,
+            .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
+        };
+        m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
         m_hpcWatcher->start();
     }
 }
@@ -212,7 +190,7 @@ void Sample::debuggingWindow()
             if (!fpss.empty())
             {
                 const auto size = fpss.size();
-                const std::string title = fmt::format("FPS Average: {:.1f}", m_fps.average());
+                const std::string title = fmt::format("FPS", m_fps.average());
                 const std::string description = fmt::format("{:.1f}", m_fps.current());
                 int offset = 0;
                 if (size > 15)

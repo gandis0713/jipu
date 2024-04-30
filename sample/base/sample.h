@@ -31,21 +31,25 @@ public:
     Sample(const SampleDescriptor& descriptor);
     virtual ~Sample();
 
-    void init() override;
-    void update() override;
-
-    void recordImGui(std::vector<std::function<void()>> cmds);
-    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
-    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
-
-    void onHPCListner(std::vector<hpc::Sample> samples);
-
+public:
     virtual void createDriver();
     virtual void getPhysicalDevices();
     virtual void createSurface();
     virtual void createDevice();
     virtual void createSwapchain();
     virtual void createQueue();
+
+public:
+    void init() override;
+    void update() override;
+
+public:
+    void recordImGui(std::vector<std::function<void()>> cmds);
+    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+
+public:
+    void onHPCListner(std::unordered_map<Counter, double> values);
 
 protected:
     std::filesystem::path m_appPath;
@@ -67,7 +71,7 @@ protected:
     TextureView* m_renderView = nullptr;
 
 protected:
-    void createHPCWatcher();
+    void createHPCWatcher(std::vector<Counter> counters);
     void debuggingWindow();
 
 private:
