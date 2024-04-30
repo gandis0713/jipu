@@ -101,6 +101,8 @@ void VulkanSubpassesSample::init()
 {
     Sample::init();
 
+    createHPCWatcher();
+
     createCommandBuffer();
 
     createDepthStencilTexture();
