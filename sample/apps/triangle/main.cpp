@@ -112,6 +112,10 @@ void TriangleSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::TilerUtilization });
+
     createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.

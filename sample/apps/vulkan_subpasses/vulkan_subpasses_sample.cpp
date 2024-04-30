@@ -101,7 +101,9 @@ void VulkanSubpassesSample::init()
 {
     Sample::init();
 
-    createHPCWatcher();
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::TilerUtilization });
 
     createCommandBuffer();
 
