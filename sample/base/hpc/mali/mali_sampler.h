@@ -1,8 +1,9 @@
 #pragma once
 
+#include "cast.h"
 #include "sampler.h"
 
-#include "mali_counter.h"
+#include "mali_gpu.h"
 
 namespace jipu
 {
@@ -14,11 +15,15 @@ namespace mali
 class MaliSampler final : public Sampler
 {
 public:
-    explicit MaliSampler(MaliCounter counter);
+    explicit MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor);
+
+public:
+    Sample getSample(Counter counter) override;
 
 private:
-    const MaliCounter m_counter;
+    const MaliGPU m_gpu{ -1 };
 };
+DOWN_CAST(MaliSampler, Sampler);
 
 } // namespace mali
 } // namespace hpc

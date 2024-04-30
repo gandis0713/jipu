@@ -15,7 +15,13 @@ public:
     explicit MaliGPU(int deviceNumber);
 
 public:
-    Counter::Ptr create() override;
+    /**
+     * create a sampler.
+     */
+    Sampler::Ptr create(SamplerDescriptor descriptor) override;
+
+private:
+    void collectCounters();
 
 private:
     uint32_t id{};

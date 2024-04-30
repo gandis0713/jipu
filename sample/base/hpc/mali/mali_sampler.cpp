@@ -7,10 +7,16 @@ namespace hpc
 namespace mali
 {
 
-MaliSampler::MaliSampler(MaliCounter counter)
-    : Sampler()
-    , m_counter(counter)
+MaliSampler::MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor)
+    : Sampler(descriptor)
+    , m_gpu(gpu)
 {
+}
+
+Sample MaliSampler::getSample(Counter counter)
+{
+    // TODO
+    return {};
 }
 
 } // namespace mali
