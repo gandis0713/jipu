@@ -164,22 +164,23 @@ void Sample::createQueue()
 void Sample::createHPCWatcher(std::vector<Counter> counters)
 {
     auto gpus = hpc::gpus();
-    if (!gpus.empty())
-    {
-        // TODO: select gpu.
-        auto gpu = gpus[0].get();
-        const auto& hpcCounters = gpu->counters();
-        hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
-        hpc::Sampler::Ptr sampler = gpu->create(descriptor);
+    if (gpus.empty())
+        return;
 
-        HPCWatcherDescriptor watcherDescriptor{
-            .sampler = std::move(sampler),
-            .counters = counters,
-            .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
-        };
-        m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
-        m_hpcWatcher->start();
-    }
+    // TODO: select gpu.
+    auto gpu = *gpus[0];
+
+    const auto& hpcCounters = gpu.counters();
+    hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
+    hpc::Sampler::Ptr sampler = gpu.create(descriptor);
+
+    HPCWatcherDescriptor watcherDescriptor{
+        .sampler = std::move(sampler),
+        .counters = counters,
+        .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
+    };
+    m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
+    m_hpcWatcher->start();
 }
 
 void Sample::debuggingWindow()
