@@ -41,6 +41,13 @@ void OffscreenSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     createOffscreenTexture();
@@ -90,6 +97,8 @@ void OffscreenSample::updateOffscreenUniformBuffer()
 
 void OffscreenSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
 
     updateImGui();
@@ -165,7 +174,7 @@ void OffscreenSample::draw()
 void OffscreenSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

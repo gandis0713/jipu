@@ -64,6 +64,13 @@ void ImGuiSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
     createVertexBuffer();
     createRenderPipeline();
@@ -71,6 +78,8 @@ void ImGuiSample::init()
 
 void ImGuiSample::update()
 {
+    Sample::update();
+
     updateImGui();
 }
 
@@ -111,7 +120,7 @@ void ImGuiSample::draw()
 void ImGuiSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

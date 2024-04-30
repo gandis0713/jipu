@@ -101,6 +101,14 @@ void VulkanSubpassesSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::TilerUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     createDepthStencilTexture();
@@ -136,6 +144,8 @@ void VulkanSubpassesSample::init()
 
 void VulkanSubpassesSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
@@ -213,7 +223,7 @@ void VulkanSubpassesSample::updateImGui()
                         else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
                             m_composition.ubo.showTexture = 3;
                     } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

@@ -313,6 +313,13 @@ void VulkanPipelineBarrierSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     createOffscreenTexture();
@@ -362,6 +369,8 @@ void VulkanPipelineBarrierSample::updateOffscreenUniformBuffer()
 
 void VulkanPipelineBarrierSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
 
     updateImGui();
@@ -463,7 +472,7 @@ void VulkanPipelineBarrierSample::updateImGui()
                             }
                         }
                     } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

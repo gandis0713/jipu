@@ -1,11 +1,8 @@
 #pragma once
 
 #include "fps.h"
+#include "hpc_watcher.h"
 #include "window.h"
-
-#if defined(__ANDROID__) || defined(ANDROID)
-#include "hwcpipe.h"
-#endif
 
 #include <deque>
 #include <filesystem>
@@ -34,18 +31,25 @@ public:
     Sample(const SampleDescriptor& descriptor);
     virtual ~Sample();
 
-    void init() override;
-
-    void recordImGui(std::vector<std::function<void()>> cmds);
-    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
-    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
-
+public:
     virtual void createDriver();
     virtual void getPhysicalDevices();
     virtual void createSurface();
     virtual void createDevice();
     virtual void createSwapchain();
     virtual void createQueue();
+
+public:
+    void init() override;
+    void update() override;
+
+public:
+    void recordImGui(std::vector<std::function<void()>> cmds);
+    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
+
+public:
+    void onHPCListner(Values values);
 
 protected:
     std::filesystem::path m_appPath;
@@ -57,33 +61,32 @@ protected:
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
-
-    std::optional<Im_Gui> m_imgui = std::nullopt;
-
-protected:
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
     TextureView* m_renderView = nullptr;
 
 protected:
-    void debuggingWindow();
+    std::optional<Im_Gui> m_imgui = std::nullopt;
+
+protected:
+    std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;
+
+protected:
+    void createHPCWatcher(std::vector<Counter> counters);
+    void drawPolyline(std::string title, std::deque<float> data, std::string unit = "");
+    void profilingWindow();
 
 private:
     FPS m_fps{};
-
-#if defined(HWC_PIPE_ENABLED)
-public:
-    void setCounters(std::unordered_set<hwcpipe_counter> counters);
-
-private:
-    void createHWCPipe();
-
-private:
-    bool m_profiling = false;
-
-private:
-    HWCPipe m_hwcpipe{};
-    std::optional<MaliGPU::Ref> m_maliGPU = std::nullopt;
-#endif
+    struct Profiling
+    {
+        std::deque<float> framgmentUtilization{};
+        std::deque<float> nonFramgmentUtilization{};
+        std::deque<float> tilerUtilization{};
+        std::deque<float> externalReadBytes{};
+        std::deque<float> externalWriteBytes{};
+        std::deque<float> externalReadStallRate{};
+        std::deque<float> externalWriteStallRate{};
+    } m_profiling{};
 };
 
 } // namespace jipu

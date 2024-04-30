@@ -224,6 +224,13 @@ void DeferredSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     createDepthStencilTexture();
@@ -259,6 +266,8 @@ void DeferredSample::init()
 
 void DeferredSample::update()
 {
+    Sample::update();
+
     updateOffscreenUniformBuffer();
     updateCompositionUniformBuffer();
 
@@ -336,7 +345,7 @@ void DeferredSample::updateImGui()
                           else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
                               m_composition.ubo.showTexture = 3;
                       } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

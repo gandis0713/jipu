@@ -57,20 +57,14 @@ hwcpipe::device::constants MaliGPU::getInfo() const
     return m_gpu.get_constants();
 }
 
+const std::unordered_set<hwcpipe_counter>& MaliGPU::getAvailableCounters() const
+{
+    return m_availableCounters;
+}
+
 const std::unordered_set<hwcpipe_counter>& MaliGPU::getCounters() const
 {
     return m_counters;
-}
-
-hwcpipe::counter_sample MaliGPU::getSample(hwcpipe_counter counter) const
-{
-    hwcpipe::counter_sample sample;
-
-    std::error_code ec = m_sampler.get_counter_value(counter, sample);
-    if (ec)
-        spdlog::error("Failed to get counter value. couinter: {}, error: {}", static_cast<uint32_t>(counter), ec.message());
-
-    return sample;
 }
 
 std::error_code MaliGPU::startSampling()
@@ -79,6 +73,8 @@ std::error_code MaliGPU::startSampling()
 
     if (ec)
         spdlog::error("Failed to start sampling. error: {}", ec.message());
+    else
+        m_samplingInProgress = true;
 
     return ec;
 }
@@ -89,8 +85,33 @@ std::error_code MaliGPU::stopSampling()
 
     if (ec)
         spdlog::error("Failed to stop sampling. error: {}", ec.message());
+    else
+        m_samplingInProgress = false;
 
     return ec;
+}
+
+bool MaliGPU::isSamplingInProgress()
+{
+    return m_samplingInProgress;
+}
+
+void MaliGPU::sampling()
+{
+    std::error_code ec = m_sampler.sample_now();
+    if (ec)
+        spdlog::error("Failed to sampling. error: {}", ec.message());
+}
+
+hwcpipe::counter_sample MaliGPU::getValue(hwcpipe_counter counter) const
+{
+    hwcpipe::counter_sample sample;
+
+    std::error_code ec = m_sampler.get_counter_value(counter, sample);
+    if (ec)
+        spdlog::error("Failed to get counter value. couinter: {}, error: {}", static_cast<uint32_t>(counter), ec.message());
+
+    return sample;
 }
 
 void MaliGPU::gatherCounters()
@@ -114,18 +135,25 @@ void MaliGPU::gatherCounters()
 
         spdlog::debug("    {}", meta.name);
 
-        m_counters.emplace(counter);
+        m_availableCounters.emplace(counter);
     }
 }
 
-void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter> counters)
+void MaliGPU::configureSampler(const std::unordered_set<hwcpipe_counter>& counters)
 {
+    if (isSamplingInProgress())
+    {
+        spdlog::debug("Sampling is in progress. Stop sampling to re-configure sampler.");
+        m_sampler.stop_sampling();
+    }
+
+    m_counters = counters;
     m_config = hwcpipe::sampler_config(m_gpu);
 
     std::error_code ec;
-    for (const auto& counter : counters)
+    for (const auto& counter : m_counters)
     {
-        if (m_counters.contains(counter))
+        if (m_availableCounters.contains(counter))
         {
             ec = m_config.add_counter(counter);
             if (ec)

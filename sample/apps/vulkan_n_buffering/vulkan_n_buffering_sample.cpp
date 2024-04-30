@@ -54,6 +54,13 @@ void VulkanNBufferingSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     // create buffer
@@ -79,6 +86,8 @@ void VulkanNBufferingSample::init()
 
 void VulkanNBufferingSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();
@@ -123,7 +132,7 @@ void VulkanNBufferingSample::updateImGui()
                             }
                         }
                     } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

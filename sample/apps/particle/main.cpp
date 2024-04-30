@@ -132,6 +132,13 @@ void ParticleSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createShaderStorageBuffer();
     createUniformBuffer();
     createColorAttachmentTexture();
@@ -147,6 +154,8 @@ void ParticleSample::init()
 
 void ParticleSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();
@@ -158,7 +167,7 @@ void ParticleSample::updateImGui()
         windowImGui("Settings", { [&]() {
                         ImGui::Checkbox("Separate Command Buffer", &separateCmdBuffer);
                     } });
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

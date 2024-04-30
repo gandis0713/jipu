@@ -1,7 +1,12 @@
 #include "sample.h"
 
+#include <algorithm>
 #include <fmt/format.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
+
+#include "hpc/counter.h"
+#include "hpc/hpc.h"
 
 namespace jipu
 {
@@ -11,16 +16,16 @@ Sample::Sample(const SampleDescriptor& descriptor)
     , m_appPath(descriptor.path)
     , m_appDir(descriptor.path.parent_path())
     , m_imgui(Im_Gui())
-
 {
 }
 
 Sample::~Sample()
 {
+    if (m_hpcWatcher)
+        m_hpcWatcher->stop();
+
     if (m_imgui.has_value())
-    {
         m_imgui.value().clear();
-    }
 
     m_queue.reset();
     m_swapchain.reset();
@@ -28,63 +33,6 @@ Sample::~Sample()
     m_device.reset();
     m_physicalDevices.clear();
     m_driver.reset();
-}
-
-void Sample::init()
-{
-    createDriver();
-    getPhysicalDevices();
-    createSurface();
-    createDevice();
-    createSwapchain();
-    createQueue();
-
-    if (m_imgui.has_value())
-    {
-        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
-    }
-
-#if defined(HWC_PIPE_ENABLED)
-    createHWCPipe();
-#endif
-
-    Window::init();
-}
-
-void Sample::recordImGui(std::vector<std::function<void()>> cmds)
-{
-    if (m_imgui.has_value())
-    {
-        // set display size and mouse state.
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
-            io.MousePos = ImVec2(m_mouseX, m_mouseY);
-            io.MouseDown[0] = m_leftMouseButton;
-            io.MouseDown[1] = m_rightMouseButton;
-            io.MouseDown[2] = m_middleMouseButton;
-        }
-
-        m_imgui.value().record(cmds);
-        m_imgui.value().build();
-    }
-}
-
-void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
-{
-    if (m_imgui.has_value())
-    {
-        m_imgui.value().window(title, uis);
-    }
-}
-
-void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
-{
-    if (m_imgui.has_value())
-    {
-        m_fps.update();
-        m_imgui.value().draw(commandEncoder, renderView);
-    }
 }
 
 void Sample::createDriver()
@@ -145,59 +93,155 @@ void Sample::createQueue()
     m_queue = m_device->createQueue(descriptor);
 }
 
-void Sample::debuggingWindow()
+void Sample::init()
+{
+    createDriver();
+    getPhysicalDevices();
+    createSurface();
+    createDevice();
+    createSwapchain();
+    createQueue();
+
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
+    }
+
+    Window::init();
+}
+
+void Sample::update()
+{
+    m_fps.update();
+    if (m_hpcWatcher)
+    {
+        m_hpcWatcher->update();
+    }
+}
+
+void Sample::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        // set display size and mouse state.
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)m_width, (float)m_height);
+            io.MousePos = ImVec2(m_mouseX, m_mouseY);
+            io.MouseDown[0] = m_leftMouseButton;
+            io.MouseDown[1] = m_rightMouseButton;
+            io.MouseDown[2] = m_middleMouseButton;
+        }
+
+        m_imgui.value().record(cmds);
+        m_imgui.value().build();
+    }
+}
+
+void Sample::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().window(title, uis);
+    }
+}
+
+void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().draw(commandEncoder, renderView);
+    }
+}
+
+void Sample::onHPCListner(Values values)
+{
+    for (const auto& [k, v] : values)
+    {
+        switch (k)
+        {
+        case Counter::FragmentUtilization:
+            m_profiling.framgmentUtilization.push_back(v);
+            break;
+        case Counter::NonFragmentUtilization:
+            m_profiling.nonFramgmentUtilization.push_back(v);
+            break;
+        case Counter::TilerUtilization:
+            m_profiling.tilerUtilization.push_back(v);
+            break;
+        case Counter::ExternalReadBytes:
+            m_profiling.externalReadBytes.push_back(v);
+            break;
+        case Counter::ExternalWriteBytes:
+            m_profiling.externalWriteBytes.push_back(v);
+            break;
+        case Counter::ExternalReadStallRate:
+            m_profiling.externalReadStallRate.push_back(v);
+            break;
+        case Counter::ExternalWriteStallRate:
+            m_profiling.externalWriteStallRate.push_back(v);
+            break;
+        }
+
+        // spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
+    }
+}
+
+void Sample::createHPCWatcher(std::vector<Counter> counters)
+{
+    auto gpus = hpc::gpus();
+    if (gpus.empty())
+        return;
+
+    // TODO: select gpu.
+    auto gpu = gpus[0].get();
+
+    const auto& hpcCounters = gpu->counters();
+    hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
+    hpc::Sampler::Ptr sampler = gpu->create(descriptor);
+
+    HPCWatcherDescriptor watcherDescriptor{
+        .sampler = std::move(sampler),
+        .counters = counters,
+        .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
+    };
+    m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
+    m_hpcWatcher->start();
+}
+
+void Sample::profilingWindow()
 {
     windowImGui(
-        "Debugging", { [&]() {
-            const auto& fpss = m_fps.getAll();
-            if (!fpss.empty())
-            {
-                const auto size = fpss.size();
-                const std::string title = fmt::format("FPS Average: {:.1f}", m_fps.average());
-                const std::string description = fmt::format("{:.1f}", m_fps.current());
-                int offset = 0;
-                if (size > 15)
-                    offset = size - 15;
-                ImGui::PlotLines(title.c_str(), &fpss[offset], size - offset, 0, description.c_str());
-            }
+        "Profiling", { [&]() {
+            ImGui::Text("Common");
+            ImGui::Separator();
+            drawPolyline("FPS", m_fps.getAll());
+            ImGui::Separator();
 
-#if defined(HWC_PIPE_ENABLED)
-            if (m_maliGPU.has_value())
-                ImGui::Checkbox("Profiler", &m_profiling);
-#endif
+            ImGui::Text("GPU Profiling");
+            ImGui::Separator();
+            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization, "%");
+            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization, "%");
+            drawPolyline("Tiler Usage", m_profiling.tilerUtilization, "%");
+            drawPolyline("External Read Bytes", m_profiling.externalReadBytes);
+            drawPolyline("External Write Bytes", m_profiling.externalWriteBytes);
+            drawPolyline("External Read Stall Rate", m_profiling.externalReadStallRate, "%");
+            drawPolyline("External Write Stall Rate", m_profiling.externalWriteStallRate, "%");
+            ImGui::Separator();
         } });
-
-#if defined(HWC_PIPE_ENABLED)
-    if (m_profiling)
-    {
-        // show profiling.
-    }
-#endif
 }
 
-#if defined(HWC_PIPE_ENABLED)
-
-void Sample::setCounters(std::unordered_set<hwcpipe_counter> counters)
+void Sample::drawPolyline(std::string title, std::deque<float> data, std::string unit)
 {
-    if (m_maliGPU.has_value())
-    {
-        auto& maliGPU = m_maliGPU.value().get();
-        maliGPU.configureSampler(counters);
-    }
-}
+    if (data.empty())
+        return;
 
-void Sample::createHWCPipe()
-{
-    m_hwcpipe = HWCPipe();
-    std::vector<MaliGPU>& maliGPUs = m_hwcpipe.getGpus();
-    if (!maliGPUs.empty())
-    {
-        auto& maliGPU = maliGPUs[0];
-        maliGPU.configureSampler({ MaliGPUActiveCy, MaliFragActiveCy, MaliGeomSampleCullRate });
-
-        m_maliGPU = maliGPU;
-    }
+    const auto size = data.size();
+    const std::string description = fmt::format("{:.1f} {}", data[data.size() - 1], unit.c_str());
+    int offset = 0;
+    if (size > 15)
+        offset = size - 15;
+    ImGui::PlotLines(title.c_str(), &data[offset], size - offset, 0, description.c_str());
 }
-#endif
 
 } // namespace jipu

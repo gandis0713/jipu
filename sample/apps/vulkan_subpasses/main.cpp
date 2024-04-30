@@ -2,6 +2,8 @@
 
 #include <spdlog/spdlog.h>
 
+using namespace jipu;
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
 // GameActivity's C/C++ code
@@ -17,14 +19,12 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
-    jipu::SampleDescriptor descriptor{
+    SampleDescriptor descriptor{
         { 1000, 2000, "Vulkan Subpasses Sample", app },
         ""
     };
 
-    jipu::VulkanSubpassesSample sample(descriptor);
-    sample.setCounters({ MaliGPUActiveCy });
-
+    VulkanSubpassesSample sample(descriptor);
     sample.exec();
 }
 
@@ -34,12 +34,12 @@ int main(int argc, char** argv)
 {
     spdlog::set_level(spdlog::level::trace);
 
-    jipu::SampleDescriptor descriptor{
+    SampleDescriptor descriptor{
         { 800, 600, "Vulkan Subpasses Sample", nullptr },
         argv[0]
     };
 
-    jipu::VulkanSubpassesSample sample(descriptor);
+    VulkanSubpassesSample sample(descriptor);
 
     return sample.exec();
 }

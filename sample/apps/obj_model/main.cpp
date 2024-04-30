@@ -153,6 +153,13 @@ void OBJModelSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     // create buffer
@@ -178,6 +185,8 @@ void OBJModelSample::init()
 
 void OBJModelSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
     updateImGui();
 }
@@ -185,7 +194,7 @@ void OBJModelSample::update()
 void OBJModelSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 

@@ -112,6 +112,13 @@ void TriangleSample::init()
 {
     Sample::init();
 
+    createHPCWatcher({ Counter::FragmentUtilization,
+                       Counter::NonFragmentUtilization,
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
+
     createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
@@ -152,6 +159,8 @@ void TriangleSample::updateUniformBuffer()
 
 void TriangleSample::update()
 {
+    Sample::update();
+
     updateUniformBuffer();
 
     updateImGui();
@@ -195,7 +204,7 @@ void TriangleSample::draw()
 void TriangleSample::updateImGui()
 {
     recordImGui({ [&]() {
-        debuggingWindow();
+        profilingWindow();
     } });
 }
 
