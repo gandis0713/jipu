@@ -2,7 +2,7 @@
 
 #include <chrono>
 #include <functional>
-#include <vector>
+#include <unordered_map>
 
 #include "hpc/counter.h"
 #include "hpc/sampler.h"
@@ -10,20 +10,34 @@
 namespace jipu
 {
 
+enum class Counter
+{
+    NonFragmentUtilization,
+    FragmentUtilization,
+    TilerUtilization
+};
+
+using Listner = std::function<void(std::unordered_map<Counter, double>)>;
+
+struct HPCWatcherDescriptor
+{
+    hpc::Sampler::Ptr sampler = nullptr;
+    std::vector<Counter> counters{};
+    Listner listner{};
+};
+
 class HPCWatcher
 {
 
 public:
-    using Listner = std::function<void(std::vector<hpc::Sample>)>;
-    HPCWatcher(hpc::Sampler::Ptr sampler, Listner listner);
+    HPCWatcher(HPCWatcherDescriptor descriptor);
 
     void start();
     void stop();
     void update();
 
 private:
-    hpc::Sampler::Ptr m_sampler{ nullptr };
-    Listner m_listner{};
+    HPCWatcherDescriptor m_descriptor{};
 
 private:
     uint32_t period = 1000; // 1 second
