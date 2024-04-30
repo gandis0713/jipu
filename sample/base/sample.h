@@ -4,10 +4,6 @@
 #include "hpc_watcher.h"
 #include "window.h"
 
-#if defined(__ANDROID__) || defined(ANDROID)
-#include "hwcpipe.h"
-#endif
-
 #include <deque>
 #include <filesystem>
 #include <optional>
@@ -42,7 +38,7 @@ public:
     void windowImGui(const char* title, std::vector<std::function<void()>> uis);
     void drawImGui(CommandEncoder* commandEncoder, TextureView& renderView);
 
-    void setHPCWatcher(HPCWatcher::Ptr watcher);
+    void onHPCListner(std::unordered_map<hpc::Counter, hpc::Sample> samples);
 
     virtual void createDriver();
     virtual void getPhysicalDevices();
@@ -63,7 +59,8 @@ protected:
     std::unique_ptr<Queue> m_queue = nullptr;
 
     std::optional<Im_Gui> m_imgui = std::nullopt;
-    HPCWatcher::Ptr m_hpcWatcher = nullptr;
+
+    std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;
 
 protected:
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
@@ -74,22 +71,7 @@ protected:
 
 private:
     FPS m_fps{};
-
-#if defined(HWC_PIPE_ENABLED)
-public:
-    void setCounters(std::unordered_set<hwcpipe_counter>& counters);
-
-private:
-    void createHWCPipe();
-    void destroyHWCPipe();
-
-private:
-    bool m_profiling = false;
-
-private:
-    HWCPipe m_hwcpipe{};
-    std::optional<MaliGPU::Ref> m_maliGPU = std::nullopt;
-#endif
+    bool m_profiling{ false };
 };
 
 } // namespace jipu

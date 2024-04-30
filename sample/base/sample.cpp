@@ -12,16 +12,11 @@ Sample::Sample(const SampleDescriptor& descriptor)
     , m_appPath(descriptor.path)
     , m_appDir(descriptor.path.parent_path())
     , m_imgui(Im_Gui())
-
 {
 }
 
 Sample::~Sample()
 {
-#if defined(HWC_PIPE_ENABLED)
-    destroyHWCPipe();
-#endif
-
     if (m_imgui.has_value())
     {
         m_imgui.value().clear();
@@ -49,41 +44,14 @@ void Sample::init()
         m_imgui.value().init(m_device.get(), m_queue.get(), *m_swapchain);
     }
 
-#if defined(HWC_PIPE_ENABLED)
-    createHWCPipe();
-#endif
-
     Window::init();
 }
 
 void Sample::update()
 {
-#if defined(HWC_PIPE_ENABLED)
-    if (m_maliGPU.has_value())
+    if (m_hpcWatcher)
     {
-        auto& maliGPU = m_maliGPU.value().get();
-
-        if (!maliGPU.isSamplingInProgress())
-            maliGPU.startSampling();
-
-        maliGPU.sampling();
-
-        auto& counters = maliGPU.getCounters();
-        for (auto& counter : counters)
-        {
-            auto value = maliGPU.getValue(counter);
-            switch (value.type)
-            {
-            case hwcpipe::counter_sample::type::uint64:
-                spdlog::error("charles value {}", value.value.uint64);
-                return;
-            case hwcpipe::counter_sample::type::float64:
-                spdlog::error("charles value {}", value.value.float64);
-                return;
-            }
-        }
     }
-#endif
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -122,9 +90,24 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
     }
 }
 
-void Sample::setHPCWatcher(HPCWatcher::Ptr watcher)
+void Sample::onHPCListner(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
-    m_hpcWatcher = std::move(watcher);
+    for (const auto& [t, v] : samples)
+    {
+        switch (t)
+        case hpc::Counter::GPUActiveCy:
+            // TODO
+            // switch (v.type)
+            // {
+            // case hpc::Sample::Type::uint64:
+            //     spdlog::error("charles value {}", v.value.uint64);
+            //     return;
+            // case hpc::Sample::Type::float64:
+            //     spdlog::error("charles value {}", v.value.float64);
+            //     return;
+            // }
+            break;
+    }
 }
 
 void Sample::createDriver()
@@ -201,55 +184,14 @@ void Sample::debuggingWindow()
                 ImGui::PlotLines(title.c_str(), &fpss[offset], size - offset, 0, description.c_str());
             }
 
-#if defined(HWC_PIPE_ENABLED)
-            if (m_maliGPU.has_value())
+            if (m_hpcWatcher)
                 ImGui::Checkbox("Profiler", &m_profiling);
-#endif
         } });
 
-#if defined(HWC_PIPE_ENABLED)
     if (m_profiling)
     {
         // show profiling.
     }
-#endif
 }
-
-#if defined(HWC_PIPE_ENABLED)
-
-void Sample::setCounters(std::unordered_set<hwcpipe_counter>& counters)
-{
-    if (m_maliGPU.has_value())
-    {
-        auto& maliGPU = m_maliGPU.value().get();
-        maliGPU.configureSampler(counters);
-    }
-}
-
-void Sample::createHWCPipe()
-{
-    m_hwcpipe = HWCPipe();
-    std::vector<MaliGPU>& maliGPUs = m_hwcpipe.getGpus();
-    if (!maliGPUs.empty())
-    {
-        auto& maliGPU = maliGPUs[0];
-        maliGPU.configureSampler({ MaliGPUActiveCy, MaliFragActiveCy, MaliGeomSampleCullRate });
-
-        m_maliGPU = maliGPU;
-    }
-}
-
-void Sample::destroyHWCPipe()
-{
-    if (m_maliGPU.has_value())
-    {
-        auto& maliGPU = m_maliGPU.value().get();
-        if (maliGPU.isSamplingInProgress())
-            maliGPU.stopSampling();
-
-        m_maliGPU = std::nullopt;
-    }
-}
-#endif
 
 } // namespace jipu
