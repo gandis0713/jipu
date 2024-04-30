@@ -11,12 +11,12 @@ find_package(hwcpipe CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/sampler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sampler.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/gpu.h
-
     ${CMAKE_CURRENT_SOURCE_DIR}/hpc.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/hpc.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/counter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gpu.h
     ${CMAKE_CURRENT_SOURCE_DIR}/counter.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_sampler.cpp
