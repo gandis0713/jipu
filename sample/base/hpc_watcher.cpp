@@ -81,7 +81,7 @@ float tilerUtilization(std::unordered_map<hpc::Counter, hpc::Sample> samples)
     return std::max(std::min(value, 100.0f), 0.0f);
 }
 
-float outputExternalReadBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+float externalReadBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
     auto it = samples.find(hpc::Counter::ExtBusRdBy);
     if (it == samples.end())
@@ -93,7 +93,7 @@ float outputExternalReadBytes(std::unordered_map<hpc::Counter, hpc::Sample> samp
     return convertToFloat(samples[hpc::Counter::ExtBusRdBy]);
 }
 
-float outputExternalWriteBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+float externalWriteBytes(std::unordered_map<hpc::Counter, hpc::Sample> samples)
 {
     auto it = samples.find(hpc::Counter::ExtBusWrBy);
     if (it == samples.end())
@@ -103,6 +103,30 @@ float outputExternalWriteBytes(std::unordered_map<hpc::Counter, hpc::Sample> sam
     }
 
     return convertToFloat(samples[hpc::Counter::ExtBusWrBy]);
+}
+
+float externalReadStallRate(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdStallRate);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdStallRate");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdStallRate]);
+}
+
+float externalWriteStallRate(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusWrStallRate);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusWrStallRate");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusWrStallRate]);
 }
 
 } // namespace
@@ -166,11 +190,17 @@ void HPCWatcher::update()
             case Counter::TilerUtilization:
                 values[counter] = tilerUtilization(sampleMap);
                 break;
-            case Counter::OutputExternalReadBytes:
-                values[counter] = outputExternalReadBytes(sampleMap);
+            case Counter::ExternalReadBytes:
+                values[counter] = externalReadBytes(sampleMap);
                 break;
-            case Counter::OutputExternalWriteBytes:
-                values[counter] = outputExternalWriteBytes(sampleMap);
+            case Counter::ExternalWriteBytes:
+                values[counter] = externalWriteBytes(sampleMap);
+                break;
+            case Counter::ExternalReadStallRate:
+                values[counter] = externalReadStallRate(sampleMap);
+                break;
+            case Counter::ExternalWriteStallRate:
+                values[counter] = externalWriteStallRate(sampleMap);
                 break;
             }
         }

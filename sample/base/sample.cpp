@@ -169,11 +169,17 @@ void Sample::onHPCListner(Values values)
         case Counter::TilerUtilization:
             m_profiling.tilerUtilization.push_back(v);
             break;
-        case Counter::OutputExternalReadBytes:
-            m_profiling.outputExternalReadBytes.push_back(v);
+        case Counter::ExternalReadBytes:
+            m_profiling.externalReadBytes.push_back(v);
             break;
-        case Counter::OutputExternalWriteBytes:
-            m_profiling.outputExternalWriteBytes.push_back(v);
+        case Counter::ExternalWriteBytes:
+            m_profiling.externalWriteBytes.push_back(v);
+            break;
+        case Counter::ExternalReadStallRate:
+            m_profiling.externalReadStallRate.push_back(v);
+            break;
+        case Counter::ExternalWriteStallRate:
+            m_profiling.externalWriteStallRate.push_back(v);
             break;
         }
 
@@ -217,8 +223,10 @@ void Sample::profilingWindow()
             drawPolyline("Fragment Usage", m_profiling.framgmentUtilization, "%");
             drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization, "%");
             drawPolyline("Tiler Usage", m_profiling.tilerUtilization, "%");
-            drawPolyline("External Read Bytes", m_profiling.outputExternalReadBytes);
-            drawPolyline("External Write Bytes", m_profiling.outputExternalWriteBytes);
+            drawPolyline("External Read Bytes", m_profiling.externalReadBytes);
+            drawPolyline("External Write Bytes", m_profiling.externalWriteBytes);
+            drawPolyline("External Read Stall Rate", m_profiling.externalReadStallRate, "%");
+            drawPolyline("External Write Stall Rate", m_profiling.externalWriteStallRate, "%");
             ImGui::Separator();
         } });
 }

@@ -82,8 +82,10 @@ private:
         std::deque<float> framgmentUtilization{};
         std::deque<float> nonFramgmentUtilization{};
         std::deque<float> tilerUtilization{};
-        std::deque<float> outputExternalReadBytes{};
-        std::deque<float> outputExternalWriteBytes{};
+        std::deque<float> externalReadBytes{};
+        std::deque<float> externalWriteBytes{};
+        std::deque<float> externalReadStallRate{};
+        std::deque<float> externalWriteStallRate{};
     } m_profiling{};
 };
 

@@ -226,8 +226,10 @@ void DeferredSample::init()
 
     createHPCWatcher({ Counter::FragmentUtilization,
                        Counter::NonFragmentUtilization,
-                       Counter::OutputExternalReadBytes,
-                       Counter::OutputExternalWriteBytes });
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
 
     createCommandBuffer();
 

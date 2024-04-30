@@ -104,8 +104,10 @@ void VulkanSubpassesSample::init()
     createHPCWatcher({ Counter::FragmentUtilization,
                        Counter::NonFragmentUtilization,
                        Counter::TilerUtilization,
-                       Counter::OutputExternalReadBytes,
-                       Counter::OutputExternalWriteBytes });
+                       Counter::ExternalReadBytes,
+                       Counter::ExternalWriteBytes,
+                       Counter::ExternalReadStallRate,
+                       Counter::ExternalWriteStallRate });
 
     createCommandBuffer();
 
