@@ -1,8 +1,9 @@
-#include "mali_gpus.h"
+#include "mali_hpc.h"
 
+#if defined(__ANDROID__) || defined(ANDROID)
 #include "mali_gpu.h"
-
 #include <hwcpipe/gpu.hpp>
+#endif
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -12,6 +13,7 @@ namespace hpc
 namespace mali
 {
 
+#if defined(__ANDROID__) || defined(ANDROID)
 std::string getProductFamilyName(hwcpipe::device::product_id::gpu_family family)
 {
     using gpu_family = hwcpipe::device::product_id::gpu_family;
@@ -47,6 +49,14 @@ std::vector<GPU::Ptr> gpus()
 
     return gpus;
 }
+#else
+
+std::vector<GPU::Ptr> gpus()
+{
+    return {};
+}
+
+#endif
 
 } // namespace mali
 } // namespace hpc

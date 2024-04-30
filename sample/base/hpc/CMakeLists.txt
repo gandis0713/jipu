@@ -7,7 +7,10 @@ project(
     LANGUAGES CXX
 )
 
-find_package(hwcpipe CONFIG REQUIRED)
+if(ANDROID)
+    find_package(hwcpipe CONFIG REQUIRED)
+endif()
+
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
@@ -20,15 +23,20 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/counter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/counter.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_sampler.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_sampler.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpus.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpus.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpu.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpu.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_counter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_counter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_hpc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_hpc.h
 )
+
+if(ANDROID)
+    list(APPEND SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_sampler.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpu.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_gpu.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_counter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali/mali_counter.h
+    )
+endif()
 
 add_library(hpc STATIC ${SRC_FILES})
 add_library(jipu::hpc ALIAS hpc)
@@ -36,12 +44,24 @@ add_library(jipu::hpc ALIAS hpc)
 target_include_directories(
     hpc PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/mali
 )
 
+if(ANDROID)
+    target_include_directories(
+        hpc PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/mali
+    )
+endif()
+
 target_link_libraries(hpc PRIVATE
-    hwcpipe::device
-    hwcpipe::hwcpipe
-    hwcpipe::device_private
+
     spdlog::spdlog_header_only
 )
+
+if(ANDROID)
+    target_link_libraries(hpc PRIVATE
+        hwcpipe::device
+        hwcpipe::hwcpipe
+        hwcpipe::device_private
+    )
+endif()

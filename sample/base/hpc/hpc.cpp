@@ -1,6 +1,6 @@
 #include "hpc.h"
 
-#include "mali/mali_gpus.h"
+#include "mali/mali_hpc.h"
 
 namespace jipu
 {

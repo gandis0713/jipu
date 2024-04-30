@@ -13,6 +13,9 @@ namespace hpc
 
 class HPC_EXPORT GPU
 {
+public:
+    virtual ~GPU() = default;
+
 protected:
     GPU() = default;
 

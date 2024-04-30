@@ -49,6 +49,9 @@ struct SamplerDescriptor
 
 class HPC_EXPORT Sampler
 {
+public:
+    virtual ~Sampler() = default;
+
 protected:
     Sampler(SamplerDescriptor descriptor);
 

@@ -56,8 +56,6 @@ if(ANDROID)
         hwcpipe.cpp
         hwcpipe.h
     )
-
-    add_subdirectory(hpc)
 else()
     list(APPEND SRC_FILES
         window_sdl.cpp
@@ -74,6 +72,7 @@ else()
     endif()
 endif()
 
+add_subdirectory(hpc)
 add_library(jipu_sample_base STATIC ${SRC_FILES})
 add_library(jipu::sample_base ALIAS jipu_sample_base)
 
