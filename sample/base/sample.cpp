@@ -158,30 +158,7 @@ void Sample::onHPCListner(Values values)
 {
     for (const auto& [k, v] : values)
     {
-        switch (k)
-        {
-        case Counter::FragmentUtilization:
-            m_profiling.framgmentUtilization.push_back(v);
-            break;
-        case Counter::NonFragmentUtilization:
-            m_profiling.nonFramgmentUtilization.push_back(v);
-            break;
-        case Counter::TilerUtilization:
-            m_profiling.tilerUtilization.push_back(v);
-            break;
-        case Counter::ExternalReadBytes:
-            m_profiling.externalReadBytes.push_back(v);
-            break;
-        case Counter::ExternalWriteBytes:
-            m_profiling.externalWriteBytes.push_back(v);
-            break;
-        case Counter::ExternalReadStallRate:
-            m_profiling.externalReadStallRate.push_back(v);
-            break;
-        case Counter::ExternalWriteStallRate:
-            m_profiling.externalWriteStallRate.push_back(v);
-            break;
-        }
+        m_profiling[k].push_back(v);
 
         // spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
     }
@@ -206,6 +183,10 @@ void Sample::createHPCWatcher(std::vector<Counter> counters)
         .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
     };
     m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
+
+    for (uint32_t i = 0; i < static_cast<uint32_t>(Counter::Count); ++i)
+        m_profiling.insert({ static_cast<Counter>(i), {} });
+
     m_hpcWatcher->start();
 }
 
@@ -220,13 +201,20 @@ void Sample::profilingWindow()
 
             ImGui::Text("GPU Profiling");
             ImGui::Separator();
-            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization, "%");
-            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization, "%");
-            drawPolyline("Tiler Usage", m_profiling.tilerUtilization, "%");
-            drawPolyline("External Read Bytes", m_profiling.externalReadBytes);
-            drawPolyline("External Write Bytes", m_profiling.externalWriteBytes);
-            drawPolyline("External Read Stall Rate", m_profiling.externalReadStallRate, "%");
-            drawPolyline("External Write Stall Rate", m_profiling.externalWriteStallRate, "%");
+            drawPolyline("Fragment Usage", m_profiling[Counter::FragmentUtilization], "%");
+            drawPolyline("Non Fragment Usage", m_profiling[Counter::NonFragmentUtilization], "%");
+            drawPolyline("Tiler Usage", m_profiling[Counter::TilerUtilization], "%");
+            drawPolyline("External Read Bytes", m_profiling[Counter::ExternalReadBytes]);
+            drawPolyline("External Write Bytes", m_profiling[Counter::ExternalWriteBytes]);
+            drawPolyline("External Read Stall Rate", m_profiling[Counter::ExternalReadStallRate], "%");
+            drawPolyline("External Write Stall Rate", m_profiling[Counter::ExternalWriteStallRate], "%");
+            drawPolyline("External Read Latency 0", m_profiling[Counter::ExternalReadLatency0_127]);
+            drawPolyline("External Read Latency 1", m_profiling[Counter::ExternalReadLatency128_191]);
+            drawPolyline("External Read Latency 2", m_profiling[Counter::ExternalReadLatency192_255]);
+            drawPolyline("External Read Latency 3", m_profiling[Counter::ExternalReadLatency256_319]);
+            drawPolyline("External Read Latency 4", m_profiling[Counter::ExternalReadLatency320_383]);
+            drawPolyline("External Read Latency 5", m_profiling[Counter::ExternalReadLatency384Over]);
+            drawPolyline("Total Input Primitives", m_profiling[Counter::GeometryTotalInputPrimitives]);
             ImGui::Separator();
         } });
 }

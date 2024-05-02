@@ -56,10 +56,18 @@ void VulkanNBufferingSample::init()
 
     createHPCWatcher({ Counter::FragmentUtilization,
                        Counter::NonFragmentUtilization,
+                       Counter::TilerUtilization,
                        Counter::ExternalReadBytes,
                        Counter::ExternalWriteBytes,
                        Counter::ExternalReadStallRate,
-                       Counter::ExternalWriteStallRate });
+                       Counter::ExternalWriteStallRate,
+                       Counter::ExternalReadLatency0_127,
+                       Counter::ExternalReadLatency128_191,
+                       Counter::ExternalReadLatency192_255,
+                       Counter::ExternalReadLatency256_319,
+                       Counter::ExternalReadLatency320_383,
+                       Counter::ExternalReadLatency384Over,
+                       Counter::GeometryTotalInputPrimitives });
 
     createCommandBuffer();
 

@@ -18,8 +18,8 @@ enum class Counter
     ResQueueJob,
     ResQueueTask,
     ResQueueActiveCy,
-    ExtBusWrBt,
-    ExtBusRdBt,
+    ExtBusWrBt, // MaliExternalBusBeatsWriteBeats
+    ExtBusRdBt, // MaliExternalBusBeatsReadBeats
     ExtBusRdStallCy,
     ExtBusWrStallCy,
     FragActiveCy,

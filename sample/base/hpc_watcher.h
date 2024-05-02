@@ -12,13 +12,21 @@ namespace jipu
 
 enum class Counter
 {
-    NonFragmentUtilization,
+    NonFragmentUtilization = 0,
     FragmentUtilization,
     TilerUtilization,
     ExternalReadBytes,
     ExternalWriteBytes,
     ExternalReadStallRate,
-    ExternalWriteStallRate
+    ExternalWriteStallRate,
+    ExternalReadLatency0_127,
+    ExternalReadLatency128_191,
+    ExternalReadLatency192_255,
+    ExternalReadLatency256_319,
+    ExternalReadLatency320_383,
+    ExternalReadLatency384Over,
+    GeometryTotalInputPrimitives,
+    Count // total enum count
 };
 
 using Values = std::unordered_map<Counter, float>;

@@ -129,6 +129,131 @@ float externalWriteStallRate(std::unordered_map<hpc::Counter, hpc::Sample> sampl
     return convertToFloat(samples[hpc::Counter::ExtBusWrStallRate]);
 }
 
+float externalBusReadLatency0_127Cycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdLat0);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat0");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdLat0]);
+}
+
+float externalBusReadLatency128_191Cycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdLat128);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat128");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdLat128]);
+}
+
+float externalBusReadLatency192_255Cycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdLat192);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat192");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdLat192]);
+}
+
+float externalBusReadLatency256_319Cycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdLat256);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat256");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdLat256]);
+}
+
+float externalBusReadLatency320_383Cycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::ExtBusRdLat320);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat320");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdLat320]);
+}
+
+float externalBusReadLatency384OverCycles(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+
+    auto it = samples.find(hpc::Counter::ExtBusRdBt);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdBt");
+        return 0.0f;
+    }
+
+    it = samples.find(hpc::Counter::ExtBusRdLat0);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat0");
+        return 0.0f;
+    }
+
+    it = samples.find(hpc::Counter::ExtBusRdLat128);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat128");
+        return 0.0f;
+    }
+
+    it = samples.find(hpc::Counter::ExtBusRdLat192);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat192");
+        return 0.0f;
+    }
+
+    it = samples.find(hpc::Counter::ExtBusRdLat256);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat256");
+        return 0.0f;
+    }
+
+    it = samples.find(hpc::Counter::ExtBusRdLat320);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for ExtBusRdLat320");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::ExtBusRdBt]) -
+           convertToFloat(samples[hpc::Counter::ExtBusRdLat0]) -
+           convertToFloat(samples[hpc::Counter::ExtBusRdLat128]) -
+           convertToFloat(samples[hpc::Counter::ExtBusRdLat192]) -
+           convertToFloat(samples[hpc::Counter::ExtBusRdLat256]) -
+           convertToFloat(samples[hpc::Counter::ExtBusRdLat320]);
+}
+
+float geometryTotalInputPrimitives(std::unordered_map<hpc::Counter, hpc::Sample> samples)
+{
+    auto it = samples.find(hpc::Counter::GeomTotalPrim);
+    if (it == samples.end())
+    {
+        spdlog::debug("No sample value for GeomTotalPrim");
+        return 0.0f;
+    }
+
+    return convertToFloat(samples[hpc::Counter::GeomTotalPrim]);
+}
+
 } // namespace
 
 HPCWatcher::HPCWatcher(HPCWatcherDescriptor descriptor)
@@ -201,6 +326,27 @@ void HPCWatcher::update()
                 break;
             case Counter::ExternalWriteStallRate:
                 values[counter] = externalWriteStallRate(sampleMap);
+                break;
+            case Counter::ExternalReadLatency0_127:
+                values[counter] = externalBusReadLatency0_127Cycles(sampleMap);
+                break;
+            case Counter::ExternalReadLatency128_191:
+                values[counter] = externalBusReadLatency128_191Cycles(sampleMap);
+                break;
+            case Counter::ExternalReadLatency192_255:
+                values[counter] = externalBusReadLatency192_255Cycles(sampleMap);
+                break;
+            case Counter::ExternalReadLatency256_319:
+                values[counter] = externalBusReadLatency256_319Cycles(sampleMap);
+                break;
+            case Counter::ExternalReadLatency320_383:
+                values[counter] = externalBusReadLatency320_383Cycles(sampleMap);
+                break;
+            case Counter::ExternalReadLatency384Over:
+                values[counter] = externalBusReadLatency384OverCycles(sampleMap);
+                break;
+            case Counter::GeometryTotalInputPrimitives:
+                values[counter] = geometryTotalInputPrimitives(sampleMap);
                 break;
             }
         }
