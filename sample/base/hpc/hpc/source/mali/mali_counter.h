@@ -29,9 +29,11 @@ const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependenc
     { Counter::GeometryTotalInputPrimitives, { MaliGeomTotalPrim } },
     { Counter::GeometryTotalCullPrimitives, { MaliGeomTotalCullPrim } },
     { Counter::GeometryVisiblePrimitives, { MaliGeomVisiblePrim } },
+    { Counter::GeometrySampleCulledPrimitives, { MaliGeomSampleCullPrim } },
     { Counter::GeometryFaceXYPlaneCulledPrimitives, { MaliGeomFaceXYPlaneCullPrim } },
     { Counter::GeometryZPlaneCulledPrimitives, { MaliGeomZPlaneCullPrim } },
     { Counter::GeometryVisibleRate, { MaliGeomVisibleRate } },
+    { Counter::GeometrySampleCulledRate, { MaliGeomSampleCullRate } },
     { Counter::GeometryFaceXYPlaneCulledRate, { MaliGeomFaceXYPlaneCullRate } },
     { Counter::GeometryZPlaneCulledRate, { MaliGeomZPlaneCullRate } },
 };

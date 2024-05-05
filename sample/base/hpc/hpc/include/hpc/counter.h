@@ -23,9 +23,11 @@ enum class Counter : uint16_t
     GeometryTotalInputPrimitives,
     GeometryTotalCullPrimitives,
     GeometryVisiblePrimitives,
+    GeometrySampleCulledPrimitives,
     GeometryFaceXYPlaneCulledPrimitives,
     GeometryZPlaneCulledPrimitives,
     GeometryVisibleRate,
+    GeometrySampleCulledRate,
     GeometryFaceXYPlaneCulledRate,
     GeometryZPlaneCulledRate,
     Count // total enum count

@@ -232,11 +232,13 @@ void Sample::profilingWindow()
             drawPolyline("Total Input Primitives", m_profiling[hpc::Counter::GeometryTotalInputPrimitives]);
             drawPolyline("Total Culled Primitives", m_profiling[hpc::Counter::GeometryTotalCullPrimitives]);
             drawPolyline("Visible Primitives", m_profiling[hpc::Counter::GeometryVisiblePrimitives]);
+            drawPolyline("Sample Culled Primitives", m_profiling[hpc::Counter::GeometrySampleCulledPrimitives]);
             drawPolyline("Face/XY Plane Culled Primitives", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledPrimitives]);
             drawPolyline("Z Plane Culled Primitives", m_profiling[hpc::Counter::GeometryZPlaneCulledPrimitives]);
-            drawPolyline("Visible Primitives Rate", m_profiling[hpc::Counter::GeometryVisibleRate], "%");
-            drawPolyline("Face/XY Plane Culled Primitives Rate", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledRate], "%");
-            drawPolyline("Z Plane Culled Primitives Rate", m_profiling[hpc::Counter::GeometryZPlaneCulledRate], "%");
+            drawPolyline("Visible Culled Rate", m_profiling[hpc::Counter::GeometryVisibleRate], "%");
+            drawPolyline("Sample Culled Rate", m_profiling[hpc::Counter::GeometrySampleCulledRate], "%");
+            drawPolyline("Face/XY Plane Culled Rate", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledRate], "%");
+            drawPolyline("Z Plane Culled Rate", m_profiling[hpc::Counter::GeometryZPlaneCulledRate], "%");
             ImGui::Separator();
         } });
 }

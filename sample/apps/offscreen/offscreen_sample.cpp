@@ -57,9 +57,11 @@ void OffscreenSample::init()
                        hpc::Counter::GeometryTotalInputPrimitives,
                        hpc::Counter::GeometryTotalCullPrimitives,
                        hpc::Counter::GeometryVisiblePrimitives,
+                       hpc::Counter::GeometrySampleCulledPrimitives,
                        hpc::Counter::GeometryFaceXYPlaneCulledPrimitives,
                        hpc::Counter::GeometryZPlaneCulledPrimitives,
                        hpc::Counter::GeometryVisibleRate,
+                       hpc::Counter::GeometrySampleCulledRate,
                        hpc::Counter::GeometryFaceXYPlaneCulledRate,
                        hpc::Counter::GeometryZPlaneCulledRate });
 

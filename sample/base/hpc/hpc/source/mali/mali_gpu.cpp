@@ -7,6 +7,8 @@
 #include <hwcpipe/counter_database.hpp>
 #include <hwcpipe/gpu.hpp>
 
+#include "device/device.h"
+
 namespace hpc
 {
 namespace mali
@@ -41,7 +43,16 @@ const std::vector<Counter> MaliGPU::counters() const
         Counter::ExternalReadLatency3,
         Counter::ExternalReadLatency4,
         Counter::ExternalReadLatency5,
-        Counter::GeometryTotalInputPrimitives
+        Counter::GeometryTotalInputPrimitives,
+        Counter::GeometryTotalCullPrimitives,
+        Counter::GeometryVisiblePrimitives,
+        Counter::GeometrySampleCulledPrimitives,
+        Counter::GeometryFaceXYPlaneCulledPrimitives,
+        Counter::GeometryZPlaneCulledPrimitives,
+        Counter::GeometryVisibleRate,
+        Counter::GeometrySampleCulledRate,
+        Counter::GeometryFaceXYPlaneCulledRate,
+        Counter::GeometryZPlaneCulledRate,
     };
 }
 
@@ -64,6 +75,9 @@ void MaliGPU::collectCounters()
         spdlog::error("Mali GPU device {} is missing", m_deviceNumber);
         return;
     }
+
+    int fd = hpc::device::Device::create("/dev/mali0");
+    spdlog::debug("charles fd {}", fd);
 
     spdlog::debug("------------------------------------------------------------");
     spdlog::debug("Mali GPU {} Supported counters:", gpu.get_device_number());
