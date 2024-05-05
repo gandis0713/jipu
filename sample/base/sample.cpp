@@ -181,15 +181,30 @@ void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 
     std::vector<hpc::Counter> usableCounters{};
     const auto& availableHpcCounters = gpu->counters();
-    for (const auto& counter : counters)
+
+    if (counters.empty())
     {
-        auto it = std::find(availableHpcCounters.begin(), availableHpcCounters.end(), counter);
-        if (it != availableHpcCounters.end())
+        for (const auto& counter : availableHpcCounters)
         {
-            // insert empty values.
-            m_profiling.insert({ counter, {} });
             usableCounters.push_back(counter);
         }
+    }
+    else
+    {
+        for (const auto& counter : counters)
+        {
+            auto it = std::find(availableHpcCounters.begin(), availableHpcCounters.end(), counter);
+            if (it != availableHpcCounters.end())
+            {
+                usableCounters.push_back(counter);
+            }
+        }
+    }
+
+    for (const auto& counter : usableCounters)
+    {
+        // insert empty values.
+        m_profiling.insert({ counter, {} });
     }
 
     hpc::SamplerDescriptor descriptor{ .counters = usableCounters };

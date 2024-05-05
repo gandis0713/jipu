@@ -153,29 +153,7 @@ void OBJModelSample::init()
 {
     Sample::init();
 
-    createHPCWatcher({ hpc::Counter::FragmentUtilization,
-                       hpc::Counter::NonFragmentUtilization,
-                       hpc::Counter::TilerUtilization,
-                       hpc::Counter::ExternalReadBytes,
-                       hpc::Counter::ExternalWriteBytes,
-                       hpc::Counter::ExternalReadStallRate,
-                       hpc::Counter::ExternalWriteStallRate,
-                       hpc::Counter::ExternalReadLatency0,
-                       hpc::Counter::ExternalReadLatency1,
-                       hpc::Counter::ExternalReadLatency2,
-                       hpc::Counter::ExternalReadLatency3,
-                       hpc::Counter::ExternalReadLatency4,
-                       hpc::Counter::ExternalReadLatency5,
-                       hpc::Counter::GeometryTotalInputPrimitives,
-                       hpc::Counter::GeometryTotalCullPrimitives,
-                       hpc::Counter::GeometryVisiblePrimitives,
-                       hpc::Counter::GeometrySampleCulledPrimitives,
-                       hpc::Counter::GeometryFaceXYPlaneCulledPrimitives,
-                       hpc::Counter::GeometryZPlaneCulledPrimitives,
-                       hpc::Counter::GeometryVisibleRate,
-                       hpc::Counter::GeometrySampleCulledRate,
-                       hpc::Counter::GeometryFaceXYPlaneCulledRate,
-                       hpc::Counter::GeometryZPlaneCulledRate });
+    createHPCWatcher();
 
     createCommandBuffer();
 
