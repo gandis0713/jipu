@@ -9,7 +9,7 @@ namespace device
 
 int Device::create(const char* name)
 {
-    auto ret = syscall::Interface::open(name, O_RDONLY);
+    auto ret = syscall::Interface::open(name, 0x0000 /* O_RDONLY */);
 
     return ret.second;
 }
