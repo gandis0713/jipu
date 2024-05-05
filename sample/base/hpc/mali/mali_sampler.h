@@ -23,6 +23,10 @@ public:
     void start() override;
     void stop() override;
     std::vector<Sample> samples(std::vector<Counter> counters = {}) override;
+    Sample sample(const Counter counter);
+
+private:
+    uint64_t time();
 
 private:
     const MaliGPU m_gpu{ -1 };
