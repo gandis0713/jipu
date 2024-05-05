@@ -7,4 +7,5 @@ project(
     LANGUAGES CXX
 )
 
+add_subdirectory(backend)
 add_subdirectory(hpc)
