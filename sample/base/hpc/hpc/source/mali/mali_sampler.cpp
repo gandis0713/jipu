@@ -7,8 +7,6 @@
 
 #include <stdexcept>
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -47,8 +45,6 @@ MaliSampler::MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor)
     , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()))) // empty counter sampler
 {
     auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()));
-
-    namespace abc = jipu::hpc::mali;
 
     // convert counters to hwcpipe_counter and and them.
     std::error_code ec;
@@ -137,4 +133,3 @@ uint64_t MaliSampler::time()
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu

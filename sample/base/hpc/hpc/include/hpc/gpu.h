@@ -6,8 +6,6 @@
 #include "export.h"
 #include "sampler.h"
 
-namespace jipu
-{
 namespace hpc
 {
 
@@ -28,4 +26,3 @@ public:
 };
 
 } // namespace hpc
-} // namespace jipu

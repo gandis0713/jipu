@@ -1,7 +1,5 @@
 #pragma once
 
-namespace jipu
-{
 namespace hpc
 {
 
@@ -25,4 +23,3 @@ enum class Counter
 };
 
 } // namespace hpc
-} // namespace jipu

@@ -8,8 +8,6 @@
 
 #include <cstdint>
 
-namespace jipu
-{
 namespace hpc
 {
 
@@ -74,4 +72,3 @@ protected:
 };
 
 } // namespace hpc
-} // namespace jipu

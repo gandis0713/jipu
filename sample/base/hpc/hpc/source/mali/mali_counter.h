@@ -6,8 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -33,4 +31,3 @@ const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependenc
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu

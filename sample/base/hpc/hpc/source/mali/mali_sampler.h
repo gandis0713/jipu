@@ -7,8 +7,6 @@
 
 #include <hwcpipe/sampler.hpp>
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -36,4 +34,3 @@ DOWN_CAST(MaliSampler, Sampler);
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu

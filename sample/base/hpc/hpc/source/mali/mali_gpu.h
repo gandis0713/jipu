@@ -4,8 +4,6 @@
 
 #include "mali_counter.h"
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -45,4 +43,3 @@ public:
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu

@@ -7,8 +7,6 @@
 #include <hwcpipe/counter_database.hpp>
 #include <hwcpipe/gpu.hpp>
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -90,4 +88,3 @@ void MaliGPU::collectCounters()
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu
