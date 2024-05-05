@@ -224,20 +224,20 @@ void DeferredSample::init()
 {
     Sample::init();
 
-    createHPCWatcher({ Counter::FragmentUtilization,
-                       Counter::NonFragmentUtilization,
-                       Counter::TilerUtilization,
-                       Counter::ExternalReadBytes,
-                       Counter::ExternalWriteBytes,
-                       Counter::ExternalReadStallRate,
-                       Counter::ExternalWriteStallRate,
-                       Counter::ExternalReadLatency0_127,
-                       Counter::ExternalReadLatency128_191,
-                       Counter::ExternalReadLatency192_255,
-                       Counter::ExternalReadLatency256_319,
-                       Counter::ExternalReadLatency320_383,
-                       Counter::ExternalReadLatency384Over,
-                       Counter::GeometryTotalInputPrimitives });
+    createHPCWatcher({ hpc::Counter::FragmentUtilization,
+                       hpc::Counter::NonFragmentUtilization,
+                       hpc::Counter::TilerUtilization,
+                       hpc::Counter::ExternalReadBytes,
+                       hpc::Counter::ExternalWriteBytes,
+                       hpc::Counter::ExternalReadStallRate,
+                       hpc::Counter::ExternalWriteStallRate,
+                       hpc::Counter::ExternalReadLatency0,
+                       hpc::Counter::ExternalReadLatency1,
+                       hpc::Counter::ExternalReadLatency2,
+                       hpc::Counter::ExternalReadLatency3,
+                       hpc::Counter::ExternalReadLatency4,
+                       hpc::Counter::ExternalReadLatency5,
+                       hpc::Counter::GeometryTotalInputPrimitives });
 
     createCommandBuffer();
 
