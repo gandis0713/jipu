@@ -18,22 +18,48 @@ namespace device
 namespace syscall
 {
 
-// template <class T>
 class Interface
 {
-private:
-    // using SyscallAPI_Type = T;
 
 public:
     static std::pair<std::error_code, int> open(const char* name, int oflags)
     {
-        const int result = ::open(name, oflags);
-        std::error_code ec;
+        const int fd = ::open(name, oflags);
 
+        std::error_code ec;
+        if (fd < 0)
+            ec = errorCode();
+
+        return std::make_pair(ec, fd);
+    }
+
+    static std::error_code close(int fd)
+    {
+        const int result = ::close(fd);
+
+        std::error_code ec;
         if (result < 0)
-            ec = { errno, std::generic_category() };
+            ec = errorCode();
+
+        return ec;
+    }
+
+    template <typename command_t, typename... args_t>
+    static std::pair<std::error_code, int> ioctl(int fd, command_t command, args_t&&... args)
+    {
+        const int result = ::ioctl(fd, command, std::forward<args_t>(args)...);
+
+        std::error_code ec;
+        if (result < 0)
+            ec = errorCode();
 
         return std::make_pair(ec, result);
+    }
+
+private:
+    static std::error_code errorCode()
+    {
+        return { errno, std::generic_category() };
     }
 };
 
