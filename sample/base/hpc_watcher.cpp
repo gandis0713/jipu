@@ -37,19 +37,6 @@ void HPCWatcher::update()
         for (const auto& sample : samples)
         {
             values.push_back(sample);
-
-            if (false)
-            {
-                switch (sample.type)
-                {
-                case hpc::Sample::Type::uint64:
-                    spdlog::error("{}: {}", hpc::name(sample.counter), sample.value.uint64);
-                    break;
-                case hpc::Sample::Type::float64:
-                    spdlog::error("{}: {:.3f}", hpc::name(sample.counter), sample.value.float64);
-                    break;
-                }
-            }
         }
 
         m_descriptor.listner(values);
