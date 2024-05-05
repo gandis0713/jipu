@@ -1,15 +1,13 @@
 #pragma once
 
-#include <errno.h>
-#include <sys/stat.h>
+#if defined(_WIN32)
+#include "api/windows.h"
+#else
+#include "api/unix.h"
+#endif
+
 #include <system_error>
-
 #include <utility>
-
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <unistd.h>
 
 namespace hpc
 {
@@ -17,14 +15,19 @@ namespace device
 {
 namespace syscall
 {
+namespace impl
+{
 
+template <class T>
 class Interface
 {
+private:
+    using SyscallAPI_T = T;
 
 public:
     static std::pair<std::error_code, int> open(const char* name, int oflags)
     {
-        const int fd = ::open(name, oflags);
+        const int fd = SyscallAPI_T::open(name, oflags);
 
         std::error_code ec;
         if (fd < 0)
@@ -35,7 +38,7 @@ public:
 
     static std::error_code close(int fd)
     {
-        const int result = ::close(fd);
+        const int result = SyscallAPI_T::close(fd);
 
         std::error_code ec;
         if (result < 0)
@@ -47,7 +50,7 @@ public:
     template <typename command_t, typename... args_t>
     static std::pair<std::error_code, int> ioctl(int fd, command_t command, args_t&&... args)
     {
-        const int result = ::ioctl(fd, command, std::forward<args_t>(args)...);
+        const int result = SyscallAPI_T::ioctl(fd, command, std::forward<args_t>(args)...);
 
         std::error_code ec;
         if (result < 0)
@@ -62,6 +65,13 @@ private:
         return { errno, std::generic_category() };
     }
 };
+} // namespace impl
+
+#if defined(WIN32)
+using Interface = impl::Interface<api::Windows>;
+#else
+using Interface = impl::Interface<api::Unix>;
+#endif
 
 } // namespace syscall
 } // namespace device
