@@ -42,7 +42,6 @@ public:
         return 0;
     }
 };
-};
 
 } // namespace api
 } // namespace syscall
