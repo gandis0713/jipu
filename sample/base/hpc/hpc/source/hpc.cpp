@@ -1,4 +1,4 @@
-#include "hpc.h"
+#include "hpc/hpc.h"
 
 #include "mali/mali_hpc.h"
 

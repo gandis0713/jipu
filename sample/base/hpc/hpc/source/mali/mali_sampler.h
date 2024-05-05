@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cast.h"
-#include "sampler.h"
+#include "hpc/sampler.h"
 
 #include "mali_gpu.h"
 

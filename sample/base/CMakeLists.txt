@@ -53,8 +53,6 @@ list(APPEND SRC_FILES
 if(ANDROID)
     list(APPEND SRC_FILES
         window_android.cpp
-        hwcpipe.cpp
-        hwcpipe.h
     )
 else()
     list(APPEND SRC_FILES
@@ -89,6 +87,7 @@ target_link_libraries(jipu_sample_base
     glm::glm
     KTX::ktx
     jipu::jipu
+    jipu::hpc
     imgui::imgui
 )
 
@@ -106,11 +105,10 @@ else()
         android
         ${log-lib}
     )
-    find_package(hwcpipe CONFIG REQUIRED)
-    target_link_libraries(jipu_sample_base PRIVATE hwcpipe::device hwcpipe::hwcpipe hwcpipe::device_private)
 endif()
 
-target_include_directories(jipu
+target_include_directories(jipu_sample_base
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/hpc/hpc/include>
 )

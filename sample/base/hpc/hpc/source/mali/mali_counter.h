@@ -1,6 +1,6 @@
 #pragma once
 
-#include "counter.h"
+#include "hpc/counter.h"
 
 #include <hwcpipe/hwcpipe_counter.h>
 #include <unordered_map>

@@ -1,11 +1,30 @@
-#include "counter.h"
+#pragma once
 
 namespace jipu
 {
 namespace hpc
 {
 
-const char* name(Counter counter)
+enum class Counter
+{
+    NonFragmentUtilization = 0,
+    FragmentUtilization,
+    TilerUtilization,
+    ExternalReadBytes,
+    ExternalWriteBytes,
+    ExternalReadStallRate,
+    ExternalWriteStallRate,
+    ExternalReadLatency0,
+    ExternalReadLatency1,
+    ExternalReadLatency2,
+    ExternalReadLatency3,
+    ExternalReadLatency4,
+    ExternalReadLatency5,
+    GeometryTotalInputPrimitives,
+    Count // total enum count
+};
+
+inline const char* name(Counter counter)
 {
     switch (counter)
     {

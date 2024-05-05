@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpu.h"
+#include "hpc/gpu.h"
 
 namespace jipu
 {
