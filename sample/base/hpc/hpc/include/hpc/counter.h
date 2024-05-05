@@ -21,6 +21,13 @@ enum class Counter : uint16_t
     ExternalReadLatency4,
     ExternalReadLatency5,
     GeometryTotalInputPrimitives,
+    GeometryTotalCullPrimitives,
+    GeometryVisiblePrimitives,
+    GeometryFaceXYPlaneCulledPrimitives,
+    GeometryZPlaneCulledPrimitives,
+    GeometryVisibleRate,
+    GeometryFaceXYPlaneCulledRate,
+    GeometryZPlaneCulledRate,
     Count // total enum count
 };
 

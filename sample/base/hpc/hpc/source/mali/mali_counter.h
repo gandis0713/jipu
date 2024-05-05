@@ -27,6 +27,13 @@ const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependenc
     { Counter::ExternalReadLatency4, { MaliExtBusRdLat320 } },
     { Counter::ExternalReadLatency5, { MaliExtBusRdLat384 } },
     { Counter::GeometryTotalInputPrimitives, { MaliGeomTotalPrim } },
+    { Counter::GeometryTotalCullPrimitives, { MaliGeomTotalCullPrim } },
+    { Counter::GeometryVisiblePrimitives, { MaliGeomVisiblePrim } },
+    { Counter::GeometryFaceXYPlaneCulledPrimitives, { MaliGeomFaceXYPlaneCullPrim } },
+    { Counter::GeometryZPlaneCulledPrimitives, { MaliGeomZPlaneCullPrim } },
+    { Counter::GeometryVisibleRate, { MaliGeomVisibleRate } },
+    { Counter::GeometryFaceXYPlaneCulledRate, { MaliGeomFaceXYPlaneCullRate } },
+    { Counter::GeometryZPlaneCulledRate, { MaliGeomZPlaneCullRate } },
 };
 
 } // namespace mali
