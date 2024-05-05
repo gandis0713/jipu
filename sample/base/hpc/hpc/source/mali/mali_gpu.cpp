@@ -7,8 +7,6 @@
 #include <hwcpipe/counter_database.hpp>
 #include <hwcpipe/gpu.hpp>
 
-#include "device/device.h"
-
 namespace hpc
 {
 namespace mali
@@ -75,9 +73,6 @@ void MaliGPU::collectCounters()
         spdlog::error("Mali GPU device {} is missing", m_deviceNumber);
         return;
     }
-
-    int fd = hpc::device::Device::create("/dev/mali0");
-    spdlog::debug("charles fd {}", fd);
 
     spdlog::debug("------------------------------------------------------------");
     spdlog::debug("Mali GPU {} Supported counters:", gpu.get_device_number());
