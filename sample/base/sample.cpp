@@ -230,6 +230,13 @@ void Sample::profilingWindow()
             drawPolyline("External Read Latency 4", m_profiling[hpc::Counter::ExternalReadLatency4]);
             drawPolyline("External Read Latency 5", m_profiling[hpc::Counter::ExternalReadLatency5]);
             drawPolyline("Total Input Primitives", m_profiling[hpc::Counter::GeometryTotalInputPrimitives]);
+            drawPolyline("Total Culled Primitives", m_profiling[hpc::Counter::GeometryTotalCullPrimitives]);
+            drawPolyline("Visible Primitives", m_profiling[hpc::Counter::GeometryVisiblePrimitives]);
+            drawPolyline("Face/XY Plane Culled Primitives", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledPrimitives]);
+            drawPolyline("Z Plane Culled Primitives", m_profiling[hpc::Counter::GeometryZPlaneCulledPrimitives]);
+            drawPolyline("Visible Primitives Rate", m_profiling[hpc::Counter::GeometryVisibleRate], "%");
+            drawPolyline("Face/XY Plane Culled Primitives Rate", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledRate], "%");
+            drawPolyline("Z Plane Culled Primitives Rate", m_profiling[hpc::Counter::GeometryZPlaneCulledRate], "%");
             ImGui::Separator();
         } });
 }
