@@ -58,7 +58,7 @@ MaliSampler::MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor)
             {
                 ec = config.add_counter(dependency);
                 if (ec)
-                    spdlog::error("GPU {} counter not supported by this GPU.", static_cast<uint32_t>(counter));
+                    spdlog::error("GPU {} counter not supported by this GPU.", static_cast<std::underlying_type_t<Counter>>(counter));
             }
         }
     }
