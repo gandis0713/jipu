@@ -31,18 +31,9 @@ void HPCWatcher::update()
     if (durationTime < period)
         return;
 
-    auto samples = m_descriptor.sampler->samples();
-    {
-        std::vector<hpc::Sample> values{};
-        for (const auto& sample : samples)
-        {
-            values.push_back(sample);
-        }
+    m_descriptor.listner(m_descriptor.sampler->samples());
 
-        m_descriptor.listner(values);
-
-        m_time = currentTime;
-    }
+    m_time = currentTime;
 }
 
 } // namespace jipu
