@@ -87,7 +87,7 @@ target_link_libraries(jipu_sample_base
     glm::glm
     KTX::ktx
     jipu::jipu
-    jipu::hpc
+    hpc::hpc
     imgui::imgui
 )
 

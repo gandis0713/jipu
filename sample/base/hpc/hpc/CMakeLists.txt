@@ -32,7 +32,7 @@ if(ANDROID)
 endif()
 
 add_library(hpc STATIC ${SRC_FILES})
-add_library(jipu::hpc ALIAS hpc)
+add_library(hpc::hpc ALIAS hpc)
 
 target_include_directories(
     hpc PUBLIC
@@ -52,6 +52,7 @@ endif()
 
 target_link_libraries(hpc PRIVATE
     spdlog::spdlog_header_only
+    hpc::device
 )
 
 if(ANDROID)
