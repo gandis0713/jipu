@@ -13,7 +13,7 @@ namespace hpc
 
 struct Sample
 {
-    enum class Type
+    enum class Type : uint8_t
     {
         uint64,
         float64

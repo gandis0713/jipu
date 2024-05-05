@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstdint>
+
 namespace hpc
 {
 
-enum class Counter
+enum class Counter : uint16_t
 {
     NonFragmentUtilization = 0,
     FragmentUtilization,
