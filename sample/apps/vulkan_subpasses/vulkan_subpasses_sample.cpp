@@ -114,7 +114,14 @@ void VulkanSubpassesSample::init()
                        hpc::Counter::ExternalReadLatency3,
                        hpc::Counter::ExternalReadLatency4,
                        hpc::Counter::ExternalReadLatency5,
-                       hpc::Counter::GeometryTotalInputPrimitives });
+                       hpc::Counter::GeometryTotalInputPrimitives,
+                       hpc::Counter::GeometryTotalCullPrimitives,
+                       hpc::Counter::GeometryVisiblePrimitives,
+                       hpc::Counter::GeometryFaceXYPlaneCulledPrimitives,
+                       hpc::Counter::GeometryZPlaneCulledPrimitives,
+                       hpc::Counter::GeometryVisibleRate,
+                       hpc::Counter::GeometryFaceXYPlaneCulledRate,
+                       hpc::Counter::GeometryZPlaneCulledRate });
 
     createCommandBuffer();
 
@@ -1050,7 +1057,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         // Rasterization
         RasterizationStage rasterizationStage{};
         rasterizationStage.sampleCount = m_sampleCount;
-        rasterizationStage.cullMode = CullMode::kNone;
+        rasterizationStage.cullMode = CullMode::kBack;
         rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
         // shader module
