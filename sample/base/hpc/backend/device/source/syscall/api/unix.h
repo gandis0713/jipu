@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -47,6 +48,12 @@ public:
     static int munmap(args_t&&... args)
     {
         return ::munmap(std::forward<args_t>(args)...);
+    }
+
+    template <typename... args_t>
+    static int poll(args_t&&... args)
+    {
+        return ::poll(std::forward<args_t>(args)...);
     }
 };
 

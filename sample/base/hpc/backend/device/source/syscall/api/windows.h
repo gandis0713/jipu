@@ -17,17 +17,17 @@ public:
     template <typename... args_t>
     static int open(args_t&&... args)
     {
-        return 0;
+        return -1;
     }
     template <typename... args_t>
     static int close(args_t&&... args)
     {
-        return 0;
+        return -1;
     }
     template <typename... args_t>
     static int ioctl(args_t&&... args)
     {
-        return 0;
+        return -1;
     }
 
     template <typename... args_t>
@@ -39,7 +39,13 @@ public:
     template <typename... args_t>
     static int munmap(args_t&&... args)
     {
-        return 0;
+        return -1;
+    }
+
+    template <typename... args_t>
+    static int poll(args_t&&... args)
+    {
+        return -1;
     }
 };
 

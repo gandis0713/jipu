@@ -59,6 +59,18 @@ public:
         return std::make_pair(ec, result);
     }
 
+    static std::pair<std::error_code, int> poll(struct pollfd* fds, nfds_t nfds, int timeout)
+    {
+        const int result = SyscallAPI_T::poll(fds, nfds, timeout);
+
+        std::error_code ec;
+
+        if (result < 0)
+            ec = errorCode();
+
+        return std::make_pair(ec, result);
+    }
+
 private:
     static std::error_code errorCode()
     {
