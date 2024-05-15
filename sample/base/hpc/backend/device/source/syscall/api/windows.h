@@ -2,6 +2,16 @@
 
 #include <utility>
 
+// TODO: support POSIX on windows?
+using nfds_t = unsigned int;
+
+struct pollfd
+{
+    int fd;
+    short events;
+    short revents;
+};
+
 namespace hpc
 {
 namespace device
