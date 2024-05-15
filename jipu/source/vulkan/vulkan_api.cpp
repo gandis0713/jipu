@@ -27,7 +27,7 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
 
 #if defined(VK_VERSION_1_1)
     // Is not available in Vulkan 1.0, so allow nullptr
-    EnumerateInstanceVersion = reinterpret_cast<decltype(EnumerateInstanceVersion)>(GetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
+    GET_GLOBAL_PROC(EnumerateInstanceVersion);
 #endif
 
     return true;
