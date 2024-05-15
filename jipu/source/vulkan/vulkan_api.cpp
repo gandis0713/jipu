@@ -21,9 +21,11 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
         return false;
     }
 
+#if defined(VK_VERSION_1_0)
     GET_GLOBAL_PROC(CreateInstance);
     GET_GLOBAL_PROC(EnumerateInstanceExtensionProperties);
     GET_GLOBAL_PROC(EnumerateInstanceLayerProperties);
+#endif
 
 #if defined(VK_VERSION_1_1)
     // Is not available in Vulkan 1.0, so allow nullptr
