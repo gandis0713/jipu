@@ -26,16 +26,16 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     // GRAPHICS and COMPUTE imply TRANSFER
     constexpr uint32_t queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
 
-    std::unordered_set<uint32_t> queueFamilyIndices{};
+    std::unordered_map<uint32_t, VkQueueFamilyProperties> queueFamilies{};
     for (uint32_t i = 0; i < info.queueFamilyProperties.size(); ++i)
     {
         if ((info.queueFamilyProperties[i].queueFlags & queueFlags) == queueFlags)
         {
-            queueFamilyIndices.insert(i);
+            queueFamilies.insert({ i, info.queueFamilyProperties[i] });
         }
     }
 
-    createDevice(queueFamilyIndices);
+    createDevice(queueFamilies);
 
     const VulkanDeviceKnobs& deviceKnobs = static_cast<const VulkanDeviceKnobs&>(info);
     if (!vkAPI.loadDeviceProcs(m_device, deviceKnobs))
@@ -44,8 +44,8 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     }
 
     // get queues.
-    m_queues.resize(queueFamilyIndices.size());
-    for (const uint32_t& index : queueFamilyIndices)
+    m_queues.resize(queueFamilies.size());
+    for (const auto& [index, _] : queueFamilies)
     {
         VkQueue queue{};
         vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
@@ -249,23 +249,24 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
     return m_descriptorPool;
 }
 
-void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices)
+void VulkanDevice::createDevice(const std::unordered_map<uint32_t, VkQueueFamilyProperties>& queueFamilies)
 {
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos;
 
     float queuePriority = 1.0f;
-    for (const uint32_t queueFamilyIndex : queueFamilyIndices)
+    for (const auto& [index, queueFamily] : queueFamilies)
     {
         VkDeviceQueueCreateInfo deviceQueueCreateInfo{};
         deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        deviceQueueCreateInfo.queueFamilyIndex = queueFamilyIndex;
-        deviceQueueCreateInfo.queueCount = 1;
+        deviceQueueCreateInfo.queueFamilyIndex = index;
+        deviceQueueCreateInfo.queueCount = queueFamily.queueCount;
         deviceQueueCreateInfo.pQueuePriorities = &queuePriority;
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
     }
 
     auto& vulkanPhysicalDevice = downcast(m_physicalDevice);
 
+    // do not use layer for device. because it is deprecated.
     VkDeviceCreateInfo deviceCreateInfo{};
     deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
@@ -276,8 +277,6 @@ void VulkanDevice::createDevice(const std::unordered_set<uint32_t>& queueFamilyI
 
     deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
     deviceCreateInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
-
-    // TODO: Layer.
 
     VkPhysicalDevice physicalDevice = downcast(m_physicalDevice).getVkPhysicalDevice();
     VkResult result = vkAPI.CreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &m_device);
