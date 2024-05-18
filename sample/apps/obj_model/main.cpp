@@ -111,7 +111,7 @@ private:
 
     std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
 
-    uint32_t m_sampleCount = 4;
+    uint32_t m_sampleCount = 1;
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
