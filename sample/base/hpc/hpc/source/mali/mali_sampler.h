@@ -1,14 +1,12 @@
 #pragma once
 
 #include "cast.h"
-#include "sampler.h"
+#include "hpc/sampler.h"
 
 #include "mali_gpu.h"
 
 #include <hwcpipe/sampler.hpp>
 
-namespace jipu
-{
 namespace hpc
 {
 namespace mali
@@ -23,6 +21,10 @@ public:
     void start() override;
     void stop() override;
     std::vector<Sample> samples(std::vector<Counter> counters = {}) override;
+    Sample sample(const Counter counter);
+
+private:
+    uint64_t time();
 
 private:
     const MaliGPU m_gpu{ -1 };
@@ -32,4 +34,3 @@ DOWN_CAST(MaliSampler, Sampler);
 
 } // namespace mali
 } // namespace hpc
-} // namespace jipu

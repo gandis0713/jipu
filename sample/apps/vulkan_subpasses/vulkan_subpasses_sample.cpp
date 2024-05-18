@@ -101,13 +101,7 @@ void VulkanSubpassesSample::init()
 {
     Sample::init();
 
-    createHPCWatcher({ Counter::FragmentUtilization,
-                       Counter::NonFragmentUtilization,
-                       Counter::TilerUtilization,
-                       Counter::ExternalReadBytes,
-                       Counter::ExternalWriteBytes,
-                       Counter::ExternalReadStallRate,
-                       Counter::ExternalWriteStallRate });
+    createHPCWatcher();
 
     createCommandBuffer();
 
@@ -1043,7 +1037,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         // Rasterization
         RasterizationStage rasterizationStage{};
         rasterizationStage.sampleCount = m_sampleCount;
-        rasterizationStage.cullMode = CullMode::kNone;
+        rasterizationStage.cullMode = CullMode::kBack;
         rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
         // shader module

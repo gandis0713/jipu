@@ -73,7 +73,7 @@ public:
     VulkanAPI vkAPI{};
 
 private:
-    void createDevice(const std::unordered_set<uint32_t>& queueFamilyIndices);
+    void createDevice(const std::unordered_map<uint32_t, VkQueueFamilyProperties>& queueFamilies);
     const std::vector<const char*> getRequiredDeviceExtensions();
 
 private:

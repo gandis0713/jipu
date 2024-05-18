@@ -1,9 +1,7 @@
-#include "hpc.h"
+#include "hpc/hpc.h"
 
 #include "mali/mali_hpc.h"
 
-namespace jipu
-{
 namespace hpc
 {
 
@@ -13,4 +11,3 @@ std::vector<GPU::Ptr> gpus()
 }
 
 } // namespace hpc
-} // namespace jipu

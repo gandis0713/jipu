@@ -1,7 +1,5 @@
-#include "sampler.h"
+#include "hpc/sampler.h"
 
-namespace jipu
-{
 namespace hpc
 {
 
@@ -16,4 +14,3 @@ const std::vector<Counter>& Sampler::counters() const
 }
 
 } // namespace hpc
-} // namespace jipu

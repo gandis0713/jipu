@@ -41,12 +41,7 @@ void OffscreenSample::init()
 {
     Sample::init();
 
-    createHPCWatcher({ Counter::FragmentUtilization,
-                       Counter::NonFragmentUtilization,
-                       Counter::ExternalReadBytes,
-                       Counter::ExternalWriteBytes,
-                       Counter::ExternalReadStallRate,
-                       Counter::ExternalWriteStallRate });
+    createHPCWatcher();
 
     createCommandBuffer();
 

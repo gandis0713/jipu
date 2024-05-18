@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.21)
+
+if(ANDROID)
+    find_package(hwcpipe CONFIG REQUIRED)
+endif()
+
+find_package(spdlog CONFIG REQUIRED)
+
+set(SRC_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/hpc.cpp
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_hpc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_hpc.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/sampler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/hpc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/gpu.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/counter.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/export.h
+)
+
+if(ANDROID)
+    list(APPEND SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_counter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_counter.h
+    )
+endif()
+
+add_library(hpc STATIC ${SRC_FILES})
+add_library(hpc::hpc ALIAS hpc)
+
+target_include_directories(
+    hpc PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>
+)
+
+if(ANDROID)
+    target_include_directories(
+        hpc
+        PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source/mali>
+    )
+endif()
+
+target_link_libraries(hpc PRIVATE
+    spdlog::spdlog_header_only
+    hpc::device
+)
+
+if(ANDROID)
+    target_link_libraries(hpc PRIVATE
+        hwcpipe::device
+        hwcpipe::hwcpipe
+        hwcpipe::device_private
+    )
+endif()

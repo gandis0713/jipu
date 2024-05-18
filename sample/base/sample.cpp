@@ -156,38 +156,21 @@ void Sample::drawImGui(CommandEncoder* commandEncoder, TextureView& renderView)
 
 void Sample::onHPCListner(Values values)
 {
-    for (const auto& [k, v] : values)
+    for (const auto& value : values)
     {
-        switch (k)
+        switch (value.type)
         {
-        case Counter::FragmentUtilization:
-            m_profiling.framgmentUtilization.push_back(v);
+        case hpc::Sample::Type::uint64:
+            m_profiling[value.counter].push_back(static_cast<float>(value.value.uint64));
             break;
-        case Counter::NonFragmentUtilization:
-            m_profiling.nonFramgmentUtilization.push_back(v);
-            break;
-        case Counter::TilerUtilization:
-            m_profiling.tilerUtilization.push_back(v);
-            break;
-        case Counter::ExternalReadBytes:
-            m_profiling.externalReadBytes.push_back(v);
-            break;
-        case Counter::ExternalWriteBytes:
-            m_profiling.externalWriteBytes.push_back(v);
-            break;
-        case Counter::ExternalReadStallRate:
-            m_profiling.externalReadStallRate.push_back(v);
-            break;
-        case Counter::ExternalWriteStallRate:
-            m_profiling.externalWriteStallRate.push_back(v);
+        case hpc::Sample::Type::float64:
+            m_profiling[value.counter].push_back(static_cast<float>(value.value.float64));
             break;
         }
-
-        // spdlog::debug("{}: {}", static_cast<uint32_t>(k), v);
     }
 }
 
-void Sample::createHPCWatcher(std::vector<Counter> counters)
+void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 {
     auto gpus = hpc::gpus();
     if (gpus.empty())
@@ -196,8 +179,35 @@ void Sample::createHPCWatcher(std::vector<Counter> counters)
     // TODO: select gpu.
     auto gpu = gpus[0].get();
 
-    const auto& hpcCounters = gpu->counters();
-    hpc::SamplerDescriptor descriptor{ .counters = hpcCounters };
+    std::vector<hpc::Counter> usableCounters{};
+    const auto& availableHpcCounters = gpu->counters();
+
+    if (counters.empty())
+    {
+        for (const auto& counter : availableHpcCounters)
+        {
+            usableCounters.push_back(counter);
+        }
+    }
+    else
+    {
+        for (const auto& counter : counters)
+        {
+            auto it = std::find(availableHpcCounters.begin(), availableHpcCounters.end(), counter);
+            if (it != availableHpcCounters.end())
+            {
+                usableCounters.push_back(counter);
+            }
+        }
+    }
+
+    for (const auto& counter : usableCounters)
+    {
+        // insert empty values.
+        m_profiling.insert({ counter, {} });
+    }
+
+    hpc::SamplerDescriptor descriptor{ .counters = usableCounters };
     hpc::Sampler::Ptr sampler = gpu->create(descriptor);
 
     HPCWatcherDescriptor watcherDescriptor{
@@ -205,6 +215,7 @@ void Sample::createHPCWatcher(std::vector<Counter> counters)
         .counters = counters,
         .listner = std::bind(&Sample::onHPCListner, this, std::placeholders::_1)
     };
+
     m_hpcWatcher = std::make_unique<HPCWatcher>(std::move(watcherDescriptor));
     m_hpcWatcher->start();
 }
@@ -220,13 +231,29 @@ void Sample::profilingWindow()
 
             ImGui::Text("GPU Profiling");
             ImGui::Separator();
-            drawPolyline("Fragment Usage", m_profiling.framgmentUtilization, "%");
-            drawPolyline("Non Fragment Usage", m_profiling.nonFramgmentUtilization, "%");
-            drawPolyline("Tiler Usage", m_profiling.tilerUtilization, "%");
-            drawPolyline("External Read Bytes", m_profiling.externalReadBytes);
-            drawPolyline("External Write Bytes", m_profiling.externalWriteBytes);
-            drawPolyline("External Read Stall Rate", m_profiling.externalReadStallRate, "%");
-            drawPolyline("External Write Stall Rate", m_profiling.externalWriteStallRate, "%");
+            drawPolyline("Fragment Usage", m_profiling[hpc::Counter::FragmentUtilization], "%");
+            drawPolyline("Non Fragment Usage", m_profiling[hpc::Counter::NonFragmentUtilization], "%");
+            drawPolyline("Tiler Usage", m_profiling[hpc::Counter::TilerUtilization], "%");
+            drawPolyline("External Read Bytes", m_profiling[hpc::Counter::ExternalReadBytes]);
+            drawPolyline("External Write Bytes", m_profiling[hpc::Counter::ExternalWriteBytes]);
+            drawPolyline("External Read Stall Rate", m_profiling[hpc::Counter::ExternalReadStallRate], "%");
+            drawPolyline("External Write Stall Rate", m_profiling[hpc::Counter::ExternalWriteStallRate], "%");
+            drawPolyline("External Read Latency 0", m_profiling[hpc::Counter::ExternalReadLatency0]);
+            drawPolyline("External Read Latency 1", m_profiling[hpc::Counter::ExternalReadLatency1]);
+            drawPolyline("External Read Latency 2", m_profiling[hpc::Counter::ExternalReadLatency2]);
+            drawPolyline("External Read Latency 3", m_profiling[hpc::Counter::ExternalReadLatency3]);
+            drawPolyline("External Read Latency 4", m_profiling[hpc::Counter::ExternalReadLatency4]);
+            drawPolyline("External Read Latency 5", m_profiling[hpc::Counter::ExternalReadLatency5]);
+            drawPolyline("Total Input Primitives", m_profiling[hpc::Counter::GeometryTotalInputPrimitives]);
+            drawPolyline("Total Culled Primitives", m_profiling[hpc::Counter::GeometryTotalCullPrimitives]);
+            drawPolyline("Visible Primitives", m_profiling[hpc::Counter::GeometryVisiblePrimitives]);
+            drawPolyline("Sample Culled Primitives", m_profiling[hpc::Counter::GeometrySampleCulledPrimitives]);
+            drawPolyline("Face/XY Plane Culled Primitives", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledPrimitives]);
+            drawPolyline("Z Plane Culled Primitives", m_profiling[hpc::Counter::GeometryZPlaneCulledPrimitives]);
+            drawPolyline("Visible Culled Rate", m_profiling[hpc::Counter::GeometryVisibleRate], "%");
+            drawPolyline("Sample Culled Rate", m_profiling[hpc::Counter::GeometrySampleCulledRate], "%");
+            drawPolyline("Face/XY Plane Culled Rate", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledRate], "%");
+            drawPolyline("Z Plane Culled Rate", m_profiling[hpc::Counter::GeometryZPlaneCulledRate], "%");
             ImGui::Separator();
         } });
 }

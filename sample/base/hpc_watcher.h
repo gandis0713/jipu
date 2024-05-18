@@ -10,24 +10,13 @@
 namespace jipu
 {
 
-enum class Counter
-{
-    NonFragmentUtilization,
-    FragmentUtilization,
-    TilerUtilization,
-    ExternalReadBytes,
-    ExternalWriteBytes,
-    ExternalReadStallRate,
-    ExternalWriteStallRate
-};
-
-using Values = std::unordered_map<Counter, float>;
+using Values = std::vector<hpc::Sample>;
 using Listner = std::function<void(Values)>;
 
 struct HPCWatcherDescriptor
 {
     hpc::Sampler::Ptr sampler = nullptr;
-    std::vector<Counter> counters{};
+    std::vector<hpc::Counter> counters{};
     Listner listner{};
 };
 

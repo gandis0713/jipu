@@ -67,6 +67,18 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
                  VK_API_VERSION_MINOR(m_info.physicalDeviceProperties.apiVersion),
                  VK_API_VERSION_PATCH(m_info.physicalDeviceProperties.apiVersion));
 
+    // currently only support AAA.BBB.CCC.
+    // TODO: support AAA.BBB.CCC.DDD for NVIDIA and AAA.BBB for intel windows
+    spdlog::info("Vulkan Device Driver Version: {}.{}.{}",
+                 VK_API_VERSION_MAJOR(m_info.physicalDeviceProperties.driverVersion),
+                 VK_API_VERSION_MINOR(m_info.physicalDeviceProperties.driverVersion),
+                 VK_API_VERSION_PATCH(m_info.physicalDeviceProperties.driverVersion));
+
+    spdlog::info("Physical Device Id: {}", static_cast<uint32_t>(m_info.physicalDeviceProperties.deviceID));
+    spdlog::info("Physical Device Name: {}", m_info.physicalDeviceProperties.deviceName);
+    spdlog::info("Physical Device Type: {}", static_cast<uint32_t>(m_info.physicalDeviceProperties.deviceType));
+    spdlog::info("Physical Device Vender ID: {}", static_cast<uint32_t>(m_info.physicalDeviceProperties.vendorID));
+
     vkAPI.GetPhysicalDeviceFeatures(m_physicalDevice, &m_info.physicalDeviceFeatures);
 
     // Gather device memory properties.
@@ -76,6 +88,16 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
         m_info.memoryTypes.assign(memoryProperties.memoryTypes, memoryProperties.memoryTypes + memoryProperties.memoryTypeCount);
         m_info.memoryHeaps.assign(memoryProperties.memoryHeaps, memoryProperties.memoryHeaps + memoryProperties.memoryHeapCount);
+
+        for (const auto& memoryType : m_info.memoryTypes)
+        {
+            spdlog::info("Heap index: {}, property flags: {}", memoryType.heapIndex, static_cast<uint32_t>(memoryType.propertyFlags));
+        }
+
+        for (const auto& memoryHeap : m_info.memoryHeaps)
+        {
+            spdlog::info("Heap size: {}, flags: {}", memoryHeap.size, static_cast<uint32_t>(memoryHeap.flags));
+        }
     }
 
     // Gather queue Family Properties.
@@ -85,6 +107,11 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
         m_info.queueFamilyProperties.resize(queueFamilyCount);
         vkAPI.GetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, m_info.queueFamilyProperties.data());
+
+        for (const auto& queueFamilyProperty : m_info.queueFamilyProperties)
+        {
+            spdlog::info("queue flags: {}, queue count: {}", static_cast<uint32_t>(queueFamilyProperty.queueFlags), queueFamilyProperty.queueCount);
+        }
     }
 
     // Gather device layer properties.

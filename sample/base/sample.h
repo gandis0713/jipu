@@ -71,22 +71,13 @@ protected:
     std::unique_ptr<HPCWatcher> m_hpcWatcher = nullptr;
 
 protected:
-    void createHPCWatcher(std::vector<Counter> counters);
+    void createHPCWatcher(std::vector<hpc::Counter> counters = {});
     void drawPolyline(std::string title, std::deque<float> data, std::string unit = "");
     void profilingWindow();
 
 private:
     FPS m_fps{};
-    struct Profiling
-    {
-        std::deque<float> framgmentUtilization{};
-        std::deque<float> nonFramgmentUtilization{};
-        std::deque<float> tilerUtilization{};
-        std::deque<float> externalReadBytes{};
-        std::deque<float> externalWriteBytes{};
-        std::deque<float> externalReadStallRate{};
-        std::deque<float> externalWriteStallRate{};
-    } m_profiling{};
+    std::unordered_map<hpc::Counter, std::deque<float>> m_profiling{};
 };
 
 } // namespace jipu

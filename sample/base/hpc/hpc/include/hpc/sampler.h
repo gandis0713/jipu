@@ -8,14 +8,12 @@
 
 #include <cstdint>
 
-namespace jipu
-{
 namespace hpc
 {
 
 struct Sample
 {
-    enum class Type
+    enum class Type : uint8_t
     {
         uint64,
         float64
@@ -36,7 +34,7 @@ struct Sample
         }
     };
 
-    Counter counter;
+    hpc::Counter counter;
     uint64_t timestamp{};
     Value value{ static_cast<uint64_t>(0) };
     Type type{ Type::uint64 };
@@ -44,7 +42,7 @@ struct Sample
 
 struct SamplerDescriptor
 {
-    std::vector<Counter> counters{};
+    std::vector<hpc::Counter> counters{};
 };
 
 class HPC_EXPORT Sampler
@@ -74,4 +72,3 @@ protected:
 };
 
 } // namespace hpc
-} // namespace jipu
