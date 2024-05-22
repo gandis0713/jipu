@@ -204,11 +204,6 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDesc
     {
         throw std::runtime_error("Failed to create semephore for present.");
     }
-
-    if (vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_renderSemaphore) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create semaphore for rendering.");
-    }
 }
 
 VulkanSwapchain::~VulkanSwapchain()
@@ -217,7 +212,6 @@ VulkanSwapchain::~VulkanSwapchain()
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_presentSemaphore, nullptr);
-    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_renderSemaphore, nullptr);
 
     /* do not delete VkImages from swapchain. */
 
@@ -249,8 +243,9 @@ void VulkanSwapchain::present(Queue& queue)
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &m_renderSemaphore;
+    auto waitSemaphores = downcast(queue).getSemaphores();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+    presentInfo.pWaitSemaphores = waitSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { m_swapchain };
     presentInfo.swapchainCount = 1;
@@ -283,11 +278,6 @@ VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getPresentSemaphore() const
 {
     return { m_presentSemaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-}
-
-std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getRenderSemaphore() const
-{
-    return { m_renderSemaphore, VK_PIPELINE_STAGE_NONE };
 }
 
 // Convert Helper

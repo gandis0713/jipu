@@ -21,6 +21,7 @@ public:
 
 public:
     VkQueue getVkQueue() const;
+    std::vector<VkSemaphore> getSemaphores() const;
 
 protected:
     VulkanDevice& m_device;
@@ -28,6 +29,7 @@ protected:
 private:
     VkQueue m_queue = VK_NULL_HANDLE;
     VkFence m_fence = VK_NULL_HANDLE;
+    VkSemaphore m_semaphore = VK_NULL_HANDLE;
 
     // TODO: use pair.
     uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice

@@ -62,7 +62,6 @@ public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
     std::pair<VkSemaphore, VkPipelineStageFlags> getPresentSemaphore() const;
-    std::pair<VkSemaphore, VkPipelineStageFlags> getRenderSemaphore() const;
 
 private:
     VulkanDevice& m_device;
@@ -74,7 +73,6 @@ private:
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
     VkSemaphore m_presentSemaphore = VK_NULL_HANDLE;
-    VkSemaphore m_renderSemaphore = VK_NULL_HANDLE;
     uint32_t m_acquiredImageIndex = 0u;
 };
 
