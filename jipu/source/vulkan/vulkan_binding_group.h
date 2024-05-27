@@ -35,6 +35,9 @@ private:
 private:
     VulkanDevice& m_device;
     const VulkanBindingGroupDescriptor m_descriptor;
+
+public:
+    using Ref = std::reference_wrapper<VulkanBindingGroup>;
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
 
