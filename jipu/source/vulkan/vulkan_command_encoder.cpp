@@ -108,6 +108,10 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     vkAPI.CmdCopyBufferToImage(commandBuffer,
                                vulkanBuffer.getVkBuffer(),
                                vulkanTexture.getVkImage(),
+                               // dstImageLayout must be
+                               //   VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR
+                               //   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+                               //   VK_IMAGE_LAYOUT_GENERAL
                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                1,
                                &region);
