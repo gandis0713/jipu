@@ -104,6 +104,7 @@ uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage);
 // VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
 VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
-VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout);
+VkPipelineStageFlags GenerateSrcPipelineStage(VkImageLayout layout);
+VkPipelineStageFlags GenerateDstPipelineStage(VkImageLayout layout);
 
 } // namespace jipu

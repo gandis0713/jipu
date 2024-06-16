@@ -1037,7 +1037,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         // Rasterization
         RasterizationStage rasterizationStage{};
         rasterizationStage.sampleCount = m_sampleCount;
-        rasterizationStage.cullMode = CullMode::kBack;
+        rasterizationStage.cullMode = CullMode::kNone;
         rasterizationStage.frontFace = FrontFace::kCounterClockwise;
 
         // shader module

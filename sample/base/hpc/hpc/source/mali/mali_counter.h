@@ -13,8 +13,8 @@ namespace mali
 
 // extern const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependencies;
 const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependencies{
-    { Counter::NonFragmentUtilization, { MaliFragQueueUtil } },
-    { Counter::FragmentUtilization, { MaliNonFragQueueUtil } },
+    { Counter::NonFragmentUtilization, { MaliNonFragQueueUtil } },
+    { Counter::FragmentUtilization, { MaliFragQueueUtil } },
     { Counter::TilerUtilization, { MaliTilerUtil } },
     { Counter::ExternalReadBytes, { MaliExtBusRdBy } },
     { Counter::ExternalWriteBytes, { MaliExtBusWrBy } },

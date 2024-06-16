@@ -36,6 +36,16 @@ VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor
 
     device.vkAPI.GetDeviceQueue(device.getVkDevice(), m_index, 0, &m_queue);
 
+    // create semaphore
+    VkSemaphoreCreateInfo semaphoreCreateInfo{};
+    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreCreateInfo.pNext = nullptr;
+    semaphoreCreateInfo.flags = 0;
+    if (device.vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_semaphore) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create semaphore in queue.");
+    }
+
     // create fence.
     VkFenceCreateInfo fenceCreateInfo{};
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -45,7 +55,7 @@ VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor
 
     if (device.vkAPI.CreateFence(device.getVkDevice(), &fenceCreateInfo, nullptr, &m_fence) != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create render queue fence.");
+        throw std::runtime_error("Failed to create render queue fence in queue.");
     }
 }
 
@@ -57,8 +67,10 @@ VulkanQueue::~VulkanQueue()
     // wait idle state before destroy semaphore.
     vkAPI.QueueWaitIdle(m_queue);
 
-    // Doesn't need to destroy VkQueue.
     vkAPI.DestroyFence(vulkanDevice.getVkDevice(), m_fence, nullptr);
+    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_semaphore, nullptr);
+
+    // Doesn't need to destroy VkQueue.
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers)
@@ -82,10 +94,9 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapcha
 
     auto& renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
     auto acquireImageSemaphore = vulkanSwapchain.getPresentSemaphore();
-    auto renderSemaphore = vulkanSwapchain.getRenderSemaphore();
 
     // add signal semaphore to signal that render command buffer is finished.
-    submits[renderCommandBufferIndex].signal.first.push_back(renderSemaphore.first);
+    submits[renderCommandBufferIndex].signal.first.push_back(m_semaphore);
 
     // add wait semaphore to wait next swapchain image.
     submits[renderCommandBufferIndex].wait.first.push_back(acquireImageSemaphore.first);
@@ -99,6 +110,11 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapcha
 VkQueue VulkanQueue::getVkQueue() const
 {
     return m_queue;
+}
+
+std::vector<VkSemaphore> VulkanQueue::getSemaphores() const
+{
+    return { m_semaphore };
 }
 
 std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer::Ref> commandBuffers)

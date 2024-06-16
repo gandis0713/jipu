@@ -176,8 +176,8 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLay
     barrier.image = m_resource.image;
     barrier.subresourceRange = range;
 
-    VkPipelineStageFlags srcStage = GeneratePipelineStage(oldLayout);
-    VkPipelineStageFlags dstStage = GeneratePipelineStage(newLayout);
+    VkPipelineStageFlags srcStage = GenerateSrcPipelineStage(oldLayout);
+    VkPipelineStageFlags dstStage = GenerateDstPipelineStage(newLayout);
 
     setPipelineBarrier(commandBuffer, srcStage, dstStage, barrier);
 }
@@ -453,7 +453,7 @@ VkAccessFlags GenerateAccessFlags(VkImageLayout layout)
     return accessFlags;
 }
 
-VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout)
+VkPipelineStageFlags GenerateSrcPipelineStage(VkImageLayout layout)
 {
     VkPipelineStageFlags pipelineStage = 0x0u;
 
@@ -462,6 +462,28 @@ VkPipelineStageFlags GeneratePipelineStage(VkImageLayout layout)
     default:
     case VK_IMAGE_LAYOUT_UNDEFINED:
         pipelineStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        pipelineStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+    }
+
+    return pipelineStage;
+}
+
+VkPipelineStageFlags GenerateDstPipelineStage(VkImageLayout layout)
+{
+    VkPipelineStageFlags pipelineStage = 0x0u;
+
+    switch (layout)
+    {
+    default:
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        pipelineStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
         break;
     case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
     case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:

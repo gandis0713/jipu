@@ -42,6 +42,9 @@ private:
 private:
     Device& m_device;
     BufferDescriptor m_descriptor{};
+
+public:
+    using Ref = std::reference_wrapper<VulkanBuffer>;
 };
 
 DOWN_CAST(VulkanBuffer, Buffer);
