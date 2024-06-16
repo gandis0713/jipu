@@ -15,7 +15,7 @@ namespace mali
 class MaliSampler final : public Sampler
 {
 public:
-    explicit MaliSampler(MaliGPU gpu, const SamplerDescriptor& descriptor);
+    explicit MaliSampler(const MaliGPU& gpu, const SamplerDescriptor& descriptor);
 
 public:
     void start() override;
@@ -27,7 +27,7 @@ private:
     uint64_t time();
 
 private:
-    const MaliGPU m_gpu{ -1 };
+    const MaliGPU& m_gpu;
     hwcpipe::sampler<> m_sampler;
 };
 DOWN_CAST(MaliSampler, Sampler);

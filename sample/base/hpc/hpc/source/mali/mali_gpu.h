@@ -14,6 +14,9 @@ class MaliGPU final : public GPU
 public:
     explicit MaliGPU(int deviceNumber);
 
+    MaliGPU(const MaliGPU&) = delete;
+    MaliGPU& operator=(const MaliGPU&) = delete;
+
 public:
     /**
      * create a sampler.
@@ -23,19 +26,19 @@ public:
     /**
      * available counters.
      */
-    const std::vector<Counter> counters() const override;
+    const std::unordered_set<Counter> counters() const override;
 
 public:
-    int getDeviceNumber() const;
-    const std::vector<hwcpipe_counter>& hwcCounters() const;
+    int deviceNumber() const;
+    const std::unordered_set<hwcpipe_counter>& hwcCounters() const;
 
 private:
     void collectCounters();
 
 private:
-    uint32_t id{};
+    uint32_t m_id{};
     int m_deviceNumber{ -1 };
-    std::vector<hwcpipe_counter> m_counters{};
+    std::unordered_set<hwcpipe_counter> m_counters{};
 };
 
 } // namespace mali

@@ -39,12 +39,12 @@ Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
 
 } // namespace
 
-MaliSampler::MaliSampler(MaliGPU gpu, const SamplerDescriptor& descriptor)
+MaliSampler::MaliSampler(const MaliGPU& gpu, const SamplerDescriptor& descriptor)
     : Sampler(descriptor)
     , m_gpu(gpu)
-    , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()))) // empty counter sampler
+    , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()))) // empty counter sampler
 {
-    auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()));
+    auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()));
 
     // convert counters to hwcpipe_counter and and them.
     std::error_code ec;
