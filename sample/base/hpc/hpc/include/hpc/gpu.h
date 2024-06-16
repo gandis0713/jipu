@@ -21,9 +21,6 @@ protected:
 public:
     virtual std::unique_ptr<Sampler> create(const SamplerDescriptor& descriptor) = 0;
     virtual const std::unordered_set<Counter> counters() const = 0;
-
-public:
-    using Ptr = std::unique_ptr<GPU>;
 };
 
 } // namespace hpc

@@ -4,9 +4,11 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
+#include <unordered_set>
 
 #include "hpc/counter.h"
-#include "hpc/hpc.h"
+#include "hpc/gpu.h"
+#include "hpc/instance.h"
 
 namespace jipu
 {
@@ -172,31 +174,31 @@ void Sample::onHPCListner(Values values)
 
 void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 {
-    auto gpus = hpc::gpus();
+    auto malihpc = hpc::Instance::create(hpc::GPUVendor::Mali);
+    auto gpus = malihpc->gpus();
     if (gpus.empty())
         return;
 
     // TODO: select gpu.
     auto gpu = gpus[0].get();
 
-    std::vector<hpc::Counter> usableCounters{};
-    const auto& availableHpcCounters = gpu->counters();
+    std::unordered_set<hpc::Counter> usableCounters{};
+    const auto availableHpcCounters = gpu->counters();
 
     if (counters.empty())
     {
         for (const auto& counter : availableHpcCounters)
         {
-            usableCounters.push_back(counter);
+            usableCounters.insert(counter);
         }
     }
     else
     {
         for (const auto& counter : counters)
         {
-            auto it = std::find(availableHpcCounters.begin(), availableHpcCounters.end(), counter);
-            if (it != availableHpcCounters.end())
+            if (availableHpcCounters.contains(counter))
             {
-                usableCounters.push_back(counter);
+                usableCounters.insert(counter);
             }
         }
     }

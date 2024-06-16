@@ -1,12 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
+#include <unordered_set>
 #include <vector>
 
 #include "counter.h"
 #include "export.h"
-
-#include <cstdint>
 
 namespace hpc
 {
@@ -42,7 +42,7 @@ struct Sample
 
 struct SamplerDescriptor
 {
-    std::vector<hpc::Counter> counters{};
+    std::unordered_set<hpc::Counter> counters{};
 };
 
 class HPC_EXPORT Sampler
@@ -59,10 +59,10 @@ public:
     /**
      * get samples with counters
      */
-    virtual std::vector<Sample> samples(std::vector<Counter> counters = {}) = 0;
+    virtual std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) = 0;
 
 public:
-    const std::vector<Counter>& counters() const;
+    const std::unordered_set<Counter>& counters() const;
 
 protected:
     SamplerDescriptor m_descriptor{};

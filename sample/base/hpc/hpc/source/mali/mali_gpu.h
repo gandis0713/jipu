@@ -14,9 +14,6 @@ class MaliGPU final : public GPU
 public:
     explicit MaliGPU(int deviceNumber);
 
-    MaliGPU(const MaliGPU&) = delete;
-    MaliGPU& operator=(const MaliGPU&) = delete;
-
 public:
     /**
      * create a sampler.
