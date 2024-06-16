@@ -7,6 +7,6 @@
 namespace hpc
 {
 
-std::vector<GPU::Ptr> gpus();
+std::vector<std::unique_ptr<GPU>> gpus();
 
 } // namespace hpc

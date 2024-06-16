@@ -19,7 +19,7 @@ MaliGPU::MaliGPU(int deviceNumber)
     collectCounters();
 };
 
-Sampler::Ptr MaliGPU::create(SamplerDescriptor descriptor)
+std::unique_ptr<Sampler> MaliGPU::create(const SamplerDescriptor& descriptor)
 {
     return std::make_unique<MaliSampler>(*this, descriptor);
 }

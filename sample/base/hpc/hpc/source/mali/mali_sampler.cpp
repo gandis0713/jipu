@@ -39,7 +39,7 @@ Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
 
 } // namespace
 
-MaliSampler::MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor)
+MaliSampler::MaliSampler(MaliGPU gpu, const SamplerDescriptor& descriptor)
     : Sampler(descriptor)
     , m_gpu(gpu)
     , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()))) // empty counter sampler

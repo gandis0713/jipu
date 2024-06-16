@@ -18,7 +18,7 @@ protected:
     GPU() = default;
 
 public:
-    virtual Sampler::Ptr create(SamplerDescriptor descriptor) = 0;
+    virtual std::unique_ptr<Sampler> create(const SamplerDescriptor& descriptor) = 0;
     virtual const std::vector<Counter> counters() const = 0;
 
 public:

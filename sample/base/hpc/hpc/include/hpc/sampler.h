@@ -64,9 +64,6 @@ public:
 public:
     const std::vector<Counter>& counters() const;
 
-public:
-    using Ptr = std::unique_ptr<Sampler>;
-
 protected:
     SamplerDescriptor m_descriptor{};
 };

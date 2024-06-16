@@ -15,7 +15,7 @@ namespace mali
 class MaliSampler final : public Sampler
 {
 public:
-    explicit MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor);
+    explicit MaliSampler(MaliGPU gpu, const SamplerDescriptor& descriptor);
 
 public:
     void start() override;

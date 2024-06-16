@@ -18,7 +18,7 @@ public:
     /**
      * create a sampler.
      */
-    Sampler::Ptr create(SamplerDescriptor descriptor) override;
+    std::unique_ptr<Sampler> create(const SamplerDescriptor& descriptor) override;
 
     /**
      * available counters.
@@ -36,9 +36,6 @@ private:
     uint32_t id{};
     int m_deviceNumber{ -1 };
     std::vector<hwcpipe_counter> m_counters{};
-
-public:
-    using Ptr = std::unique_ptr<MaliGPU>;
 };
 
 } // namespace mali
