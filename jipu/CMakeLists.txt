@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
+# find header library
+find_path(WEBGPU_HEADERS_INCLUDE_DIRS "webgpu.h")
+
 # find package
 find_package(VulkanHeaders CONFIG)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
@@ -121,6 +124,7 @@ target_include_directories(jipu
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
   PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<BUILD_INTERFACE:${WEBGPU_HEADERS_INCLUDE_DIRS}>
 )
 
 if(ENABLE_VULKAN_EXPERIMENTAL)
