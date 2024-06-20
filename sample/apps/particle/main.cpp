@@ -4,7 +4,7 @@
 
 #include "jipu/buffer.h"
 #include "jipu/device.h"
-#include "jipu/driver.h"
+#include "jipu/instance.h"
 #include "jipu/physical_device.h"
 #include "jipu/shader_module.h"
 #include "jipu/surface.h"

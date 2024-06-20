@@ -19,7 +19,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.cpp
@@ -43,7 +43,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_device.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_framebuffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_resource_allocator.h
@@ -60,7 +60,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_texture_view.h
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/source/jipu/driver.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/jipu/instance.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline_layout.h
@@ -72,7 +72,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/swapchain.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/driver.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/texture_view.h

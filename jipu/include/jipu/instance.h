@@ -9,7 +9,7 @@
 namespace jipu
 {
 
-enum class DriverType
+enum class InstanceType
 {
     kNone,
     kVulkan,
@@ -17,24 +17,24 @@ enum class DriverType
     kD3D12
 };
 
-struct DriverDescriptor
+struct InstanceDescriptor
 {
-    DriverType type = DriverType::kNone;
+    InstanceType type = InstanceType::kNone;
 };
 
-class JIPU_EXPORT Driver
+class JIPU_EXPORT Instance
 {
 public:
-    static std::unique_ptr<Driver> create(const DriverDescriptor& descriptor);
+    static std::unique_ptr<Instance> create(const InstanceDescriptor& descriptor);
 
 public:
-    virtual ~Driver();
+    virtual ~Instance();
 
-    Driver(const Driver&) = delete;
-    Driver& operator=(const Driver&) = delete;
+    Instance(const Instance&) = delete;
+    Instance& operator=(const Instance&) = delete;
 
 protected:
-    Driver();
+    Instance();
 
 public:
     virtual std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() = 0;

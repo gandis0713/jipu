@@ -1,5 +1,5 @@
 #include "vulkan_api.h"
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 #include "vulkan_surface.h"
 
 #import <Cocoa/Cocoa.h>
@@ -41,7 +41,7 @@ void VulkanSurface::createSurfaceKHR()
     surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
     surfaceCreateInfo.pLayer = m_descriptor.layer;
 
-    VkResult result = m_driver.vkAPI.CreateMetalSurfaceEXT(m_driver.getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
+    VkResult result = m_instance.vkAPI.CreateMetalSurfaceEXT(m_instance.getVkInstance(), &surfaceCreateInfo, nullptr, &m_surface);
 
     if (result != VK_SUCCESS)
     {
@@ -90,14 +90,14 @@ void VulkanSurface::createSurfaceKHR()
         createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
         createInfo.pView = (__bridge void*)nsView;
 
-        VulkanDriver& driver = downcast(m_driver);
-        const VulkanAPI& vkAPI = driver.vkAPI;
+        VulkanInstance& instance = downcast(m_instance);
+        const VulkanAPI& vkAPI = instance.vkAPI;
         if (vkAPI.CreateMacOSSurfaceMVK == nullptr)
         {
             throw std::runtime_error("vkCreateMacOSSurfaceMVK is nullptr.");
         }
 
-        VkResult result = vkAPI.CreateMacOSSurfaceMVK(driver.getVkInstance(), &createInfo, nullptr, &m_surface);
+        VkResult result = vkAPI.CreateMacOSSurfaceMVK(instance.getVkInstance(), &createInfo, nullptr, &m_surface);
 
         if (result != VK_SUCCESS)
         {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "jipu/driver.h"
+#include "jipu/instance.h"
 #include "utils/cast.h"
 #include "utils/dylib.h"
 #include "vulkan_api.h"
@@ -13,22 +13,22 @@
 namespace jipu
 {
 
-struct VulkanDriverInfo : VulkanDriverKnobs
+struct VulkanInstanceInfo : VulkanInstanceKnobs
 {
     std::vector<VkLayerProperties> layerProperties;
     std::vector<VkExtensionProperties> extensionProperties;
 };
 
-class VULKAN_EXPORT VulkanDriver : public Driver
+class VULKAN_EXPORT VulkanInstance : public Instance
 {
 
 public:
-    VulkanDriver() = delete;
-    VulkanDriver(const DriverDescriptor& descriptor) noexcept(false);
-    ~VulkanDriver() override;
+    VulkanInstance() = delete;
+    VulkanInstance(const InstanceDescriptor& descriptor) noexcept(false);
+    ~VulkanInstance() override;
 
-    VulkanDriver(const VulkanDriver&) = delete;
-    VulkanDriver& operator=(const VulkanDriver&) = delete;
+    VulkanInstance(const VulkanInstance&) = delete;
+    VulkanInstance& operator=(const VulkanInstance&) = delete;
 
 public:
     std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
@@ -42,7 +42,7 @@ public: // vulkan
     const std::vector<VkPhysicalDevice>& getVkPhysicalDevices() const;
     VkPhysicalDevice getVkPhysicalDevice(uint32_t index) const;
 
-    const VulkanDriverInfo& getDriverInfo() const;
+    const VulkanInstanceInfo& getInstanceInfo() const;
 
 public:
     VulkanAPI vkAPI{};
@@ -52,7 +52,7 @@ private:
     void createInstance() noexcept(false);
     void gatherPhysicalDevices() noexcept(false);
 
-    void gatherDriverInfo();
+    void gatherInstanceInfo();
 
     bool checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions);
     const std::vector<const char*> getRequiredInstanceExtensions();
@@ -64,12 +64,12 @@ private:
     std::vector<VkPhysicalDevice> m_physicalDevices{};
 
     DyLib m_vulkanLib{};
-    VulkanDriverInfo m_driverInfo{};
+    VulkanInstanceInfo m_instanceInfo{};
 #ifndef NDEBUG
     VkDebugUtilsMessengerEXT m_debugUtilsMessenger = VK_NULL_HANDLE;
 #endif
 };
 
-DOWN_CAST(VulkanDriver, Driver);
+DOWN_CAST(VulkanInstance, Instance);
 
 } // namespace jipu

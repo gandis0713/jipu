@@ -40,13 +40,13 @@ struct VulkanSurfaceDescriptor
 #endif
 };
 
-class VulkanDriver;
+class VulkanInstance;
 class VULKAN_EXPORT VulkanSurface : public Surface
 {
 public:
     VulkanSurface() = delete;
-    VulkanSurface(VulkanDriver& driver, const SurfaceDescriptor& descriptor);
-    VulkanSurface(VulkanDriver& driver, const VulkanSurfaceDescriptor& descriptor);
+    VulkanSurface(VulkanInstance& instance, const SurfaceDescriptor& descriptor);
+    VulkanSurface(VulkanInstance& instance, const VulkanSurfaceDescriptor& descriptor);
     ~VulkanSurface() override;
 
     VkSurfaceKHR getVkSurface() const;
@@ -55,7 +55,7 @@ private:
     void createSurfaceKHR();
 
 private:
-    VulkanDriver& m_driver;
+    VulkanInstance& m_instance;
     const VulkanSurfaceDescriptor m_descriptor{};
 
 private:

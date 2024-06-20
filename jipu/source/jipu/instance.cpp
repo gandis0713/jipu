@@ -1,6 +1,6 @@
-#include "jipu/driver.h"
+#include "jipu/instance.h"
 
-#include "source/vulkan/vulkan_driver.h"
+#include "source/vulkan/vulkan_instance.h"
 
 #if defined(__ANDROID__) || defined(ANDROID)
 #include "spdlog/sinks/android_sink.h"
@@ -12,21 +12,21 @@
 namespace jipu
 {
 
-std::unique_ptr<Driver> Driver::create(const DriverDescriptor& descriptor)
+std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
 {
     switch (descriptor.type)
     {
-    case DriverType::kVulkan:
-        return std::make_unique<VulkanDriver>(descriptor);
+    case InstanceType::kVulkan:
+        return std::make_unique<VulkanInstance>(descriptor);
     default:
-        spdlog::error("Unsupported driver type requested");
+        spdlog::error("Unsupported instance type requested");
         return nullptr;
     }
 
     return nullptr;
 }
 
-Driver::Driver()
+Instance::Instance()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     std::string tag = "spdlog-android";
@@ -38,7 +38,7 @@ Driver::Driver()
     spdlog::set_level(spdlog::level::trace);
 }
 
-Driver::~Driver()
+Instance::~Instance()
 {
     spdlog::set_default_logger(nullptr);
 }

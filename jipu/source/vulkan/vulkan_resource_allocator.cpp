@@ -3,7 +3,7 @@
 
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_texture.h"
 
@@ -235,13 +235,13 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const Vul
 {
 #if defined(USE_VMA)
     auto& vulkanPhysicalDevice = downcast(m_device.getPhysicalDevice());
-    auto& vulkanDriver = downcast(vulkanPhysicalDevice.getDriver());
+    auto& vulkanInstance = downcast(vulkanPhysicalDevice.getInstance());
 
     auto physicalDevice = vulkanPhysicalDevice.getVkPhysicalDevice();
-    auto instance = vulkanDriver.getVkInstance();
+    auto instance = vulkanInstance.getVkInstance();
 
 #if defined(VMA_DYNAMIC_VULKAN_FUNCTIONS)
-    m_vmaFunctions.vkGetInstanceProcAddr = vulkanDriver.vkAPI.GetInstanceProcAddr;
+    m_vmaFunctions.vkGetInstanceProcAddr = vulkanInstance.vkAPI.GetInstanceProcAddr;
     m_vmaFunctions.vkGetDeviceProcAddr = m_device.vkAPI.GetDeviceProcAddr;
 #else
     // TODO: set functions
@@ -251,7 +251,7 @@ VulkanResourceAllocator::VulkanResourceAllocator(VulkanDevice& device, const Vul
     createInfo.instance = instance;
     createInfo.physicalDevice = physicalDevice;
     createInfo.device = m_device.getVkDevice();
-    createInfo.vulkanApiVersion = vulkanDriver.getDriverInfo().apiVersion;
+    createInfo.vulkanApiVersion = vulkanInstance.getInstanceInfo().apiVersion;
     createInfo.pVulkanFunctions = &m_vmaFunctions;
 
 #if defined(DISABLE)

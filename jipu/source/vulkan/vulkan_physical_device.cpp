@@ -1,6 +1,6 @@
 #include "vulkan_physical_device.h"
 #include "vulkan_device.h"
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -9,8 +9,8 @@
 namespace jipu
 {
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanDriver& driver, const VulkanPhysicalDeviceDescriptor& descriptor)
-    : m_driver(driver)
+VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance& instance, const VulkanPhysicalDeviceDescriptor& descriptor)
+    : m_instance(instance)
 {
     m_physicalDevice = descriptor.physicalDevice;
 
@@ -35,14 +35,14 @@ PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
     return info;
 }
 
-VulkanDriver& VulkanPhysicalDevice::getDriver() const
+VulkanInstance& VulkanPhysicalDevice::getInstance() const
 {
-    return m_driver;
+    return m_instance;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const
 {
-    return downcast(m_driver).getVkInstance();
+    return downcast(m_instance).getVkInstance();
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::getVkPhysicalDevice() const
@@ -57,7 +57,7 @@ const VulkanPhysicalDeviceInfo& VulkanPhysicalDevice::getVulkanPhysicalDeviceInf
 
 void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 {
-    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
 
     // Gather physical device properties and features.
     vkAPI.GetPhysicalDeviceProperties(m_physicalDevice, &m_info.physicalDeviceProperties);
@@ -69,7 +69,7 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
 
     // currently only support AAA.BBB.CCC.
     // TODO: support AAA.BBB.CCC.DDD for NVIDIA and AAA.BBB for intel windows
-    spdlog::info("Vulkan Device Driver Version: {}.{}.{}",
+    spdlog::info("Vulkan Device Instance Version: {}.{}.{}",
                  VK_API_VERSION_MAJOR(m_info.physicalDeviceProperties.driverVersion),
                  VK_API_VERSION_MINOR(m_info.physicalDeviceProperties.driverVersion),
                  VK_API_VERSION_PATCH(m_info.physicalDeviceProperties.driverVersion));
@@ -174,7 +174,7 @@ VulkanSurfaceInfo VulkanPhysicalDevice::gatherSurfaceInfo(VulkanSurface& surface
 {
     VulkanSurfaceInfo surfaceInfo{};
 
-    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
     VkResult result = vkAPI.GetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice, surface.getVkSurface(), &surfaceInfo.capabilities);
     if (result != VK_SUCCESS)
     {
@@ -243,7 +243,7 @@ int VulkanPhysicalDevice::findMemoryTypeIndex(VkMemoryPropertyFlags flags) const
 
 bool VulkanPhysicalDevice::isDepthStencilSupported(VkFormat format) const
 {
-    const VulkanAPI& vkAPI = downcast(m_driver).vkAPI;
+    const VulkanAPI& vkAPI = downcast(m_instance).vkAPI;
 
     VkFormatProperties formatProperties{};
     vkAPI.GetPhysicalDeviceFormatProperties(m_physicalDevice, format, &formatProperties);

@@ -9,7 +9,7 @@
 #include <optional>
 
 #include <jipu/device.h>
-#include <jipu/driver.h>
+#include <jipu/instance.h>
 #include <jipu/physical_device.h>
 #include <jipu/queue.h>
 #include <jipu/surface.h>
@@ -32,7 +32,7 @@ public:
     virtual ~Sample();
 
 public:
-    virtual void createDriver();
+    virtual void createInstance();
     virtual void getPhysicalDevices();
     virtual void createSurface();
     virtual void createDevice();
@@ -55,7 +55,7 @@ protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
 
-    std::unique_ptr<Driver> m_driver = nullptr;
+    std::unique_ptr<Instance> m_instance = nullptr;
     std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Device> m_device = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;

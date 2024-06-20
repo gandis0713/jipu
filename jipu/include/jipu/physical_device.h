@@ -14,7 +14,7 @@ struct PhysicalDeviceInfo
     std::string deviceName;
 };
 
-class Driver;
+class Instance;
 class JIPU_EXPORT PhysicalDevice
 {
 public:

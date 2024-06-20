@@ -34,26 +34,26 @@ Sample::~Sample()
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
-    m_driver.reset();
+    m_instance.reset();
 }
 
-void Sample::createDriver()
+void Sample::createInstance()
 {
-    DriverDescriptor descriptor;
-    descriptor.type = DriverType::kVulkan;
-    m_driver = Driver::create(descriptor);
+    InstanceDescriptor descriptor;
+    descriptor.type = InstanceType::kVulkan;
+    m_instance = Instance::create(descriptor);
 }
 
 void Sample::getPhysicalDevices()
 {
-    m_physicalDevices = m_driver->getPhysicalDevices();
+    m_physicalDevices = m_instance->getPhysicalDevices();
 }
 
 void Sample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
-    m_surface = m_driver->createSurface(descriptor);
+    m_surface = m_instance->createSurface(descriptor);
 }
 
 void Sample::createSwapchain()
@@ -97,7 +97,7 @@ void Sample::createQueue()
 
 void Sample::init()
 {
-    createDriver();
+    createInstance();
     getPhysicalDevices();
     createSurface();
     createDevice();
