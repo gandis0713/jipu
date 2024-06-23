@@ -83,6 +83,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/export.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/utils/gpu_info.cpp
 
   # ${CMAKE_CURRENT_SOURCE_DIR}/utils/dylib.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/utils/fmt.h
