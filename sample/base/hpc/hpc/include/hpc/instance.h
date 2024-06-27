@@ -2,6 +2,7 @@
 
 #include "export.h"
 
+#include <memory>
 #include <vector>
 
 namespace hpc

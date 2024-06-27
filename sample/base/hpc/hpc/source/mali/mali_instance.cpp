@@ -1,17 +1,13 @@
 #include "mali_instance.h"
 
-#if defined(__ANDROID__) || defined(ANDROID)
 #include "mali_gpu.h"
 #include <hwcpipe/gpu.hpp>
-#endif
 #include <spdlog/spdlog.h>
 
 namespace hpc
 {
 namespace mali
 {
-
-#if defined(__ANDROID__) || defined(ANDROID)
 
 std::string productFamilyName(hwcpipe::device::product_id::gpu_family family)
 {
@@ -49,14 +45,6 @@ std::vector<std::unique_ptr<GPU>> MaliInstance::gpus()
 
     return gpus;
 }
-#else
-
-std::vector<std::unique_ptr<GPU>> MaliInstance::gpus()
-{
-    return {};
-}
-
-#endif
 
 } // namespace mali
 } // namespace hpc
