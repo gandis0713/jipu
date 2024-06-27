@@ -14,13 +14,13 @@
 #include "jipu/texture.h"
 
 #include <memory>
+#include <webgpu.h>
 
 namespace jipu
 {
 
-struct DeviceDescriptor
-{
-};
+using DeviceDescriptor = WGPUDeviceDescriptor;
+using AdapterRequestDeviceCallback = WGPUAdapterRequestDeviceCallback;
 
 class JIPU_EXPORT Device
 {

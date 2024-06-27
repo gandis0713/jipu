@@ -85,6 +85,11 @@ VulkanInstance::~VulkanInstance()
     vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
+std::unique_ptr<Adapter> VulkanInstance::wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, void* userdata)
+{
+    return nullptr;
+}
+
 void VulkanInstance::initialize() noexcept(false)
 {
 #if defined(__ANDROID__) || defined(ANDROID)

@@ -1,10 +1,14 @@
 #pragma once
 
 #include "export.h"
+#include "jipu/adapter.h"
 #include "jipu/physical_device.h"
 #include "jipu/surface.h"
+#include "result.h"
 
 #include <memory>
+#include <string>
+#include <webgpu.h>
 
 namespace jipu
 {
@@ -32,6 +36,9 @@ public:
 
     Instance(const Instance&) = delete;
     Instance& operator=(const Instance&) = delete;
+
+public: // WebGPU API
+    virtual std::unique_ptr<Adapter> wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, void* userdata) = 0;
 
 protected:
     Instance();
