@@ -10,9 +10,6 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.h
-
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/sampler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/instance.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/gpu.h
@@ -24,6 +21,8 @@ if(ANDROID)
     list(APPEND SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_counter.cpp

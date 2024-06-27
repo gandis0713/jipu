@@ -174,8 +174,12 @@ void Sample::onHPCListner(Values values)
 
 void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 {
-    auto malihpc = hpc::Instance::create(hpc::GPUVendor::Mali);
-    auto gpus = malihpc->gpus();
+    // TODO: select gpu device
+    auto hpcInstance = hpc::Instance::create(hpc::GPUVendor::Mali);
+    if (!hpcInstance)
+        return;
+
+    auto gpus = hpcInstance->gpus();
     if (gpus.empty())
         return;
 
