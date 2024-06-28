@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 #include "vulkan_device.h"
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_surface.h"
 #include "vulkan_swapchain.h"
@@ -177,7 +177,7 @@ void VulkanNBufferingSample::createSurface()
 
     VulkanSurfaceDescriptor vkdescriptor = generateVulkanSurfaceDescriptor(descriptor);
 
-    m_surface = downcast(m_driver.get())->createSurface(vkdescriptor);
+    m_surface = downcast(m_instance.get())->createSurface(vkdescriptor);
 
     auto& vulkanSurface = downcast(*m_surface);
     m_surfaceInfo = downcast(m_physicalDevices[0].get())->gatherSurfaceInfo(vulkanSurface);

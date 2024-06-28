@@ -15,7 +15,7 @@ using Listner = std::function<void(Values)>;
 
 struct HPCWatcherDescriptor
 {
-    hpc::Sampler::Ptr sampler = nullptr;
+    std::unique_ptr<hpc::Sampler> sampler = nullptr;
     std::vector<hpc::Counter> counters{};
     Listner listner{};
 };

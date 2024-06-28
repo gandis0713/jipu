@@ -8,13 +8,10 @@ find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/sampler.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/hpc.cpp
-
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_hpc.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_hpc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/sampler.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/hpc.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/instance.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/gpu.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/counter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/export.h
@@ -24,6 +21,8 @@ if(ANDROID)
     list(APPEND SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_sampler.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_instance.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_gpu.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/mali/mali_counter.cpp

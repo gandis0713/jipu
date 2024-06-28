@@ -28,12 +28,12 @@ struct VulkanPhysicalDeviceDescriptor
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 };
 
-class VulkanDriver;
+class VulkanInstance;
 class VULKAN_EXPORT VulkanPhysicalDevice : public PhysicalDevice
 {
 public:
     VulkanPhysicalDevice() = delete;
-    VulkanPhysicalDevice(VulkanDriver& driver, const VulkanPhysicalDeviceDescriptor& descriptor);
+    VulkanPhysicalDevice(VulkanInstance& instance, const VulkanPhysicalDeviceDescriptor& descriptor);
     ~VulkanPhysicalDevice() override;
 
     std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) override;
@@ -41,7 +41,7 @@ public:
     PhysicalDeviceInfo getInfo() const override;
 
 public:
-    VulkanDriver& getDriver() const;
+    VulkanInstance& getInstance() const;
 
 public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
@@ -58,7 +58,7 @@ private:
     void gatherPhysicalDeviceInfo();
 
 protected:
-    VulkanDriver& m_driver;
+    VulkanInstance& m_instance;
 
 private:
     VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;

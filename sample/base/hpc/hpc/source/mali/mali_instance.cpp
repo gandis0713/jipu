@@ -1,9 +1,7 @@
-#include "mali_hpc.h"
+#include "mali_instance.h"
 
-#if defined(__ANDROID__) || defined(ANDROID)
 #include "mali_gpu.h"
 #include <hwcpipe/gpu.hpp>
-#endif
 #include <spdlog/spdlog.h>
 
 namespace hpc
@@ -11,8 +9,7 @@ namespace hpc
 namespace mali
 {
 
-#if defined(__ANDROID__) || defined(ANDROID)
-std::string getProductFamilyName(hwcpipe::device::product_id::gpu_family family)
+std::string productFamilyName(hwcpipe::device::product_id::gpu_family family)
 {
     using gpu_family = hwcpipe::device::product_id::gpu_family;
 
@@ -28,15 +25,16 @@ std::string getProductFamilyName(hwcpipe::device::product_id::gpu_family family)
         return "Unknown";
     }
 }
-std::vector<GPU::Ptr> gpus()
+
+std::vector<std::unique_ptr<GPU>> MaliInstance::gpus()
 {
-    std::vector<GPU::Ptr> gpus{};
+    std::vector<std::unique_ptr<GPU>> gpus{};
     for (const auto& gpu : hwcpipe::find_gpus())
     {
         spdlog::debug("------------------------------------------------------------");
         spdlog::debug("GPU Device {} :", gpu.get_device_number());
         spdlog::debug("------------------------------------------------------------");
-        spdlog::debug("    Product Family:    {}", getProductFamilyName(gpu.get_product_id().get_gpu_family()));
+        spdlog::debug("    Product Family:    {}", productFamilyName(gpu.get_product_id().get_gpu_family()));
         spdlog::debug("    Number of Cores:   {}", gpu.num_shader_cores());
         spdlog::debug("    Number of Engines: {}", gpu.num_execution_engines());
         spdlog::debug("    Bus Width:         {}", gpu.bus_width());
@@ -47,14 +45,6 @@ std::vector<GPU::Ptr> gpus()
 
     return gpus;
 }
-#else
-
-std::vector<GPU::Ptr> gpus()
-{
-    return {};
-}
-
-#endif
 
 } // namespace mali
 } // namespace hpc

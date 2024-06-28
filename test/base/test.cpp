@@ -6,12 +6,12 @@ namespace jipu
 
 void Test::SetUp()
 {
-    DriverDescriptor driverDescriptor;
-    driverDescriptor.type = DriverType::kVulkan;
-    m_driver = Driver::create(driverDescriptor);
-    EXPECT_NE(nullptr, m_driver);
+    InstanceDescriptor instanceDescriptor;
+    instanceDescriptor.type = InstanceType::kVulkan;
+    m_instance = Instance::create(instanceDescriptor);
+    EXPECT_NE(nullptr, m_instance);
 
-    m_physicalDevices = m_driver->getPhysicalDevices();
+    m_physicalDevices = m_instance->getPhysicalDevices();
     EXPECT_NE(0, m_physicalDevices.size());
 
     PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
@@ -24,7 +24,7 @@ void Test::TearDown()
 {
     m_device.reset();
     m_physicalDevices.clear();
-    m_driver.reset();
+    m_instance.reset();
 }
 
 } // namespace jipu

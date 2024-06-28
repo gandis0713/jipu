@@ -19,7 +19,7 @@ namespace jipu
 
 class DyLib;
 
-struct VulkanDriverKnobs
+struct VulkanInstanceKnobs
 {
     uint32_t apiVersion = VK_MAKE_API_VERSION(0, 1, 1, 0); // Require 1.1 or higher.
 
@@ -48,11 +48,11 @@ struct VulkanDeviceKnobs
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h
 struct VulkanAPI
 {
-    bool loadDriverProcs(DyLib* vulkanLib);
-    bool loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& globalInfo);
+    bool loadInstanceProcs(DyLib* vulkanLib);
+    bool loadInstanceProcs(VkInstance instance, const VulkanInstanceKnobs& globalInfo);
     bool loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& deviceKnobs);
 
-    // ---------- Driver procs
+    // ---------- Instance procs
 
 #if defined(VK_VERSION_1_0)
     // Initial proc from which we can get all the others

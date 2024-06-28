@@ -19,7 +19,7 @@ void WindowTest::SetUp()
     EXPECT_NE(nullptr, m_window);
 
     SurfaceDescriptor surfaceDescriptor{ .windowHandle = handle() };
-    m_surface = m_driver->createSurface(surfaceDescriptor);
+    m_surface = m_instance->createSurface(surfaceDescriptor);
     EXPECT_NE(nullptr, m_surface);
 
 #if defined(__ANDROID__) || defined(ANDROID)

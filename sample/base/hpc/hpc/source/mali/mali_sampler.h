@@ -15,12 +15,12 @@ namespace mali
 class MaliSampler final : public Sampler
 {
 public:
-    explicit MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor);
+    explicit MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor);
 
 public:
     void start() override;
     void stop() override;
-    std::vector<Sample> samples(std::vector<Counter> counters = {}) override;
+    std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) override;
     Sample sample(const Counter counter);
 
 private:

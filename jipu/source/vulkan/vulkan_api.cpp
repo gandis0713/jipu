@@ -5,13 +5,13 @@
 
 namespace jipu
 {
-bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
+bool VulkanAPI::loadInstanceProcs(DyLib* vulkanLib)
 {
 #define GET_GLOBAL_PROC(name)                                                          \
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(nullptr, "vk" #name)); \
     if (name == nullptr)                                                               \
     {                                                                                  \
-        spdlog::error("Couldn't get driver proc vk{}", #name);                         \
+        spdlog::error("Couldn't get instance proc vk{}", #name);                       \
         return false;                                                                  \
     }
 
@@ -35,7 +35,7 @@ bool VulkanAPI::loadDriverProcs(DyLib* vulkanLib)
     return true;
 }
 
-bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& driverKnobs)
+bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanInstanceKnobs& instanceKnobs)
 {
 #define GET_INSTANCE_PROC(name)                                                         \
     name = reinterpret_cast<decltype(name)>(GetInstanceProcAddr(instance, "vk" #name)); \
@@ -89,14 +89,14 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
 #endif /* defined(VK_VERSION_1_3) */
 
 #ifndef NDEBUG
-    if (driverKnobs.debugReport)
+    if (instanceKnobs.debugReport)
     {
         GET_INSTANCE_PROC(CreateDebugReportCallbackEXT);
         GET_INSTANCE_PROC(DebugReportMessageEXT);
         GET_INSTANCE_PROC(DestroyDebugReportCallbackEXT);
     }
 
-    if (driverKnobs.debugUtils)
+    if (instanceKnobs.debugUtils)
     {
         GET_INSTANCE_PROC(CmdBeginDebugUtilsLabelEXT);
         GET_INSTANCE_PROC(CmdEndDebugUtilsLabelEXT);
@@ -113,20 +113,20 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
 #endif
 
     // // Vulkan 1.1 is not required to report promoted extensions from 1.0
-    // if (driverKnobs.externalMemoryCapabilities ||
-    //     driverKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
+    // if (instanceKnobs.externalMemoryCapabilities ||
+    //     instanceKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
     // {
     //     GET_INSTANCE_PROC(GetPhysicalDeviceExternalBufferPropertiesKHR);
     // }
 
-    // if (driverKnobs.externalSemaphoreCapabilities ||
-    //     driverKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
+    // if (instanceKnobs.externalSemaphoreCapabilities ||
+    //     instanceKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
     // {
     //     GET_INSTANCE_PROC(GetPhysicalDeviceExternalSemaphorePropertiesKHR);
     // }
 
-    // if (driverKnobs.getPhysicalDeviceProperties2 ||
-    //     driverKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
+    // if (instanceKnobs.getPhysicalDeviceProperties2 ||
+    //     instanceKnobs.apiVersion >= VK_MAKE_VERSION(1, 1, 0))
     // {
     //     GET_INSTANCE_PROC(GetPhysicalDeviceFeatures2KHR);
     //     GET_INSTANCE_PROC(GetPhysicalDeviceProperties2KHR);
@@ -137,7 +137,7 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
     //     GET_INSTANCE_PROC(GetPhysicalDeviceSparseImageFormatProperties2KHR);
     // }
 
-    if (driverKnobs.surface)
+    if (instanceKnobs.surface)
     {
         GET_INSTANCE_PROC(DestroySurfaceKHR);
         GET_INSTANCE_PROC(GetPhysicalDeviceSurfaceSupportKHR);
@@ -147,35 +147,35 @@ bool VulkanAPI::loadInstanceProcs(VkInstance instance, const VulkanDriverKnobs& 
     }
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-    if (driverKnobs.androidSurface)
+    if (instanceKnobs.androidSurface)
     {
         GET_INSTANCE_PROC(CreateAndroidSurfaceKHR);
     }
 #endif
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK)
-    if (driverKnobs.macosSurface)
+    if (instanceKnobs.macosSurface)
     {
         GET_INSTANCE_PROC(CreateMacOSSurfaceMVK);
     }
 #endif
 
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-    if (driverKnobs.metalSurface)
+    if (instanceKnobs.metalSurface)
     {
         GET_INSTANCE_PROC(CreateMetalSurfaceEXT);
     }
 #endif
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-    if (driverKnobs.win32Surface)
+    if (instanceKnobs.win32Surface)
     {
         GET_INSTANCE_PROC(CreateWin32SurfaceKHR);
     }
 #endif
 
     // #ifdef VK_USE_PLATFORM_FUCHSIA
-    //     if (driverKnobs.fuchsiaImagePipeSurface)
+    //     if (instanceKnobs.fuchsiaImagePipeSurface)
     //     {
     //         GET_INSTANCE_PROC(CreateImagePipeSurfaceFUCHSIA);
     //     }

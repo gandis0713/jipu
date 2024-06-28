@@ -1,4 +1,4 @@
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 
 #include "utils/assert.h"
 #include "vulkan_physical_device.h"
@@ -69,12 +69,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSe
     return VK_FALSE;
 }
 
-VulkanDriver::VulkanDriver(const DriverDescriptor& descriptor) noexcept(false)
+VulkanInstance::VulkanInstance(const InstanceDescriptor& descriptor) noexcept(false)
 {
     initialize();
 }
 
-VulkanDriver::~VulkanDriver()
+VulkanInstance::~VulkanInstance()
 {
 #ifndef NDEBUG
     if (m_debugUtilsMessenger)
@@ -85,7 +85,7 @@ VulkanDriver::~VulkanDriver()
     vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
-void VulkanDriver::initialize() noexcept(false)
+void VulkanInstance::initialize() noexcept(false)
 {
 #if defined(__ANDROID__) || defined(ANDROID)
     const char vulkanLibraryName[] = "libvulkan.so";
@@ -102,19 +102,19 @@ void VulkanDriver::initialize() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to open vulkan library: {}", vulkanLibraryName));
     }
 
-    if (!vkAPI.loadDriverProcs(&m_vulkanLib))
+    if (!vkAPI.loadInstanceProcs(&m_vulkanLib))
     {
-        throw std::runtime_error(fmt::format("Failed to load driver prosc in vulkan library: {}", vulkanLibraryName));
+        throw std::runtime_error(fmt::format("Failed to load instance prosc in vulkan library: {}", vulkanLibraryName));
     }
 
-    gatherDriverInfo();
+    gatherInstanceInfo();
 
     createInstance();
 
     gatherPhysicalDevices();
 }
 
-std::vector<std::unique_ptr<PhysicalDevice>> VulkanDriver::getPhysicalDevices()
+std::vector<std::unique_ptr<PhysicalDevice>> VulkanInstance::getPhysicalDevices()
 {
     std::vector<std::unique_ptr<PhysicalDevice>> physicalDevices{};
     for (auto physicalDevice : m_physicalDevices)
@@ -129,44 +129,44 @@ std::vector<std::unique_ptr<PhysicalDevice>> VulkanDriver::getPhysicalDevices()
     return physicalDevices;
 }
 
-std::unique_ptr<Surface> VulkanDriver::createSurface(const SurfaceDescriptor& descriptor)
+std::unique_ptr<Surface> VulkanInstance::createSurface(const SurfaceDescriptor& descriptor)
 {
     return std::make_unique<VulkanSurface>(*this, descriptor);
 }
 
-std::unique_ptr<Surface> VulkanDriver::createSurface(const VulkanSurfaceDescriptor& descriptor)
+std::unique_ptr<Surface> VulkanInstance::createSurface(const VulkanSurfaceDescriptor& descriptor)
 {
     return std::make_unique<VulkanSurface>(*this, descriptor);
 }
 
-VkInstance VulkanDriver::getVkInstance() const
+VkInstance VulkanInstance::getVkInstance() const
 {
     return m_instance;
 }
 
-const std::vector<VkPhysicalDevice>& VulkanDriver::getVkPhysicalDevices() const
+const std::vector<VkPhysicalDevice>& VulkanInstance::getVkPhysicalDevices() const
 {
     return m_physicalDevices;
 }
 
-VkPhysicalDevice VulkanDriver::getVkPhysicalDevice(uint32_t index) const
+VkPhysicalDevice VulkanInstance::getVkPhysicalDevice(uint32_t index) const
 {
     assert(index < m_physicalDevices.size());
 
     return m_physicalDevices[index];
 }
 
-const VulkanDriverInfo& VulkanDriver::getDriverInfo() const
+const VulkanInstanceInfo& VulkanInstance::getInstanceInfo() const
 {
-    return m_driverInfo;
+    return m_instanceInfo;
 }
 
-void VulkanDriver::createInstance() noexcept(false)
+void VulkanInstance::createInstance() noexcept(false)
 {
     // Application Information.
     VkApplicationInfo applicationInfo{};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    applicationInfo.apiVersion = m_driverInfo.apiVersion;
+    applicationInfo.apiVersion = m_instanceInfo.apiVersion;
 
     spdlog::info("Required Vulkan API Version in Application: {}.{}.{}",
                  VK_API_VERSION_MAJOR(applicationInfo.apiVersion),
@@ -179,7 +179,7 @@ void VulkanDriver::createInstance() noexcept(false)
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
 
 #if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.portabilityEnum)
+    if (m_instanceInfo.portabilityEnum)
     {
         instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
@@ -210,14 +210,14 @@ void VulkanDriver::createInstance() noexcept(false)
         throw std::runtime_error(fmt::format("Failed to create VkInstance: {}", static_cast<int32_t>(result)));
     }
 
-    const VulkanDriverKnobs& driverKnobs = static_cast<const VulkanDriverKnobs&>(m_driverInfo);
-    if (!vkAPI.loadInstanceProcs(m_instance, driverKnobs))
+    const VulkanInstanceKnobs& instanceKnobs = static_cast<const VulkanInstanceKnobs&>(m_instanceInfo);
+    if (!vkAPI.loadInstanceProcs(m_instance, instanceKnobs))
     {
         throw std::runtime_error(fmt::format("Failed to load instance prosc."));
     }
 
 #ifndef NDEBUG
-    if (driverKnobs.debugUtils)
+    if (instanceKnobs.debugUtils)
     {
         VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo{};
         debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -233,7 +233,7 @@ void VulkanDriver::createInstance() noexcept(false)
 #endif
 }
 
-void VulkanDriver::gatherPhysicalDevices() noexcept(false)
+void VulkanInstance::gatherPhysicalDevices() noexcept(false)
 {
     uint32_t physicalDeviceCount = 0;
     vkAPI.EnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr);
@@ -252,7 +252,7 @@ void VulkanDriver::gatherPhysicalDevices() noexcept(false)
     }
 }
 
-void VulkanDriver::gatherDriverInfo()
+void VulkanInstance::gatherInstanceInfo()
 {
     uint32_t apiVersion = 0u;
     if (vkAPI.EnumerateInstanceVersion != nullptr)
@@ -275,22 +275,22 @@ void VulkanDriver::gatherDriverInfo()
             return;
         }
 
-        m_driverInfo.layerProperties.resize(instanceLayerCount);
-        result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_driverInfo.layerProperties.data());
+        m_instanceInfo.layerProperties.resize(instanceLayerCount);
+        result = vkAPI.EnumerateInstanceLayerProperties(&instanceLayerCount, m_instanceInfo.layerProperties.data());
         if (result != VK_SUCCESS)
         {
             spdlog::error("Failed to enumerate instance layer properties. {}", static_cast<int32_t>(result));
             return;
         }
 
-        for (const auto& layerProperty : m_driverInfo.layerProperties)
+        for (const auto& layerProperty : m_instanceInfo.layerProperties)
         {
-            // TODO: set driver knobs for layer
+            // TODO: set instance knobs for layer
             spdlog::info("Instance Layer Name: {}", layerProperty.layerName);
 #ifndef NDEBUG
             if (strncmp(layerProperty.layerName, kLayerKhronosValidation, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.validation = true;
+                m_instanceInfo.validation = true;
             }
 #endif
         }
@@ -306,66 +306,66 @@ void VulkanDriver::gatherDriverInfo()
             return;
         }
 
-        m_driverInfo.extensionProperties.resize(instanceExtensionCount);
-        result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_driverInfo.extensionProperties.data());
+        m_instanceInfo.extensionProperties.resize(instanceExtensionCount);
+        result = vkAPI.EnumerateInstanceExtensionProperties(nullptr, &instanceExtensionCount, m_instanceInfo.extensionProperties.data());
         if (result != VK_SUCCESS)
         {
             spdlog::error("Failed to enumerate instance extension properties.");
             return;
         }
 
-        for (const auto& extensionProperty : m_driverInfo.extensionProperties)
+        for (const auto& extensionProperty : m_instanceInfo.extensionProperties)
         {
-            // TODO: set driver knobs for extension
+            // TODO: set instance knobs for extension
             spdlog::info("Instance Extension Name: {}, SpecVersion: {}", extensionProperty.extensionName, extensionProperty.specVersion);
 
             if (strncmp(extensionProperty.extensionName, kExtensionNameKhrSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.surface = true;
+                m_instanceInfo.surface = true;
             }
 
             if (strncmp(extensionProperty.extensionName, kExtensionNameKhrAndroidSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.androidSurface = true;
+                m_instanceInfo.androidSurface = true;
             }
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtMetalSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.metalSurface = true;
+                m_instanceInfo.metalSurface = true;
             }
             if (strncmp(extensionProperty.extensionName, kExtensionNameMvkMacosSurface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.macosSurface = true;
+                m_instanceInfo.macosSurface = true;
             }
             if (strncmp(extensionProperty.extensionName, kExtensionNameKhrWin32Surface, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.win32Surface = true;
+                m_instanceInfo.win32Surface = true;
             }
 #ifndef NDEBUG
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugReport, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.debugReport = true;
+                m_instanceInfo.debugReport = true;
             }
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugUtils, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.debugUtils = true;
+                m_instanceInfo.debugUtils = true;
             }
 #endif
 #if VK_HEADER_VERSION >= 216
             if (strncmp(extensionProperty.extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
-                m_driverInfo.portabilityEnum = true;
+                m_instanceInfo.portabilityEnum = true;
             }
 #endif
         }
     }
 }
 
-bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
+bool VulkanInstance::checkInstanceExtensionSupport(const std::vector<const char*> requiredInstanceExtensions)
 {
     for (const auto& requiredInstanceExtension : requiredInstanceExtensions)
     {
         bool extensionFound = false;
-        for (const auto& availableInstanceExtension : m_driverInfo.extensionProperties)
+        for (const auto& availableInstanceExtension : m_instanceInfo.extensionProperties)
         {
             if (strcmp(requiredInstanceExtension, availableInstanceExtension.extensionName) == 0)
             {
@@ -384,7 +384,7 @@ bool VulkanDriver::checkInstanceExtensionSupport(const std::vector<const char*> 
     return true;
 }
 
-const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
+const std::vector<const char*> VulkanInstance::getRequiredInstanceExtensions()
 {
     std::vector<const char*> requiredInstanceExtensions{};
 
@@ -405,14 +405,14 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
 #endif
 
 #ifndef NDEBUG
-    if (m_driverInfo.debugReport)
+    if (m_instanceInfo.debugReport)
         requiredInstanceExtensions.push_back(kExtensionNameExtDebugReport);
-    if (m_driverInfo.debugUtils)
+    if (m_instanceInfo.debugUtils)
         requiredInstanceExtensions.push_back(kExtensionNameExtDebugUtils);
 #endif
 
 #if VK_HEADER_VERSION >= 216
-    if (m_driverInfo.portabilityEnum)
+    if (m_instanceInfo.portabilityEnum)
     {
         requiredInstanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     }
@@ -427,12 +427,12 @@ const std::vector<const char*> VulkanDriver::getRequiredInstanceExtensions()
     return requiredInstanceExtensions;
 }
 
-bool VulkanDriver::checkInstanceLayerSupport(const std::vector<const char*> requiredInstanceLayers)
+bool VulkanInstance::checkInstanceLayerSupport(const std::vector<const char*> requiredInstanceLayers)
 {
     for (const auto& requiredInstanceLayer : requiredInstanceLayers)
     {
         bool layerFound = false;
-        for (const auto& availableInstanceLayer : m_driverInfo.layerProperties)
+        for (const auto& availableInstanceLayer : m_instanceInfo.layerProperties)
         {
             if (strcmp(requiredInstanceLayer, availableInstanceLayer.layerName) == 0)
             {
@@ -450,12 +450,12 @@ bool VulkanDriver::checkInstanceLayerSupport(const std::vector<const char*> requ
     return true;
 }
 
-const std::vector<const char*> VulkanDriver::getRequiredInstanceLayers()
+const std::vector<const char*> VulkanInstance::getRequiredInstanceLayers()
 {
     std::vector<const char*> requiredInstanceLayers{};
 
 #ifndef NDEBUG
-    if (m_driverInfo.validation)
+    if (m_instanceInfo.validation)
         requiredInstanceLayers.push_back(kLayerKhronosValidation);
 #endif
 

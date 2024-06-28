@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 
 #include "counter.h"
 #include "export.h"
@@ -18,11 +19,8 @@ protected:
     GPU() = default;
 
 public:
-    virtual Sampler::Ptr create(SamplerDescriptor descriptor) = 0;
-    virtual const std::vector<Counter> counters() const = 0;
-
-public:
-    using Ptr = std::unique_ptr<GPU>;
+    virtual std::unique_ptr<Sampler> create(const SamplerDescriptor& descriptor) = 0;
+    virtual const std::unordered_set<Counter> counters() const = 0;
 };
 
 } // namespace hpc

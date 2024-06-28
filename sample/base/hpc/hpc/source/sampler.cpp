@@ -8,7 +8,7 @@ Sampler::Sampler(SamplerDescriptor descriptor)
 {
 }
 
-const std::vector<Counter>& Sampler::counters() const
+const std::unordered_set<Counter>& Sampler::counters() const
 {
     return m_descriptor.counters;
 }

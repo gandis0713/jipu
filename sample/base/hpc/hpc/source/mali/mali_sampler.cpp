@@ -39,12 +39,12 @@ Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
 
 } // namespace
 
-MaliSampler::MaliSampler(MaliGPU gpu, SamplerDescriptor descriptor)
+MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
     : Sampler(descriptor)
     , m_gpu(gpu)
-    , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()))) // empty counter sampler
+    , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()))) // empty counter sampler
 {
-    auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.getDeviceNumber()));
+    auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()));
 
     // convert counters to hwcpipe_counter and and them.
     std::error_code ec;
@@ -110,17 +110,17 @@ Sample MaliSampler::sample(const Counter counter)
     return sample;
 }
 
-std::vector<Sample> MaliSampler::samples(std::vector<Counter> counters)
+std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)
 {
     if (counters.empty())
         counters = m_descriptor.counters;
 
     m_sampler.sample_now();
 
-    std::vector<hpc::Sample> samples(counters.size());
-    for (auto i = 0; i < counters.size(); ++i)
+    std::vector<hpc::Sample> samples{};
+    for (const auto counter : counters)
     {
-        samples[i] = sample(counters[i]);
+        samples.push_back(sample(counter));
     }
 
     return samples;

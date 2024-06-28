@@ -1,5 +1,5 @@
 #include "vulkan_surface.h"
-#include "vulkan_driver.h"
+#include "vulkan_instance.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -8,13 +8,13 @@
 namespace jipu
 {
 
-VulkanSurface::VulkanSurface(VulkanDriver& driver, const SurfaceDescriptor& descriptor)
-    : VulkanSurface(driver, generateVulkanSurfaceDescriptor(descriptor))
+VulkanSurface::VulkanSurface(VulkanInstance& instance, const SurfaceDescriptor& descriptor)
+    : VulkanSurface(instance, generateVulkanSurfaceDescriptor(descriptor))
 {
 }
 
-VulkanSurface::VulkanSurface(VulkanDriver& driver, const VulkanSurfaceDescriptor& descriptor)
-    : m_driver(driver)
+VulkanSurface::VulkanSurface(VulkanInstance& instance, const VulkanSurfaceDescriptor& descriptor)
+    : m_instance(instance)
     , m_descriptor(descriptor)
 {
     createSurfaceKHR();
@@ -22,10 +22,10 @@ VulkanSurface::VulkanSurface(VulkanDriver& driver, const VulkanSurfaceDescriptor
 
 VulkanSurface::~VulkanSurface()
 {
-    auto& vulkanDriver = downcast(m_driver);
-    const VulkanAPI& vkAPI = vulkanDriver.vkAPI;
+    auto& vulkanInstance = downcast(m_instance);
+    const VulkanAPI& vkAPI = vulkanInstance.vkAPI;
 
-    vkAPI.DestroySurfaceKHR(vulkanDriver.getVkInstance(), m_surface, nullptr);
+    vkAPI.DestroySurfaceKHR(vulkanInstance.getVkInstance(), m_surface, nullptr);
 }
 
 VkSurfaceKHR VulkanSurface::getVkSurface() const

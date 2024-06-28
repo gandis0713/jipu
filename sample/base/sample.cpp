@@ -4,9 +4,11 @@
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
+#include <unordered_set>
 
 #include "hpc/counter.h"
-#include "hpc/hpc.h"
+#include "hpc/gpu.h"
+#include "hpc/instance.h"
 
 namespace jipu
 {
@@ -32,26 +34,26 @@ Sample::~Sample()
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
-    m_driver.reset();
+    m_instance.reset();
 }
 
-void Sample::createDriver()
+void Sample::createInstance()
 {
-    DriverDescriptor descriptor;
-    descriptor.type = DriverType::kVulkan;
-    m_driver = Driver::create(descriptor);
+    InstanceDescriptor descriptor;
+    descriptor.type = InstanceType::kVulkan;
+    m_instance = Instance::create(descriptor);
 }
 
 void Sample::getPhysicalDevices()
 {
-    m_physicalDevices = m_driver->getPhysicalDevices();
+    m_physicalDevices = m_instance->getPhysicalDevices();
 }
 
 void Sample::createSurface()
 {
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = getWindowHandle();
-    m_surface = m_driver->createSurface(descriptor);
+    m_surface = m_instance->createSurface(descriptor);
 }
 
 void Sample::createSwapchain()
@@ -95,7 +97,7 @@ void Sample::createQueue()
 
 void Sample::init()
 {
-    createDriver();
+    createInstance();
     getPhysicalDevices();
     createSurface();
     createDevice();
@@ -172,31 +174,35 @@ void Sample::onHPCListner(Values values)
 
 void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 {
-    auto gpus = hpc::gpus();
+    // TODO: select gpu device
+    auto hpcInstance = hpc::Instance::create(hpc::GPUVendor::Mali);
+    if (!hpcInstance)
+        return;
+
+    auto gpus = hpcInstance->gpus();
     if (gpus.empty())
         return;
 
     // TODO: select gpu.
     auto gpu = gpus[0].get();
 
-    std::vector<hpc::Counter> usableCounters{};
-    const auto& availableHpcCounters = gpu->counters();
+    std::unordered_set<hpc::Counter> usableCounters{};
+    const auto availableHpcCounters = gpu->counters();
 
     if (counters.empty())
     {
         for (const auto& counter : availableHpcCounters)
         {
-            usableCounters.push_back(counter);
+            usableCounters.insert(counter);
         }
     }
     else
     {
         for (const auto& counter : counters)
         {
-            auto it = std::find(availableHpcCounters.begin(), availableHpcCounters.end(), counter);
-            if (it != availableHpcCounters.end())
+            if (availableHpcCounters.contains(counter))
             {
-                usableCounters.push_back(counter);
+                usableCounters.insert(counter);
             }
         }
     }
@@ -208,7 +214,7 @@ void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
     }
 
     hpc::SamplerDescriptor descriptor{ .counters = usableCounters };
-    hpc::Sampler::Ptr sampler = gpu->create(descriptor);
+    std::unique_ptr<hpc::Sampler> sampler = gpu->create(descriptor);
 
     HPCWatcherDescriptor watcherDescriptor{
         .sampler = std::move(sampler),

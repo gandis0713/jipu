@@ -3,8 +3,8 @@
 #include "vulkan_binding_group.h"
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_buffer.h"
-#include "vulkan_driver.h"
 #include "vulkan_framebuffer.h"
+#include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
 #include "vulkan_queue.h"
 #include "vulkan_sampler.h"
@@ -16,7 +16,7 @@ namespace jipu
 {
 
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
-    : vkAPI(downcast(physicalDevice.getDriver()).vkAPI)
+    : vkAPI(downcast(physicalDevice.getInstance()).vkAPI)
     , m_physicalDevice(physicalDevice)
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)

@@ -10,7 +10,7 @@
 #include "jipu/buffer.h"
 #include "jipu/command_buffer.h"
 #include "jipu/device.h"
-#include "jipu/driver.h"
+#include "jipu/instance.h"
 #include "jipu/physical_device.h"
 #include "jipu/pipeline.h"
 #include "jipu/pipeline_layout.h"
