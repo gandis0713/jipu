@@ -8,10 +8,15 @@
 namespace hpc
 {
 
-enum class GPUVendor
+enum class GPUType
 {
     Mali,
     Adreno
+};
+
+struct InstanceDescriptor
+{
+    GPUType gpuType;
 };
 
 class GPU;
@@ -21,7 +26,7 @@ public:
     virtual ~Instance() = default;
 
 public:
-    static std::unique_ptr<Instance> create(const GPUVendor vendor);
+    static std::unique_ptr<Instance> create(const InstanceDescriptor& descriptor);
 
 public:
     virtual std::vector<std::unique_ptr<GPU>> gpus() = 0;

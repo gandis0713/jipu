@@ -9,15 +9,15 @@
 namespace hpc
 {
 
-std::unique_ptr<Instance> Instance::create(const GPUVendor vendor)
+std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
 {
-    switch (vendor)
+    switch (descriptor.gpuType)
     {
 #if defined(__ANDROID__) || defined(ANDROID) || defined(__linux__)
-    case GPUVendor::Mali:
+    case GPUType::Mali:
         return std::make_unique<mali::MaliInstance>();
 #endif
-    case GPUVendor::Adreno:
+    case GPUType::Adreno:
         return nullptr;
     default:
         return nullptr;
