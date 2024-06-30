@@ -26,5 +26,11 @@
       "name": "vcpkg-cmake-config",
       "host": true
     }
+  ],
+  "overrides": [
+    {
+      "name": "hwcpipe",
+      "version": "2.3.0"
+    }
   ]
 }
