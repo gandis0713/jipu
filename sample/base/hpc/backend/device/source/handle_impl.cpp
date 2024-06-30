@@ -9,7 +9,7 @@ namespace hpc
 namespace device
 {
 
-std::unique_ptr<Handle> Handle::create(const char* path)
+std::unique_ptr<Handle> HandleImpl::create(const char* path)
 {
     auto ret = syscall::Interface::open(path, O_RDONLY /* O_RDONLY */);
     auto error = ret.first;
