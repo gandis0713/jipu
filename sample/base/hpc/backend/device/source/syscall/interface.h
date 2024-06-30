@@ -1,10 +1,6 @@
 #pragma once
 
-#if defined(_WIN32)
-#include "api/windows.h"
-#else
 #include "api/unix.h"
-#endif
 
 #include <system_error>
 #include <utility>
@@ -79,11 +75,7 @@ private:
 };
 } // namespace impl
 
-#if defined(WIN32)
-using Interface = impl::Interface<api::Windows>;
-#else
 using Interface = impl::Interface<api::Unix>;
-#endif
 
 } // namespace syscall
 } // namespace device
