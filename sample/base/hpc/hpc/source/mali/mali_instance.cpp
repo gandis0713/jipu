@@ -1,17 +1,24 @@
 #include "mali_instance.h"
 
 #include "mali_gpu.h"
+
+#include <device/product_id.hpp>
+#include <hwcpipe/counter_database.hpp>
 #include <hwcpipe/gpu.hpp>
+#include <hwcpipe/sampler.hpp>
+
 #include <spdlog/spdlog.h>
+
+#include <unistd.h>
 
 namespace hpc
 {
 namespace mali
 {
 
-std::string productFamilyName(hwcpipe::device::product_id::gpu_family family)
+std::string productFamilyName(hwcpipe::device::gpu_family family)
 {
-    using gpu_family = hwcpipe::device::product_id::gpu_family;
+    using gpu_family = hwcpipe::device::gpu_family;
 
     switch (family)
     {
@@ -34,7 +41,7 @@ std::vector<std::unique_ptr<GPU>> MaliInstance::gpus()
         spdlog::debug("------------------------------------------------------------");
         spdlog::debug("GPU Device {} :", gpu.get_device_number());
         spdlog::debug("------------------------------------------------------------");
-        spdlog::debug("    Product Family:    {}", productFamilyName(gpu.get_product_id().get_gpu_family()));
+        spdlog::debug("    Product Family:    {}", productFamilyName(gpu.get_gpu_family()));
         spdlog::debug("    Number of Cores:   {}", gpu.num_shader_cores());
         spdlog::debug("    Number of Engines: {}", gpu.num_execution_engines());
         spdlog::debug("    Bus Width:         {}", gpu.bus_width());
