@@ -24,11 +24,11 @@ public:
     Sample sample(const Counter counter);
 
 private:
-    uint64_t time();
-
-private:
     const MaliGPU m_gpu{ -1 };
     hwcpipe::sampler<> m_sampler;
+
+private:
+    SamplerDescriptor m_descriptor{};
 };
 DOWN_CAST(MaliSampler, Sampler);
 

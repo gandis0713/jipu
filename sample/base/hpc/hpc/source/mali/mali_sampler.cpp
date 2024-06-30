@@ -40,9 +40,10 @@ Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
 } // namespace
 
 MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
-    : Sampler(descriptor)
+    : Sampler()
     , m_gpu(gpu)
     , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()))) // empty counter sampler
+    , m_descriptor(descriptor)
 {
     auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()));
 
@@ -124,11 +125,6 @@ std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)
     }
 
     return samples;
-}
-
-uint64_t MaliSampler::time()
-{
-    return 0;
 }
 
 } // namespace mali

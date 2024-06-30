@@ -51,21 +51,19 @@ public:
     virtual ~Sampler() = default;
 
 protected:
-    Sampler(SamplerDescriptor descriptor);
+    Sampler();
 
 public:
     virtual void start() = 0;
     virtual void stop() = 0;
+
     /**
-     * get samples with counters
+     * @brief get samples with counters
      */
     virtual std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) = 0;
 
 public:
     const std::unordered_set<Counter>& counters() const;
-
-protected:
-    SamplerDescriptor m_descriptor{};
 };
 
 } // namespace hpc
