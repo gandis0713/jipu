@@ -37,5 +37,10 @@ HandleImpl::~HandleImpl()
     }
 }
 
+int HandleImpl::fd()
+{
+    return m_fd;
+}
+
 } // namespace device
 } // namespace hpc

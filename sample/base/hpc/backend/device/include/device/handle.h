@@ -1,5 +1,7 @@
 #pragma once
 
+#include "export.h"
+
 #include <memory>
 
 namespace hpc
@@ -7,7 +9,7 @@ namespace hpc
 namespace device
 {
 
-class Handle
+class HPC_DEVICE_VISIBILITY Handle
 {
 public:
     /**

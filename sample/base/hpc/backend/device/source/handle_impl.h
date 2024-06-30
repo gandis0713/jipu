@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/cast.h"
 #include "device/handle.h"
 
 namespace hpc
@@ -16,9 +17,13 @@ public:
     explicit HandleImpl(const int fd);
     ~HandleImpl() override;
 
+public:
+    int fd();
+
 private:
     const int m_fd = -1;
 };
+DOWN_CAST(HandleImpl, Handle)
 
 } // namespace device
 } // namespace hpc
