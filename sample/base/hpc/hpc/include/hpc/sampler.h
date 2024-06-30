@@ -51,7 +51,7 @@ public:
     virtual ~Sampler() = default;
 
 protected:
-    Sampler();
+    Sampler() = default;
 
 public:
     virtual void start() = 0;

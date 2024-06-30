@@ -47,7 +47,7 @@ MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
 {
     auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()));
 
-    // convert counters to hwcpipe_counter and and them.
+    // convert counters to hwcpipe_counter and them.
     std::error_code ec;
     for (Counter counter : m_descriptor.counters)
     {
