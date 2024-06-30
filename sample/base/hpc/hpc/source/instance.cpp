@@ -18,7 +18,7 @@ std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
     case GPUType::Mali:
         return std::make_unique<mali::MaliInstance>();
     case GPUType::Adreno:
-        return nullptr;
+        return std::make_unique<adreno::AdrenoInstance>();
 #endif
 
     default:
