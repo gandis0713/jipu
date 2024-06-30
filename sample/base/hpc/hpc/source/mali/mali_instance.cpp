@@ -9,8 +9,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include <unistd.h>
-
 namespace hpc
 {
 namespace mali
