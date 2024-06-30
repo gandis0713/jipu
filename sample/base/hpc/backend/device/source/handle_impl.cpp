@@ -3,7 +3,6 @@
 #include "syscall/interface.h"
 
 #include <linux/ioctl.h>
-#include <spdlog/spdlog.h>
 
 namespace hpc
 {
