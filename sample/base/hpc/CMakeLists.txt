@@ -7,5 +7,8 @@ project(
     LANGUAGES CXX
 )
 
-add_subdirectory(backend)
+if(ANDROID)
+    add_subdirectory(backend)
+endif()
+
 add_subdirectory(hpc)
