@@ -42,11 +42,6 @@ int MaliGPU::deviceNumber() const
     return m_deviceNumber;
 }
 
-const std::unordered_set<hwcpipe_counter>& MaliGPU::hwcCounters() const
-{
-    return m_counters;
-}
-
 void MaliGPU::collectCounters()
 {
     auto gpu = hwcpipe::gpu(m_deviceNumber);
