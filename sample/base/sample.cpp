@@ -115,10 +115,6 @@ void Sample::init()
 void Sample::update()
 {
     m_fps.update();
-    if (m_hpcWatcher)
-    {
-        m_hpcWatcher->update();
-    }
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
