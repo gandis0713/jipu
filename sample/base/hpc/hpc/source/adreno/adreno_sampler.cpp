@@ -17,14 +17,18 @@ AdrenoSampler::AdrenoSampler(const AdrenoGPU gpu, const SamplerDescriptor& descr
 {
 }
 
-void AdrenoSampler::start()
+std::error_code AdrenoSampler::start()
 {
     spdlog::debug("start sampling {}", __func__);
+
+    return {};
 }
 
-void AdrenoSampler::stop()
+std::error_code AdrenoSampler::stop()
 {
     spdlog::debug("stop sampling {}", __func__);
+
+    return {};
 }
 
 std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)

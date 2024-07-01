@@ -18,8 +18,8 @@ public:
     explicit MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor);
 
 public:
-    void start() override;
-    void stop() override;
+    std::error_code start() override;
+    std::error_code stop() override;
     std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) override;
     Sample sample(const Counter counter);
 

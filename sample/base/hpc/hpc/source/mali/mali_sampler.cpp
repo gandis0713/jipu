@@ -67,16 +67,18 @@ MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
     m_sampler = hwcpipe::sampler<>(config);
 }
 
-void MaliSampler::start()
+std::error_code MaliSampler::start()
 {
     spdlog::debug("start sampling {}", __func__);
-    m_sampler.start_sampling();
+
+    return m_sampler.start_sampling();
 }
 
-void MaliSampler::stop()
+std::error_code MaliSampler::stop()
 {
     spdlog::debug("stop sampling {}", __func__);
-    m_sampler.stop_sampling();
+
+    return m_sampler.stop_sampling();
 }
 
 Sample MaliSampler::sample(const Counter counter)

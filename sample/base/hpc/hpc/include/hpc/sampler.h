@@ -4,6 +4,8 @@
 #include <memory>
 #include <unordered_set>
 #include <vector>
+#include <system_error>
+
 
 #include "counter.h"
 #include "export.h"
@@ -54,8 +56,8 @@ protected:
     Sampler() = default;
 
 public:
-    virtual void start() = 0;
-    virtual void stop() = 0;
+    virtual std::error_code start() = 0;
+    virtual std::error_code stop() = 0;
 
     /**
      * @brief get samples with counters
