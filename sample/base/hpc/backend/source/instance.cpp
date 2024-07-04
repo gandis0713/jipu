@@ -1,4 +1,4 @@
-#include "device/instance.h"
+#include "hpc/backend/instance.h"
 
 #include "instance_impl.h"
 

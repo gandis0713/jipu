@@ -67,7 +67,7 @@ target_link_libraries(hpc PRIVATE
 if(ANDROID)
     # for custom backend
     target_link_libraries(hpc PRIVATE
-        hpc::device
+        hpc::backend
     )
 
     # for HWCPipe

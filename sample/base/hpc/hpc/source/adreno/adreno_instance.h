@@ -3,7 +3,7 @@
 #include "hpc/gpu.h"
 #include "hpc/instance.h"
 
-#include "device/instance.h"
+#include "hpc/backend/instance.h"
 
 #include <memory>
 

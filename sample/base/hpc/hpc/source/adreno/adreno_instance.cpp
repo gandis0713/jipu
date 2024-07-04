@@ -1,8 +1,8 @@
 #include "adreno_instance.h"
 
 #include "adreno_gpu.h"
-#include "device/handle.h"
-#include "device/instance.h"
+#include "hpc/backend/handle.h"
+#include "hpc/backend/instance.h"
 
 #include <spdlog/spdlog.h>
 

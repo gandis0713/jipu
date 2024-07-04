@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/cast.h"
-#include "device/handle.h"
+#include "hpc/backend/handle.h"
 
 namespace hpc
 {
