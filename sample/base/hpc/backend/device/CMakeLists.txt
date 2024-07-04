@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
 set(SRC_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/device.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance_impl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance_impl.h
@@ -9,7 +8,6 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/device/device.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/device/handle.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/device/instance.h
 )
@@ -19,7 +17,7 @@ add_library(device STATIC
 )
 add_library(hpc::device ALIAS device)
 
-# target_link_libraries(device PRIVATE spdlog::spdlog_header_only)
+target_link_libraries(device PRIVATE spdlog::spdlog_header_only)
 target_include_directories(device
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
