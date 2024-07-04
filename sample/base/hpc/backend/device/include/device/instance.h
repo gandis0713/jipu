@@ -13,7 +13,7 @@ namespace device
 class HPC_DEVICE_VISIBILITY Instance
 {
 public:
-    static std::unique_ptr<Instance> create(Handle& handle);
+    static std::unique_ptr<Instance> create(std::unique_ptr<Handle> handle);
 
     Instance() = default;
     virtual ~Instance() = default;

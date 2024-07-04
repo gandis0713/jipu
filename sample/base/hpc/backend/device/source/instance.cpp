@@ -7,9 +7,9 @@ namespace hpc
 namespace device
 {
 
-std::unique_ptr<Instance> Instance::create(Handle& handle)
+std::unique_ptr<Instance> Instance::create(std::unique_ptr<Handle> handle)
 {
-    return std::make_unique<InstanceImpl>(handle);
+    return std::make_unique<InstanceImpl>(std::move(handle));
 }
 
 } // namespace device

@@ -11,14 +11,14 @@ namespace device
 class InstanceImpl : public Instance
 {
 public:
-    explicit InstanceImpl(Handle& handle);
+    explicit InstanceImpl(std::unique_ptr<Handle> handle);
     ~InstanceImpl() override = default;
 
 private:
     void init();
 
 private:
-    Handle& m_handle;
+    std::unique_ptr<Handle> m_handle = nullptr;
 };
 
 } // namespace device
