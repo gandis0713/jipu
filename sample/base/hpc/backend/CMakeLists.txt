@@ -9,17 +9,15 @@ project(
 
 set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/instance.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/instance_impl.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/instance_impl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance_impl.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance.h
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance_impl.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance_impl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance.h
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/handle.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/instance.h

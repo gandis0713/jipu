@@ -21,11 +21,13 @@ class HPC_DEVICE_VISIBILITY Instance
 public:
     static std::unique_ptr<Instance> create(const BackendType type);
 
-    Instance() = default;
     virtual ~Instance() = default;
 
     Instance(const Instance&) = delete;
     Instance& operator=(const Instance&) = delete;
+
+protected:
+    Instance() = default;
 };
 
 } // namespace backend

@@ -1,4 +1,4 @@
-#include "adreno_instance_impl.h"
+#include "adreno_instance.h"
 
 #include "handle_impl.h"
 
@@ -14,8 +14,10 @@ namespace hpc
 {
 namespace backend
 {
+namespace adreno
+{
 
-std::unique_ptr<Instance> AdrenoInstanceImpl::create()
+std::unique_ptr<Instance> AdrenoInstance::create()
 {
     auto handle = hpc::backend::Handle::create("/dev/kgsl-3d0");
     if (!handle)
@@ -24,16 +26,16 @@ std::unique_ptr<Instance> AdrenoInstanceImpl::create()
         return nullptr;
     }
 
-    return std::make_unique<AdrenoInstanceImpl>(std::move(handle));
+    return std::make_unique<AdrenoInstance>(std::move(handle));
 }
 
-AdrenoInstanceImpl::AdrenoInstanceImpl(std::unique_ptr<Handle> handle)
+AdrenoInstance::AdrenoInstance(std::unique_ptr<Handle> handle)
     : m_handle(std::move(handle))
 {
     init();
 }
 
-void AdrenoInstanceImpl::init()
+void AdrenoInstance::init()
 {
     auto t = std::thread([&]() {
         adreno_device_info devinfo{};
@@ -170,5 +172,6 @@ void AdrenoInstanceImpl::init()
     t.detach();
 }
 
+} // namespace adreno
 } // namespace backend
 } // namespace hpc

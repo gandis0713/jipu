@@ -18,11 +18,13 @@ public:
      */
     static std::unique_ptr<Handle> create(const char* path);
 
-    Handle() = default;
     virtual ~Handle() = default;
 
     Handle(const Handle&) = delete;
     Handle& operator=(const Handle&) = delete;
+
+protected:
+    Handle() = default;
 };
 
 } // namespace backend
