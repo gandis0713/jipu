@@ -4,12 +4,12 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 class HPC_DEVICE_VISIBILITY Sampler
 {
 };
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

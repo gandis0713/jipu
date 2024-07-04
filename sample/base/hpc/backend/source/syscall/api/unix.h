@@ -12,7 +12,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 namespace syscall
 {
@@ -59,5 +59,5 @@ public:
 
 } // namespace api
 } // namespace syscall
-} // namespace device
+} // namespace backend
 } // namespace hpc

@@ -4,7 +4,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 std::unique_ptr<Instance> Instance::create(std::unique_ptr<Handle> handle)
@@ -12,5 +12,5 @@ std::unique_ptr<Instance> Instance::create(std::unique_ptr<Handle> handle)
     return std::make_unique<InstanceImpl>(std::move(handle));
 }
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

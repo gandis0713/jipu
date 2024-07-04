@@ -18,7 +18,7 @@ public:
     std::vector<std::unique_ptr<GPU>> gpus() override;
 
 private:
-    std::unique_ptr<hpc::device::Instance> m_instance = nullptr;
+    std::unique_ptr<hpc::backend::Instance> m_instance = nullptr;
 };
 
 } // namespace adreno

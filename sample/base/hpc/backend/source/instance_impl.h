@@ -5,7 +5,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 class InstanceImpl : public Instance
@@ -21,5 +21,5 @@ private:
     std::unique_ptr<Handle> m_handle = nullptr;
 };
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

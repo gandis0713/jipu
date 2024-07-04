@@ -6,7 +6,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 std::unique_ptr<Handle> HandleImpl::create(const char* path)
@@ -42,5 +42,5 @@ int HandleImpl::fd()
     return m_fd;
 }
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

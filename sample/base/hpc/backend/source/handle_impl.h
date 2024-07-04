@@ -5,7 +5,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 class HandleImpl : public Handle
@@ -25,5 +25,5 @@ private:
 };
 DOWN_CAST(HandleImpl, Handle)
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

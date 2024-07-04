@@ -6,7 +6,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 inline AdrenoSeries getSeries(int gpu_id)
@@ -28,5 +28,5 @@ inline uint32_t getSelector(adreno_a6xx_counter counter)
     return static_cast<uint32_t>(counter) & (256u - 1u);
 }
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

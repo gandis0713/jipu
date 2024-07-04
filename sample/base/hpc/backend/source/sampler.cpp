@@ -2,8 +2,8 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

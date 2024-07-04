@@ -7,7 +7,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 namespace syscall
 {
@@ -78,5 +78,5 @@ private:
 using Interface = impl::Interface<api::Unix>;
 
 } // namespace syscall
-} // namespace device
+} // namespace backend
 } // namespace hpc

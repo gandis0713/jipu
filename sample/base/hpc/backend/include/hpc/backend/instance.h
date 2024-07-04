@@ -7,7 +7,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 class HPC_DEVICE_VISIBILITY Instance
@@ -22,5 +22,5 @@ public:
     Instance& operator=(const Instance&) = delete;
 };
 
-} // namespace device
+} // namespace backend
 } // namespace hpc

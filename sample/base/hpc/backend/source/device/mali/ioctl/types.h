@@ -4,7 +4,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 namespace ioctl
 {
@@ -19,5 +19,5 @@ struct VersionCheck
 
 } // namespace mali
 } // namespace ioctl
-} // namespace device
+} // namespace backend
 } // namespace hpc

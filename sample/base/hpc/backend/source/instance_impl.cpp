@@ -1,9 +1,9 @@
 #include "instance_impl.h"
 
-#include "handle_impl.h"
 #include "device/adreno/ioctl/a6xx.h"
 #include "device/adreno/ioctl/types.h"
 #include "device/adreno/ioctl/utils.h"
+#include "handle_impl.h"
 #include "syscall/interface.h"
 
 #include <spdlog/spdlog.h>
@@ -11,7 +11,7 @@
 
 namespace hpc
 {
-namespace device
+namespace backend
 {
 
 InstanceImpl::InstanceImpl(std::unique_ptr<Handle> handle)
@@ -157,5 +157,5 @@ void InstanceImpl::init()
     t.detach();
 }
 
-} // namespace device
+} // namespace backend
 } // namespace hpc
