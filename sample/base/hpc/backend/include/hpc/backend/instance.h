@@ -10,10 +10,16 @@ namespace hpc
 namespace backend
 {
 
+enum class BackendType
+{
+    Mali,
+    Adreno
+};
+
 class HPC_DEVICE_VISIBILITY Instance
 {
 public:
-    static std::unique_ptr<Instance> create(std::unique_ptr<Handle> handle);
+    static std::unique_ptr<Instance> create(const BackendType type);
 
     Instance() = default;
     virtual ~Instance() = default;

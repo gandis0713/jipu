@@ -7,9 +7,9 @@ namespace hpc
 namespace backend
 {
 
-std::unique_ptr<Instance> Instance::create(std::unique_ptr<Handle> handle)
+std::unique_ptr<Instance> Instance::create(const BackendType type)
 {
-    return std::make_unique<InstanceImpl>(std::move(handle));
+    return InstanceImpl::create(type);
 }
 
 } // namespace backend
