@@ -15,6 +15,12 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/handle_impl.h
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance_impl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance_impl.h
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance_impl.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance_impl.h
+
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/handle.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/instance.h
 )
@@ -30,5 +36,5 @@ target_include_directories(backend
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
     PRIVATE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/source>
 )
