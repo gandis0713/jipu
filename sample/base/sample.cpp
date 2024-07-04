@@ -8,7 +8,6 @@
 
 #include "hpc/counter.h"
 #include "hpc/gpu.h"
-#include "hpc/instance.h"
 
 namespace jipu
 {
@@ -171,11 +170,11 @@ void Sample::onHPCListner(Values values)
 void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 {
     // TODO: select gpu device
-    auto hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Mali });
-    if (!hpcInstance)
+    m_hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Adreno });
+    if (!m_hpcInstance)
         return;
 
-    auto gpus = hpcInstance->gpus();
+    auto gpus = m_hpcInstance->gpus();
     if (gpus.empty())
         return;
 
