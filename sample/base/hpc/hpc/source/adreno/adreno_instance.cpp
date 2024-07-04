@@ -21,8 +21,8 @@ std::vector<std::unique_ptr<GPU>> AdrenoInstance::gpus()
         return {};
     }
 
-    auto instance = hpc::device::Instance::create(*handle);
-    if (!instance)
+    m_instance = hpc::device::Instance::create(std::move(handle));
+    if (!m_instance)
     {
         spdlog::error("Failed to create device instance");
         return {};
