@@ -1,7 +1,6 @@
 #pragma once
 
 #include "export.h"
-#include "handle.h"
 
 #include <memory>
 
@@ -10,16 +9,16 @@ namespace hpc
 namespace backend
 {
 
-enum class BackendType
+enum class DeviceType
 {
-    Mali,
-    Adreno
+    Adreno,
+    Mali
 };
 
-class HPC_DEVICE_VISIBILITY Instance
+class HPC_BACKEND_VISIBILITY Instance
 {
 public:
-    static std::unique_ptr<Instance> create(const BackendType type);
+    static std::unique_ptr<Instance> create(const DeviceType type);
 
     virtual ~Instance() = default;
 

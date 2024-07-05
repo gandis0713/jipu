@@ -8,13 +8,13 @@ namespace hpc
 namespace backend
 {
 
-std::unique_ptr<Instance> Instance::create(const BackendType type)
+std::unique_ptr<Instance> Instance::create(const DeviceType type)
 {
     switch (type)
     {
-    case BackendType::Adreno:
+    case DeviceType::Adreno:
         return adreno::AdrenoInstance::create();
-    case BackendType::Mali:
+    case DeviceType::Mali:
         return mali::MaliInstance::create();
     default:
         return nullptr;

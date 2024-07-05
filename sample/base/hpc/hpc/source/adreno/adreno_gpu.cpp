@@ -9,8 +9,9 @@ namespace hpc
 namespace adreno
 {
 
-AdrenoGPU::AdrenoGPU() {
-};
+AdrenoGPU::AdrenoGPU()
+{
+}
 
 std::unique_ptr<Sampler> AdrenoGPU::create(const SamplerDescriptor& descriptor)
 {

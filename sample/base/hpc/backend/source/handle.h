@@ -1,21 +1,23 @@
 #pragma once
 
-#include "common/cast.h"
-#include "hpc/backend/handle.h"
+#include <memory>
 
 namespace hpc
 {
 namespace backend
 {
 
-class HandleImpl : public Handle
+class Handle
 {
 public:
     static std::unique_ptr<Handle> create(const char* path);
 
 public:
-    explicit HandleImpl(const int fd);
-    ~HandleImpl() override;
+    explicit Handle(const int fd);
+    virtual ~Handle();
+
+    Handle(const Handle&) = delete;
+    Handle& operator=(const Handle&) = delete;
 
 public:
     int fd();
@@ -23,7 +25,6 @@ public:
 private:
     const int m_fd = -1;
 };
-DOWN_CAST(HandleImpl, Handle)
 
 } // namespace backend
 } // namespace hpc

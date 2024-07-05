@@ -1,7 +1,5 @@
 #include "adreno_instance.h"
 
-#include "handle_impl.h"
-
 #include "ioctl/a6xx.h"
 #include "ioctl/types.h"
 #include "ioctl/utils.h"
@@ -45,8 +43,8 @@ void AdrenoInstance::init()
         deviceGetProperty.value = &devinfo;
         deviceGetProperty.num_bytes = sizeof(adreno_device_info);
 
-        auto& handleImpl = downcast(*m_handle);
-        auto result = syscall::Interface::ioctl(handleImpl.fd(), ADRENO_IOCTL_DEVICE_GET_PROPERTY, &deviceGetProperty);
+        auto& handle = *m_handle;
+        auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_DEVICE_GET_PROPERTY, &deviceGetProperty);
         auto error = result.first;
         if (error)
         {
@@ -91,7 +89,7 @@ void AdrenoInstance::init()
                 adreno_counter_get counterGet{};
                 counterGet.group_id = groupId;
                 counterGet.countable_selector = countableSelector;
-                result = syscall::Interface::ioctl(handleImpl.fd(), ADRENO_IOCTL_COUNTER_GET, &counterGet);
+                result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_GET, &counterGet);
 
                 spdlog::debug("charles groupid {}", groupId);
                 spdlog::debug("charles countableSelector {}", countableSelector);
@@ -107,7 +105,7 @@ void AdrenoInstance::init()
             auto groupId = getGroup(counters[0]);
             adreno_perfcounter_query counterQuery{};
             counterQuery.groupid = groupId;
-            result = syscall::Interface::ioctl(handleImpl.fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
+            result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
 
             if (result.first)
             {
@@ -141,7 +139,7 @@ void AdrenoInstance::init()
                 counterRead.num_counters = static_cast<unsigned int>(counterReadValues.size());
                 counterRead.counters = reinterpret_cast<hpc_gpu_adreno_ioctl_counter_read_counter_t*>(counterReadValues.data());
 
-                result = syscall::Interface::ioctl(handleImpl.fd(), ADRENO_IOCTL_COUNTER_READ, &counterRead);
+                result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_READ, &counterRead);
 
                 spdlog::debug("charles error.code {}", result.first.value());
                 spdlog::debug("charles error.message {}", result.first.message());
