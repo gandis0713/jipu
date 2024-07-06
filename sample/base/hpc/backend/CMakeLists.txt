@@ -14,6 +14,8 @@ set(SRC_FILES
 
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_gpu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_gpu.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_sampler_a6xx.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_sampler_a6xx.h
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_sampler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_sampler.h
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/adreno/adreno_instance.cpp
