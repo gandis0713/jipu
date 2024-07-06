@@ -23,6 +23,10 @@ public:
     void setCounters(const std::unordered_set<uint32_t>& counters) override;
 
 protected:
+    virtual uint32_t getGroup(uint32_t counter) = 0;
+    virtual uint32_t getSelector(uint32_t counter) = 0;
+
+protected:
     const AdrenoGPU m_gpu;
     std::unique_ptr<Handle> m_handle = nullptr;
     std::unordered_set<uint32_t> m_counters{};
