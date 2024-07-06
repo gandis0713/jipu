@@ -30,7 +30,6 @@ Instance& AdrenoGPU::getInstance()
 std::unique_ptr<Sampler> AdrenoGPU::createSampler()
 {
     auto handle = hpc::backend::Handle::create(m_path);
-    spdlog::error("charles Failed to create adreno device handle");
     if (!handle)
     {
         spdlog::error("Failed to create adreno device handle");
