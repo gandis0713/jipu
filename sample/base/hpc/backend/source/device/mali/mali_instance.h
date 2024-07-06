@@ -14,12 +14,10 @@ namespace mali
 class MaliInstance : public Instance
 {
 public:
-    static std::unique_ptr<Instance> create();
-    explicit MaliInstance(std::unique_ptr<Handle> handle);
+    explicit MaliInstance() = default;
     ~MaliInstance() override = default;
 
-private:
-    std::unique_ptr<Handle> m_handle = nullptr;
+    std::vector<std::unique_ptr<hpc::backend::GPU>> gpus() override;
 };
 DOWN_CAST(MaliInstance, Instance)
 

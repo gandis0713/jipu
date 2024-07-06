@@ -1,4 +1,5 @@
 #include "mali_instance.h"
+// #include "mali_gpu.h"
 
 #include <spdlog/spdlog.h>
 
@@ -6,21 +7,19 @@ namespace hpc
 {
 namespace backend
 {
-namespace mali {
+namespace mali
+{
 
-    std::unique_ptr <Instance> MaliInstance::create() {
-        auto handle = hpc::backend::Handle::create("/dev/mali0");
-        if (!handle) {
-            spdlog::error("Failed to create mali device handle");
-            return nullptr;
-        }
+std::vector<std::unique_ptr<hpc::backend::GPU>> MaliInstance::gpus()
+{
+    static std::vector<const char*> paths = {
+        "/dev/mali0",
+    };
 
-        return std::make_unique<MaliInstance>(std::move(handle));
-    }
+    // TODO
 
-    MaliInstance::MaliInstance(std::unique_ptr <Handle> handle)
-            : m_handle(std::move(handle)) {
-    }
+    return {};
+}
 
 } // namespace mali
 } // namespace backend
