@@ -3,6 +3,7 @@
 #include "export.h"
 
 #include <system_error>
+#include <unordered_set>
 
 namespace hpc
 {
@@ -19,7 +20,7 @@ public:
 
     virtual std::error_code start() = 0;
     virtual std::error_code stop() = 0;
-    virtual void setCounters(const std::vector<uint32_t>& counters) = 0;
+    virtual void setCounters(const std::unordered_set<uint32_t>& counters) = 0;
 
 protected:
     Sampler() = default;

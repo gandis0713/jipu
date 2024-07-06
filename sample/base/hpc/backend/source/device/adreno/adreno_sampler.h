@@ -12,7 +12,7 @@ namespace backend
 namespace adreno
 {
 
-class AdrenoSampler final : public Sampler
+class AdrenoSampler : public Sampler
 {
 public:
     explicit AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle);
@@ -20,11 +20,12 @@ public:
 
     std::error_code start() override;
     std::error_code stop() override;
-    void setCounters(const std::vector<uint32_t>& counters) override;
+    void setCounters(const std::unordered_set<uint32_t>& counters) override;
 
-private:
+protected:
     const AdrenoGPU m_gpu;
     std::unique_ptr<Handle> m_handle = nullptr;
+    std::unordered_set<uint32_t> m_counters{};
 };
 
 } // namespace adreno
