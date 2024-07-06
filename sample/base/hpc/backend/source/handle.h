@@ -10,7 +10,7 @@ namespace backend
 class Handle
 {
 public:
-    static std::unique_ptr<Handle> create(const char* path);
+    static std::unique_ptr<Handle> create(const std::string& path);
 
 public:
     explicit Handle(const int fd);

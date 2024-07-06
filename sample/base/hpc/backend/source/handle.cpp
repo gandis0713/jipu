@@ -9,9 +9,9 @@ namespace hpc
 namespace backend
 {
 
-std::unique_ptr<Handle> Handle::create(const char* path)
+std::unique_ptr<Handle> Handle::create(const std::string& path)
 {
-    auto ret = syscall::Interface::open(path, O_RDONLY /* O_RDONLY */);
+    auto ret = syscall::Interface::open(path.c_str(), O_RDONLY /* O_RDONLY */);
     auto error = ret.first;
     if (error)
     {
