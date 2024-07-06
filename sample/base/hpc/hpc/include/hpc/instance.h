@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "hpc/gpu.h"
 
 #include <memory>
 #include <vector>
@@ -19,7 +20,6 @@ struct InstanceDescriptor
     GPUType gpuType;
 };
 
-class GPU;
 class HPC_EXPORT Instance
 {
 public:
@@ -29,7 +29,7 @@ public:
     static std::unique_ptr<Instance> create(const InstanceDescriptor& descriptor);
 
 public:
-    virtual std::vector<std::unique_ptr<GPU>> gpus() = 0;
+    virtual std::vector<std::unique_ptr<hpc::GPU>> gpus() = 0;
 };
 
 } // namespace hpc

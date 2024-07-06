@@ -11,7 +11,7 @@ namespace mali
 class MaliInstance final : public Instance
 {
 public:
-    std::vector<std::unique_ptr<GPU>> gpus() override;
+    std::vector<std::unique_ptr<hpc::GPU>> gpus() override;
 };
 
 } // namespace mali

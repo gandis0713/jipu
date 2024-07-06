@@ -31,9 +31,9 @@ std::string productFamilyName(hwcpipe::device::gpu_family family)
     }
 }
 
-std::vector<std::unique_ptr<GPU>> MaliInstance::gpus()
+std::vector<std::unique_ptr<hpc::GPU>> MaliInstance::gpus()
 {
-    std::vector<std::unique_ptr<GPU>> gpus{};
+    std::vector<std::unique_ptr<hpc::GPU>> gpus{};
     for (const auto& gpu : hwcpipe::find_gpus())
     {
         spdlog::debug("------------------------------------------------------------");
