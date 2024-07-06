@@ -14,16 +14,10 @@ namespace adreno
 class AdrenoInstance : public Instance
 {
 public:
-    static std::unique_ptr<Instance> create();
-
-    explicit AdrenoInstance(std::unique_ptr<Handle> handle);
+    explicit AdrenoInstance() = default;
     ~AdrenoInstance() override = default;
 
-private:
-    void init();
-
-private:
-    std::unique_ptr<Handle> m_handle = nullptr;
+    std::vector<std::unique_ptr<hpc::backend::GPU>> gpus() override;
 };
 DOWN_CAST(AdrenoInstance, Instance)
 

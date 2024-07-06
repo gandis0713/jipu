@@ -22,7 +22,10 @@ set(SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/source/device/mali/mali_instance.h
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/gpu.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/instance.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/sampler.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/hpc/backend/export.h
 )
 
 add_library(backend STATIC

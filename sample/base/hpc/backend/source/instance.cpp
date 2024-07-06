@@ -13,9 +13,9 @@ std::unique_ptr<Instance> Instance::create(const DeviceType type)
     switch (type)
     {
     case DeviceType::Adreno:
-        return adreno::AdrenoInstance::create();
+        return std::make_unique<adreno::AdrenoInstance>();
     case DeviceType::Mali:
-        return mali::MaliInstance::create();
+        return std::make_unique<mali::MaliInstance>();
     default:
         return nullptr;
     }
