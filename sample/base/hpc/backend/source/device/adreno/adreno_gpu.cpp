@@ -2,6 +2,10 @@
 
 #include "adreno_instance.h"
 #include "adreno_sampler.h"
+#include "adreno_sampler_a6xx.h"
+
+#include "ioctl/types.h"
+#include "ioctl/utils.h"
 
 #include <spdlog/spdlog.h>
 
@@ -26,13 +30,21 @@ Instance& AdrenoGPU::getInstance()
 std::unique_ptr<Sampler> AdrenoGPU::createSampler()
 {
     auto handle = hpc::backend::Handle::create(m_path);
+    spdlog::error("charles Failed to create adreno device handle");
     if (!handle)
     {
         spdlog::error("Failed to create adreno device handle");
         return nullptr;
     }
 
-    return std::make_unique<AdrenoSampler>(*this, std::move(handle));
+    auto series = getSeries(handle->fd());
+    switch (series)
+    {
+    case AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX:
+        return std::make_unique<AdrenoSamplerA6XX>(*this, std::move(handle));
+    default:
+        return std::make_unique<AdrenoSampler>(*this, std::move(handle));
+    }
 }
 
 } // namespace adreno
