@@ -25,7 +25,15 @@ std::unique_ptr<Sampler> AdrenoGPU::create(const SamplerDescriptor& descriptor)
         return nullptr;
     }
 
-    // TODO: set counters
+    std::unordered_set<uint32_t> counters{};
+    for (const auto& counter : descriptor.counters)
+    {
+        const auto& adrenoCounter = counterDependencies.at(counter);
+        // TODO: set counter correctly...
+        counters.insert(static_cast<uint32_t>(adrenoCounter[0]));
+    }
+
+    sampler->setCounters(counters);
 
     return std::make_unique<AdrenoSampler>(*this, std::move(sampler));
 }
