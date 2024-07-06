@@ -21,16 +21,14 @@ std::error_code AdrenoSampler::start()
 {
     spdlog::debug("start sampling {}", __func__);
 
-    m_sampler->start();
-
-    return {};
+    return m_sampler->start();
 }
 
 std::error_code AdrenoSampler::stop()
 {
     spdlog::debug("stop sampling {}", __func__);
 
-    return {};
+    return m_sampler->stop();
 }
 
 std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
