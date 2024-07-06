@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "gpu.h"
 
 #include <memory>
 
@@ -24,6 +25,8 @@ public:
 
     Instance(const Instance&) = delete;
     Instance& operator=(const Instance&) = delete;
+
+    virtual std::vector<std::unique_ptr<hpc::backend::GPU>> gpus() = 0;
 
 protected:
     Instance() = default;
