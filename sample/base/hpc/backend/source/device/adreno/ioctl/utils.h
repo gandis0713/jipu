@@ -12,24 +12,15 @@ namespace hpc
 namespace backend
 {
 
-inline int getGPUId(int chipId)
+inline int getGPUId(uint32_t chipId)
 {
     uint8_t coreId = (chipId >> (8 * 3)) & 0xffu;
     uint8_t majorId = (chipId >> (8 * 2)) & 0xffu;
     uint8_t minorId = (chipId >> (8 * 1)) & 0xffu;
-    auto gpuId = coreId * 100 + majorId * 10 + minorId;
+    return coreId * 100 + majorId * 10 + minorId;
 }
 
-inline AdrenoSeries getSeries(int gpuId)
-{
-    if ((gpuId >= 600 && gpuId < 700) || gpuId == 702)
-        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX;
-    if (gpuId >= 500 && gpuId < 600)
-        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A5XX;
-    return AdrenoSeries::HPC_GPU_ADRENO_SERIES_UNKNOWN;
-}
-
-inline AdrenoSeries getSeries(Handle& handle)
+inline AdrenoSeries getSeries(int fd)
 {
     adreno_device_info devinfo{};
 
@@ -38,14 +29,19 @@ inline AdrenoSeries getSeries(Handle& handle)
     deviceGetProperty.value = &devinfo;
     deviceGetProperty.num_bytes = sizeof(adreno_device_info);
 
-    auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_DEVICE_GET_PROPERTY, &deviceGetProperty);
+    auto result = syscall::Interface::ioctl(fd, ADRENO_IOCTL_DEVICE_GET_PROPERTY, &deviceGetProperty);
     auto error = result.first;
     if (error)
     {
         return AdrenoSeries::HPC_GPU_ADRENO_SERIES_UNKNOWN;
     }
 
-    return getSeries(getGPUId(devinfo.chip_id));
+    auto gpuId = getGPUId(devinfo.chip_id);
+    if ((gpuId >= 600 && gpuId < 700) || gpuId == 702)
+        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX;
+    if (gpuId >= 500 && gpuId < 600)
+        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A5XX;
+    return AdrenoSeries::HPC_GPU_ADRENO_SERIES_UNKNOWN;
 }
 
 inline uint32_t getGroup(uint32_t counter)
