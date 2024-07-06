@@ -43,7 +43,7 @@ std::unique_ptr<Sampler> AdrenoGPU::createSampler()
     case AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX:
         return std::make_unique<AdrenoSamplerA6XX>(*this, std::move(handle));
     default:
-        return std::make_unique<AdrenoSampler>(*this, std::move(handle));
+        return nullptr;
     }
 }
 
