@@ -15,7 +15,7 @@ namespace adreno
 class AdrenoSampler final : public Sampler
 {
 public:
-    explicit AdrenoSampler(const AdrenoGPU gpu, const SamplerDescriptor& descriptor);
+    explicit AdrenoSampler(AdrenoGPU& gpu, std::unique_ptr<hpc::backend::Sampler> sampler);
 
 public:
     std::error_code start() override;
@@ -23,10 +23,8 @@ public:
     std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) override;
 
 private:
-    const AdrenoGPU m_gpu{};
-
-private:
-    SamplerDescriptor m_descriptor{};
+    AdrenoGPU& m_gpu;
+    std::unique_ptr<hpc::backend::Sampler> m_sampler = nullptr;
 };
 DOWN_CAST(AdrenoSampler, Sampler);
 

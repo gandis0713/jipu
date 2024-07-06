@@ -10,16 +10,18 @@ namespace hpc
 namespace adreno
 {
 
-AdrenoSampler::AdrenoSampler(const AdrenoGPU gpu, const SamplerDescriptor& descriptor)
+AdrenoSampler::AdrenoSampler(AdrenoGPU& gpu, std::unique_ptr<hpc::backend::Sampler> sampler)
     : Sampler()
     , m_gpu(gpu)
-    , m_descriptor(descriptor)
+    , m_sampler(std::move(sampler))
 {
 }
 
 std::error_code AdrenoSampler::start()
 {
     spdlog::debug("start sampling {}", __func__);
+
+    m_sampler->start();
 
     return {};
 }
