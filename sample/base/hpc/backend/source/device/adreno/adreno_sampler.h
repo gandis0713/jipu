@@ -23,6 +23,9 @@ public:
     void setCounters(const std::unordered_set<uint32_t>& counters) override;
 
 protected:
+    std::error_code activeCounters();
+
+protected:
     virtual uint32_t getGroup(uint32_t counter) = 0;
     virtual uint32_t getSelector(uint32_t counter) = 0;
 

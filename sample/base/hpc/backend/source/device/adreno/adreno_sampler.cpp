@@ -24,29 +24,10 @@ AdrenoSampler::AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handl
 std::error_code AdrenoSampler::start()
 {
     auto t = std::thread([&]() {
+        activeCounters();
+
         auto& counters = m_counters;
         auto& handle = *m_handle;
-
-        for (const auto counter : counters)
-        {
-            auto groupId = getGroup(counter);
-            auto countableSelector = getSelector(counter);
-
-            adreno_counter_get counterGet{};
-            counterGet.group_id = groupId;
-            counterGet.countable_selector = countableSelector;
-            auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_GET, &counterGet);
-
-            spdlog::debug("charles groupid {}", groupId);
-            spdlog::debug("charles countableSelector {}", countableSelector);
-            spdlog::debug("charles error.code {}", result.first.value());
-            spdlog::debug("charles error.message {}", result.first.message());
-            spdlog::debug("charles result {}", result.second);
-            if (result.first)
-            {
-                return;
-            }
-        }
 
         auto groupId = getGroup(*counters.begin());
         adreno_perfcounter_query counterQuery{};
@@ -85,7 +66,7 @@ std::error_code AdrenoSampler::start()
             counterRead.num_counters = static_cast<unsigned int>(counterReadValues.size());
             counterRead.counters = reinterpret_cast<hpc_gpu_adreno_ioctl_counter_read_counter_t*>(counterReadValues.data());
 
-            result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_READ, &counterRead);
+            auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_READ, &counterRead);
 
             spdlog::debug("charles error.code {}", result.first.value());
             spdlog::debug("charles error.message {}", result.first.message());
@@ -108,6 +89,30 @@ std::error_code AdrenoSampler::start()
 
     return {};
 }
+
+std::error_code AdrenoSampler::activeCounters()
+{
+    for (const auto counter : m_counters)
+    {
+        auto groupId = getGroup(counter);
+        auto countableSelector = getSelector(counter);
+
+        adreno_counter_get counterGet{};
+        counterGet.group_id = groupId;
+        counterGet.countable_selector = countableSelector;
+        auto result = syscall::Interface::ioctl(m_handle->fd(), ADRENO_IOCTL_COUNTER_GET, &counterGet);
+        auto error = result.first;
+
+        if (error)
+        {
+            spdlog::error("Failed to active counters for adreno counter {}, error: {} {}", static_cast<uint32_t>(counter), error.value(), error.message());
+            return error;
+        }
+    }
+
+    return {};
+}
+
 std::error_code AdrenoSampler::stop()
 {
     return {};
