@@ -118,7 +118,12 @@ std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)
     if (counters.empty())
         counters = m_descriptor.counters;
 
-    m_sampler.sample_now();
+    auto error = m_sampler.sample_now();
+    if (error)
+    {
+        spdlog::error("Failed to sample counters. error {}, {}", error.value(), error.message());
+        return {};
+    }
 
     std::vector<hpc::Sample> samples{};
     for (const auto counter : counters)
