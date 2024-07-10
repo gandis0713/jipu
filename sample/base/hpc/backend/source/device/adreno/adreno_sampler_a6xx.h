@@ -17,7 +17,8 @@ public:
 
 protected:
     uint32_t getGroup(uint32_t counter) override;
-    uint32_t getSelector(uint32_t counter) override;
+    uint32_t getSelector(Counter counter) override;
+    Counter getCounter(uint32_t group, uint32_t selector) override;
 };
 
 } // namespace adreno

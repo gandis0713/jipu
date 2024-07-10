@@ -1,9 +1,29 @@
 #include "adreno_counter.h"
 
+#include <spdlog/spdlog.h>
+
 namespace hpc
 {
 namespace adreno
 {
+
+// TODO
+hpc::backend::Counter convertCounter(hpc::Counter counter)
+{
+    auto it = counterDependencies.find(counter);
+    if (it != counterDependencies.end())
+    {
+        const auto& dependencies = counterDependencies.at(counter);
+
+        if (dependencies.size() == 1)
+        {
+            return static_cast<hpc::backend::Counter>(dependencies[0]);
+        }
+    }
+
+    spdlog::error("currently, not supported in adreno {}", static_cast<uint32_t>(counter));
+    return 0;
+}
 
 // const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependencies{
 //     { Counter::NonFragmentUtilization, { AdrenoFragQueueUtil } },

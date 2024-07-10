@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hpc/backend/sampler.h"
 #include "hpc/counter.h"
 
 #include <unordered_map>
@@ -9,6 +10,9 @@ namespace hpc
 {
 namespace adreno
 {
+
+// TODO
+hpc::backend::Counter convertCounter(hpc::Counter counter);
 
 /// Counter choices for Adreno A6XX series.
 enum class AdrenoCounterA6XX : uint32_t

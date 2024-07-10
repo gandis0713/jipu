@@ -5,8 +5,6 @@
 
 #include "adreno_gpu.h"
 
-#include <hwcpipe/sampler.hpp>
-
 namespace hpc
 {
 namespace adreno
@@ -15,7 +13,7 @@ namespace adreno
 class AdrenoSampler final : public Sampler
 {
 public:
-    explicit AdrenoSampler(AdrenoGPU& gpu, std::unique_ptr<hpc::backend::Sampler> sampler);
+    explicit AdrenoSampler(AdrenoGPU& gpu, std::unique_ptr<hpc::backend::Sampler> sampler, const SamplerDescriptor& descriptor);
 
 public:
     std::error_code start() override;
@@ -25,6 +23,9 @@ public:
 private:
     AdrenoGPU& m_gpu;
     std::unique_ptr<hpc::backend::Sampler> m_sampler = nullptr;
+
+private:
+    const SamplerDescriptor m_descriptor{};
 };
 DOWN_CAST(AdrenoSampler, Sampler);
 

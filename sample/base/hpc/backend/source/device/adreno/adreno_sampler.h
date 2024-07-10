@@ -20,13 +20,21 @@ public:
 
     std::error_code start() override;
     std::error_code stop() override;
+    /**
+     * @brief Sample the counter.
+     * @param counter The counter to sample.
+     * @return The sampled value. The key is counter, The value is the sampled value.
+     */
+    std::unordered_map<Counter, uint64_t> sample(std::vector<Counter> counter) override;
 
 protected:
-    std::error_code activeCounters();
+    std::error_code activate();
+    std::error_code deactivate();
 
 protected:
     virtual uint32_t getGroup(uint32_t counter) = 0;
-    virtual uint32_t getSelector(uint32_t counter) = 0;
+    virtual uint32_t getSelector(Counter counter) = 0;
+    virtual Counter getCounter(uint32_t group, uint32_t selector) = 0;
 
 protected:
     const AdrenoGPU m_gpu;
