@@ -210,6 +210,8 @@ void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 
     hpc::SamplerDescriptor descriptor{ .counters = usableCounters };
     std::unique_ptr<hpc::Sampler> sampler = gpu->create(descriptor);
+    if (!sampler)
+        return;
 
     HPCWatcherDescriptor watcherDescriptor{
         .sampler = std::move(sampler),
