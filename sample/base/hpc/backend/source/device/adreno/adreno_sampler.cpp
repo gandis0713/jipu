@@ -1,7 +1,7 @@
 #include "adreno_sampler.h"
 
 #include "ioctl/a6xx.h"
-#include "ioctl/types.h"
+#include "ioctl/api.h"
 #include "ioctl/utils.h"
 #include "syscall/interface.h"
 
@@ -30,7 +30,7 @@ std::error_code AdrenoSampler::start()
         auto& handle = *m_handle;
 
         auto groupId = getGroup(*counters.begin());
-        adreno_perfcounter_query counterQuery{};
+        AdrenoPerfcounterQuery counterQuery{};
         counterQuery.groupid = groupId;
         auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
 
@@ -52,19 +52,19 @@ std::error_code AdrenoSampler::start()
 
         while (true)
         {
-            std::vector<hpc_gpu_adreno_ioctl_counter_read_counter_t> counterReadValues{};
+            std::vector<AdrenoIoctlCounterReadCounter> counterReadValues{};
             for (const auto counter : counters)
             {
-                hpc_gpu_adreno_ioctl_counter_read_counter_t counterReadValue{};
+                AdrenoIoctlCounterReadCounter counterReadValue{};
                 counterReadValue.group_id = getGroup(counter);
                 counterReadValue.countable_selector = getSelector(counter);
 
                 counterReadValues.push_back(counterReadValue);
             }
 
-            adreno_counter_read counterRead{};
+            AdrenoCounterRead counterRead{};
             counterRead.num_counters = static_cast<unsigned int>(counterReadValues.size());
-            counterRead.counters = reinterpret_cast<hpc_gpu_adreno_ioctl_counter_read_counter_t*>(counterReadValues.data());
+            counterRead.counters = reinterpret_cast<AdrenoIoctlCounterReadCounter*>(counterReadValues.data());
 
             auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_COUNTER_READ, &counterRead);
 
@@ -97,7 +97,7 @@ std::error_code AdrenoSampler::activeCounters()
         auto groupId = getGroup(counter);
         auto countableSelector = getSelector(counter);
 
-        adreno_counter_get counterGet{};
+        AdrenoCounterGet counterGet{};
         counterGet.group_id = groupId;
         counterGet.countable_selector = countableSelector;
         auto result = syscall::Interface::ioctl(m_handle->fd(), ADRENO_IOCTL_COUNTER_GET, &counterGet);

@@ -2,7 +2,7 @@
 #include "adreno_gpu.h"
 
 #include "ioctl/a6xx.h"
-#include "ioctl/types.h"
+#include "ioctl/api.h"
 #include "ioctl/utils.h"
 #include "syscall/interface.h"
 

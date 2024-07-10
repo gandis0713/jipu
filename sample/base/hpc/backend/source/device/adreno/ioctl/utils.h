@@ -4,7 +4,7 @@
 #include "syscall/interface.h"
 
 #include "a6xx.h"
-#include "types.h"
+#include "api.h"
 #include <stdint.h>
 
 namespace hpc
@@ -14,12 +14,12 @@ namespace backend
 
 inline int getGPUId(int fd)
 {
-    adreno_device_info devinfo{};
+    AdrenoDeviceInfo devinfo{};
 
-    adreno_device_get_property deviceGetProperty{};
+    AdrenoDeviceGetProperty deviceGetProperty{};
     deviceGetProperty.type = ADRENO_PROPERTY_DEVICE_INFO;
     deviceGetProperty.value = &devinfo;
-    deviceGetProperty.num_bytes = sizeof(adreno_device_info);
+    deviceGetProperty.num_bytes = sizeof(AdrenoDeviceInfo);
 
     auto result = syscall::Interface::ioctl(fd, ADRENO_IOCTL_DEVICE_GET_PROPERTY, &deviceGetProperty);
     auto error = result.first;

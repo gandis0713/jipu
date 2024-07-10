@@ -4,7 +4,7 @@
 #include "adreno_sampler.h"
 #include "adreno_sampler_a6xx.h"
 
-#include "ioctl/types.h"
+#include "ioctl/api.h"
 #include "ioctl/utils.h"
 
 #include <spdlog/spdlog.h>
