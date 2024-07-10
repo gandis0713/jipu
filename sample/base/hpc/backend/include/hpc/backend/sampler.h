@@ -3,12 +3,17 @@
 #include "export.h"
 
 #include <system_error>
-#include <unordered_set>
+#include <vector>
 
 namespace hpc
 {
 namespace backend
 {
+
+struct SamplerDescriptor
+{
+    std::vector<uint32_t> counters{};
+};
 
 class HPC_BACKEND_VISIBILITY Sampler
 {
@@ -20,7 +25,6 @@ public:
 
     virtual std::error_code start() = 0;
     virtual std::error_code stop() = 0;
-    virtual void setCounters(const std::unordered_set<uint32_t>& counters) = 0;
 
 protected:
     Sampler() = default;

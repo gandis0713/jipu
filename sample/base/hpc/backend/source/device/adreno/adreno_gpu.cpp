@@ -27,7 +27,7 @@ Instance& AdrenoGPU::getInstance()
     return static_cast<Instance&>(m_instance);
 }
 
-std::unique_ptr<Sampler> AdrenoGPU::createSampler()
+std::unique_ptr<Sampler> AdrenoGPU::createSampler(const SamplerDescriptor& descriptor)
 {
     auto handle = hpc::backend::Handle::create(m_path);
     if (!handle)
@@ -40,7 +40,7 @@ std::unique_ptr<Sampler> AdrenoGPU::createSampler()
     switch (series)
     {
     case AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX:
-        return std::make_unique<AdrenoSamplerA6XX>(*this, std::move(handle));
+        return std::make_unique<AdrenoSamplerA6XX>(*this, std::move(handle), descriptor);
     default:
         spdlog::error("Failed to create adreno sampler");
         return nullptr;

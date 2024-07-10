@@ -17,7 +17,7 @@ public:
     virtual ~GPU() = default;
 
     virtual Instance& getInstance() = 0;
-    virtual std::unique_ptr<Sampler> createSampler() = 0;
+    virtual std::unique_ptr<Sampler> createSampler(const SamplerDescriptor& descriptor) = 0;
 
 protected:
     GPU() = default;

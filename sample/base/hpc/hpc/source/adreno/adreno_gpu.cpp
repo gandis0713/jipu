@@ -18,22 +18,20 @@ AdrenoGPU::AdrenoGPU(AdrenoInstance& instance, std::unique_ptr<hpc::backend::GPU
 
 std::unique_ptr<Sampler> AdrenoGPU::create(const SamplerDescriptor& descriptor)
 {
-    auto sampler = m_gpu->createSampler();
+    std::vector<uint32_t> counters{};
+    for (const auto& counter : descriptor.counters)
+    {
+        const auto& adrenoCounter = counterDependencies.at(counter);
+        // TODO: set counter correctly...
+        counters.push_back(static_cast<uint32_t>(adrenoCounter[0]));
+    }
+
+    auto sampler = m_gpu->createSampler({ counters });
     if (!sampler)
     {
         spdlog::error("Failed to create sampler");
         return nullptr;
     }
-
-    std::unordered_set<uint32_t> counters{};
-    for (const auto& counter : descriptor.counters)
-    {
-        const auto& adrenoCounter = counterDependencies.at(counter);
-        // TODO: set counter correctly...
-        counters.insert(static_cast<uint32_t>(adrenoCounter[0]));
-    }
-
-    sampler->setCounters(counters);
 
     return std::make_unique<AdrenoSampler>(*this, std::move(sampler));
 }

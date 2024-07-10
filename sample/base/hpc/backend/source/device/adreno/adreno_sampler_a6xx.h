@@ -12,7 +12,7 @@ namespace adreno
 class AdrenoSamplerA6XX final : public AdrenoSampler
 {
 public:
-    explicit AdrenoSamplerA6XX(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle);
+    explicit AdrenoSamplerA6XX(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle, const SamplerDescriptor& descriptor);
     ~AdrenoSamplerA6XX() override = default;
 
 protected:

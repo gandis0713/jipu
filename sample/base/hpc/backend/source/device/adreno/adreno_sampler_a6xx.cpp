@@ -7,8 +7,8 @@ namespace backend
 namespace adreno
 {
 
-AdrenoSamplerA6XX::AdrenoSamplerA6XX(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle)
-    : AdrenoSampler(gpu, std::move(handle))
+AdrenoSamplerA6XX::AdrenoSamplerA6XX(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle, const SamplerDescriptor& descriptor)
+    : AdrenoSampler(gpu, std::move(handle), descriptor)
 {
 }
 

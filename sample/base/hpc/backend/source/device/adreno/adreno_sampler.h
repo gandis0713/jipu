@@ -15,12 +15,11 @@ namespace adreno
 class AdrenoSampler : public Sampler
 {
 public:
-    explicit AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle);
+    explicit AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle, const SamplerDescriptor& descriptor);
     ~AdrenoSampler() override = default;
 
     std::error_code start() override;
     std::error_code stop() override;
-    void setCounters(const std::unordered_set<uint32_t>& counters) override;
 
 protected:
     std::error_code activeCounters();
@@ -32,7 +31,7 @@ protected:
 protected:
     const AdrenoGPU m_gpu;
     std::unique_ptr<Handle> m_handle = nullptr;
-    std::unordered_set<uint32_t> m_counters{};
+    const SamplerDescriptor m_descriptor{};
 };
 
 } // namespace adreno

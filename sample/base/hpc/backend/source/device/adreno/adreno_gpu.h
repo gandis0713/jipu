@@ -21,7 +21,7 @@ public:
     ~AdrenoGPU() override = default;
 
     Instance& getInstance() override;
-    std::unique_ptr<Sampler> createSampler() override;
+    std::unique_ptr<Sampler> createSampler(const SamplerDescriptor& descriptor) override;
 
 private:
     AdrenoInstance& m_instance;

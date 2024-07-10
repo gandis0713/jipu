@@ -15,9 +15,10 @@ namespace backend
 namespace adreno
 {
 
-AdrenoSampler::AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle)
+AdrenoSampler::AdrenoSampler(const AdrenoGPU& gpu, std::unique_ptr<Handle> handle, const SamplerDescriptor& descriptor)
     : m_gpu(gpu)
     , m_handle(std::move(handle))
+    , m_descriptor(descriptor)
 {
 }
 
@@ -26,7 +27,7 @@ std::error_code AdrenoSampler::start()
     auto t = std::thread([&]() {
         activeCounters();
 
-        auto& counters = m_counters;
+        auto& counters = m_descriptor.counters;
         auto& handle = *m_handle;
 
         auto groupId = getGroup(*counters.begin());
@@ -92,7 +93,7 @@ std::error_code AdrenoSampler::start()
 
 std::error_code AdrenoSampler::activeCounters()
 {
-    for (const auto counter : m_counters)
+    for (const auto counter : m_descriptor.counters)
     {
         auto groupId = getGroup(counter);
         auto countableSelector = getSelector(counter);
@@ -116,11 +117,6 @@ std::error_code AdrenoSampler::activeCounters()
 std::error_code AdrenoSampler::stop()
 {
     return {};
-}
-
-void AdrenoSampler::setCounters(const std::unordered_set<uint32_t>& counters)
-{
-    m_counters = counters;
 }
 
 } // namespace adreno
