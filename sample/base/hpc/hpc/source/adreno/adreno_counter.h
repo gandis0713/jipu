@@ -1107,13 +1107,25 @@ enum class AdrenoCounterA6XX : uint32_t
 
 // extern const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependencies;
 const std::unordered_map<Counter, std::vector<AdrenoCounterA6XX>> counterDependencies{
-    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_BUSY_CYCLES } },
-    { Counter::FragmentUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_VS_INSTRUCTIONS } },
-    { Counter::TilerUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_FS_INSTRUCTIONS } },
-    { Counter::ExternalReadBytes, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_CS_INSTRUCTIONS } },
-    { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_GPR_READ_CONFLICT } },    // A6XX specific
-    { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_GPR_WRITE_CONFLICT } } // A6XX specific
+    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_WAVE_CYCLES } },
+    { Counter::FragmentUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_WAVE_SAMPLES } },
+    { Counter::TilerUtilization, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_WAVE_CYCLES } },
+    { Counter::ExternalReadBytes, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_WAVE_SAMPLES } },
+    { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_DURATION_CYCLES } },   // A6XX specific
+    { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_DURATION_CYCLES } } // A6XX specific
 };
 
 } // namespace adreno
 } // namespace hpc
+
+// HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_WAVE_CYCLES = 2570,
+// /// Shader/Streaming Processor: FS stage wave samples
+// HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_WAVE_SAMPLES = 2571,
+// /// Shader/Streaming Processor: VS stage wave cycles
+// HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_WAVE_CYCLES = 2572,
+// /// Shader/Streaming Processor: VS stage wave samples
+// HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_WAVE_SAMPLES = 2573,
+// /// Shader/Streaming Processor: FS stage duration cycles
+// HPC_GPU_ADRENO_A6XX_SP_FS_STAGE_DURATION_CYCLES = 2574,
+// /// Shader/Streaming Processor: VS stage duration cycles
+// HPC_GPU_ADRENO_A6XX_SP_VS_STAGE_DURATION_CYCLES = 2575,

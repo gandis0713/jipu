@@ -31,7 +31,7 @@ std::error_code AdrenoSampler::stop()
     return deactivate();
 }
 
-std::unordered_map<Counter, uint64_t> AdrenoSampler::sample(std::vector<Counter> counters)
+std::unordered_map<Counter, Sample> AdrenoSampler::sample(std::unordered_set<Counter> counters)
 {
     std::vector<AdrenoIoctlCounterReadCounter> counterReadCounters{};
     for (const auto counter : counters)
@@ -55,7 +55,7 @@ std::unordered_map<Counter, uint64_t> AdrenoSampler::sample(std::vector<Counter>
         return {};
     }
 
-    std::unordered_map<uint32_t, uint64_t> sampledValues{};
+    std::unordered_map<Counter, Sample> sampledValues{};
     for (const auto counterReadCounter : counterReadCounters)
     {
         sampledValues.insert({ getCounter(counterReadCounter.group_id, counterReadCounter.countable_selector), counterReadCounter.value });
@@ -130,6 +130,8 @@ std::error_code AdrenoSampler::deactivate()
             return error;
         }
     }
+
+    return {};
 }
 
 } // namespace adreno

@@ -25,7 +25,7 @@ public:
      * @param counter The counter to sample.
      * @return The sampled value. The key is counter, The value is the sampled value.
      */
-    std::unordered_map<Counter, uint64_t> sample(std::vector<Counter> counter) override;
+    std::unordered_map<Counter, Sample> sample(std::unordered_set<Counter> counter) override;
 
 protected:
     std::error_code activate();

@@ -37,10 +37,10 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
     if (counters.empty())
         counters = m_descriptor.counters;
 
-    std::vector<hpc::backend::Counter> adrenoCounters{};
+    std::unordered_set<hpc::backend::Counter> adrenoCounters{};
     for (const auto counter : counters)
     {
-        adrenoCounters.push_back(convertCounter(counter));
+        adrenoCounters.insert(convertCounter(counter));
     }
 
     auto adrenoSamples = m_sampler->sample(adrenoCounters);
