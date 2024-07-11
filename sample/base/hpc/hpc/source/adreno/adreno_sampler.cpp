@@ -41,7 +41,11 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
     std::unordered_set<hpc::backend::Counter> adrenoCounters{};
     for (const auto counter : counters)
     {
-        adrenoCounters.insert(convertCounter(counter));
+        auto backendCounter = convertCounter(counter);
+        for (const auto backendCounter : backendCounter)
+        {
+            adrenoCounters.insert(backendCounter);
+        }
     }
 
     auto adrenoSamples = m_sampler->sample(adrenoCounters);
@@ -60,7 +64,7 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
         default:
             samples.push_back({ .counter = counter,
                                 .timestamp = 0,
-                                .value = Sample::Value{ adrenoSamples.at(convertCounter(counter)) },
+                                .value = Sample::Value{ adrenoSamples.at(*convertCounter(counter).begin()) },
                                 .type = Sample::Type::uint64 });
             break;
         }

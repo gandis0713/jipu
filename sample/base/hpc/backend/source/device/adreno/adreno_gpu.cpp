@@ -39,7 +39,7 @@ std::unique_ptr<Sampler> AdrenoGPU::createSampler(const SamplerDescriptor& descr
     auto series = getSeries(handle->fd());
     switch (series)
     {
-    case AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX:
+    case AdrenoSeries::A6XX:
         return std::make_unique<AdrenoSamplerA6XX>(*this, std::move(handle), descriptor);
     default:
         spdlog::error("Failed to create adreno sampler");

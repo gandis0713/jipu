@@ -40,10 +40,10 @@ inline AdrenoSeries getSeries(int fd)
 {
     auto gpuId = getGPUId(fd);
     if ((gpuId >= 600 && gpuId < 700) || gpuId == 702)
-        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A6XX;
+        return AdrenoSeries::A6XX;
     if (gpuId >= 500 && gpuId < 600)
-        return AdrenoSeries::HPC_GPU_ADRENO_SERIES_A5XX;
-    return AdrenoSeries::HPC_GPU_ADRENO_SERIES_UNKNOWN;
+        return AdrenoSeries::A5XX;
+    return AdrenoSeries::UNKNOWN;
 }
 
 } // namespace backend
