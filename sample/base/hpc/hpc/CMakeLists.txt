@@ -20,6 +20,8 @@ if(ANDROID)
     list(APPEND SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_sampler.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_sampler.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_expression.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_expression.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_instance.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_instance.h
         ${CMAKE_CURRENT_SOURCE_DIR}/source/adreno/adreno_gpu.cpp

@@ -1,6 +1,7 @@
 #include "adreno_sampler.h"
 
 #include "adreno_counter.h"
+#include "adreno_expression.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>
@@ -48,10 +49,21 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
     std::vector<hpc::Sample> samples{};
     for (const auto counter : counters)
     {
-        samples.push_back({ .counter = counter,
-                            .timestamp = 0,
-                            .value = Sample::Value{ adrenoSamples.at(convertCounter(counter)) },
-                            .type = Sample::Type::uint64 });
+        switch (counter)
+        {
+        case Counter::NonFragmentUtilization:
+            samples.push_back(expression::nonFragmentUtilization(counter, adrenoSamples));
+            break;
+        case Counter::FragmentUtilization:
+            samples.push_back(expression::fragmentUtilization(counter, adrenoSamples));
+            break;
+        default:
+            samples.push_back({ .counter = counter,
+                                .timestamp = 0,
+                                .value = Sample::Value{ adrenoSamples.at(convertCounter(counter)) },
+                                .type = Sample::Type::uint64 });
+            break;
+        }
     }
 
     return samples;
