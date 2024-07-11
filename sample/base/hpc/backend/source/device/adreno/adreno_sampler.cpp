@@ -58,6 +58,7 @@ std::unordered_map<Counter, Sample> AdrenoSampler::sample(std::unordered_set<Cou
     std::unordered_map<Counter, Sample> sampledValues{};
     for (const auto counterReadCounter : counterReadCounters)
     {
+        spdlog::error("counter: {}, selector:{}, value {}", getCounter(counterReadCounter.group_id, counterReadCounter.countable_selector), counterReadCounter.countable_selector, counterReadCounter.value);
         sampledValues.insert({ getCounter(counterReadCounter.group_id, counterReadCounter.countable_selector), counterReadCounter.value });
     }
 
