@@ -7,6 +7,7 @@
 #include <deque>
 #include <filesystem>
 #include <optional>
+#include <unordered_set>
 
 #include <jipu/device.h>
 #include <jipu/instance.h>
@@ -74,7 +75,7 @@ protected:
     std::unique_ptr<hpc::Instance> m_hpcInstance = nullptr;
 
 protected:
-    void createHPCWatcher(std::vector<hpc::Counter> counters = {});
+    void createHPCWatcher(const std::unordered_set<hpc::Counter>& counters = {});
     void drawPolyline(std::string title, std::deque<float> data, std::string unit = "");
     void profilingWindow();
 

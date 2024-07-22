@@ -4,6 +4,7 @@
 #include <functional>
 #include <thread>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "hpc/counter.h"
 #include "hpc/sampler.h"
@@ -17,7 +18,7 @@ using Listner = std::function<void(Values)>;
 struct HPCWatcherDescriptor
 {
     std::unique_ptr<hpc::Sampler> sampler = nullptr;
-    std::vector<hpc::Counter> counters{};
+    std::unordered_set<hpc::Counter> counters{};
     Listner listner{};
 };
 
