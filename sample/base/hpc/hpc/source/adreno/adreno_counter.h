@@ -1109,10 +1109,10 @@ enum class AdrenoCounterA6XX : uint32_t
 const std::unordered_map<Counter, std::unordered_set<AdrenoCounterA6XX>> counterDependencies{
     { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
     { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES } },
-    { Counter::TilerUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_SAMPLES } },
-    { Counter::ExternalReadBytes, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_SAMPLES } },
-    { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_DURATION_CYCLES } },    // A6XX specific
-    { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } }, // A6XX specific
+    // { Counter::TilerUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_SAMPLES } },
+    // { Counter::ExternalReadBytes, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_SAMPLES } },
+    // { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_DURATION_CYCLES } },    // A6XX specific
+    // { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } }, // A6XX specific
     // { Counter::ExternalWriteStallRate, { AdrenoCounterA6XX::A6XX_SP_WAVE_LOAD_CYCLES } },
     // { Counter::ExternalReadLatency0, { AdrenoCounterA6XX::A6XX_SP_WAVE_EMIT_CYCLES } },
     // { Counter::ExternalReadLatency1, { AdrenoCounterA6XX::A6XX_SP_WAVE_NOP_CYCLES } },
