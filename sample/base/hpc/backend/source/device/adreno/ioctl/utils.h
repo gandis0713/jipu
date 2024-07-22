@@ -7,6 +7,8 @@
 #include "api.h"
 #include <stdint.h>
 
+#include <spdlog/spdlog.h>
+
 namespace hpc
 {
 namespace backend
@@ -39,6 +41,9 @@ inline int getGPUId(int fd)
 inline AdrenoSeries getSeries(int fd)
 {
     auto gpuId = getGPUId(fd);
+
+    spdlog::info("Device Series: Adreno {}", gpuId);
+
     if ((gpuId >= 600 && gpuId < 700) || gpuId == 702)
         return AdrenoSeries::A6XX;
     if (gpuId >= 500 && gpuId < 600)
