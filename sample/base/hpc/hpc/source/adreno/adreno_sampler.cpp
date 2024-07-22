@@ -66,6 +66,7 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
                                 .timestamp = 0,
                                 .value = Sample::Value{ adrenoSamples.at(*convertCounter(counter).begin()) },
                                 .type = Sample::Type::uint64 });
+            spdlog::error("Unsupported counter: {}", static_cast<uint32_t>(counter));
             break;
         }
     }
