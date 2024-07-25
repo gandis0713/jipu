@@ -84,30 +84,42 @@ std::error_code AdrenoSampler::activate()
     }
 
     // check activated counters
-    if (false)
     {
-        auto& counters = m_descriptor.counters;
-        auto& handle = *m_handle;
-
-        auto groupId = getGroup(*counters.begin());
-        AdrenoPerfcounterQuery counterQuery{};
-        counterQuery.groupid = groupId;
-        auto result = syscall::Interface::ioctl(handle.fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
-
-        if (result.first)
+        std::unordered_set<uint32_t> groupIds{};
+        for (const auto& counter : m_descriptor.counters)
         {
-            spdlog::debug("charles error.code {}", result.first.value());
-            spdlog::debug("charles error.message {}", result.first.message());
-            spdlog::debug("charles result {}", result.second);
+            groupIds.insert(getGroup(counter));
         }
 
-        spdlog::debug("charles counterQuery.groupid {}", counterQuery.groupid);
-        spdlog::debug("charles counterQuery.count {}", counterQuery.count);
-        spdlog::debug("charles counterQuery.max_counters {}", counterQuery.max_counters);
-
-        for (auto i = 0; i < counterQuery.count; ++i)
+        for (const auto& groupId : groupIds)
         {
-            spdlog::debug("charles counterQuery.countables[{}] {}", i, counterQuery.countables[i]);
+            AdrenoPerfcounterQuery counterQuery{};
+            counterQuery.groupid = groupId;
+            auto result = syscall::Interface::ioctl(m_handle->fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
+
+            if (result.first)
+            {
+                spdlog::debug("Failed to query activated performance count value. error: {}, msg: {}", result.first.value(), result.first.message());
+                continue;
+            }
+
+            unsigned int initValue = std::numeric_limits<unsigned int>::max();
+            std::vector<unsigned int> countables(counterQuery.max_counters, initValue);
+            counterQuery.countables = countables.data();
+            counterQuery.count = static_cast<unsigned int>(countables.size());
+
+            result = syscall::Interface::ioctl(m_handle->fd(), ADRENO_IOCTL_PERFCOUNTER_QUERY, &counterQuery);
+            if (result.first)
+            {
+                spdlog::debug("Failed to query activated performance counters. error: {}, msg: {}", result.first.value(), result.first.message());
+                continue;
+            }
+
+            spdlog::debug("Activated Performance Counter. groupid: {}, count: {}, max counters: {}", counterQuery.groupid, counterQuery.count, counterQuery.max_counters);
+            for (auto i = 0; i < counterQuery.count; ++i)
+            {
+                spdlog::debug("    [{}] countables: {}", i, counterQuery.countables[i]);
+            }
         }
     }
 
