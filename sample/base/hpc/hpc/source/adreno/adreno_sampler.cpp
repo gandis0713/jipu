@@ -62,10 +62,7 @@ std::vector<Sample> AdrenoSampler::samples(std::unordered_set<Counter> counters)
             samples.push_back(expression::fragmentUtilization(counter, adrenoSamples));
             break;
         default:
-            samples.push_back({ .counter = counter,
-                                .timestamp = 0,
-                                .value = Sample::Value{ adrenoSamples.at(*convertCounter(counter).begin()) },
-                                .type = Sample::Type::uint64 });
+            samples.push_back(expression::convert(counter, adrenoSamples));
             spdlog::error("Unsupported counter: {}", static_cast<uint32_t>(counter));
             break;
         }
