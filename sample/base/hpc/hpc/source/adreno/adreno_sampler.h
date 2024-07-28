@@ -26,6 +26,7 @@ private:
 
 private:
     const SamplerDescriptor m_descriptor{};
+    std::vector<std::unordered_map<hpc::backend::Counter, hpc::backend::Sample>> m_samples{};
 };
 DOWN_CAST(AdrenoSampler, Sampler);
 
