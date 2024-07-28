@@ -1107,8 +1107,10 @@ enum class AdrenoCounterA6XX : uint32_t
 
 // TODO: correct dependencies
 const std::unordered_map<Counter, std::unordered_set<AdrenoCounterA6XX>> counterDependencies{
-    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
-    { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES } },
+    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
+    { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
+    // { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
+    // { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
     // { Counter::TilerUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_SAMPLES } },
     // { Counter::ExternalReadBytes, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_SAMPLES } },
     // { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_DURATION_CYCLES } },    // A6XX specific
@@ -1126,10 +1128,10 @@ const std::unordered_map<Counter, std::unordered_set<AdrenoCounterA6XX>> counter
     // { Counter::GeometrySampleCulledPrimitives, { AdrenoCounterA6XX::A6XX_SP_GM_LOAD_LATENCY_CYCLES } },
     // { Counter::GeometryFaceXYPlaneCulledPrimitives, { AdrenoCounterA6XX::A6XX_SP_GM_LOAD_LATENCY_SAMPLES } },
     // { Counter::GeometryZPlaneCulledPrimitives, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } },
-    // { Counter::GeometryVisibleRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } },
-    // { Counter::GeometrySampleCulledRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } },
-    // { Counter::GeometryFaceXYPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } },
-    // { Counter::GeometryZPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } },
+    // { Counter::GeometryVisibleRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS } },
+    // { Counter::GeometrySampleCulledRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_HALF_ALU_INSTRUCTIONS } },
+    // { Counter::GeometryFaceXYPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
+    // { Counter::GeometryZPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_HALF_ALU_INSTRUCTIONS } },
 };
 
 } // namespace adreno
