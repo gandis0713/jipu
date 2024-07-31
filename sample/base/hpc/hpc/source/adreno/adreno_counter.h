@@ -1107,20 +1107,20 @@ enum class AdrenoCounterA6XX : uint32_t
 
 // TODO: correct dependencies
 const std::unordered_map<Counter, std::unordered_set<AdrenoCounterA6XX>> counterDependencies{
-    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
-    { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
-    // { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
-    // { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
-    // { Counter::TilerUtilization, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_SAMPLES } },
-    // { Counter::ExternalReadBytes, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_SAMPLES } },
-    // { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_DURATION_CYCLES } },    // A6XX specific
-    // { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_DURATION_CYCLES } }, // A6XX specific
-    // { Counter::ExternalWriteStallRate, { AdrenoCounterA6XX::A6XX_SP_WAVE_LOAD_CYCLES } },
-    // { Counter::ExternalReadLatency0, { AdrenoCounterA6XX::A6XX_SP_WAVE_EMIT_CYCLES } },
-    // { Counter::ExternalReadLatency1, { AdrenoCounterA6XX::A6XX_SP_WAVE_NOP_CYCLES } },
-    // { Counter::ExternalReadLatency2, { AdrenoCounterA6XX::A6XX_SP_WAVE_WAIT_CYCLES } },
-    // { Counter::ExternalReadLatency3, { AdrenoCounterA6XX::A6XX_SP_WAVE_FETCH_CYCLES } },
-    // { Counter::ExternalReadLatency4, { AdrenoCounterA6XX::A6XX_SP_WAVE_IDLE_CYCLES } },
+    // { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
+    // { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_WAVE_CYCLES, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_WAVE_CYCLES } },
+    { Counter::NonFragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
+    { Counter::FragmentUtilization, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS, AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
+    // { Counter::TilerUtilization, { AdrenoCounterA6XX::A6XX_SP_BUSY_CYCLES } },
+    // { Counter::ExternalReadBytes, { AdrenoCounterA6XX::A6XX_SP_ALU_WORKING_CYCLES } },
+    // { Counter::ExternalWriteBytes, { AdrenoCounterA6XX::A6XX_SP_EFU_WORKING_CYCLES } },  // A6XX specific
+    // { Counter::ExternalReadStallRate, { AdrenoCounterA6XX::A6XX_SP_STALL_CYCLES_VPC } }, // A6XX specific
+    // { Counter::ExternalWriteStallRate, { AdrenoCounterA6XX::A6XX_SP_STALL_CYCLES_TP } },
+    // { Counter::ExternalReadLatency0, { AdrenoCounterA6XX::A6XX_SP_STALL_CYCLES_UCHE } },
+    // { Counter::ExternalReadLatency1, { AdrenoCounterA6XX::A6XX_SP_STALL_CYCLES_RB } },
+    // { Counter::ExternalReadLatency2, { AdrenoCounterA6XX::A6XX_SP_NON_EXECUTION_CYCLES } },
+    // { Counter::ExternalReadLatency3, { AdrenoCounterA6XX::A6XX_TP_LATENCY_CYCLES } },
+    // { Counter::ExternalReadLatency4, { AdrenoCounterA6XX::A6XX_TP_LATENCY_TRANS } },
     // { Counter::ExternalReadLatency5, { AdrenoCounterA6XX::A6XX_SP_WAVE_END_CYCLES } },
     // { Counter::GeometryTotalInputPrimitives, { AdrenoCounterA6XX::A6XX_SP_VS_INSTRUCTIONS } },
     // { Counter::GeometryTotalCullPrimitives, { AdrenoCounterA6XX::A6XX_SP_FS_INSTRUCTIONS } },
@@ -1132,6 +1132,177 @@ const std::unordered_map<Counter, std::unordered_set<AdrenoCounterA6XX>> counter
     // { Counter::GeometrySampleCulledRate, { AdrenoCounterA6XX::A6XX_SP_VS_STAGE_HALF_ALU_INSTRUCTIONS } },
     // { Counter::GeometryFaceXYPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS } },
     // { Counter::GeometryZPlaneCulledRate, { AdrenoCounterA6XX::A6XX_SP_FS_STAGE_HALF_ALU_INSTRUCTIONS } },
+
+    //    /// Shader/Streaming Processor: busy cycles
+    //    A6XX_SP_BUSY_CYCLES = 2560,
+    //    /// Shader/Streaming Processor: ALU working cycles
+    //    A6XX_SP_ALU_WORKING_CYCLES = 2561,
+    //    /// Shader/Streaming Processor: EFU working cycles
+    //    A6XX_SP_EFU_WORKING_CYCLES = 2562,
+    //    /// Shader/Streaming Processor: stall cycles VPC
+    //    A6XX_SP_STALL_CYCLES_VPC = 2563,
+    //    /// Shader/Streaming Processor: stall cycles TP
+    //    A6XX_SP_STALL_CYCLES_TP = 2564,
+    //    /// Shader/Streaming Processor: stall cycles UCHE
+    //    A6XX_SP_STALL_CYCLES_UCHE = 2565,
+    //    /// Shader/Streaming Processor: stall cycles RB
+    //    A6XX_SP_STALL_CYCLES_RB = 2566,
+    //    /// Shader/Streaming Processor: non execution cycles
+    //    A6XX_SP_NON_EXECUTION_CYCLES = 2567,
+    //    /// Shader/Streaming Processor: wave contexts
+    //    A6XX_SP_WAVE_CONTEXTS = 2568,
+    //    /// Shader/Streaming Processor: wave context cycles
+    //    A6XX_SP_WAVE_CONTEXT_CYCLES = 2569,
+    //    /// Shader/Streaming Processor: FS stage wave cycles
+    //    A6XX_SP_FS_STAGE_WAVE_CYCLES = 2570,
+    //    /// Shader/Streaming Processor: FS stage wave samples
+    //    A6XX_SP_FS_STAGE_WAVE_SAMPLES = 2571,
+    //    /// Shader/Streaming Processor: VS stage wave cycles
+    //    A6XX_SP_VS_STAGE_WAVE_CYCLES = 2572,
+    //    /// Shader/Streaming Processor: VS stage wave samples
+    //    A6XX_SP_VS_STAGE_WAVE_SAMPLES = 2573,
+    //    /// Shader/Streaming Processor: FS stage duration cycles
+    //    A6XX_SP_FS_STAGE_DURATION_CYCLES = 2574,
+    //    /// Shader/Streaming Processor: VS stage duration cycles
+    //    A6XX_SP_VS_STAGE_DURATION_CYCLES = 2575,
+    //    /// Shader/Streaming Processor: wave ctrl cycles
+    //    A6XX_SP_WAVE_CTRL_CYCLES = 2576,
+    //    /// Shader/Streaming Processor: wave load cycles
+    //    A6XX_SP_WAVE_LOAD_CYCLES = 2577,
+    //    /// Shader/Streaming Processor: wave emit cycles
+    //    A6XX_SP_WAVE_EMIT_CYCLES = 2578,
+    //    /// Shader/Streaming Processor: wave nop cycles
+    //    A6XX_SP_WAVE_NOP_CYCLES = 2579,
+    //    /// Shader/Streaming Processor: wave wait cycles
+    //    A6XX_SP_WAVE_WAIT_CYCLES = 2580,
+    //    /// Shader/Streaming Processor: wave fetch cycles
+    //    A6XX_SP_WAVE_FETCH_CYCLES = 2581,
+    //    /// Shader/Streaming Processor: wave idle cycles
+    //    A6XX_SP_WAVE_IDLE_CYCLES = 2582,
+    //    /// Shader/Streaming Processor: wave end cycles
+    //    A6XX_SP_WAVE_END_CYCLES = 2583,
+    //    /// Shader/Streaming Processor: wave long sync cycles
+    //    A6XX_SP_WAVE_LONG_SYNC_CYCLES = 2584,
+    //    /// Shader/Streaming Processor: wave short sync cycles
+    //    A6XX_SP_WAVE_SHORT_SYNC_CYCLES = 2585,
+    //    /// Shader/Streaming Processor: wave join cycles
+    //    A6XX_SP_WAVE_JOIN_CYCLES = 2586,
+    //    /// Shader/Streaming Processor: LM load instructions
+    //    A6XX_SP_LM_LOAD_INSTRUCTIONS = 2587,
+    //    /// Shader/Streaming Processor: LM store instructions
+    //    A6XX_SP_LM_STORE_INSTRUCTIONS = 2588,
+    //    /// Shader/Streaming Processor: LM atomics
+    //    A6XX_SP_LM_ATOMICS = 2589,
+    //    /// Shader/Streaming Processor: GM load instructions
+    //    A6XX_SP_GM_LOAD_INSTRUCTIONS = 2590,
+    //    /// Shader/Streaming Processor: GM store instructions
+    //    A6XX_SP_GM_STORE_INSTRUCTIONS = 2591,
+    //    /// Shader/Streaming Processor: GM atomics
+    //    A6XX_SP_GM_ATOMICS = 2592,
+    //    /// Shader/Streaming Processor: VS stage tex instructions
+    //    A6XX_SP_VS_STAGE_TEX_INSTRUCTIONS = 2593,
+    //    /// Shader/Streaming Processor: VS stage EFU instructions
+    //    A6XX_SP_VS_STAGE_EFU_INSTRUCTIONS = 2594,
+    //    /// Shader/Streaming Processor: VS stage full ALU instructions
+    //    A6XX_SP_VS_STAGE_FULL_ALU_INSTRUCTIONS = 2595,
+    //    /// Shader/Streaming Processor: VS stage half ALU instructions
+    //    A6XX_SP_VS_STAGE_HALF_ALU_INSTRUCTIONS = 2596,
+    //    /// Shader/Streaming Processor: FS stage tex instructions
+    //    A6XX_SP_FS_STAGE_TEX_INSTRUCTIONS = 2597,
+    //    /// Shader/Streaming Processor: FS stage cflow instructions
+    //    A6XX_SP_FS_STAGE_CFLOW_INSTRUCTIONS = 2598,
+    //    /// Shader/Streaming Processor: FS stage EFU instructions
+    //    A6XX_SP_FS_STAGE_EFU_INSTRUCTIONS = 2599,
+    //    /// Shader/Streaming Processor: FS stage full ALU instructions
+    //    A6XX_SP_FS_STAGE_FULL_ALU_INSTRUCTIONS = 2600,
+    //    /// Shader/Streaming Processor: FS stage half ALU instructions
+    //    A6XX_SP_FS_STAGE_HALF_ALU_INSTRUCTIONS = 2601,
+    //    /// Shader/Streaming Processor: FS stage bary instructions
+    //    A6XX_SP_FS_STAGE_BARY_INSTRUCTIONS = 2602,
+    //    /// Shader/Streaming Processor: VS instructions
+    //    A6XX_SP_VS_INSTRUCTIONS = 2603,
+    //    /// Shader/Streaming Processor: FS instructions
+    //    A6XX_SP_FS_INSTRUCTIONS = 2604,
+    //    /// Shader/Streaming Processor: addr lock count
+    //    A6XX_SP_ADDR_LOCK_COUNT = 2605,
+    //    /// Shader/Streaming Processor: UCHE read trans
+    //    A6XX_SP_UCHE_READ_TRANS = 2606,
+    //    /// Shader/Streaming Processor: UCHE write trans
+    //    A6XX_SP_UCHE_WRITE_TRANS = 2607,
+    //    /// Shader/Streaming Processor: export VPC trans
+    //    A6XX_SP_EXPORT_VPC_TRANS = 2608,
+    //    /// Shader/Streaming Processor: export RB trans
+    //    A6XX_SP_EXPORT_RB_TRANS = 2609,
+    //    /// Shader/Streaming Processor: pixels killed
+    //    A6XX_SP_PIXELS_KILLED = 2610,
+    //    /// Shader/Streaming Processor: icl1 requests
+    //    A6XX_SP_ICL1_REQUESTS = 2611,
+    //    /// Shader/Streaming Processor: icl1 misses
+    //    A6XX_SP_ICL1_MISSES = 2612,
+    //    /// Shader/Streaming Processor: HS instructions
+    //    A6XX_SP_HS_INSTRUCTIONS = 2613,
+    //    /// Shader/Streaming Processor: DS instructions
+    //    A6XX_SP_DS_INSTRUCTIONS = 2614,
+    //    /// Shader/Streaming Processor: GS instructions
+    //    A6XX_SP_GS_INSTRUCTIONS = 2615,
+    //    /// Shader/Streaming Processor: CS instructions
+    //    A6XX_SP_CS_INSTRUCTIONS = 2616,
+    //    /// Shader/Streaming Processor: GPR read
+    //    A6XX_SP_GPR_READ = 2617,
+    //    /// Shader/Streaming Processor: GPR write
+    //    A6XX_SP_GPR_WRITE = 2618,
+    //    /// Shader/Streaming Processor: FS stage half EFU instructions
+    //    A6XX_SP_FS_STAGE_HALF_EFU_INSTRUCTIONS = 2619,
+    //    /// Shader/Streaming Processor: VS stage half EFU instructions
+    //    A6XX_SP_VS_STAGE_HALF_EFU_INSTRUCTIONS = 2620,
+    //    /// Shader/Streaming Processor: LM bank conflicts
+    //    A6XX_SP_LM_BANK_CONFLICTS = 2621,
+    //    /// Shader/Streaming Processor: tex control working cycles
+    //    A6XX_SP_TEX_CONTROL_WORKING_CYCLES = 2622,
+    //    /// Shader/Streaming Processor: load control working cycles
+    //    A6XX_SP_LOAD_CONTROL_WORKING_CYCLES = 2623,
+    //    /// Shader/Streaming Processor: flow control working cycles
+    //    A6XX_SP_FLOW_CONTROL_WORKING_CYCLES = 2624,
+    //    /// Shader/Streaming Processor: LM working cycles
+    //    A6XX_SP_LM_WORKING_CYCLES = 2625,
+    //    /// Shader/Streaming Processor: dispatcher working cycles
+    //    A6XX_SP_DISPATCHER_WORKING_CYCLES = 2626,
+    //    /// Shader/Streaming Processor: sequencer working cycles
+    //    A6XX_SP_SEQUENCER_WORKING_CYCLES = 2627,
+    //    /// Shader/Streaming Processor: low efficiency starved BY TP
+    //    A6XX_SP_LOW_EFFICIENCY_STARVED_BY_TP = 2628,
+    //    /// Shader/Streaming Processor: starve cycles HLSQ
+    //    A6XX_SP_STARVE_CYCLES_HLSQ = 2629,
+    //    /// Shader/Streaming Processor: non execution LS cycles
+    //    A6XX_SP_NON_EXECUTION_LS_CYCLES = 2630,
+    //    /// Shader/Streaming Processor: working EU
+    //    A6XX_SP_WORKING_EU = 2631,
+    //    /// Shader/Streaming Processor: any EU working
+    //    A6XX_SP_ANY_EU_WORKING = 2632,
+    //    /// Shader/Streaming Processor: working EU FS stage
+    //    A6XX_SP_WORKING_EU_FS_STAGE = 2633,
+    //    /// Shader/Streaming Processor: any EU working FS stage
+    //    A6XX_SP_ANY_EU_WORKING_FS_STAGE = 2634,
+    //    /// Shader/Streaming Processor: working EU VS stage
+    //    A6XX_SP_WORKING_EU_VS_STAGE = 2635,
+    //    /// Shader/Streaming Processor: any EU working VS stage
+    //    A6XX_SP_ANY_EU_WORKING_VS_STAGE = 2636,
+    //    /// Shader/Streaming Processor: working EU CS stage
+    //    A6XX_SP_WORKING_EU_CS_STAGE = 2637,
+    //    /// Shader/Streaming Processor: any EU working CS stage
+    //    A6XX_SP_ANY_EU_WORKING_CS_STAGE = 2638,
+    //    /// Shader/Streaming Processor: GPR read prefetch
+    //    A6XX_SP_GPR_READ_PREFETCH = 2639,
+    //    /// Shader/Streaming Processor: GPR read conflict
+    //    A6XX_SP_GPR_READ_CONFLICT = 2640,
+    //    /// Shader/Streaming Processor: GPR write conflict
+    //    A6XX_SP_GPR_WRITE_CONFLICT = 2641,
+    //    /// Shader/Streaming Processor: GM load latency cycles
+    //    A6XX_SP_GM_LOAD_LATENCY_CYCLES = 2642,
+    //    /// Shader/Streaming Processor: GM load latency samples
+    //    A6XX_SP_GM_LOAD_LATENCY_SAMPLES = 2643,
+    //    /// Shader/Streaming Processor: executable waves
+    //    A6XX_SP_EXECUTABLE_WAVES = 2644,
 };
 
 } // namespace adreno
