@@ -13,13 +13,46 @@ HPCWatcher::HPCWatcher(HPCWatcherDescriptor descriptor)
 {
 }
 
+HPCWatcher::~HPCWatcher()
+{
+    stop();
+}
+
 void HPCWatcher::start()
 {
-    m_descriptor.sampler->start();
+    if (m_state.load() != State::kStopped)
+    {
+        return;
+    }
+
+    m_state.store(State::kStarted);
+    m_thread = std::thread([this]() {
+        m_descriptor.sampler->start();
+        while (m_state.load() == State::kStarted)
+        {
+            update();
+            std::this_thread::sleep_for(std::chrono::milliseconds(period));
+        }
+        m_state.store(State::kStopped);
+    });
+
+    m_thread.detach();
 }
 
 void HPCWatcher::stop()
 {
+    if (m_state.load() != State::kStarted)
+    {
+        return;
+    }
+
+    m_state.store(State::kIsStopping);
+
+    while (m_state.load() != State::kStopped)
+    {
+        // wait...
+    }
+
     m_descriptor.sampler->stop();
 }
 

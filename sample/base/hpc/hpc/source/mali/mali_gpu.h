@@ -27,7 +27,6 @@ public:
 
 public:
     int deviceNumber() const;
-    const std::unordered_set<hwcpipe_counter>& hwcCounters() const;
 
 private:
     void collectCounters();

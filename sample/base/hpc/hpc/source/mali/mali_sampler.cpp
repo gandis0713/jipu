@@ -40,13 +40,14 @@ Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
 } // namespace
 
 MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
-    : Sampler(descriptor)
+    : Sampler()
     , m_gpu(gpu)
     , m_sampler(hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()))) // empty counter sampler
+    , m_descriptor(descriptor)
 {
     auto config = hwcpipe::sampler_config(hwcpipe::gpu(m_gpu.deviceNumber()));
 
-    // convert counters to hwcpipe_counter and and them.
+    // convert counters to hwcpipe_counter and them.
     std::error_code ec;
     for (Counter counter : m_descriptor.counters)
     {
@@ -66,16 +67,18 @@ MaliSampler::MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor)
     m_sampler = hwcpipe::sampler<>(config);
 }
 
-void MaliSampler::start()
+std::error_code MaliSampler::start()
 {
     spdlog::debug("start sampling {}", __func__);
-    m_sampler.start_sampling();
+
+    return m_sampler.start_sampling();
 }
 
-void MaliSampler::stop()
+std::error_code MaliSampler::stop()
 {
     spdlog::debug("stop sampling {}", __func__);
-    m_sampler.stop_sampling();
+
+    return m_sampler.stop_sampling();
 }
 
 Sample MaliSampler::sample(const Counter counter)
@@ -115,7 +118,12 @@ std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)
     if (counters.empty())
         counters = m_descriptor.counters;
 
-    m_sampler.sample_now();
+    auto error = m_sampler.sample_now();
+    if (error)
+    {
+        spdlog::error("Failed to sample counters. error {}, {}", error.value(), error.message());
+        return {};
+    }
 
     std::vector<hpc::Sample> samples{};
     for (const auto counter : counters)
@@ -124,11 +132,6 @@ std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)
     }
 
     return samples;
-}
-
-uint64_t MaliSampler::time()
-{
-    return 0;
 }
 
 } // namespace mali

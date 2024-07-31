@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "hpc/gpu.h"
 
 #include <memory>
 #include <vector>
@@ -8,23 +9,27 @@
 namespace hpc
 {
 
-enum class GPUVendor
+enum class GPUType
 {
     Mali,
     Adreno
 };
 
-class GPU;
+struct InstanceDescriptor
+{
+    GPUType gpuType;
+};
+
 class HPC_EXPORT Instance
 {
 public:
     virtual ~Instance() = default;
 
 public:
-    static std::unique_ptr<Instance> create(const GPUVendor vendor);
+    static std::unique_ptr<Instance> create(const InstanceDescriptor& descriptor);
 
 public:
-    virtual std::vector<std::unique_ptr<GPU>> gpus() = 0;
+    virtual std::vector<std::unique_ptr<hpc::GPU>> gpus() = 0;
 };
 
 } // namespace hpc

@@ -3,22 +3,24 @@
 #include "hpc/gpu.h"
 
 #if defined(__ANDROID__) || defined(ANDROID) || defined(__linux__)
+#include "adreno/adreno_instance.h"
 #include "mali/mali_instance.h"
 #endif
 
 namespace hpc
 {
 
-std::unique_ptr<Instance> Instance::create(const GPUVendor vendor)
+std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
 {
-    switch (vendor)
+    switch (descriptor.gpuType)
     {
 #if defined(__ANDROID__) || defined(ANDROID) || defined(__linux__)
-    case GPUVendor::Mali:
+    case GPUType::Mali:
         return std::make_unique<mali::MaliInstance>();
+    case GPUType::Adreno:
+        return adreno::AdrenoInstance::create();
 #endif
-    case GPUVendor::Adreno:
-        return nullptr;
+
     default:
         return nullptr;
     }

@@ -18,17 +18,17 @@ public:
     explicit MaliSampler(const MaliGPU gpu, const SamplerDescriptor& descriptor);
 
 public:
-    void start() override;
-    void stop() override;
+    std::error_code start() override;
+    std::error_code stop() override;
     std::vector<Sample> samples(std::unordered_set<Counter> counters = {}) override;
     Sample sample(const Counter counter);
 
 private:
-    uint64_t time();
-
-private:
     const MaliGPU m_gpu{ -1 };
     hwcpipe::sampler<> m_sampler;
+
+private:
+    SamplerDescriptor m_descriptor{};
 };
 DOWN_CAST(MaliSampler, Sampler);
 

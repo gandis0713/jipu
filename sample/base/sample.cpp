@@ -8,7 +8,6 @@
 
 #include "hpc/counter.h"
 #include "hpc/gpu.h"
-#include "hpc/instance.h"
 
 namespace jipu
 {
@@ -115,10 +114,6 @@ void Sample::init()
 void Sample::update()
 {
     m_fps.update();
-    if (m_hpcWatcher)
-    {
-        m_hpcWatcher->update();
-    }
 }
 
 void Sample::recordImGui(std::vector<std::function<void()>> cmds)
@@ -172,14 +167,14 @@ void Sample::onHPCListner(Values values)
     }
 }
 
-void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
+void Sample::createHPCWatcher(const std::unordered_set<hpc::Counter>& counters)
 {
     // TODO: select gpu device
-    auto hpcInstance = hpc::Instance::create(hpc::GPUVendor::Mali);
-    if (!hpcInstance)
+    m_hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Adreno });
+    if (!m_hpcInstance)
         return;
 
-    auto gpus = hpcInstance->gpus();
+    auto gpus = m_hpcInstance->gpus();
     if (gpus.empty())
         return;
 
@@ -215,6 +210,8 @@ void Sample::createHPCWatcher(std::vector<hpc::Counter> counters)
 
     hpc::SamplerDescriptor descriptor{ .counters = usableCounters };
     std::unique_ptr<hpc::Sampler> sampler = gpu->create(descriptor);
+    if (!sampler)
+        return;
 
     HPCWatcherDescriptor watcherDescriptor{
         .sampler = std::move(sampler),
