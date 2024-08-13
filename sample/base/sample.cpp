@@ -170,7 +170,7 @@ void Sample::onHPCListner(Values values)
 void Sample::createHPCWatcher(const std::unordered_set<hpc::Counter>& counters)
 {
     // TODO: select gpu device
-    m_hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Adreno });
+    m_hpcInstance = hpc::Instance::create({ .gpuType = hpc::GPUType::Mali });
     if (!m_hpcInstance)
         return;
 
