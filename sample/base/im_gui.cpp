@@ -85,9 +85,6 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
     m_padding.bottom = 170.0f;
-#else
-    m_padding.top = 0.0f;
-    m_padding.bottom = 0.0f;
 #endif
 
     // IMGUI_CHECKVERSION();
@@ -97,7 +94,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         throw std::runtime_error("Failed to create imgui context");
     }
 
-    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, m_padding.bottom);
+    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 0.0f);
 
     ImGuiIO& io = ImGui::GetIO();
 #if defined(__ANDROID__)
