@@ -205,7 +205,7 @@ private:
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 1000;
-    bool m_useSubpasses = true;
+    bool m_useSubpasses = false;
 };
 
 } // namespace jipu
