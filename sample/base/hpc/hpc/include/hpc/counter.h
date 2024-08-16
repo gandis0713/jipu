@@ -30,6 +30,18 @@ enum class Counter : uint16_t
     GeometrySampleCulledRate,
     GeometryFaceXYPlaneCulledRate,
     GeometryZPlaneCulledRate,
+    MMUL3Hit,
+    MMUL2Hit,
+    MMUS2L3Hit,
+    MMUS2L2Hit,
+    L2CacheL1Read,
+    L2CacheL1ReadStallRate,
+    L2CacheL1Write,
+    L2CacheRead,
+    L2CacheReadStallRate,
+    L2CacheWrite,
+    L2CacheWriteStallRate,
+    L2ReadByte,
     Count // total enum count
 };
 

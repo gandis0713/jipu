@@ -257,6 +257,18 @@ void Sample::profilingWindow()
             drawPolyline("Sample Culled Rate", m_profiling[hpc::Counter::GeometrySampleCulledRate], "%");
             drawPolyline("Face/XY Plane Culled Rate", m_profiling[hpc::Counter::GeometryFaceXYPlaneCulledRate], "%");
             drawPolyline("Z Plane Culled Rate", m_profiling[hpc::Counter::GeometryZPlaneCulledRate], "%");
+            drawPolyline("MMU L3 Hit", m_profiling[hpc::Counter::MMUL3Hit]);
+            drawPolyline("MMU L2 Hit", m_profiling[hpc::Counter::MMUL2Hit]);
+            drawPolyline("MMU S2 L3 Hit", m_profiling[hpc::Counter::MMUS2L3Hit]);
+            drawPolyline("MMU S2 L2 Hit", m_profiling[hpc::Counter::MMUS2L2Hit]);
+            drawPolyline("L2 Cache L1 Read", m_profiling[hpc::Counter::L2CacheL1Read]);
+            drawPolyline("L2 Cache L1 Read Stall Rate", m_profiling[hpc::Counter::L2CacheL1ReadStallRate]);
+            drawPolyline("L2 Cache Write", m_profiling[hpc::Counter::L2CacheL1Write]);
+            drawPolyline("L2 Cache Read", m_profiling[hpc::Counter::L2CacheRead]);
+            drawPolyline("L2 Cache Read Stall Rate", m_profiling[hpc::Counter::L2CacheReadStallRate]);
+            drawPolyline("L2 Cache Write", m_profiling[hpc::Counter::L2CacheWrite]);
+            drawPolyline("L2 Cache Write Stall Rate", m_profiling[hpc::Counter::L2CacheWriteStallRate]);
+            drawPolyline("L2 Read Bytes", m_profiling[hpc::Counter::L2ReadByte]);
             ImGui::Separator();
         } });
 }
