@@ -1740,7 +1740,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[0] = attachment;
             }
@@ -1757,7 +1757,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[1] = attachment;
             }
@@ -1774,7 +1774,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[2] = attachment;
             }
