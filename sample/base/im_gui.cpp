@@ -82,6 +82,9 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     m_device = device;
     m_queue = queue;
 
+    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
+
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
     m_padding.bottom = 170.0f;
@@ -148,7 +151,6 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     }
 
     // create font staging buffer.
-    std::unique_ptr<Buffer> m_fontBuffer = nullptr;
     {
         BufferDescriptor fontBufferDescriptor{};
         fontBufferDescriptor.size = fontTexWidth * fontTexHeight * 4 * sizeof(FontDataType);
@@ -184,11 +186,8 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         extent.height = m_fontTexture->getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-        std::unique_ptr<CommandBuffer> commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
         queue->submit({ commandEncoder->finish() });
