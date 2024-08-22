@@ -19,7 +19,6 @@ public:
     ~VulkanCommandBuffer() override;
 
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
-    CommandBufferUsage getUsage() const override;
 
 public:
     VulkanDevice& getDevice() const;
@@ -35,7 +34,6 @@ public:
 
 private:
     VulkanDevice& m_device;
-    const CommandBufferDescriptor m_descriptor{};
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
@@ -48,9 +46,5 @@ private:
 };
 
 DOWN_CAST(VulkanCommandBuffer, CommandBuffer);
-
-// Convert Helper
-CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag);
-VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage usage);
 
 } // namespace jipu

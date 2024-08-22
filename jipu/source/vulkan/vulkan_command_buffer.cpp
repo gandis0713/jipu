@@ -9,7 +9,6 @@ namespace jipu
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice& device, const CommandBufferDescriptor& descriptor)
     : m_device(device)
-    , m_descriptor(descriptor)
     , m_commandPool(device.getVkCommandPool())
 {
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -36,11 +35,6 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
 std::unique_ptr<CommandEncoder> VulkanCommandBuffer::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
 {
     return std::make_unique<VulkanCommandEncoder>(*this, descriptor);
-}
-
-CommandBufferUsage VulkanCommandBuffer::getUsage() const
-{
-    return m_descriptor.usage;
 }
 
 VulkanDevice& VulkanCommandBuffer::getDevice() const
@@ -90,28 +84,6 @@ std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> VulkanCommandBuffer::e
     m_waitSemaphores.clear();
 
     return waitSemaphores;
-}
-
-CommandBufferUsage ToCommandBufferUsage(VkCommandBufferUsageFlagBits flag)
-{
-    switch (flag)
-    {
-    case VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT:
-        return CommandBufferUsage::kOneTime;
-    default:
-        return CommandBufferUsage::kUndefined;
-    }
-}
-
-VkCommandBufferUsageFlagBits ToVkCommandBufferUsageFlagBits(CommandBufferUsage usage)
-{
-    switch (usage)
-    {
-    case CommandBufferUsage::kOneTime:
-        return VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    default:
-        return static_cast<VkCommandBufferUsageFlagBits>(0x00000000);
-    }
 }
 
 } // namespace jipu

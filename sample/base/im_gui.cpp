@@ -82,7 +82,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     m_device = device;
     m_queue = queue;
 
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    CommandBufferDescriptor commandBufferDescriptor{};
     m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
 
 #if defined(__ANDROID__)

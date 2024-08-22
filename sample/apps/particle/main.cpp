@@ -512,7 +512,7 @@ void ParticleSample::createRenderPipeline()
 
 void ParticleSample::createCommandBuffer()
 {
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    CommandBufferDescriptor commandBufferDescriptor{};
     m_renderCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     m_computeCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 }

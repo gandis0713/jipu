@@ -185,7 +185,7 @@ void VulkanNBufferingSample::createSurface()
 
 void VulkanNBufferingSample::createCommandBuffer()
 {
-    CommandBufferDescriptor descriptor{ .usage = CommandBufferUsage::kOneTime };
+    CommandBufferDescriptor descriptor{};
     m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
@@ -561,7 +561,7 @@ void VulkanNBufferingSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
         .offset = 0,
     };
 
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    CommandBufferDescriptor commandBufferDescriptor{};
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
@@ -590,7 +590,7 @@ void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuff
     extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
+    CommandBufferDescriptor commandBufferDescriptor{};
     std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};

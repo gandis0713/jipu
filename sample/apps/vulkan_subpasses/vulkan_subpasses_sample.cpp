@@ -589,8 +589,6 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
         m_copyColorTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
@@ -661,8 +659,6 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
         m_copyNomralTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
@@ -2275,8 +2271,6 @@ void VulkanSubpassesSample::createDepthStencilTextureView()
 void VulkanSubpassesSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
-    descriptor.usage = CommandBufferUsage::kOneTime;
-
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
