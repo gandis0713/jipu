@@ -566,13 +566,13 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
-        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
-        void* pointer = stagingBuffer->map();
+        m_offscreen.colorStagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = m_offscreen.colorStagingBuffer->map();
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = *m_offscreen.colorStagingBuffer,
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
@@ -591,15 +591,15 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         CommandBufferDescriptor commandBufferDescriptor{};
         commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+        m_copyColorTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_copyColorTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ *m_copyColorTextureCommandBuffer });
     }
 }
 
@@ -638,13 +638,13 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
-        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
-        void* pointer = stagingBuffer->map();
+        m_offscreen.normalStagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = m_offscreen.normalStagingBuffer->map();
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = *m_offscreen.normalStagingBuffer,
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
@@ -663,15 +663,15 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         CommandBufferDescriptor commandBufferDescriptor{};
         commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+        m_copyNomralTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_copyNomralTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ *m_copyNomralTextureCommandBuffer });
     }
 }
 
