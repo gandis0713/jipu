@@ -33,16 +33,16 @@ jobs:
           local-cache: true
 
       # https://github.com/marketplace/actions/get-cmake
-      - uses: lukka/get-cmake@v3.27.7
+      - uses: lukka/get-cmake@v3.30.2
         with:
-            cmakeVersion: '3.27.7'
+            cmakeVersion: '3.30.2'
 
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup vcpkg and install them.
         uses: lukka/run-vcpkg@v10
         with:
           vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-          vcpkgGitCommitId: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01"
+          vcpkgGitCommitId: "943c5ef1c8f6b5e6ced092b242c8299caae2ff01" # 2024.04.26
           vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
           runVcpkgInstall: false
 
