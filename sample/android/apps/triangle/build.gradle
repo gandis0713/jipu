@@ -15,7 +15,7 @@ def resDir = "${appDir}/res"
 // Environments
 def vcpkgRootDir = System.getenv("VCPKG_ROOT")
 def androidSDKRootDir = System.getenv("ANDROID_SDK_ROOT")
-def androidNDKVersion = "25.1.8937393"
+def androidNDKVersion = "26.3.11579264"
 
 android {
     compileSdk 33
