@@ -7,7 +7,7 @@ on:
     branches: [main, develop]
 jobs:
   build:
-    runs-on: [ubuntu-22.04]
+    runs-on: [ubuntu-24.04]
     steps:
       - uses: actions/checkout@v3
 
@@ -23,26 +23,25 @@ jobs:
       # - name: Install Android NDK
       #   run: |
       #     sdkmanager --install "cmake;3.22.1"
-      #     sdkmanager --install "ndk;25.1.8937393"
-      #     sdkmanager --install "ndk;25.2.9519653"
+      #     sdkmanager --install "ndk;26.3.11579264"
 
       # https://github.com/nttld/setup-ndk
       - uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r25b
+          ndk-version: r26d
           local-cache: true
 
       # https://github.com/marketplace/actions/get-cmake
-      - uses: lukka/get-cmake@v3.27.7
+      - uses: lukka/get-cmake@v3.30.2
         with:
-            cmakeVersion: '3.27.7'
+            cmakeVersion: '3.30.2'
 
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup vcpkg and install them.
         uses: lukka/run-vcpkg@v10
         with:
           vcpkgDirectory: "${{ github.workspace }}/vcpkg"
-          vcpkgGitCommitId: "9edb1b8e590cc086563301d735cae4b6e732d2d2"
+          vcpkgGitCommitId: "1de2026f28ead93ff1773e6e680387643e914ea1" # 2024.07.12
           vcpkgJsonGlob: "${{ github.workspace }}/vcpkg.json"
           runVcpkgInstall: false
 
@@ -51,8 +50,8 @@ jobs:
         working-directory: sample/android
       - run: ./gradlew clean assembleRelease
         working-directory: sample/android
-        # env:
-        #   ANDROID_NDK_VERSION: "25.1.8937393" # r25b
+        env:
+          ANDROID_NDK_VERSION: "26.3.11579264" # r26d
 
       # https://github.com/marketplace/actions/action-slack
       - name: Send status of a job to slack.

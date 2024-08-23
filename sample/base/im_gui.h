@@ -39,6 +39,8 @@ protected:
     {
         float top = 0.0f;
         float bottom = 0.0f;
+        float left = 0.0f;
+        float right = 0.0f;
     } m_padding;
 
 private:
@@ -55,6 +57,7 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    std::unique_ptr<Buffer> m_fontBuffer = nullptr;
     std::unique_ptr<Texture> m_fontTexture = nullptr;
     std::unique_ptr<TextureView> m_fontTextureView = nullptr;
     std::unique_ptr<Sampler> m_fontSampler = nullptr;
@@ -62,6 +65,7 @@ private:
     std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
+    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
 };
 
 } // namespace jipu

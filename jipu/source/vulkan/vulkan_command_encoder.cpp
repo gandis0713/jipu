@@ -24,7 +24,7 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanCommandBuffer& commandBuffer, c
 
     VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.flags = ToVkCommandBufferUsageFlagBits(vulkanCommandBuffer.getUsage());
+    commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
 
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());

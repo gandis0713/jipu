@@ -60,8 +60,6 @@ void CopyTest::SetUp()
     extent.depth = 1;
 
     CommandBufferDescriptor commandBufferDescriptor{};
-    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     EXPECT_NE(nullptr, commandBuffer);
 
@@ -114,8 +112,6 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     extent.height = srcTexture->getHeight();
 
     CommandBufferDescriptor commandBufferDescriptor{};
-    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     EXPECT_NE(nullptr, commandBuffer);
 
@@ -140,8 +136,6 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
 TEST_F(CopyTest, test_BufferToBuffer)
 {
     CommandBufferDescriptor commandBufferDescriptor{};
-    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     EXPECT_NE(nullptr, commandBuffer);
 
@@ -217,8 +211,6 @@ TEST_F(CopyTest, test_BufferToTexture)
     extent.depth = 1;
 
     CommandBufferDescriptor commandBufferDescriptor{};
-    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     EXPECT_NE(nullptr, commandBuffer);
 
@@ -275,8 +267,6 @@ TEST_F(CopyTest, test_TextureToTexture)
     extent.height = m_srcTexture->getHeight();
 
     CommandBufferDescriptor commandBufferDescriptor{};
-    commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
     auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
     EXPECT_NE(nullptr, commandBuffer);
 

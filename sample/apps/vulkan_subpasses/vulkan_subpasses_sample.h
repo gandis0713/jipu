@@ -151,6 +151,8 @@ private:
         std::unique_ptr<Buffer> uniformBuffer = nullptr;
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
+        std::unique_ptr<Buffer> colorStagingBuffer = nullptr;
+        std::unique_ptr<Buffer> normalStagingBuffer = nullptr;
         std::unique_ptr<Camera> camera = nullptr;
         Polygon polygon{};
     } m_offscreen;
@@ -200,12 +202,14 @@ private:
     } m_composition;
 
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
+    std::unique_ptr<CommandBuffer> m_copyColorTextureCommandBuffer = nullptr;
+    std::unique_ptr<CommandBuffer> m_copyNomralTextureCommandBuffer = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 1000;
-    bool m_useSubpasses = true;
+    bool m_useSubpasses = false;
 };
 
 } // namespace jipu

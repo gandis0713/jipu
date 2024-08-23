@@ -134,7 +134,7 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
         auto nextIndex = i + 1;
         if (nextIndex < commandBufferSize)
         {
-            auto signalSemaphore = downcast(commandBuffers[i]).getSignalSemaphore();
+            std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffers[i]).getSignalSemaphore();
             submitInfo[i].signal.first.push_back(signalSemaphore.first);
             submitInfo[i].signal.second.push_back(signalSemaphore.second);
         }

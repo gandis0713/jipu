@@ -58,6 +58,8 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_composition.renderPasses.positionSampler.reset();
 
     m_offscreen.camera.reset();
+    m_offscreen.normalStagingBuffer.reset();
+    m_offscreen.colorStagingBuffer.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
@@ -93,6 +95,9 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_offscreen.renderPasses.normalColorAttachmentTexture.reset();
     m_offscreen.renderPasses.positionColorAttachmentTextureView.reset();
     m_offscreen.renderPasses.positionColorAttachmentTexture.reset();
+
+    m_copyColorTextureCommandBuffer.reset();
+    m_copyNomralTextureCommandBuffer.reset();
 
     m_commandBuffer.reset();
 }
@@ -566,13 +571,13 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
-        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
-        void* pointer = stagingBuffer->map();
+        m_offscreen.colorStagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = m_offscreen.colorStagingBuffer->map();
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = *m_offscreen.colorStagingBuffer,
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
@@ -589,17 +594,15 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+        m_copyColorTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_copyColorTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ *m_copyColorTextureCommandBuffer });
     }
 }
 
@@ -638,13 +641,13 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         bufferDescriptor.size = ktx.getWidth() * ktx.getHeight() * ktx.getChannel() * sizeof(char);
         bufferDescriptor.usage = BufferUsageFlagBits::kCopySrc;
 
-        auto stagingBuffer = m_device->createBuffer(bufferDescriptor);
-        void* pointer = stagingBuffer->map();
+        m_offscreen.normalStagingBuffer = m_device->createBuffer(bufferDescriptor);
+        void* pointer = m_offscreen.normalStagingBuffer->map();
         memcpy(pointer, ktx.getPixels(), bufferDescriptor.size);
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = *m_offscreen.normalStagingBuffer,
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
@@ -661,17 +664,15 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
-
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
+        m_copyNomralTextureCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_copyNomralTextureCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ *m_copyNomralTextureCommandBuffer });
     }
 }
 
@@ -1740,7 +1741,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[0] = attachment;
             }
@@ -1757,7 +1758,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[1] = attachment;
             }
@@ -1774,7 +1775,7 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
                 attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                 attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                 attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                attachment.samples = ToVkSampleCountFlagBits(m_sampleCount);
+                attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 
                 renderPassDescriptor.attachmentDescriptions[2] = attachment;
             }
@@ -2275,8 +2276,6 @@ void VulkanSubpassesSample::createDepthStencilTextureView()
 void VulkanSubpassesSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
-    descriptor.usage = CommandBufferUsage::kOneTime;
-
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 

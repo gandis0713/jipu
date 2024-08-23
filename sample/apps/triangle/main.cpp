@@ -206,8 +206,6 @@ void TriangleSample::updateImGui()
 void TriangleSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
-    descriptor.usage = CommandBufferUsage::kOneTime;
-
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 

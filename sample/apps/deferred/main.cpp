@@ -556,7 +556,6 @@ void DeferredSample::createOffscreenColorMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
         auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
@@ -628,7 +627,6 @@ void DeferredSample::createOffscreenNormalMapTexture()
         extent.depth = 1;
 
         CommandBufferDescriptor commandBufferDescriptor{};
-        commandBufferDescriptor.usage = CommandBufferUsage::kOneTime;
 
         auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 
@@ -1275,8 +1273,6 @@ void DeferredSample::createDepthStencilTextureView()
 void DeferredSample::createCommandBuffer()
 {
     CommandBufferDescriptor descriptor{};
-    descriptor.usage = CommandBufferUsage::kOneTime;
-
     m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 

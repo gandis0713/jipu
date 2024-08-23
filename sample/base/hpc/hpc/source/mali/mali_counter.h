@@ -36,6 +36,18 @@ const std::unordered_map<Counter, std::vector<hwcpipe_counter>> counterDependenc
     { Counter::GeometrySampleCulledRate, { MaliGeomSampleCullRate } },
     { Counter::GeometryFaceXYPlaneCulledRate, { MaliGeomFaceXYPlaneCullRate } },
     { Counter::GeometryZPlaneCulledRate, { MaliGeomZPlaneCullRate } },
+    { Counter::MMUL3Hit, { MaliMMUL3Hit } },
+    { Counter::MMUL2Hit, { MaliMMUL2Hit } },
+    { Counter::MMUS2L3Hit, { MaliMMUS2L3Hit } },
+    { Counter::MMUS2L2Hit, { MaliMMUS2L2Hit } },
+    { Counter::L2CacheL1Read, { MaliL2CacheL1Rd } },
+    { Counter::L2CacheL1ReadStallRate, { MaliL2CacheL1RdStallCy } },
+    { Counter::L2CacheL1Write, { MaliL2CacheL1Wr } },
+    { Counter::L2CacheRead, { MaliL2CacheRd } },
+    { Counter::L2CacheReadStallRate, { MaliL2CacheRdStallCy } },
+    { Counter::L2CacheWrite, { MaliL2CacheWr } },
+    { Counter::L2CacheWriteStallRate, { MaliL2CacheWrStallCy } },
+    { Counter::L2ReadByte, { MaliSCBusLSL2RdBy } },
 };
 
 } // namespace mali

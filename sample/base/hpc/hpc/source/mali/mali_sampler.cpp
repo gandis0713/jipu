@@ -15,7 +15,7 @@ namespace mali
 namespace
 {
 
-Sample::Type convertToType(const hwcpipe::counter_sample& sample)
+Sample::Type convertToType([[maybe_unused]] const hpc::Counter counter, const hwcpipe::counter_sample& sample)
 {
     switch (sample.type)
     {
@@ -26,15 +26,40 @@ Sample::Type convertToType(const hwcpipe::counter_sample& sample)
     }
 }
 
-Sample::Value convertToValue(const hwcpipe::counter_sample& sample)
+Sample::Value convertToValue([[maybe_unused]] const hpc::Counter counter, const hwcpipe::counter_sample& sample)
 {
     switch (sample.type)
     {
     case hwcpipe::counter_sample::type::uint64:
         return Sample::Value(sample.value.uint64);
-    case hwcpipe::counter_sample::type::float64:
-        return Sample::Value(sample.value.float64);
+    case hwcpipe::counter_sample::type::float64: {
+        switch (counter)
+        {
+        case hpc::Counter::ExternalReadBytes:
+        case hpc::Counter::ExternalWriteBytes:
+        case hpc::Counter::L2CacheL1Read:
+        case hpc::Counter::L2CacheL1Write:
+        case hpc::Counter::L2CacheRead:
+        case hpc::Counter::L2CacheWrite:
+        case hpc::Counter::MMUS2L3Hit:
+        case hpc::Counter::MMUS2L2Hit:
+        case hpc::Counter::L2ReadByte:
+            return Sample::Value(sample.value.float64 / 1024.0f / 1024.0f);
+        default:
+            return Sample::Value(sample.value.float64);
+        }
     }
+    }
+}
+
+Sample convertToSample(const hpc::Counter counter, const hwcpipe::counter_sample& s)
+{
+    return Sample{
+        .counter = counter,
+        .timestamp = s.timestamp,
+        .type = convertToType(counter, s),
+        .value = convertToValue(counter, s)
+    };
 }
 
 } // namespace
@@ -83,8 +108,6 @@ std::error_code MaliSampler::stop()
 
 Sample MaliSampler::sample(const Counter counter)
 {
-    Sample sample = { .counter = counter };
-
     hwcpipe::counter_sample hwcSample;
 
     auto it = counterDependencies.find(counter);
@@ -102,15 +125,11 @@ Sample MaliSampler::sample(const Counter counter)
         if (ec)
         {
             spdlog::error("Failed to get counter value {}", static_cast<uint32_t>(hwcCounter));
-            return sample;
+            return Sample{ .counter = counter };
         }
     }
 
-    sample.timestamp = hwcSample.timestamp;
-    sample.type = convertToType(hwcSample);
-    sample.value = convertToValue(hwcSample);
-
-    return sample;
+    return convertToSample(counter, hwcSample);
 }
 
 std::vector<Sample> MaliSampler::samples(std::unordered_set<Counter> counters)

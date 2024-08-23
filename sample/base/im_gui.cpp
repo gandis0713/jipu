@@ -82,12 +82,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     m_device = device;
     m_queue = queue;
 
+    CommandBufferDescriptor commandBufferDescriptor{};
+    m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
+
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
     m_padding.bottom = 170.0f;
-#else
-    m_padding.top = 0.0f;
-    m_padding.bottom = 0.0f;
 #endif
 
     // IMGUI_CHECKVERSION();
@@ -97,7 +97,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         throw std::runtime_error("Failed to create imgui context");
     }
 
-    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, m_padding.bottom);
+    ImGui::GetStyle().TouchExtraPadding = ImVec2(0.0f, 0.0f);
 
     ImGuiIO& io = ImGui::GetIO();
 #if defined(__ANDROID__)
@@ -151,7 +151,6 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     }
 
     // create font staging buffer.
-    std::unique_ptr<Buffer> m_fontBuffer = nullptr;
     {
         BufferDescriptor fontBufferDescriptor{};
         fontBufferDescriptor.size = fontTexWidth * fontTexHeight * 4 * sizeof(FontDataType);
@@ -187,11 +186,8 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         extent.height = m_fontTexture->getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{ .usage = CommandBufferUsage::kOneTime };
-        std::unique_ptr<CommandBuffer> commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
         queue->submit({ commandEncoder->finish() });
@@ -519,6 +515,7 @@ void Im_Gui::clear()
     m_fontTextureView.reset();
     m_fontTexture.reset();
 
+    m_fontBuffer.reset();
     m_uniformBuffer.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
@@ -527,6 +524,8 @@ void Im_Gui::clear()
     m_pipelineLayout.reset();
     m_bindingGroups.clear();
     m_bindingGroupLayouts.clear();
+
+    m_commandBuffer.reset();
 }
 
 } // namespace jipu
