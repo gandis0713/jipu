@@ -58,6 +58,8 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_composition.renderPasses.positionSampler.reset();
 
     m_offscreen.camera.reset();
+    m_offscreen.normalStagingBuffer.reset();
+    m_offscreen.colorStagingBuffer.reset();
     m_offscreen.vertexBuffer.reset();
     m_offscreen.indexBuffer.reset();
     m_offscreen.uniformBuffer.reset();
@@ -93,6 +95,9 @@ VulkanSubpassesSample::~VulkanSubpassesSample()
     m_offscreen.renderPasses.normalColorAttachmentTexture.reset();
     m_offscreen.renderPasses.positionColorAttachmentTextureView.reset();
     m_offscreen.renderPasses.positionColorAttachmentTexture.reset();
+
+    m_copyColorTextureCommandBuffer.reset();
+    m_copyNomralTextureCommandBuffer.reset();
 
     m_commandBuffer.reset();
 }

@@ -515,6 +515,7 @@ void Im_Gui::clear()
     m_fontTextureView.reset();
     m_fontTexture.reset();
 
+    m_fontBuffer.reset();
     m_uniformBuffer.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
@@ -523,6 +524,8 @@ void Im_Gui::clear()
     m_pipelineLayout.reset();
     m_bindingGroups.clear();
     m_bindingGroupLayouts.clear();
+
+    m_commandBuffer.reset();
 }
 
 } // namespace jipu
