@@ -5,6 +5,7 @@
     "gtest",
     "glm",
     "spdlog",
+    "sdl2",
     "stb",
     "tinyobjloader",
     "tinygltf",
@@ -13,10 +14,6 @@
     "webgpu-headers",
     "vulkan-headers",
     "vulkan-memory-allocator",
-    {
-      "name": "sdl2",
-      "platform": "windows | osx"
-    },
     {
       "name": "hwcpipe",
       "platform": "android"
