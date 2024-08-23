@@ -29,7 +29,7 @@ jobs:
       # https://github.com/nttld/setup-ndk
       - uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r25b
+          ndk-version: r26d
           local-cache: true
 
       # https://github.com/marketplace/actions/get-cmake
