@@ -23,8 +23,7 @@ jobs:
       # - name: Install Android NDK
       #   run: |
       #     sdkmanager --install "cmake;3.22.1"
-      #     sdkmanager --install "ndk;25.1.8937393"
-      #     sdkmanager --install "ndk;25.2.9519653"
+      #     sdkmanager --install "ndk;26.3.11579264"
 
       # https://github.com/nttld/setup-ndk
       - uses: nttld/setup-ndk@v1
