@@ -60,6 +60,7 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
+    vkAPI.DestroyQueryPool(m_device, m_queryPool, nullptr);
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
@@ -247,6 +248,28 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
     }
 
     return m_descriptorPool;
+}
+
+VkQueryPool VulkanDevice::getVkQueryPool()
+{
+    if (m_queryPool == VK_NULL_HANDLE)
+    {
+        VkQueryPoolCreateInfo queryPoolInfo = {};
+        queryPoolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        queryPoolInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
+        queryPoolInfo.queryCount = 2; // TODO: set correct query count.
+
+        VkQueryPool queryPool;
+        VkResult result = vkAPI.CreateQueryPool(m_device, &queryPoolInfo, nullptr, &queryPool);
+        if (result != VK_SUCCESS)
+        {
+            throw std::runtime_error("Failed to create query pool.");
+        }
+
+        m_queryPool = queryPool;
+    }
+
+    return m_queryPool;
 }
 
 void VulkanDevice::createDevice(const std::unordered_map<uint32_t, VkQueueFamilyProperties>& queueFamilies)
