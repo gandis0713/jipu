@@ -249,7 +249,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuf
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
 {
-    initialize();
+    beginRenderPass();
 }
 
 void VulkanRenderPassEncoder::setPipeline(RenderPipeline& pipeline)
@@ -362,13 +362,11 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
 
 void VulkanRenderPassEncoder::end()
 {
-    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-
-    vulkanDevice.vkAPI.CmdEndRenderPass(vulkanCommandBuffer.getVkCommandBuffer());
+    endRenderPass();
 
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     vulkanCommandBuffer.setSignalPipelineStage(flags);
 }
 
@@ -381,8 +379,16 @@ void VulkanRenderPassEncoder::nextPass()
     ++m_passIndex;
 }
 
-void VulkanRenderPassEncoder::initialize()
+void VulkanRenderPassEncoder::beginRenderPass()
 {
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto queryPool = vulkanDevice.getVkQueryPool();
+
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(), queryPool, 0, 2);
+    vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, 0);
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_descriptor.renderPass;
@@ -391,10 +397,19 @@ void VulkanRenderPassEncoder::initialize()
     renderPassInfo.clearValueCount = static_cast<uint32_t>(m_descriptor.clearValues.size());
     renderPassInfo.pClearValues = m_descriptor.clearValues.data();
 
+    vkAPI.CmdBeginRenderPass(vulkanCommandBuffer.getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void VulkanRenderPassEncoder::endRenderPass()
+{
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto queryPool = vulkanDevice.getVkQueryPool();
 
-    vulkanDevice.vkAPI.CmdBeginRenderPass(vulkanCommandBuffer.getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.CmdEndRenderPass(vulkanCommandBuffer.getVkCommandBuffer());
+
+    vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, 1);
 }
 
 // Convert Helper

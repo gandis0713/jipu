@@ -61,7 +61,8 @@ public:
     void nextPass();
 
 private:
-    void initialize();
+    void beginRenderPass();
+    void endRenderPass();
 
 private:
     VulkanCommandBuffer& m_commandBuffer;
