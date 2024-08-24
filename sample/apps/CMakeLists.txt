@@ -33,7 +33,6 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        glm::glm
         jipu::jipu
         jipu::sample_base
     )
