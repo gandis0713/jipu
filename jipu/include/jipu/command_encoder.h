@@ -47,10 +47,23 @@ public:
     virtual std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) = 0;
 
-    virtual void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) = 0;
-    virtual void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) = 0;
-    virtual void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) = 0;
-    virtual void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) = 0;
+    virtual void copyBufferToBuffer(const BlitBuffer& src,
+                                    const BlitBuffer& dst,
+                                    uint64_t size) = 0;
+    virtual void copyBufferToTexture(const BlitTextureBuffer& buffer,
+                                     const BlitTexture& texture,
+                                     const Extent3D& extent) = 0;
+    virtual void copyTextureToBuffer(const BlitTexture& texture,
+                                     const BlitTextureBuffer& buffer,
+                                     const Extent3D& extent) = 0;
+    virtual void copyTextureToTexture(const BlitTexture& src,
+                                      const BlitTexture& dst,
+                                      const Extent3D& extent) = 0;
+    virtual void resolveQuerySet(QuerySet* querySet,
+                                 uint32_t firstQuery,
+                                 uint32_t queryCount,
+                                 Buffer* destination,
+                                 uint64_t destinationOffset) = 0;
 
     virtual CommandBuffer& finish() = 0;
 };

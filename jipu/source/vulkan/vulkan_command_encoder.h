@@ -24,10 +24,23 @@ public:
     std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) override;
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const RenderPassEncoderDescriptor& descriptor) override;
 
-    void copyBufferToBuffer(const BlitBuffer& src, const BlitBuffer& dst, uint64_t size) override;
-    void copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent) override;
-    void copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent) override;
-    void copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent) override;
+    void copyBufferToBuffer(const BlitBuffer& src,
+                            const BlitBuffer& dst,
+                            uint64_t size) override;
+    void copyBufferToTexture(const BlitTextureBuffer& buffer,
+                             const BlitTexture& texture,
+                             const Extent3D& extent) override;
+    void copyTextureToBuffer(const BlitTexture& texture,
+                             const BlitTextureBuffer& buffer,
+                             const Extent3D& extent) override;
+    void copyTextureToTexture(const BlitTexture& src,
+                              const BlitTexture& dst,
+                              const Extent3D& extent) override;
+    void resolveQuerySet(QuerySet* querySet,
+                         uint32_t firstQuery,
+                         uint32_t queryCount,
+                         Buffer* destination,
+                         uint64_t destinationOffset) override;
 
     CommandBuffer& finish() override;
 

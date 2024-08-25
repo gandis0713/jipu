@@ -271,6 +271,14 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
     dstTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstTexture.getFinalLayout(), dstSubresourceRange);
 }
 
+void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
+                                           uint32_t firstQuery,
+                                           uint32_t queryCount,
+                                           Buffer* destination,
+                                           uint64_t destinationOffset)
+{
+}
+
 CommandBuffer& VulkanCommandEncoder::finish()
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
