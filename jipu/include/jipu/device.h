@@ -7,6 +7,7 @@
 #include "jipu/command_buffer.h"
 #include "jipu/pipeline.h"
 #include "jipu/pipeline_layout.h"
+#include "jipu/query_set.h"
 #include "jipu/queue.h"
 #include "jipu/sampler.h"
 #include "jipu/shader_module.h"
@@ -39,6 +40,7 @@ public:
     virtual std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) = 0;
     virtual std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<QuerySet> createQuerySet(const QuerySetDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
     virtual std::unique_ptr<ComputePipeline> createComputePipeline(const ComputePipelineDescriptor& descriptor) = 0;
     virtual std::unique_ptr<RenderPipeline> createRenderPipeline(const RenderPipelineDescriptor& descriptor) = 0;
