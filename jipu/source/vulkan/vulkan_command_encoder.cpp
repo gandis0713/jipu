@@ -4,6 +4,7 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_compute_pass_encoder.h"
 #include "vulkan_device.h"
+#include "vulkan_physical_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_query_set.h"
@@ -293,6 +294,17 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
                               timestamps.data(),
                               sizeof(uint64_t),
                               VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+
+    auto& physicalDevice = vulkanDevice.getPhysicalDevice();
+    const auto info = physicalDevice.getVulkanPhysicalDeviceInfo();
+    float timestampPeriod = info.physicalDeviceProperties.limits.timestampPeriod;
+
+    for (uint32_t i = 1; i < timestamps.size(); ++i)
+    {
+        float elapsedTime = (timestamps[i] - timestamps[i - 1]) * timestampPeriod; // nano seconds
+        // TODO: save the elapsed time to destination buffer.
+        spdlog::debug("elapsed time {}", elapsedTime / 1000.f / 1000.f / 1000.f);
+    }
 }
 
 CommandBuffer& VulkanCommandEncoder::finish()
