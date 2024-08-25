@@ -191,6 +191,10 @@ VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
     {
         vkUsages |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     }
+    if (usages & BufferUsageFlagBits::kQueryResolve)
+    {
+        vkUsages |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    }
 
     // TODO: kMapRead, kMapWrite
 

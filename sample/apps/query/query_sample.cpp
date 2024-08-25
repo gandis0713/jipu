@@ -35,6 +35,7 @@ void QuerySample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
+    createQueryBuffer();
     createBindingGroupLayout();
     createBindingGroup();
     createRenderPipeline();
@@ -158,9 +159,18 @@ void QuerySample::createUniformBuffer()
 
     m_uniformBuffer = m_device->createBuffer(descriptor);
 
-    void* pointer = m_uniformBuffer->map();
+    [[maybe_unused]] auto pointer = m_uniformBuffer->map();
     // memcpy(pointer, &m_ubo, descriptor.size);
     // m_uniformBuffer->unmap();
+}
+
+void QuerySample::createQueryBuffer()
+{
+    BufferDescriptor descriptor{};
+    descriptor.size = 1024;
+    descriptor.usage = BufferUsageFlagBits::kQueryResolve;
+
+    m_queryBuffer = m_device->createBuffer(descriptor);
 }
 
 void QuerySample::createBindingGroupLayout()
