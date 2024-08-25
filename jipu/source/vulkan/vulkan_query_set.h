@@ -24,7 +24,7 @@ public:
 
 private:
     VulkanDevice& m_device;
-    const QuerySetDescriptor& m_descriptor;
+    const QuerySetDescriptor m_descriptor;
 
 private:
     VkQueryPool m_queryPool = VK_NULL_HANDLE;
