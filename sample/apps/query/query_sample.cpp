@@ -90,6 +90,10 @@ void QuerySample::draw()
 
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
+            .timestampWrites = {
+                .querySet = m_querySet.get(),
+                .beginQueryIndex = 0,
+                .endQueryIndex = 1 },
             .sampleCount = m_sampleCount
         };
 

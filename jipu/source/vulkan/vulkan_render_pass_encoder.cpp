@@ -7,6 +7,7 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_query_set.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -237,6 +238,9 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
     vkdescriptor.renderArea.offset = { 0, 0 };
     vkdescriptor.renderArea.extent = { framebuffer.getWidth(), framebuffer.getHeight() };
 
+    // TODO: convert timestampWrites for vulkan.
+    vkdescriptor.timestampWrites = descriptor.timestampWrites;
+
     return vkdescriptor;
 }
 
@@ -383,11 +387,20 @@ void VulkanRenderPassEncoder::beginRenderPass()
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    auto queryPool = vulkanDevice.getVkQueryPool();
 
     const auto& vkAPI = vulkanDevice.vkAPI;
-    vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(), queryPool, 0, 2);
-    vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, 0);
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanQuerySet->getCount());
+        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(),
+                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                vulkanQuerySet->getVkQueryPool(),
+                                m_descriptor.timestampWrites.beginQueryIndex);
+    }
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -404,12 +417,18 @@ void VulkanRenderPassEncoder::endRenderPass()
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    auto queryPool = vulkanDevice.getVkQueryPool();
 
     const auto& vkAPI = vulkanDevice.vkAPI;
     vkAPI.CmdEndRenderPass(vulkanCommandBuffer.getVkCommandBuffer());
 
-    vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, 1);
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(),
+                                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                vulkanQuerySet->getVkQueryPool(),
+                                m_descriptor.timestampWrites.endQueryIndex);
+    }
 }
 
 // Convert Helper

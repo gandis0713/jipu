@@ -19,6 +19,9 @@ struct VulkanRenderPassEncoderDescriptor
     VkFramebuffer framebuffer = VK_NULL_HANDLE;
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
+
+    // TODO: convert timestampWrites for vulkan.
+    RenderPassTimestampWrites timestampWrites{};
 };
 
 class VulkanDevice;
