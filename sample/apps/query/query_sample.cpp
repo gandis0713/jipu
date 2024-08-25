@@ -1,35 +1,17 @@
 #include "query_sample.h"
 
-#include "camera.h"
-#include "file.h"
-#include "sample.h"
-
-#include "jipu/buffer.h"
-#include "jipu/command_buffer.h"
-#include "jipu/command_encoder.h"
-#include "jipu/device.h"
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
-#include "jipu/pipeline.h"
-#include "jipu/pipeline_layout.h"
-#include "jipu/queue.h"
-#include "jipu/surface.h"
-#include "jipu/swapchain.h"
-
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <spdlog/spdlog.h>
-
 namespace jipu
 {
 
 QuerySample::QuerySample(const SampleDescriptor& descriptor)
     : Sample(descriptor)
 {
+    // do not call init() function. it will be called in window exec() function.
 }
 
 QuerySample::~QuerySample()
 {
+    m_querySet.reset();
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
     m_bindingGroup.reset();
@@ -56,6 +38,7 @@ void QuerySample::init()
     createBindingGroupLayout();
     createBindingGroup();
     createRenderPipeline();
+    createQuerySet();
 }
 
 void QuerySample::createCamera()
@@ -299,6 +282,15 @@ void QuerySample::createRenderPipeline()
     };
 
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
+}
+
+void QuerySample::createQuerySet()
+{
+    QuerySetDescriptor descriptor{};
+    descriptor.count = 2;
+    descriptor.type = QueryType::kTimestamp;
+
+    m_querySet = m_device->createQuerySet(descriptor);
 }
 
 } // namespace jipu

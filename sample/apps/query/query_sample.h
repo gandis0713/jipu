@@ -10,6 +10,7 @@
 #include "jipu/physical_device.h"
 #include "jipu/pipeline.h"
 #include "jipu/pipeline_layout.h"
+#include "jipu/query_set.h"
 #include "jipu/queue.h"
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
@@ -48,6 +49,7 @@ private:
     void createBindingGroupLayout();
     void createBindingGroup();
     void createRenderPipeline();
+    void createQuerySet();
 
 private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
@@ -58,6 +60,7 @@ private:
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
+    std::unique_ptr<QuerySet> m_querySet = nullptr;
 
     struct MVP
     {
