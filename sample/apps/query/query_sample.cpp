@@ -88,19 +88,20 @@ void QuerySample::draw()
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
+        RenderPassTimestampWrites timestampWrites = { .querySet = m_querySet.get(),
+                                                      .beginQueryIndex = 0,
+                                                      .endQueryIndex = 1 };
+
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
-            .timestampWrites = {
-                .querySet = m_querySet.get(),
-                .beginQueryIndex = 0,
-                .endQueryIndex = 1 },
+            .timestampWrites = timestampWrites,
             .sampleCount = m_sampleCount
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(*m_renderPipeline);
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
@@ -110,9 +111,15 @@ void QuerySample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), renderView);
+        drawImGui(commandEncoder.get(), renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+
+        commandEncoder->resolveQuerySet(m_querySet.get(),
+                                        0,
+                                        m_querySet->getCount(),
+                                        m_queryBuffer.get(),
+                                        0);
     }
 }
 

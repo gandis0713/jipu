@@ -6,6 +6,7 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_query_set.h"
 #include "vulkan_render_pass_encoder.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
@@ -277,6 +278,21 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
                                            Buffer* destination,
                                            uint64_t destinationOffset)
 {
+
+    auto& vulkanDevice = m_commandBuffer.getDevice();
+    auto vulkanQuerySet = downcast(querySet);
+
+    std::vector<uint64_t> timestamps(vulkanQuerySet->getCount());
+
+    auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.GetQueryPoolResults(vulkanDevice.getVkDevice(),
+                              vulkanQuerySet->getVkQueryPool(),
+                              0,
+                              vulkanQuerySet->getCount(),
+                              sizeof(uint64_t) * timestamps.size(),
+                              timestamps.data(),
+                              sizeof(uint64_t),
+                              VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
 }
 
 CommandBuffer& VulkanCommandEncoder::finish()
