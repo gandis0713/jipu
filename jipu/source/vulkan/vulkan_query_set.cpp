@@ -7,6 +7,7 @@ namespace jipu
 
 VulkanQuerySet::VulkanQuerySet(VulkanDevice& device, const QuerySetDescriptor& descriptor)
     : m_device(device)
+    , m_descriptor(descriptor)
 {
     auto& vkAPI = m_device.vkAPI;
 
@@ -27,6 +28,16 @@ VulkanQuerySet::~VulkanQuerySet()
 {
     auto& vkAPI = m_device.vkAPI;
     vkAPI.DestroyQueryPool(m_device.getVkDevice(), m_queryPool, nullptr);
+}
+
+QueryType VulkanQuerySet::getType() const
+{
+    return m_descriptor.type;
+}
+
+uint32_t VulkanQuerySet::getCount() const
+{
+    return m_descriptor.count;
 }
 
 VkQueryPool VulkanQuerySet::getVkQueryPool() const

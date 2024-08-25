@@ -16,11 +16,15 @@ public:
     VulkanQuerySet(VulkanDevice& device, const QuerySetDescriptor& descriptor);
     ~VulkanQuerySet() override;
 
-private:
+    QueryType getType() const override;
+    uint32_t getCount() const override;
+
+public:
     VkQueryPool getVkQueryPool() const;
 
 private:
     VulkanDevice& m_device;
+    const QuerySetDescriptor& m_descriptor;
 
 private:
     VkQueryPool m_queryPool = VK_NULL_HANDLE;
