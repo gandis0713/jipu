@@ -282,29 +282,19 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
 
     auto& vulkanDevice = m_commandBuffer.getDevice();
     auto vulkanQuerySet = downcast(querySet);
+    auto vulkanBuffer = downcast(destination);
 
     std::vector<uint64_t> timestamps(vulkanQuerySet->getCount());
 
     auto& vkAPI = vulkanDevice.vkAPI;
-    vkAPI.GetQueryPoolResults(vulkanDevice.getVkDevice(),
-                              vulkanQuerySet->getVkQueryPool(),
-                              0,
-                              vulkanQuerySet->getCount(),
-                              sizeof(uint64_t) * timestamps.size(),
-                              timestamps.data(),
-                              sizeof(uint64_t),
-                              VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
-
-    auto& physicalDevice = vulkanDevice.getPhysicalDevice();
-    const auto info = physicalDevice.getVulkanPhysicalDeviceInfo();
-    float timestampPeriod = info.physicalDeviceProperties.limits.timestampPeriod;
-
-    for (uint32_t i = 1; i < timestamps.size(); ++i)
-    {
-        float elapsedTime = (timestamps[i] - timestamps[i - 1]) * timestampPeriod; // nano seconds
-        // TODO: save the elapsed time to destination buffer.
-        spdlog::debug("elapsed time {}", elapsedTime / 1000.f / 1000.f / 1000.f);
-    }
+    vkAPI.CmdCopyQueryPoolResults(m_commandBuffer.getVkCommandBuffer(),
+                                  vulkanQuerySet->getVkQueryPool(),
+                                  0, // firstQuery
+                                  vulkanQuerySet->getCount(),
+                                  vulkanBuffer->getVkBuffer(),
+                                  0, // offset
+                                  sizeof(uint64_t),
+                                  VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
 }
 
 CommandBuffer& VulkanCommandEncoder::finish()
