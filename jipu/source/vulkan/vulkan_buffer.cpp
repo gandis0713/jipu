@@ -193,7 +193,7 @@ VkBufferUsageFlags ToVkBufferUsageFlags(BufferUsageFlags usages)
     }
     if (usages & BufferUsageFlagBits::kQueryResolve)
     {
-        vkUsages |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        vkUsages |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     }
 
     // TODO: kMapRead, kMapWrite
