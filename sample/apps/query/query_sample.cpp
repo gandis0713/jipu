@@ -35,7 +35,6 @@ void QuerySample::init()
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffer();
-    createQueryBuffer();
     createBindingGroupLayout();
     createBindingGroup();
     createRenderPipeline();
@@ -113,13 +112,22 @@ void QuerySample::draw()
 
         drawImGui(commandEncoder.get(), renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
-
         commandEncoder->resolveQuerySet(m_querySet.get(),
                                         0,
                                         m_querySet->getCount(),
                                         m_queryBuffer.get(),
                                         0);
+
+        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+
+        auto pointer = reinterpret_cast<uint64_t*>(m_queryBuffer->map());
+
+        for (uint32_t i = 1; i < m_querySet->getCount(); ++i)
+        {
+            uint64_t elapsedTime = (pointer[i] - pointer[i - 1]); // nano seconds
+            double elapsedMilliSeconds = elapsedTime / 1000.0 / 1000.0;
+            spdlog::debug("elapsed time {}", elapsedMilliSeconds);
+        }
     }
 }
 
@@ -173,15 +181,6 @@ void QuerySample::createUniformBuffer()
     [[maybe_unused]] auto pointer = m_uniformBuffer->map();
     // memcpy(pointer, &m_ubo, descriptor.size);
     // m_uniformBuffer->unmap();
-}
-
-void QuerySample::createQueryBuffer()
-{
-    BufferDescriptor descriptor{};
-    descriptor.size = 1024;
-    descriptor.usage = BufferUsageFlagBits::kQueryResolve;
-
-    m_queryBuffer = m_device->createBuffer(descriptor);
 }
 
 void QuerySample::createBindingGroupLayout()
@@ -307,11 +306,17 @@ void QuerySample::createRenderPipeline()
 
 void QuerySample::createQuerySet()
 {
-    QuerySetDescriptor descriptor{};
-    descriptor.count = 2;
-    descriptor.type = QueryType::kTimestamp;
+    QuerySetDescriptor querySetDescriptor{};
+    querySetDescriptor.count = 2;
+    querySetDescriptor.type = QueryType::kTimestamp;
 
-    m_querySet = m_device->createQuerySet(descriptor);
+    m_querySet = m_device->createQuerySet(querySetDescriptor);
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = querySetDescriptor.count * sizeof(uint64_t);
+    bufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
+
+    m_queryBuffer = m_device->createBuffer(bufferDescriptor);
 }
 
 } // namespace jipu

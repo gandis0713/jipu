@@ -46,7 +46,6 @@ private:
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
-    void createQueryBuffer();
     void createBindingGroupLayout();
     void createBindingGroup();
     void createRenderPipeline();
