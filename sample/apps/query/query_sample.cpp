@@ -87,9 +87,14 @@ void QuerySample::draw()
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
-        RenderPassTimestampWrites timestampWrites = { .querySet = m_querySet.get(),
-                                                      .beginQueryIndex = 0,
-                                                      .endQueryIndex = 1 };
+        RenderPassTimestampWrites timestampWrites;
+
+        if (m_useTimestamp)
+        {
+            timestampWrites.querySet = m_querySet.get();
+            timestampWrites.beginQueryIndex = 0;
+            timestampWrites.endQueryIndex = 1;
+        }
 
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
@@ -112,21 +117,29 @@ void QuerySample::draw()
 
         drawImGui(commandEncoder.get(), renderView);
 
-        commandEncoder->resolveQuerySet(m_querySet.get(),
-                                        0,
-                                        m_querySet->getCount(),
-                                        m_queryBuffer.get(),
-                                        0);
+        if (m_useTimestamp)
+        {
+            commandEncoder->resolveQuerySet(m_querySet.get(),
+                                            0,
+                                            m_querySet->getCount(),
+                                            m_queryBuffer.get(),
+                                            0);
+        }
 
         m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 
-        auto pointer = reinterpret_cast<uint64_t*>(m_queryBuffer->map());
-
-        for (uint32_t i = 1; i < m_querySet->getCount(); ++i)
+        if (m_useTimestamp)
         {
-            uint64_t elapsedTime = (pointer[i] - pointer[i - 1]); // nano seconds
-            double elapsedMilliSeconds = elapsedTime / 1000.0 / 1000.0;
-            spdlog::debug("elapsed time {}", elapsedMilliSeconds);
+
+            static uint32_t count = 0;
+            static double ms = 0;
+
+            auto pointer = reinterpret_cast<uint64_t*>(m_queryBuffer->map());
+            uint64_t elapsedTime = pointer[1] - pointer[0]; // nano seconds
+            double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
+            ms += miliElapsedTime;
+            spdlog::debug("elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
+            ++count;
         }
     }
 }
@@ -134,6 +147,9 @@ void QuerySample::draw()
 void QuerySample::updateImGui()
 {
     recordImGui({ [&]() {
+        windowImGui("Query", { [&]() {
+                        ImGui::Checkbox("Log Timestamp", &m_useTimestamp);
+                    } });
         profilingWindow();
     } });
 }

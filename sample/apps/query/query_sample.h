@@ -91,6 +91,7 @@ private:
 
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
+    bool m_useTimestamp = false;
 };
 
 } // namespace jipu
