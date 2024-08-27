@@ -412,33 +412,45 @@ void VulkanSubpassesSample::draw()
     {
         if (!m_useSubpasses)
         {
-            static uint32_t count = 0;
-            static double ms = 0;
             vulkanCommandEncoder->resolveQuerySet(m_multipass1QuerySet.get(), 0, m_multipass1QuerySet->getCount(), m_multipass1QueryBuffer.get(), 0);
             vulkanCommandEncoder->resolveQuerySet(m_multipass2QuerySet.get(), 0, m_multipass2QuerySet->getCount(), m_multipass2QueryBuffer.get(), 0);
+        }
+        else
+        {
+            vulkanCommandEncoder->resolveQuerySet(m_subpassQuerySet.get(), 0, m_subpassQuerySet->getCount(), m_subpassQueryBuffer.get(), 0);
+        }
+    }
+
+    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+
+    if (m_useTimestamp)
+    {
+        if (!m_useSubpasses)
+        {
+            static uint32_t count = 0;
+            static double ms = 0;
             auto pointer1 = reinterpret_cast<uint64_t*>(m_multipass1QueryBuffer->map());
             auto pointer2 = reinterpret_cast<uint64_t*>(m_multipass2QueryBuffer->map());
 
             uint64_t elapsedTime = (pointer1[1] - pointer1[0]) + (pointer2[1] - pointer2[0]); // nano seconds
-            ms += elapsedTime / 1000.0 / 1000.0;
-            spdlog::debug("multipass elapsed time {}", ms / count);
+            double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
+            ms += miliElapsedTime;
+            spdlog::debug("multipass elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
             ++count;
         }
         else
         {
             static uint32_t count = 0;
             static double ms = 0;
-            vulkanCommandEncoder->resolveQuerySet(m_subpassQuerySet.get(), 0, m_subpassQuerySet->getCount(), m_subpassQueryBuffer.get(), 0);
             auto pointer = reinterpret_cast<uint64_t*>(m_subpassQueryBuffer->map());
 
             uint64_t elapsedTime = pointer[1] - pointer[0]; // nano seconds
-            ms += elapsedTime / 1000.0 / 1000.0;
-            spdlog::debug("subpass elapsed time {}", ms / count);
+            double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
+            ms += miliElapsedTime;
+            spdlog::debug("subpass elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
             ++count;
         }
     }
-
-    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
 
 void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTexture()
