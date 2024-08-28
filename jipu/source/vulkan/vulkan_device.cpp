@@ -10,6 +10,7 @@
 #include "vulkan_queue.h"
 #include "vulkan_sampler.h"
 
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -248,7 +249,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error("Failed to create descriptor pool.");
+            throw std::runtime_error(fmt::format("Failed to create descriptor pool. {}", static_cast<uint32_t>(result)));
         }
     }
 
