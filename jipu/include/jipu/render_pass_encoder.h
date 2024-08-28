@@ -116,6 +116,9 @@ public:
                              uint32_t vertexOffset,
                              uint32_t firstInstance) = 0;
 
+    virtual void beginOcclusionQuery(uint32_t queryIndex) = 0;
+    virtual void endOcclusionQuery() = 0;
+
     virtual void end() = 0;
 };
 

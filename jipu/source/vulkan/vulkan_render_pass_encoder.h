@@ -21,6 +21,7 @@ struct VulkanRenderPassEncoderDescriptor
     std::vector<VkClearValue> clearValues{};
 
     // TODO: convert timestampWrites for vulkan.
+    QuerySet* occlusionQuerySet = nullptr;
     RenderPassTimestampWrites timestampWrites{};
 };
 
@@ -58,12 +59,16 @@ public:
                      uint32_t vertexOffset,
                      uint32_t firstInstance) override;
 
+    void beginOcclusionQuery(uint32_t queryIndex) override;
+    void endOcclusionQuery() override;
+
     void end() override;
 
 public:
     void nextPass();
 
 private:
+    void resetQuery();
     void beginRenderPass();
     void endRenderPass();
 

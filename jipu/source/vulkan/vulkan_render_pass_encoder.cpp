@@ -239,6 +239,7 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
     vkdescriptor.renderArea.extent = { framebuffer.getWidth(), framebuffer.getHeight() };
 
     // TODO: convert timestampWrites for vulkan.
+    vkdescriptor.occlusionQuerySet = descriptor.occlusionQuerySet;
     vkdescriptor.timestampWrites = descriptor.timestampWrites;
 
     return vkdescriptor;
@@ -253,6 +254,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuf
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
 {
+    resetQuery();
     beginRenderPass();
 }
 
@@ -364,6 +366,42 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
                                       firstInstance);
 }
 
+void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
+{
+    if (m_descriptor.occlusionQuerySet == nullptr)
+    {
+        throw std::runtime_error("The occlusion query set is nullptr to begin occlusion query.");
+    }
+
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+
+    auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.CmdBeginQuery(vulkanCommandBuffer.getVkCommandBuffer(),
+                        vulkanOcclusionQuerySet->getVkQueryPool(),
+                        queryIndex,
+                        0);
+}
+
+void VulkanRenderPassEncoder::endOcclusionQuery()
+{
+    if (m_descriptor.occlusionQuerySet == nullptr)
+    {
+        throw std::runtime_error("The occlusion query set is nullptr to end occlusion query.");
+    }
+
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+
+    auto& vkAPI = vulkanDevice.vkAPI;
+
+    vkAPI.CmdEndQuery(vulkanCommandBuffer.getVkCommandBuffer(),
+                      vulkanOcclusionQuerySet->getVkQueryPool(),
+                      0);
+}
+
 void VulkanRenderPassEncoder::end()
 {
     endRenderPass();
@@ -381,6 +419,31 @@ void VulkanRenderPassEncoder::nextPass()
 
     vulkanDevice.vkAPI.CmdNextSubpass(vulkanCommandBuffer.getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
     ++m_passIndex;
+}
+
+void VulkanRenderPassEncoder::resetQuery()
+{
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanQuerySet->getCount());
+    }
+
+    if (m_descriptor.occlusionQuerySet)
+    {
+        auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanOcclusionQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanOcclusionQuerySet->getCount());
+    }
 }
 
 void VulkanRenderPassEncoder::beginRenderPass()
