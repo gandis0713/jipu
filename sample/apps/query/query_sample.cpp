@@ -99,9 +99,15 @@ void QuerySample::draw()
             timestampWrites.endQueryIndex = 1;
         }
 
+        QuerySet* occlusionQuerySet = nullptr;
+        if (m_useOcclusion)
+        {
+            occlusionQuerySet = m_occlusionQuerySet.get();
+        }
+
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
-            .occlusionQuerySet = m_occlusionQuerySet.get(),
+            .occlusionQuerySet = occlusionQuerySet,
             .timestampWrites = timestampWrites,
             .sampleCount = m_sampleCount
         };
@@ -110,7 +116,10 @@ void QuerySample::draw()
         auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->beginOcclusionQuery(0);
+        if (m_useOcclusion)
+        {
+            renderPassEncoder->beginOcclusionQuery(0);
+        }
         renderPassEncoder->setPipeline(*m_renderPipeline);
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
@@ -118,7 +127,10 @@ void QuerySample::draw()
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-        renderPassEncoder->endOcclusionQuery();
+        if (m_useOcclusion)
+        {
+            renderPassEncoder->endOcclusionQuery();
+        }
         renderPassEncoder->end();
 
         drawImGui(commandEncoder.get(), renderView);
@@ -132,11 +144,19 @@ void QuerySample::draw()
                                             0);
         }
 
+        if (m_useOcclusion)
+        {
+            commandEncoder->resolveQuerySet(m_occlusionQuerySet.get(),
+                                            0,
+                                            m_occlusionQuerySet->getCount(),
+                                            m_occlusionQueryBuffer.get(),
+                                            0);
+        }
+
         m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 
         if (m_useTimestamp)
         {
-
             static uint32_t count = 0;
             static double ms = 0;
 
@@ -144,8 +164,14 @@ void QuerySample::draw()
             uint64_t elapsedTime = pointer[1] - pointer[0]; // nano seconds
             double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
             ms += miliElapsedTime;
-            spdlog::debug("elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
+            spdlog::debug("pipeline elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
             ++count;
+        }
+
+        if (m_useOcclusion)
+        {
+            auto pointer = reinterpret_cast<uint64_t*>(m_occlusionQueryBuffer->map());
+            spdlog::debug("fragment sample count [{}]", pointer[0]);
         }
     }
 }
@@ -155,6 +181,7 @@ void QuerySample::updateImGui()
     recordImGui({ [&]() {
         windowImGui("Query", { [&]() {
                         ImGui::Checkbox("Log Timestamp", &m_useTimestamp);
+                        ImGui::Checkbox("Log Occlusion", &m_useOcclusion);
                     } });
         profilingWindow();
     } });
