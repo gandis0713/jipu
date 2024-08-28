@@ -11,7 +11,10 @@ QuerySample::QuerySample(const SampleDescriptor& descriptor)
 
 QuerySample::~QuerySample()
 {
-    m_querySet.reset();
+    m_timestampQueryBuffer.reset();
+    m_occlusionQueryBuffer.reset();
+    m_timestampQuerySet.reset();
+    m_occlusionQuerySet.reset();
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
     m_bindingGroup.reset();
@@ -91,13 +94,14 @@ void QuerySample::draw()
 
         if (m_useTimestamp)
         {
-            timestampWrites.querySet = m_querySet.get();
+            timestampWrites.querySet = m_timestampQuerySet.get();
             timestampWrites.beginQueryIndex = 0;
             timestampWrites.endQueryIndex = 1;
         }
 
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
+            .occlusionQuerySet = m_occlusionQuerySet.get(),
             .timestampWrites = timestampWrites,
             .sampleCount = m_sampleCount
         };
@@ -106,6 +110,7 @@ void QuerySample::draw()
         auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+        renderPassEncoder->beginOcclusionQuery(0);
         renderPassEncoder->setPipeline(*m_renderPipeline);
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
@@ -113,16 +118,17 @@ void QuerySample::draw()
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
+        renderPassEncoder->endOcclusionQuery();
         renderPassEncoder->end();
 
         drawImGui(commandEncoder.get(), renderView);
 
         if (m_useTimestamp)
         {
-            commandEncoder->resolveQuerySet(m_querySet.get(),
+            commandEncoder->resolveQuerySet(m_timestampQuerySet.get(),
                                             0,
-                                            m_querySet->getCount(),
-                                            m_queryBuffer.get(),
+                                            m_timestampQuerySet->getCount(),
+                                            m_timestampQueryBuffer.get(),
                                             0);
         }
 
@@ -134,7 +140,7 @@ void QuerySample::draw()
             static uint32_t count = 0;
             static double ms = 0;
 
-            auto pointer = reinterpret_cast<uint64_t*>(m_queryBuffer->map());
+            auto pointer = reinterpret_cast<uint64_t*>(m_timestampQueryBuffer->map());
             uint64_t elapsedTime = pointer[1] - pointer[0]; // nano seconds
             double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
             ms += miliElapsedTime;
@@ -322,17 +328,34 @@ void QuerySample::createRenderPipeline()
 
 void QuerySample::createQuerySet()
 {
-    QuerySetDescriptor querySetDescriptor{};
-    querySetDescriptor.count = 2;
-    querySetDescriptor.type = QueryType::kTimestamp;
+    {
+        QuerySetDescriptor timestampQuerySetDescriptor{};
+        timestampQuerySetDescriptor.count = 2;
+        timestampQuerySetDescriptor.type = QueryType::kTimestamp;
 
-    m_querySet = m_device->createQuerySet(querySetDescriptor);
+        m_timestampQuerySet = m_device->createQuerySet(timestampQuerySetDescriptor);
 
-    BufferDescriptor bufferDescriptor{};
-    bufferDescriptor.size = querySetDescriptor.count * sizeof(uint64_t);
-    bufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
+        BufferDescriptor timestampBufferDescriptor{};
+        timestampBufferDescriptor.size = timestampQuerySetDescriptor.count * sizeof(uint64_t);
+        timestampBufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
 
-    m_queryBuffer = m_device->createBuffer(bufferDescriptor);
+        m_timestampQueryBuffer = m_device->createBuffer(timestampBufferDescriptor);
+    }
+
+    {
+        QuerySetDescriptor occlusionQuerySetDescriptor{
+            .count = 1,
+            .type = QueryType::kOcclusion
+        };
+
+        m_occlusionQuerySet = m_device->createQuerySet(occlusionQuerySetDescriptor);
+
+        BufferDescriptor occlusionBufferDescriptor{};
+        occlusionBufferDescriptor.size = occlusionQuerySetDescriptor.count * sizeof(uint64_t);
+        occlusionBufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
+
+        m_occlusionQueryBuffer = m_device->createBuffer(occlusionBufferDescriptor);
+    }
 }
 
 } // namespace jipu
