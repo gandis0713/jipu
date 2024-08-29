@@ -6,9 +6,11 @@
 #include "vulkan_framebuffer.h"
 #include "vulkan_instance.h"
 #include "vulkan_physical_device.h"
+#include "vulkan_query_set.h"
 #include "vulkan_queue.h"
 #include "vulkan_sampler.h"
 
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
@@ -104,6 +106,11 @@ std::unique_ptr<ComputePipeline> VulkanDevice::createComputePipeline(const Compu
 std::unique_ptr<RenderPipeline> VulkanDevice::createRenderPipeline(const RenderPipelineDescriptor& descriptor)
 {
     return std::make_unique<VulkanRenderPipeline>(*this, descriptor);
+}
+
+std::unique_ptr<QuerySet> VulkanDevice::createQuerySet(const QuerySetDescriptor& descriptor)
+{
+    return std::make_unique<VulkanQuerySet>(*this, descriptor);
 }
 
 std::unique_ptr<Queue> VulkanDevice::createQueue(const QueueDescriptor& descriptor)
@@ -242,7 +249,7 @@ VkDescriptorPool VulkanDevice::getVkDescriptorPool()
         VkResult result = vkAPI.CreateDescriptorPool(m_device, &poolCreateInfo, nullptr, &m_descriptorPool);
         if (result != VK_SUCCESS)
         {
-            throw std::runtime_error("Failed to create descriptor pool.");
+            throw std::runtime_error(fmt::format("Failed to create descriptor pool. {}", static_cast<uint32_t>(result)));
         }
     }
 

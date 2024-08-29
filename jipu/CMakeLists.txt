@@ -26,6 +26,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_query_set.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.cpp
@@ -52,6 +53,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_physical_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_query_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass.h
   ${CMAKE_CURRENT_SOURCE_DIR}/source/vulkan/vulkan_render_pass_encoder.h
@@ -73,6 +75,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/texture.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/pipeline.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/query_set.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/include/jipu/instance.h

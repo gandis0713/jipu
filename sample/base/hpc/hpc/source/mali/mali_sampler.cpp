@@ -57,8 +57,8 @@ Sample convertToSample(const hpc::Counter counter, const hwcpipe::counter_sample
     return Sample{
         .counter = counter,
         .timestamp = s.timestamp,
-        .type = convertToType(counter, s),
-        .value = convertToValue(counter, s)
+        .value = convertToValue(counter, s),
+        .type = convertToType(counter, s)
     };
 }
 

@@ -34,6 +34,14 @@ VulkanSubpassesSample::VulkanSubpassesSample(const SampleDescriptor& descriptor)
 
 VulkanSubpassesSample::~VulkanSubpassesSample()
 {
+    m_multipass1QueryBuffer.reset();
+    m_multipass2QueryBuffer.reset();
+    m_multipass1QuerySet.reset();
+    m_multipass2QuerySet.reset();
+
+    m_subpassQueryBuffer.reset();
+    m_subpassQuerySet.reset();
+
     m_depthStencilTextureView.reset();
     m_depthStencilTexture.reset();
 
@@ -109,6 +117,9 @@ void VulkanSubpassesSample::init()
     createHPCWatcher();
 
     createCommandBuffer();
+
+    createMultipassQuerySet();
+    createSubpassQuerySet();
 
     createDepthStencilTexture();
     createDepthStencilTextureView();
@@ -207,7 +218,6 @@ void VulkanSubpassesSample::updateCompositionUniformBuffer()
 
 void VulkanSubpassesSample::updateImGui()
 {
-
     recordImGui({ [&]() {
         windowImGui("Settings", { [&]() {
                         ImGui::Checkbox("Use Subpasses", &m_useSubpasses);
@@ -221,6 +231,9 @@ void VulkanSubpassesSample::updateImGui()
                             m_composition.ubo.showTexture = 2;
                         else if (ImGui::RadioButton("Albedo", m_composition.ubo.showTexture == 3))
                             m_composition.ubo.showTexture = 3;
+                    } });
+        windowImGui("Query", { [&]() {
+                        ImGui::Checkbox("Log Timestamp", &m_useTimestamp);
                     } });
         profilingWindow();
     } });
@@ -267,9 +280,18 @@ void VulkanSubpassesSample::draw()
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
+            RenderPassTimestampWrites timestampWrites;
+            if (m_useTimestamp)
+            {
+                timestampWrites.querySet = m_multipass1QuerySet.get();
+                timestampWrites.beginQueryIndex = 0;
+                timestampWrites.endQueryIndex = 1;
+            }
+
             RenderPassEncoderDescriptor renderPassDescriptor{
                 .colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment },
                 .depthStencilAttachment = depthStencilAttachment,
+                .timestampWrites = timestampWrites,
                 .sampleCount = m_sampleCount
             };
 
@@ -300,9 +322,18 @@ void VulkanSubpassesSample::draw()
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
             depthStencilAttachment.clearValue = { .depth = 1.0f, .stencil = 0 };
 
+            RenderPassTimestampWrites timestampWrites;
+            if (m_useTimestamp)
+            {
+                timestampWrites.querySet = m_multipass2QuerySet.get();
+                timestampWrites.beginQueryIndex = 0;
+                timestampWrites.endQueryIndex = 1;
+            }
+
             RenderPassEncoderDescriptor renderPassDescriptor{
                 .colorAttachments = { colorAttachment },
                 .depthStencilAttachment = depthStencilAttachment,
+                .timestampWrites = timestampWrites,
                 .sampleCount = m_sampleCount
             };
 
@@ -322,12 +353,21 @@ void VulkanSubpassesSample::draw()
         auto& vulkanRenderPass = getSubpassesRenderPass();
         auto& vulkanFramebuffer = getSubpassesFrameBuffer(renderView);
 
+        RenderPassTimestampWrites timestampWrites;
+        if (m_useTimestamp)
+        {
+            timestampWrites.querySet = m_subpassQuerySet.get();
+            timestampWrites.beginQueryIndex = 0;
+            timestampWrites.endQueryIndex = 1;
+        }
+
         // first pass
         VulkanRenderPassEncoderDescriptor renderPassEncoderDescriptor{};
         renderPassEncoderDescriptor.renderPass = vulkanRenderPass.getVkRenderPass();
         renderPassEncoderDescriptor.framebuffer = vulkanFramebuffer.getVkFrameBuffer();
         renderPassEncoderDescriptor.renderArea.offset = { 0, 0 };
         renderPassEncoderDescriptor.renderArea.extent = { m_swapchain->getWidth(), m_swapchain->getHeight() };
+        renderPassEncoderDescriptor.timestampWrites = timestampWrites;
 
         VkClearValue colorClearValue{};
         colorClearValue.color.float32[0] = 0.0f;
@@ -368,7 +408,49 @@ void VulkanSubpassesSample::draw()
 
     drawImGui(commandEncoder.get(), renderView);
 
+    if (m_useTimestamp)
+    {
+        if (!m_useSubpasses)
+        {
+            vulkanCommandEncoder->resolveQuerySet(m_multipass1QuerySet.get(), 0, m_multipass1QuerySet->getCount(), m_multipass1QueryBuffer.get(), 0);
+            vulkanCommandEncoder->resolveQuerySet(m_multipass2QuerySet.get(), 0, m_multipass2QuerySet->getCount(), m_multipass2QueryBuffer.get(), 0);
+        }
+        else
+        {
+            vulkanCommandEncoder->resolveQuerySet(m_subpassQuerySet.get(), 0, m_subpassQuerySet->getCount(), m_subpassQueryBuffer.get(), 0);
+        }
+    }
+
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+
+    if (m_useTimestamp)
+    {
+        if (!m_useSubpasses)
+        {
+            static uint32_t count = 0;
+            static double ms = 0;
+            auto pointer1 = reinterpret_cast<uint64_t*>(m_multipass1QueryBuffer->map());
+            auto pointer2 = reinterpret_cast<uint64_t*>(m_multipass2QueryBuffer->map());
+
+            uint64_t elapsedTime = (pointer1[1] - pointer1[0]) + (pointer2[1] - pointer2[0]); // nano seconds
+            double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
+            ms += miliElapsedTime;
+            spdlog::debug("multipass elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
+            ++count;
+        }
+        else
+        {
+            static uint32_t count = 0;
+            static double ms = 0;
+            auto pointer = reinterpret_cast<uint64_t*>(m_subpassQueryBuffer->map());
+
+            uint64_t elapsedTime = pointer[1] - pointer[0]; // nano seconds
+            double miliElapsedTime = elapsedTime / 1000.0 / 1000.0;
+            ms += miliElapsedTime;
+            spdlog::debug("subpass elapsed time [Avg {:.3f},  Cur {:.3f}]", (ms / count), miliElapsedTime);
+            ++count;
+        }
+    }
 }
 
 void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTexture()
@@ -2271,6 +2353,38 @@ void VulkanSubpassesSample::createDepthStencilTextureView()
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
+}
+
+void VulkanSubpassesSample::createMultipassQuerySet()
+{
+    QuerySetDescriptor querySetDescriptor{};
+    querySetDescriptor.count = 2;
+    querySetDescriptor.type = QueryType::kTimestamp;
+
+    m_multipass1QuerySet = m_device->createQuerySet(querySetDescriptor);
+    m_multipass2QuerySet = m_device->createQuerySet(querySetDescriptor);
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = querySetDescriptor.count * sizeof(uint64_t);
+    bufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
+
+    m_multipass1QueryBuffer = m_device->createBuffer(bufferDescriptor);
+    m_multipass2QueryBuffer = m_device->createBuffer(bufferDescriptor);
+}
+
+void VulkanSubpassesSample::createSubpassQuerySet()
+{
+    QuerySetDescriptor querySetDescriptor{};
+    querySetDescriptor.count = 2;
+    querySetDescriptor.type = QueryType::kTimestamp;
+
+    m_subpassQuerySet = m_device->createQuerySet(querySetDescriptor);
+
+    BufferDescriptor bufferDescriptor{};
+    bufferDescriptor.size = querySetDescriptor.count * sizeof(uint64_t);
+    bufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
+
+    m_subpassQueryBuffer = m_device->createBuffer(bufferDescriptor);
 }
 
 void VulkanSubpassesSample::createCommandBuffer()

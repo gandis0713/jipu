@@ -33,7 +33,6 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        glm::glm
         jipu::jipu
         jipu::sample_base
     )
@@ -106,6 +105,7 @@ function(configure_sample target)
 endfunction()
 
 add_subdirectory(triangle)
+add_subdirectory(query)
 add_subdirectory(obj_model)
 add_subdirectory(particle)
 add_subdirectory(deferred)

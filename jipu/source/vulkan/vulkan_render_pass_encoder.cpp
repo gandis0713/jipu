@@ -7,6 +7,7 @@
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
+#include "vulkan_query_set.h"
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
@@ -237,6 +238,10 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
     vkdescriptor.renderArea.offset = { 0, 0 };
     vkdescriptor.renderArea.extent = { framebuffer.getWidth(), framebuffer.getHeight() };
 
+    // TODO: convert timestampWrites for vulkan.
+    vkdescriptor.occlusionQuerySet = descriptor.occlusionQuerySet;
+    vkdescriptor.timestampWrites = descriptor.timestampWrites;
+
     return vkdescriptor;
 }
 
@@ -249,7 +254,8 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuf
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
 {
-    initialize();
+    resetQuery();
+    beginRenderPass();
 }
 
 void VulkanRenderPassEncoder::setPipeline(RenderPipeline& pipeline)
@@ -360,15 +366,49 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
                                       firstInstance);
 }
 
-void VulkanRenderPassEncoder::end()
+void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
 {
+    if (m_descriptor.occlusionQuerySet == nullptr)
+    {
+        throw std::runtime_error("The occlusion query set is nullptr to begin occlusion query.");
+    }
+
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
 
-    vulkanDevice.vkAPI.CmdEndRenderPass(vulkanCommandBuffer.getVkCommandBuffer());
+    auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.CmdBeginQuery(vulkanCommandBuffer.getVkCommandBuffer(),
+                        vulkanOcclusionQuerySet->getVkQueryPool(),
+                        queryIndex,
+                        0);
+}
+
+void VulkanRenderPassEncoder::endOcclusionQuery()
+{
+    if (m_descriptor.occlusionQuerySet == nullptr)
+    {
+        throw std::runtime_error("The occlusion query set is nullptr to end occlusion query.");
+    }
+
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+
+    auto& vkAPI = vulkanDevice.vkAPI;
+
+    vkAPI.CmdEndQuery(vulkanCommandBuffer.getVkCommandBuffer(),
+                      vulkanOcclusionQuerySet->getVkQueryPool(),
+                      0);
+}
+
+void VulkanRenderPassEncoder::end()
+{
+    endRenderPass();
 
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     vulkanCommandBuffer.setSignalPipelineStage(flags);
 }
 
@@ -381,8 +421,50 @@ void VulkanRenderPassEncoder::nextPass()
     ++m_passIndex;
 }
 
-void VulkanRenderPassEncoder::initialize()
+void VulkanRenderPassEncoder::resetQuery()
 {
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanQuerySet->getCount());
+    }
+
+    if (m_descriptor.occlusionQuerySet)
+    {
+        auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanOcclusionQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanOcclusionQuerySet->getCount());
+    }
+}
+
+void VulkanRenderPassEncoder::beginRenderPass()
+{
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdResetQueryPool(vulkanCommandBuffer.getVkCommandBuffer(),
+                                vulkanQuerySet->getVkQueryPool(),
+                                0,
+                                vulkanQuerySet->getCount());
+        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(),
+                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                vulkanQuerySet->getVkQueryPool(),
+                                m_descriptor.timestampWrites.beginQueryIndex);
+    }
+
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = m_descriptor.renderPass;
@@ -391,10 +473,25 @@ void VulkanRenderPassEncoder::initialize()
     renderPassInfo.clearValueCount = static_cast<uint32_t>(m_descriptor.clearValues.size());
     renderPassInfo.pClearValues = m_descriptor.clearValues.data();
 
+    vkAPI.CmdBeginRenderPass(vulkanCommandBuffer.getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+void VulkanRenderPassEncoder::endRenderPass()
+{
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    vulkanDevice.vkAPI.CmdBeginRenderPass(vulkanCommandBuffer.getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    const auto& vkAPI = vulkanDevice.vkAPI;
+    vkAPI.CmdEndRenderPass(vulkanCommandBuffer.getVkCommandBuffer());
+
+    if (m_descriptor.timestampWrites.querySet)
+    {
+        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer.getVkCommandBuffer(),
+                                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                                vulkanQuerySet->getVkQueryPool(),
+                                m_descriptor.timestampWrites.endQueryIndex);
+    }
 }
 
 // Convert Helper

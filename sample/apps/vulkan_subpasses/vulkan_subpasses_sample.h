@@ -16,6 +16,7 @@
 #include "jipu/instance.h"
 #include "jipu/physical_device.h"
 #include "jipu/pipeline_layout.h"
+#include "jipu/query_set.h"
 #include "jipu/queue.h"
 #include "jipu/render_pass_encoder.h"
 #include "jipu/surface.h"
@@ -80,6 +81,9 @@ private:
 
     void updateCompositionUniformBuffer();
 
+    void createMultipassQuerySet();
+    void createSubpassQuerySet();
+
     VulkanRenderPass& getSubpassesRenderPass();
     VulkanRenderPass& getSubpassesCompatibleRenderPass();
     VulkanFramebuffer& getSubpassesFrameBuffer(TextureView& renderView);
@@ -95,7 +99,7 @@ private:
 
         std::vector<CompositionUBO::Light> lights{};
         alignas(16) glm::vec3 cameraPosition;
-        int lightCount = 8;
+        int lightCount = 1;
         int showTexture = 0;
         int padding1;
         int padding2;
@@ -206,10 +210,17 @@ private:
     std::unique_ptr<CommandBuffer> m_copyNomralTextureCommandBuffer = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
+    std::unique_ptr<Buffer> m_multipass1QueryBuffer = nullptr;
+    std::unique_ptr<Buffer> m_multipass2QueryBuffer = nullptr;
+    std::unique_ptr<Buffer> m_subpassQueryBuffer = nullptr;
+    std::unique_ptr<QuerySet> m_multipass1QuerySet = nullptr;
+    std::unique_ptr<QuerySet> m_multipass2QuerySet = nullptr;
+    std::unique_ptr<QuerySet> m_subpassQuerySet = nullptr;
 
     uint32_t m_sampleCount = 1;
     int m_lightMax = 1000;
     bool m_useSubpasses = false;
+    bool m_useTimestamp = false;
 };
 
 } // namespace jipu

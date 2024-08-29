@@ -1,5 +1,6 @@
 #pragma once
 
+#include "query_set.h"
 #include "texture_view.h"
 
 #include "export.h"
@@ -58,10 +59,19 @@ struct DepthStencilAttachment
     DepthStencilClearValue clearValue{};
 };
 
+struct RenderPassTimestampWrites
+{
+    QuerySet* querySet = nullptr;
+    uint32_t beginQueryIndex = 0;
+    uint32_t endQueryIndex = 0;
+};
+
 struct RenderPassEncoderDescriptor
 {
     std::vector<ColorAttachment> colorAttachments{};
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
+    QuerySet* occlusionQuerySet = nullptr;
+    RenderPassTimestampWrites timestampWrites{};
     uint32_t sampleCount = 0;
 };
 
@@ -105,6 +115,9 @@ public:
                              uint32_t indexOffset,
                              uint32_t vertexOffset,
                              uint32_t firstInstance) = 0;
+
+    virtual void beginOcclusionQuery(uint32_t queryIndex) = 0;
+    virtual void endOcclusionQuery() = 0;
 
     virtual void end() = 0;
 };

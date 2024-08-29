@@ -81,10 +81,11 @@ target_include_directories(jipu_sample_base
 )
 
 target_link_libraries(jipu_sample_base
+    PUBLIC
+    glm::glm
     PRIVATE
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
-    glm::glm
     KTX::ktx
     jipu::jipu
     hpc::hpc

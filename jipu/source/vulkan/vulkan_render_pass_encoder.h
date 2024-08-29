@@ -19,6 +19,10 @@ struct VulkanRenderPassEncoderDescriptor
     VkFramebuffer framebuffer = VK_NULL_HANDLE;
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
+
+    // TODO: convert timestampWrites for vulkan.
+    QuerySet* occlusionQuerySet = nullptr;
+    RenderPassTimestampWrites timestampWrites{};
 };
 
 class VulkanDevice;
@@ -55,13 +59,18 @@ public:
                      uint32_t vertexOffset,
                      uint32_t firstInstance) override;
 
+    void beginOcclusionQuery(uint32_t queryIndex) override;
+    void endOcclusionQuery() override;
+
     void end() override;
 
 public:
     void nextPass();
 
 private:
-    void initialize();
+    void resetQuery();
+    void beginRenderPass();
+    void endRenderPass();
 
 private:
     VulkanCommandBuffer& m_commandBuffer;
