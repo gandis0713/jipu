@@ -356,9 +356,10 @@ void QuerySample::createRenderPipeline()
 void QuerySample::createQuerySet()
 {
     {
-        QuerySetDescriptor timestampQuerySetDescriptor{};
-        timestampQuerySetDescriptor.count = 2;
-        timestampQuerySetDescriptor.type = QueryType::kTimestamp;
+        QuerySetDescriptor timestampQuerySetDescriptor{
+            .type = QueryType::kTimestamp,
+            .count = 2
+        };
 
         m_timestampQuerySet = m_device->createQuerySet(timestampQuerySetDescriptor);
 
@@ -371,8 +372,8 @@ void QuerySample::createQuerySet()
 
     {
         QuerySetDescriptor occlusionQuerySetDescriptor{
-            .count = 1,
-            .type = QueryType::kOcclusion
+            .type = QueryType::kOcclusion,
+            .count = 1
         };
 
         m_occlusionQuerySet = m_device->createQuerySet(occlusionQuerySetDescriptor);
