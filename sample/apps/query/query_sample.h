@@ -56,8 +56,8 @@ private:
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
-    std::unique_ptr<Buffer> m_timestampQueryBuffer = nullptr;
-    std::unique_ptr<Buffer> m_occlusionQueryBuffer = nullptr;
+    std::unique_ptr<Buffer> m_timestampQueryBuffer = nullptr; // use same buffer with occlusion
+    std::unique_ptr<Buffer> m_occlusionQueryBuffer = nullptr; // use same buffer with timestamp
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
     std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
