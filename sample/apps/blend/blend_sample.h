@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "file.h"
+#include "image.h"
 #include "sample.h"
 
 #include "jipu/buffer.h"
@@ -36,57 +37,54 @@ private:
     void updateImGui();
 
 private:
-    void createCamera();
-
-    void updateUniformBuffer();
-
-private:
     void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
-    void createUniformBuffer();
+    void createSampler();
+    std::unique_ptr<Texture> createTexture(const char* name);
+    std::unique_ptr<TextureView> createTextureView(Texture* texture);
     void createBindingGroupLayout();
-    void createBindingGroup();
-    void createRenderPipeline();
+    std::unique_ptr<BindingGroup> createBindingGroup(TextureView* textureView);
+    void createRenderPipelineLayout();
+    std::unique_ptr<RenderPipeline> createRenderPipeline(const BlendState& blendState);
+
+    void copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture);
 
 private:
     std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
-    std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
+    std::unique_ptr<Texture> m_texture1 = nullptr;
+    std::unique_ptr<Texture> m_texture2 = nullptr;
+    std::unique_ptr<TextureView> m_textureView1 = nullptr;
+    std::unique_ptr<TextureView> m_textureView2 = nullptr;
+    std::unique_ptr<Sampler> m_sampler = nullptr;
+
     std::unique_ptr<BindingGroupLayout> m_bindingGroupLayout = nullptr;
-    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup1 = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup2 = nullptr;
     std::unique_ptr<PipelineLayout> m_renderPipelineLayout = nullptr;
-    std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
-
-    struct MVP
-    {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
-    };
-
-    struct UBO
-    {
-        MVP mvp;
-    } m_ubo;
-
+    std::unique_ptr<RenderPipeline> m_renderPipeline1 = nullptr;
+    std::unique_ptr<RenderPipeline> m_renderPipeline2 = nullptr;
     struct Vertex
     {
-        glm::vec3 pos;
-        glm::vec3 color;
+        glm::vec2 pos;
+        glm::vec2 texCoord;
     };
-
-    std::vector<uint16_t> m_indices{ 0, 1, 2 };
-    std::vector<Vertex>
-        m_vertices{
-            { { -200, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -700, 500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { 300, 500, 0.0 }, { 1.0, 0.0, 0.0 } },
+    std::vector<uint16_t> m_indices{ 0, 1, 2, 0, 2, 3 };
+    // clang-format off
+    std::vector<Vertex> m_vertices{
+            { { 1.0, 1.0, }, { 1.0, 1.0, } },
+            { { 0.0, 1.0, }, { 0.0, 1.0, } },
+            { { 0.0, -1.0, }, { 0.0, 0.0, } },
+            { { 1.0, -1.0, }, { 1.0, 0.0, } },
         };
+    // clang-format on
 
     uint32_t m_sampleCount = 1;
-    std::unique_ptr<Camera> m_camera = nullptr;
+
+    std::unique_ptr<Image> m_image1 = nullptr;
+    std::unique_ptr<Image> m_image2 = nullptr;
 
     uint32_t m_blendColorSrcFactor = static_cast<uint32_t>(BlendFactor::kOne);
     uint32_t m_blendColorDstFactor = static_cast<uint32_t>(BlendFactor::kZero);
