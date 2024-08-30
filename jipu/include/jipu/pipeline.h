@@ -155,7 +155,7 @@ enum class BlendFactor
     kOneMinusSrc1Alpha,
 };
 
-struct BlentComponent
+struct BlendComponent
 {
     BlendFactor srcFactor = BlendFactor::kOne;
     BlendFactor dstFactor = BlendFactor::kZero;
@@ -164,8 +164,8 @@ struct BlentComponent
 
 struct BlendState
 {
-    BlentComponent color;
-    BlentComponent alpha;
+    BlendComponent color;
+    BlendComponent alpha;
 };
 
 // Fragment Shader Stage
