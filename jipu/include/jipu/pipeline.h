@@ -127,6 +127,7 @@ enum class BlendOperation
 {
     kAdd = 0,
     kSubtract,
+    kReversSubtract,
     kMin,
     kMax,
 };
@@ -137,12 +138,21 @@ enum class BlendFactor
     kOne,
     kSrcColor,
     kSrcAlpha,
+    kSrcAlphaSarurated,
     kOneMinusSrcColor,
     kOneMinusSrcAlpha,
     kDstColor,
     kDstAlpha,
     kOneMinusDstColor,
     kOneMinusDstAlpha,
+    kConstantColor,
+    kOneMinusConstantColor,
+
+    // dual source blending
+    kSrc1Color,
+    kOneMinusSrc1Color,
+    kSrc1Alpha,
+    kOneMinusSrc1Alpha,
 };
 
 struct BlentComponent
