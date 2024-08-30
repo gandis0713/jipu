@@ -80,13 +80,20 @@ private:
     std::vector<uint16_t> m_indices{ 0, 1, 2 };
     std::vector<Vertex>
         m_vertices{
-            { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-            { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
-            { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
+            { { -200, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { -700, 500, 0.0 }, { 1.0, 0.0, 0.0 } },
+            { { 300, 500, 0.0 }, { 1.0, 0.0, 0.0 } },
         };
 
     uint32_t m_sampleCount = 1;
     std::unique_ptr<Camera> m_camera = nullptr;
+
+    uint32_t m_blendColorSrcFactor = static_cast<uint32_t>(BlendFactor::kOne);
+    uint32_t m_blendColorDstFactor = static_cast<uint32_t>(BlendFactor::kZero);
+    uint32_t m_blendColorOp = static_cast<uint32_t>(BlendOperation::kAdd);
+    uint32_t m_blendAlphaSrcFactor = static_cast<uint32_t>(BlendFactor::kOne);
+    uint32_t m_blendAlphaDstFactor = static_cast<uint32_t>(BlendFactor::kZero);
+    uint32_t m_blendAlphaOp = static_cast<uint32_t>(BlendOperation::kAdd);
 };
 
 } // namespace jipu

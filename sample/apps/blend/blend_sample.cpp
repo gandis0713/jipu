@@ -53,6 +53,10 @@ void BlendSample::createCamera()
     //                                                 -1000, 1000);
 
     m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0));
+
+    m_ubo.mvp.model = glm::mat4(1.0f);
+    m_ubo.mvp.view = m_camera->getViewMat();
+    m_ubo.mvp.proj = m_camera->getProjectionMat();
 }
 
 void BlendSample::updateUniformBuffer()
@@ -69,7 +73,7 @@ void BlendSample::update()
 {
     Sample::update();
 
-    updateUniformBuffer();
+    // updateUniformBuffer();
 
     updateImGui();
 }
@@ -81,7 +85,7 @@ void BlendSample::draw()
         ColorAttachment attachment{
             .renderView = renderView
         };
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.clearValue = { .float32 = { 0.0, 0.0, 1.0, 0.0 } };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
@@ -113,7 +117,43 @@ void BlendSample::draw()
 
 void BlendSample::updateImGui()
 {
+    static const std::vector<std::string> opItems = { "kAdd", "kSubtract", "kReversSubtract", "kMin", "kMax" };
+    static const std::vector<std::string> factorItems = { "kZero", "kOne", "kSrcColor", "kSrcAlpha", "kSrcAlphaSarurated",
+                                                          "kOneMinusSrcColor", "kOneMinusSrcAlpha", "kDstColor", "kDstAlpha", "kOneMinusDstColor",
+                                                          "kOneMinusDstAlpha", "kConstantColor", "kOneMinusConstantColor",
+                                                          "kSrc1Color", "kOneMinusSrc1Color", "kSrc1Alpha", "kOneMinusSrc1Alpha" };
+    auto combobox = [&](const char* label, const std::vector<std::string>& items, uint32_t* selected) {
+        if (ImGui::BeginCombo(label, items[*selected].c_str()))
+        {
+            for (uint32_t i = 0; i < items.size(); ++i)
+            {
+                bool isSelected = *selected == i;
+                if (ImGui::Selectable(items[i].c_str(), isSelected))
+                {
+                    *selected = i;
+                    createRenderPipeline();
+                }
+
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    };
+
     recordImGui({ [&]() {
+        windowImGui("Color Blend",
+                    { [&]() {
+                        combobox("Op", opItems, &m_blendColorOp);
+                        combobox("Src Factor", factorItems, &m_blendColorSrcFactor);
+                        combobox("Dst Factor", factorItems, &m_blendColorDstFactor);
+                    } });
+        windowImGui("Alpha Blend",
+                    { [&]() {
+                        combobox("Op", opItems, &m_blendAlphaOp);
+                        combobox("Src Factor", factorItems, &m_blendAlphaSrcFactor);
+                        combobox("Dst Factor", factorItems, &m_blendAlphaDstFactor);
+                    } });
         profilingWindow();
     } });
 }
@@ -158,9 +198,9 @@ void BlendSample::createUniformBuffer()
 
     m_uniformBuffer = m_device->createBuffer(descriptor);
 
-    [[maybe_unused]] auto pointer = m_uniformBuffer->map();
-    // memcpy(pointer, &m_ubo, descriptor.size);
-    // m_uniformBuffer->unmap();
+    auto pointer = m_uniformBuffer->map();
+    memcpy(pointer, &m_ubo, descriptor.size);
+    m_uniformBuffer->unmap();
 }
 
 void BlendSample::createBindingGroupLayout()
@@ -264,6 +304,18 @@ void BlendSample::createRenderPipeline()
     // fragment
     FragmentStage::Target target{};
     target.format = m_swapchain->getTextureFormat();
+    target.blend = BlendState{
+        .color = BlendComponent{
+            .srcFactor = static_cast<BlendFactor>(m_blendColorSrcFactor),
+            .dstFactor = static_cast<BlendFactor>(m_blendColorDstFactor),
+            .operation = static_cast<BlendOperation>(m_blendColorOp),
+        },
+        .alpha = BlendComponent{
+            .srcFactor = static_cast<BlendFactor>(m_blendAlphaSrcFactor),
+            .dstFactor = static_cast<BlendFactor>(m_blendAlphaDstFactor),
+            .operation = static_cast<BlendOperation>(m_blendAlphaOp),
+        }
+    };
 
     FragmentStage fragmentStage{
         { *fragmentShaderModule, "main" },
