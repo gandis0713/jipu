@@ -28,7 +28,7 @@ VkImageLayout generateInitialLayout(const ColorAttachment& colorAttachment)
     {
         auto& renderView = colorAttachment.resolveView.has_value() ? colorAttachment.resolveView.value().get() : colorAttachment.renderView;
 
-        layout = downcast(renderView).getTexture().getFinalLayout();
+        layout = downcast(renderView.getTexture())->getFinalLayout();
     }
 
     return layout;
@@ -85,17 +85,17 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
 
     for (const auto& colorAttachment : descriptor.colorAttachments)
     {
-        const auto& texture = downcast(colorAttachment.renderView).getTexture();
+        const auto texture = downcast(colorAttachment.renderView.getTexture());
 
         VkAttachmentDescription attachment{};
-        attachment.format = ToVkFormat(texture.getFormat());
+        attachment.format = ToVkFormat(texture->getFormat());
         attachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
         attachment.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
         attachment.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
         attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachment.initialLayout = generateInitialLayout(colorAttachment);
-        attachment.finalLayout = downcast(texture).getFinalLayout();
+        attachment.finalLayout = texture->getFinalLayout();
 
         vkdescriptor.attachmentDescriptions.push_back(attachment);
     }
@@ -104,10 +104,10 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     {
         for (auto colorAttachment : descriptor.colorAttachments)
         {
-            const auto& texture = downcast(colorAttachment.renderView).getTexture();
+            const auto texture = downcast(colorAttachment.renderView.getTexture());
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(texture.getFormat());
+            attachment.format = ToVkFormat(texture->getFormat());
             attachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
             attachment.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
             attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -124,10 +124,10 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     {
         auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
 
-        const auto& texture = downcast(depthStencilAttachment.textureView).getTexture();
+        const auto texture = downcast(depthStencilAttachment.textureView.getTexture());
 
         VkAttachmentDescription attachment{};
-        attachment.format = ToVkFormat(texture.getFormat());
+        attachment.format = ToVkFormat(texture->getFormat());
         attachment.loadOp = ToVkAttachmentLoadOp(depthStencilAttachment.depthLoadOp);
         attachment.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
         attachment.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
@@ -200,11 +200,11 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     if (descriptor.colorAttachments.empty())
         throw std::runtime_error("The attachments for color is empty to create frame buffer descriptor.");
 
-    const auto& texture = downcast(descriptor.colorAttachments[0].renderView).getTexture();
+    const auto texture = downcast(descriptor.colorAttachments[0].renderView.getTexture());
 
     VulkanFramebufferDescriptor vkdescriptor{};
-    vkdescriptor.width = texture.getWidth();
-    vkdescriptor.height = texture.getHeight();
+    vkdescriptor.width = texture->getWidth();
+    vkdescriptor.height = texture->getHeight();
     vkdescriptor.layers = 1;
     vkdescriptor.renderPass = renderPass.getVkRenderPass();
 

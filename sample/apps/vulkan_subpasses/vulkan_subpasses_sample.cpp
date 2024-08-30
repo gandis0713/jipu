@@ -1813,10 +1813,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
         {
             // position
             {
-                auto& texture = downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.positionColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1830,10 +1830,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
 
             // normal
             {
-                auto& texture = downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.normalColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1847,10 +1847,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
 
             // albedo
             {
-                auto& texture = downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -1882,10 +1882,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesRenderPass()
 
         // depth
         {
-            auto& texture = downcast(*m_depthStencilTextureView).getTexture();
+            auto texture = downcast(m_depthStencilTextureView->getTexture());
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(texture.getFormat());
+            attachment.format = ToVkFormat(texture->getFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -2060,10 +2060,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
         {
             // position
             {
-                auto& texture = downcast(*m_offscreen.subPasses.positionColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.positionColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2077,10 +2077,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
             // normal
             {
-                auto& texture = downcast(*m_offscreen.subPasses.normalColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.normalColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2094,10 +2094,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
             // albedo
             {
-                auto& texture = downcast(*m_offscreen.subPasses.albedoColorAttachmentTextureView).getTexture();
+                auto texture = downcast(m_offscreen.subPasses.albedoColorAttachmentTextureView->getTexture());
 
                 VkAttachmentDescription attachment{};
-                attachment.format = ToVkFormat(texture.getFormat());
+                attachment.format = ToVkFormat(texture->getFormat());
                 attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
                 attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2129,10 +2129,10 @@ VulkanRenderPass& VulkanSubpassesSample::getSubpassesCompatibleRenderPass()
 
         // depth
         {
-            auto& texture = downcast(*m_depthStencilTextureView).getTexture();
+            auto texture = downcast(m_depthStencilTextureView->getTexture());
 
             VkAttachmentDescription attachment{};
-            attachment.format = ToVkFormat(texture.getFormat());
+            attachment.format = ToVkFormat(texture->getFormat());
             attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
             attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
