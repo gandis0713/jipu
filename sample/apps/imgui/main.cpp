@@ -85,7 +85,7 @@ void ImGuiSample::draw()
         ColorAttachment attachment{
             .renderView = renderView
         };
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 

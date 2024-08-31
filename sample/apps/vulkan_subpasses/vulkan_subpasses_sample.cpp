@@ -257,21 +257,21 @@ void VulkanSubpassesSample::draw()
             };
             positionColorAttachment.loadOp = LoadOp::kClear;
             positionColorAttachment.storeOp = StoreOp::kStore;
-            positionColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+            positionColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             ColorAttachment normalColorAttachment{
                 .renderView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
             };
             normalColorAttachment.loadOp = LoadOp::kClear;
             normalColorAttachment.storeOp = StoreOp::kStore;
-            normalColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+            normalColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             ColorAttachment albedoColorAttachment{
                 .renderView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
             };
             albedoColorAttachment.loadOp = LoadOp::kClear;
             albedoColorAttachment.storeOp = StoreOp::kStore;
-            albedoColorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+            albedoColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             DepthStencilAttachment depthStencilAttachment{
                 .textureView = *m_depthStencilTextureView
@@ -313,7 +313,7 @@ void VulkanSubpassesSample::draw()
             };
             colorAttachment.loadOp = LoadOp::kClear;
             colorAttachment.storeOp = StoreOp::kStore;
-            colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+            colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             DepthStencilAttachment depthStencilAttachment{
                 .textureView = *m_depthStencilTextureView

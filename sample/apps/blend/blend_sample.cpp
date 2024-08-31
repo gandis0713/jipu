@@ -64,7 +64,7 @@ void BlendSample::draw()
         ColorAttachment attachment{
             .renderView = renderView
         };
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 1.0, 0.0 } };
+        attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
@@ -88,6 +88,7 @@ void BlendSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->setPipeline(*m_renderPipeline2);
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup2);
+        renderPassEncoder->setBlendConstant({ 0.5, 0.5, 0.5, 0.0 });
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
