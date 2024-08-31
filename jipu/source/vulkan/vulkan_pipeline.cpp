@@ -206,10 +206,12 @@ VulkanPipelineColorBlendStateCreateInfo generateColorBlendStateCreateInfo(const 
     colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
     colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
     colorBlendingStateCreateInfo.attachments = colorBlendAttachmentStates;
-    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f; // Optional
+
+    // Used blend constants in dynamic state
+    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f;
 
     return colorBlendingStateCreateInfo;
 }
@@ -237,7 +239,7 @@ VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const Render
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
         // VK_DYNAMIC_STATE_LINE_WIDTH,
-        // VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        VK_DYNAMIC_STATE_BLEND_CONSTANTS,
         // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
         // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
     };

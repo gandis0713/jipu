@@ -28,10 +28,12 @@ enum class StoreOp : uint8_t
     kStore,
 };
 
-union ColorClearValue {
-    float float32[4];
-    int32_t int32[4];
-    uint32_t uint32[4];
+struct Color
+{
+    double r;
+    double g;
+    double b;
+    double a;
 };
 
 struct ColorAttachment
@@ -40,7 +42,7 @@ struct ColorAttachment
     std::optional<TextureView::Ref> resolveView;
     LoadOp loadOp = LoadOp::kDontCare;
     StoreOp storeOp = StoreOp::kDontCare;
-    ColorClearValue clearValue{};
+    Color clearValue{};
 };
 
 struct DepthStencilClearValue
@@ -108,6 +110,7 @@ public:
                             float y,
                             float width,
                             float height) = 0;
+    virtual void setBlendConstant(const Color& color) = 0;
 
     virtual void draw(uint32_t vertexCount) = 0;
     virtual void drawIndexed(uint32_t indexCount,

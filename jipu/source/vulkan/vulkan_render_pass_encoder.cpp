@@ -45,10 +45,11 @@ std::vector<VkClearValue> generateClearColor(const RenderPassEncoderDescriptor& 
             if (colorAttachment.loadOp == LoadOp::kClear)
             {
                 VkClearValue colorClearValue{};
-                for (uint32_t i = 0; i < 4; ++i)
-                {
-                    colorClearValue.color.float32[i] = colorAttachment.clearValue.float32[i];
-                }
+                colorClearValue.color.float32[0] = colorAttachment.clearValue.r;
+                colorClearValue.color.float32[1] = colorAttachment.clearValue.g;
+                colorClearValue.color.float32[2] = colorAttachment.clearValue.b;
+                colorClearValue.color.float32[3] = colorAttachment.clearValue.a;
+
                 clearValues.push_back(colorClearValue);
             }
         }
@@ -339,6 +340,19 @@ void VulkanRenderPassEncoder::setScissor(float x,
     scissorRect.extent.height = height;
 
     vulkanDevice.vkAPI.CmdSetScissor(vulkanCommandBuffer.getVkCommandBuffer(), 0, 1, &scissorRect);
+}
+
+void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
+{
+    auto& vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
+
+    float blendConstants[4] = { static_cast<float>(color.r),
+                                static_cast<float>(color.g),
+                                static_cast<float>(color.b),
+                                static_cast<float>(color.a) };
+
+    vulkanDevice.vkAPI.CmdSetBlendConstants(vulkanCommandBuffer.getVkCommandBuffer(), blendConstants);
 }
 
 void VulkanRenderPassEncoder::draw(uint32_t vertexCount)
