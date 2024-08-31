@@ -127,6 +127,7 @@ enum class BlendOperation
 {
     kAdd = 0,
     kSubtract,
+    kReversSubtract,
     kMin,
     kMax,
 };
@@ -137,15 +138,24 @@ enum class BlendFactor
     kOne,
     kSrcColor,
     kSrcAlpha,
+    kSrcAlphaSarurated,
     kOneMinusSrcColor,
     kOneMinusSrcAlpha,
     kDstColor,
     kDstAlpha,
     kOneMinusDstColor,
     kOneMinusDstAlpha,
+    kConstantColor,
+    kOneMinusConstantColor,
+
+    // dual source blending
+    kSrc1Color,
+    kOneMinusSrc1Color,
+    kSrc1Alpha,
+    kOneMinusSrc1Alpha,
 };
 
-struct BlentComponent
+struct BlendComponent
 {
     BlendFactor srcFactor = BlendFactor::kOne;
     BlendFactor dstFactor = BlendFactor::kZero;
@@ -154,8 +164,8 @@ struct BlentComponent
 
 struct BlendState
 {
-    BlentComponent color;
-    BlentComponent alpha;
+    BlendComponent color;
+    BlendComponent alpha;
 };
 
 // Fragment Shader Stage

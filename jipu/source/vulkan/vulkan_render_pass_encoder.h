@@ -51,6 +51,7 @@ public:
                     float y,
                     float width,
                     float height) override;
+    void setBlendConstant(const Color& color) override;
 
     void draw(uint32_t vertexCount) override;
     void drawIndexed(uint32_t indexCount,

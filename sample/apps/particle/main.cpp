@@ -196,7 +196,7 @@ void ParticleSample::draw()
         ColorAttachment colorAttachment{
             .renderView = renderView
         };
-        colorAttachment.clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } };
+        colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
         colorAttachment.loadOp = LoadOp::kClear;
         colorAttachment.storeOp = StoreOp::kStore;
 

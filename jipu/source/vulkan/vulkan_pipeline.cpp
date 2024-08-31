@@ -206,10 +206,12 @@ VulkanPipelineColorBlendStateCreateInfo generateColorBlendStateCreateInfo(const 
     colorBlendingStateCreateInfo.logicOpEnable = VK_FALSE;
     colorBlendingStateCreateInfo.logicOp = VK_LOGIC_OP_COPY; // Optional
     colorBlendingStateCreateInfo.attachments = colorBlendAttachmentStates;
-    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f; // Optional
-    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f; // Optional
+
+    // Used blend constants in dynamic state
+    colorBlendingStateCreateInfo.blendConstants[0] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[1] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[2] = 0.0f;
+    colorBlendingStateCreateInfo.blendConstants[3] = 0.0f;
 
     return colorBlendingStateCreateInfo;
 }
@@ -237,7 +239,7 @@ VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const Render
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
         // VK_DYNAMIC_STATE_LINE_WIDTH,
-        // VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+        VK_DYNAMIC_STATE_BLEND_CONSTANTS,
         // VK_DYNAMIC_STATE_DEPTH_BOUNDS,
         // VK_DYNAMIC_STATE_STENCIL_REFERENCE,
     };
@@ -609,6 +611,9 @@ VkBlendOp ToVkBlendOp(BlendOperation op)
     case BlendOperation::kSubtract:
         blendOp = VK_BLEND_OP_SUBTRACT;
         break;
+    case BlendOperation::kReversSubtract:
+        blendOp = VK_BLEND_OP_REVERSE_SUBTRACT;
+        break;
     case BlendOperation::kMin:
         blendOp = VK_BLEND_OP_MIN;
         break;
@@ -639,6 +644,9 @@ VkBlendFactor ToVkBlendFactor(BlendFactor factor)
     case BlendFactor::kSrcAlpha:
         blendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         break;
+    case BlendFactor::kSrcAlphaSarurated:
+        blendFactor = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
+        break;
     case BlendFactor::kOneMinusSrcColor:
         blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
         break;
@@ -656,6 +664,24 @@ VkBlendFactor ToVkBlendFactor(BlendFactor factor)
         break;
     case BlendFactor::kOneMinusDstAlpha:
         blendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+        break;
+    case BlendFactor::kConstantColor:
+        blendFactor = VK_BLEND_FACTOR_CONSTANT_COLOR;
+        break;
+    case BlendFactor::kOneMinusConstantColor:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR;
+        break;
+    case BlendFactor::kSrc1Color:
+        blendFactor = VK_BLEND_FACTOR_SRC1_COLOR;
+        break;
+    case BlendFactor::kSrc1Alpha:
+        blendFactor = VK_BLEND_FACTOR_SRC1_ALPHA;
+        break;
+    case BlendFactor::kOneMinusSrc1Color:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR;
+        break;
+    case BlendFactor::kOneMinusSrc1Alpha:
+        blendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA;
         break;
     }
 

@@ -66,9 +66,9 @@ uint32_t VulkanTextureView::getDepth() const
     return m_texture.getDepth();
 }
 
-VulkanTexture& VulkanTextureView::getTexture() const
+Texture* VulkanTextureView::getTexture() const
 {
-    return m_texture;
+    return &m_texture;
 }
 
 VkImageView VulkanTextureView::getVkImageView() const

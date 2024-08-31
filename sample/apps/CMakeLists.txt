@@ -106,6 +106,7 @@ endfunction()
 
 add_subdirectory(triangle)
 add_subdirectory(query)
+add_subdirectory(blend)
 add_subdirectory(obj_model)
 add_subdirectory(particle)
 add_subdirectory(deferred)

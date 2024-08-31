@@ -205,7 +205,7 @@ void OBJModelSample::draw()
                                  .resolveView = m_sampleCount > 1 ? std::make_optional<TextureView::Ref>(renderView) : std::nullopt,
                                  .loadOp = LoadOp::kClear,
                                  .storeOp = StoreOp::kStore,
-                                 .clearValue = { .float32 = { 0.0f, 0.0f, 0.0f, 1.0f } } });
+                                 .clearValue = { 0.0, 0.0, 0.0, 0.0 } });
     DepthStencilAttachment depthStencilAttachment{ .textureView = *m_depthStencilTextureView,
                                                    .depthLoadOp = LoadOp::kClear,
                                                    .depthStoreOp = StoreOp::kStore,

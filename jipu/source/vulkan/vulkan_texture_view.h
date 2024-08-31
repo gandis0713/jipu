@@ -17,14 +17,12 @@ public:
     ~VulkanTextureView() override;
 
 public:
+    Texture* getTexture() const override;
     TextureViewType getType() const override;
     TextureAspectFlags getAspect() const override;
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
     uint32_t getDepth() const override;
-
-public:
-    VulkanTexture& getTexture() const;
 
 public:
     VkImageView getVkImageView() const;

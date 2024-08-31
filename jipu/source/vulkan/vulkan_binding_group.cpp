@@ -53,11 +53,11 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
         const TextureBinding& texture = descriptor.textures[i];
 
         auto& vulkanTextureView = downcast(texture.textureView);
-        auto& vulkanTexture = downcast(vulkanTextureView.getTexture());
+        auto vulkanTexture = downcast(vulkanTextureView.getTexture());
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageView = vulkanTextureView.getVkImageView();
-        imageInfo.imageLayout = vulkanTextureView.getTexture().getFinalLayout();
+        imageInfo.imageLayout = vulkanTexture->getFinalLayout();
 
         vkdescriptor.textures[i] = imageInfo;
     }

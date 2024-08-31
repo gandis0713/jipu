@@ -108,7 +108,7 @@ void OffscreenSample::draw()
         ColorAttachment attachment{
             .renderView = *m_offscreen.renderTextureView
         };
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
@@ -138,7 +138,7 @@ void OffscreenSample::draw()
         ColorAttachment attachment{
             .renderView = renderView
         };
-        attachment.clearValue = { .float32 = { 0.0, 0.0, 0.0, 0.0 } };
+        attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
         attachment.loadOp = LoadOp::kClear;
         attachment.storeOp = StoreOp::kStore;
 
