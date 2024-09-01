@@ -98,6 +98,8 @@ set(SRC_FILES
   # ${CMAKE_CURRENT_SOURCE_DIR}/utils/cast.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/utils/assert.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/utils/hash.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/jipu_proc.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu_proc.cpp
 )
 
 if(APPLE)
@@ -182,19 +184,25 @@ elseif(APPLE)
   )
 endif()
 
+target_compile_definitions(jipu
+  PRIVATE
+  "JIPU_IMPLEMENTATION"
+  "WGPU_IMPLEMENTATION"
+)
+
+if(ENABLE_VULKAN_EXPERIMENTAL)
+  target_compile_definitions(jipu
+    PRIVATE
+    "VULKAN_IMPLEMENTATION"
+  )
+endif()
+
 if(BUILD_SHARED_LIBS)
   target_compile_definitions(jipu
     PRIVATE
     "JIPU_SHARED_LIBRARY"
-    "JIPU_IMPLEMENTATION"
+    "WGPU_SHARED_LIBRARY"
   )
-
-  if(ENABLE_VULKAN_EXPERIMENTAL)
-    target_compile_definitions(jipu
-      PRIVATE
-      "VULKAN_IMPLEMENTATION"
-    )
-  endif()
 endif()
 
 if(MSVC)
