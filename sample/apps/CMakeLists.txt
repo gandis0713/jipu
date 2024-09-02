@@ -114,6 +114,8 @@ add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
+add_subdirectory(wgpu_triangle)
+
 # experimental
 if(ENABLE_VULKAN_EXPERIMENTAL)
     add_subdirectory(vulkan_subpasses)
