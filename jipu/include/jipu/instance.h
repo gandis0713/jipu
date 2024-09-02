@@ -38,7 +38,7 @@ public:
     Instance& operator=(const Instance&) = delete;
 
 public: // WebGPU API
-    virtual std::unique_ptr<Adapter> wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, void* userdata) = 0;
+    virtual std::unique_ptr<Adapter> wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata) = 0;
 
 protected:
     Instance();

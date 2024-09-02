@@ -21,7 +21,7 @@ namespace jipu
 {
 
 using DeviceDescriptor = WGPUDeviceDescriptor;
-using AdapterRequestDeviceCallback = WGPUAdapterRequestDeviceCallback;
+using AdapterRequestDeviceCallback = WGPURequestDeviceCallback;
 
 class JIPU_EXPORT Device
 {

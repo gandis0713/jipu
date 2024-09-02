@@ -85,7 +85,7 @@ VulkanInstance::~VulkanInstance()
     vkAPI.DestroyInstance(m_instance, nullptr);
 }
 
-std::unique_ptr<Adapter> VulkanInstance::wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, void* userdata)
+std::unique_ptr<Adapter> VulkanInstance::wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata)
 {
     return nullptr;
 }
