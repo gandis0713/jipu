@@ -81,7 +81,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/render_pass_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/result.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/physical_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/sampler.h
@@ -92,8 +91,14 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/common/dylib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/gpu_info.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref.cpp
 
-  # ${CMAKE_CURRENT_SOURCE_DIR}/common/dylib.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/dylib.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/gpu_info.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref.h
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/result.h
+
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/fmt.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/cast.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/assert.h
