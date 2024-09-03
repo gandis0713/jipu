@@ -1,6 +1,6 @@
 #include "vulkan_instance.h"
 
-#include "utils/assert.h"
+#include "common/assert.h"
 #include "vulkan_physical_device.h"
 
 #include <fmt/format.h>

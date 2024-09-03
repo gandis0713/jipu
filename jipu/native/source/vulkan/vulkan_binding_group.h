@@ -2,8 +2,8 @@
 
 #include "export.h"
 
+#include "common/cast.h"
 #include "jipu/binding_group.h"
-#include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 

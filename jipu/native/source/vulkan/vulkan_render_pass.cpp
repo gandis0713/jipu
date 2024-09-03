@@ -1,5 +1,5 @@
 #include "vulkan_render_pass.h"
-#include "utils/hash.h"
+#include "common/hash.h"
 #include "vulkan_device.h"
 #include "vulkan_texture.h"
 

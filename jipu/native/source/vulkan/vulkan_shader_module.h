@@ -4,7 +4,7 @@
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 
-#include "utils/cast.h"
+#include "common/cast.h"
 
 namespace jipu
 {

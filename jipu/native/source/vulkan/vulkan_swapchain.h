@@ -7,7 +7,7 @@
 #include "vulkan_texture.h"
 #include "vulkan_texture_view.h"
 
-#include "utils/cast.h"
+#include "common/cast.h"
 
 #include <memory>
 #include <vector>

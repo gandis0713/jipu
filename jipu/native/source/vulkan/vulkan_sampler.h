@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common/cast.h"
 #include "jipu/sampler.h"
-#include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 

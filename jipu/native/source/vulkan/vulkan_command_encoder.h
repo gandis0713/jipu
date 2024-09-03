@@ -2,9 +2,9 @@
 
 #include "export.h"
 
+#include "common/cast.h"
 #include "jipu/command_encoder.h"
 #include "jipu/render_pass_encoder.h"
-#include "utils/cast.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
 

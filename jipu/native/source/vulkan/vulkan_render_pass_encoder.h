@@ -7,7 +7,7 @@
 #include "vulkan_pipeline.h"
 #include "vulkan_render_pass.h"
 
-#include "utils/cast.h"
+#include "common/cast.h"
 
 namespace jipu
 {

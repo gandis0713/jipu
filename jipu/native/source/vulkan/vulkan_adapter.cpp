@@ -23,14 +23,14 @@ AdapterInfo VulkanAdapter::wgpuGetInfo()
 
 void VulkanAdapter::wgpuRequestDevice(const DeviceDescriptor& descriptor, AdapterRequestDeviceCallback callback, void* userdata)
 {
-    auto t = std::thread([&]() {
-        auto vulkanPhysicalDevice = downcast(m_descriptor.physicalDevice);
-        vulkanPhysicalDevice.createDevice({});
+    // auto t = std::thread([&]() {
+    //     auto vulkanPhysicalDevice = downcast(m_descriptor.physicalDevice);
+    //     vulkanPhysicalDevice.createDevice({});
 
-        callback(WGPURequestDeviceStatus_Success, nullptr, "", userdata);
-    });
+    //     callback(WGPURequestDeviceStatus_Success, nullptr, "", userdata);
+    // });
 
-    t.detach();
+    // t.detach();
 }
 
 } // namespace jipu

@@ -33,7 +33,7 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        jipu::jipu
+        jipu::native
         jipu::sample_base
     )
 
@@ -104,20 +104,23 @@ function(configure_sample target)
     endforeach(resource)
 endfunction()
 
-add_subdirectory(triangle)
-add_subdirectory(query)
-add_subdirectory(blend)
-add_subdirectory(obj_model)
-add_subdirectory(particle)
-add_subdirectory(deferred)
-add_subdirectory(imgui)
-add_subdirectory(instancing)
-add_subdirectory(offscreen)
-
 add_subdirectory(wgpu_triangle)
 
 # experimental
-if(ENABLE_VULKAN_EXPERIMENTAL)
+if(EXPORT_JIPU_NATIVE)
+    add_subdirectory(triangle)
+    add_subdirectory(query)
+    add_subdirectory(blend)
+    add_subdirectory(obj_model)
+    add_subdirectory(particle)
+    add_subdirectory(deferred)
+    add_subdirectory(imgui)
+    add_subdirectory(instancing)
+    add_subdirectory(offscreen)
+endif()
+
+# experimental
+if(EXPORT_JIPU_VULKAN)
     add_subdirectory(vulkan_subpasses)
     add_subdirectory(vulkan_n_buffering)
     add_subdirectory(vulkan_pipeline_barrier)

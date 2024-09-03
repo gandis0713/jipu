@@ -4,7 +4,7 @@
 #include "vulkan_render_pass.h"
 #include "vulkan_texture_view.h"
 
-#include "utils/hash.h"
+#include "common/hash.h"
 
 #include <spdlog/spdlog.h>
 #include <stdexcept>

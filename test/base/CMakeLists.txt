@@ -28,7 +28,7 @@ target_include_directories(test_base PUBLIC
 
 target_link_libraries(test_base
   PUBLIC
-  jipu::jipu
+  jipu::native
   GTest::gmock
   GTest::gtest
   GTest::gmock_main

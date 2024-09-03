@@ -89,7 +89,7 @@ target_link_libraries(jipu_sample_base
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
     KTX::ktx
-    jipu::jipu
+    jipu::native
     hpc::hpc
     imgui::imgui
 )
