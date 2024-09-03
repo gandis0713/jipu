@@ -28,7 +28,6 @@ public:
         WGPUDevice device = nullptr;
         WGPUSurface surface = nullptr;
         WGPUQueue queue = nullptr;
-        WGPUSwapChain swapchain = nullptr;
 
         WGPUSurfaceCapabilities surfaceCapabilities{};
         WGPUSurfaceConfiguration surfaceConfigure{};
