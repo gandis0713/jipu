@@ -1,4 +1,4 @@
-#include "webgpu.h"
+#include <webgpu.h>
 
 #include "jipu/instance.h"
 #include "jipu/physical_device.h"
@@ -8,7 +8,7 @@ namespace jipu
 
 extern WGPUProc procGetProcAddress(WGPUDevice device, char const* procName);
 extern WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor);
-void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, void* userdata);
+void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata);
 ;
 
 } // namespace jipu
@@ -27,7 +27,7 @@ extern "C"
         return procCreateInstance(descriptor);
     }
 
-    WGPU_EXPORT void wgpuInstanceRequestAdapter(WGPUInstance instance, WGPU_NULLABLE WGPURequestAdapterOptions const* options, WGPUInstanceRequestAdapterCallback callback, WGPU_NULLABLE void* userdata) WGPU_FUNCTION_ATTRIBUTE
+    WGPU_EXPORT void wgpuInstanceRequestAdapter(WGPUInstance instance, WGPU_NULLABLE WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, WGPU_NULLABLE void* userdata) WGPU_FUNCTION_ATTRIBUTE
     {
     }
 }

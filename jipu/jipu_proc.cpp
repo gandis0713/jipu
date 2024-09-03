@@ -10,9 +10,10 @@ namespace jipu
 
 WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
 {
-    auto descriptor = reinterpret_cast<InstanceDescriptor const*>(wgpuDescriptor);
-    auto result = Instance::create(descriptor);
-    return reinterpret_cast<WGPUInstanceImpl*>(result.release());
+    // auto descriptor = reinterpret_cast<InstanceDescriptor const*>(wgpuDescriptor);
+    // auto result = Instance::create(descriptor);
+    // return reinterpret_cast<WGPUInstanceImpl*>(result.release());
+    return nullptr;
 }
 
 namespace
