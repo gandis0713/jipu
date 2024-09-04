@@ -4,7 +4,6 @@
 #include "jipu/adapter.h"
 #include "jipu/physical_device.h"
 #include "jipu/surface.h"
-#include "result.h"
 
 #include <memory>
 #include <string>
@@ -36,9 +35,6 @@ public:
 
     Instance(const Instance&) = delete;
     Instance& operator=(const Instance&) = delete;
-
-public: // WebGPU API
-    virtual std::unique_ptr<Adapter> wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata) = 0;
 
 protected:
     Instance();

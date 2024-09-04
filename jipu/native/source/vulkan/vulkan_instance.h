@@ -30,12 +30,8 @@ public:
     VulkanInstance(const VulkanInstance&) = delete;
     VulkanInstance& operator=(const VulkanInstance&) = delete;
 
-public: // WebGPU API
-    std::unique_ptr<Adapter> wgpuRequestAdapter(WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata) override;
-
 public:
-    std::vector<std::unique_ptr<PhysicalDevice>>
-    getPhysicalDevices() override;
+    std::vector<std::unique_ptr<PhysicalDevice>> getPhysicalDevices() override;
     std::unique_ptr<Surface> createSurface(const SurfaceDescriptor& descriptor) override;
 
 public:

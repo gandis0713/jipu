@@ -91,13 +91,20 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/common/dylib.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/common/gpu_info.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref_counted.cpp
 
   ${CMAKE_CURRENT_SOURCE_DIR}/common/dylib.h
   ${CMAKE_CURRENT_SOURCE_DIR}/common/gpu_info.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/common/ref_counted.h
 
   ${CMAKE_CURRENT_SOURCE_DIR}/common/result.h
+
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_adapter.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_adapter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.h
 
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/fmt.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/cast.h

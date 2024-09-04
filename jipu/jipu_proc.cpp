@@ -1,7 +1,7 @@
 #include "webgpu.h"
 
-#include "jipu/instance.h"
-#include "jipu/physical_device.h"
+#include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_instance.h"
 
 #include <unordered_map>
 
@@ -10,10 +10,19 @@ namespace jipu
 
 WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
 {
-    // auto descriptor = reinterpret_cast<InstanceDescriptor const*>(wgpuDescriptor);
-    // auto result = Instance::create(descriptor);
-    // return reinterpret_cast<WGPUInstanceImpl*>(result.release());
-    return nullptr;
+    return reinterpret_cast<WGPUInstance>(new WebGPUInstance(wgpuDescriptor));
+}
+
+void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata)
+{
+    WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
+    webgpuInstance->requestAdapter(options, callback, userdata);
+}
+
+WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor)
+{
+    WebGPUInstance* webgpuInstance = reinterpret_cast<WebGPUInstance*>(instance);
+    return reinterpret_cast<WGPUSurface>(webgpuInstance->createSurface(descriptor));
 }
 
 namespace

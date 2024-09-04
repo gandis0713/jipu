@@ -5,16 +5,15 @@
 namespace jipu
 {
 
-class Ref
+class RefCounted
 {
 
 public:
-    Ref();
-    ~Ref() = default;
+    RefCounted();
+    ~RefCounted() = default;
 
 public:
-    void increase();
-    bool decrease();
+    void addRef();
     void release();
 
 private:
