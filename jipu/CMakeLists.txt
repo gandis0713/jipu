@@ -102,6 +102,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.h
 

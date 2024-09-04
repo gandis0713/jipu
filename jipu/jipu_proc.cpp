@@ -1,6 +1,7 @@
 #include "webgpu.h"
 
 #include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
 
 #include <unordered_map>
@@ -29,6 +30,12 @@ void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescr
 {
     WebGPUAdapter* webgpuAdapter = reinterpret_cast<WebGPUAdapter*>(adapter);
     webgpuAdapter->requestDevice(descriptor, callback, userdata);
+}
+
+WGPUQueue procDeviceGetQueue(WGPUDevice device)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUQueue>(webgpuDevice->getQueue());
 }
 
 namespace

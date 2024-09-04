@@ -1,6 +1,7 @@
 #include "webgpu_device.h"
 
 #include "webgpu_adapter.h"
+#include "webgpu_queue.h"
 
 namespace jipu
 {
@@ -24,6 +25,16 @@ WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> d
     , m_descriptor(*descriptor)
     , m_device(std::move(device))
 {
+}
+
+WebGPUQueue* WebGPUDevice::getQueue()
+{
+    return WebGPUQueue::create(this);
+}
+
+Device* WebGPUDevice::getDevice() const
+{
+    return m_device.get();
 }
 
 } // namespace jipu

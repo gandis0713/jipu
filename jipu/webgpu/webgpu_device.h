@@ -10,6 +10,7 @@ namespace jipu
 {
 
 class WebGPUAdapter;
+class WebGPUQueue;
 class WebGPUDevice : public RefCounted
 {
 public:
@@ -25,6 +26,12 @@ public:
 
     WebGPUDevice(const WebGPUDevice&) = delete;
     WebGPUDevice& operator=(const WebGPUDevice&) = delete;
+
+public: // WebGPU API
+    WebGPUQueue* getQueue();
+
+public:
+    Device* getDevice() const;
 
 private:
     [[maybe_unused]] WebGPUAdapter* m_wgpuAdapter = nullptr;
