@@ -9,6 +9,7 @@ extern void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapter
 extern WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor);
 extern void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
 extern WGPUQueue procDeviceGetQueue(WGPUDevice device);
+extern WGPUStatus procSurfaceGetCapabilities(WGPUSurface surface, WGPUAdapter adapter, WGPUSurfaceCapabilities* capabilities);
 
 } // namespace jipu
 
@@ -44,5 +45,10 @@ extern "C"
     WGPU_EXPORT WGPUQueue wgpuDeviceGetQueue(WGPUDevice device) WGPU_FUNCTION_ATTRIBUTE
     {
         return procDeviceGetQueue(device);
+    }
+
+    WGPU_EXPORT WGPUStatus wgpuSurfaceGetCapabilities(WGPUSurface surface, WGPUAdapter adapter, WGPUSurfaceCapabilities* capabilities) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procSurfaceGetCapabilities(surface, adapter, capabilities);
     }
 }

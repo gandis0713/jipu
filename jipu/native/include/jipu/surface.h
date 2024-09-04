@@ -2,8 +2,41 @@
 
 #include "export.h"
 
+#include "jipu/texture.h"
+
 namespace jipu
 {
+
+enum class PresentMode
+{
+    kUndefined = 0,
+    kImmediate,
+    kFifo,
+    kMailbox,
+};
+
+enum class ColorSpace
+{
+    kUndefined = 0,
+    kSRGBNonLinear,
+    kSRGBLinear,
+};
+
+enum class CompositeAlphaFlag
+{
+    kUndefined = 0x00000000,
+    kOpaque = 0x00000001,
+    kPreMultiplied = 0x00000002,
+    kPostMultiplied = 0x00000003,
+    kInherit = 0x00000004,
+};
+
+struct SurfaceCapabilities
+{
+    std::vector<TextureFormat> formats{};
+    std::vector<PresentMode> presentModes{};
+    std::vector<CompositeAlphaFlag> compositeAlphaFlags{};
+};
 
 struct SurfaceDescriptor
 {

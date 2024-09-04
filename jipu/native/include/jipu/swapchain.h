@@ -1,6 +1,7 @@
 #pragma once
 
 #include "export.h"
+#include "jipu/surface.h"
 #include "jipu/texture.h"
 #include "jipu/texture_view.h"
 
@@ -10,22 +11,6 @@
 namespace jipu
 {
 
-enum class PresentMode
-{
-    kUndefined = 0,
-    kImmediate,
-    kFifo,
-    kMailbox,
-};
-
-enum class ColorSpace
-{
-    kUndefined = 0,
-    kSRGBNonLinear,
-    kSRGBLinear,
-};
-
-class Surface;
 struct SwapchainDescriptor
 {
     Surface& surface;

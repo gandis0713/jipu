@@ -69,4 +69,11 @@ DOWN_CAST(VulkanSurface, Surface);
 // Generate Helper
 VulkanSurfaceDescriptor VULKAN_EXPORT generateVulkanSurfaceDescriptor(const SurfaceDescriptor& descriptor);
 
+// Convert Helper
+ColorSpace ToColorSpace(VkColorSpaceKHR colorSpace);
+VkColorSpaceKHR ToVkColorSpaceKHR(ColorSpace colorSpace);
+PresentMode ToPresentMode(VkPresentModeKHR mode);
+VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode);
+std::vector<CompositeAlphaFlag> ToCompositeAlphaFlags(VkCompositeAlphaFlagsKHR alphaFlags);
+
 }; // namespace jipu

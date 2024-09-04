@@ -18,7 +18,7 @@ namespace jipu
 {
 
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
-    : vkAPI(downcast(physicalDevice.getInstance()).vkAPI)
+    : vkAPI(downcast(physicalDevice.getInstance())->vkAPI)
     , m_physicalDevice(physicalDevice)
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)

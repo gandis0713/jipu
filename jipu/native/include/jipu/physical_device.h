@@ -27,7 +27,9 @@ public:
     virtual std::unique_ptr<Device> createDevice(const DeviceDescriptor& descriptor) = 0;
 
 public:
-    virtual PhysicalDeviceInfo getInfo() const = 0;
+    virtual Instance* getInstance() const = 0;
+    virtual PhysicalDeviceInfo getPhysicalDeviceInfo() const = 0;
+    virtual SurfaceCapabilities getSurfaceCapabilities(Surface* surface) const = 0;
 };
 
 } // namespace jipu

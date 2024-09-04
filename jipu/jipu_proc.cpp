@@ -3,6 +3,7 @@
 #include "webgpu/webgpu_adapter.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
+#include "webgpu/webgpu_surface.h"
 
 #include <unordered_map>
 
@@ -36,6 +37,13 @@ WGPUQueue procDeviceGetQueue(WGPUDevice device)
 {
     WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
     return reinterpret_cast<WGPUQueue>(webgpuDevice->getQueue());
+}
+
+WGPUStatus procSurfaceGetCapabilities(WGPUSurface surface, WGPUAdapter adapter, WGPUSurfaceCapabilities* capabilities)
+{
+    WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
+    WebGPUAdapter* webgpuAdapter = reinterpret_cast<WebGPUAdapter*>(adapter);
+    return webgpuSurface->getCapabilities(webgpuAdapter, capabilities);
 }
 
 namespace

@@ -1,6 +1,7 @@
 #include "vulkan_physical_device.h"
 #include "vulkan_device.h"
 #include "vulkan_instance.h"
+#include "vulkan_texture.h"
 
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
@@ -28,16 +29,34 @@ std::unique_ptr<Device> VulkanPhysicalDevice::createDevice(const DeviceDescripto
     return std::make_unique<VulkanDevice>(*this, descriptor);
 }
 
-PhysicalDeviceInfo VulkanPhysicalDevice::getInfo() const
+Instance* VulkanPhysicalDevice::getInstance() const
+{
+    return &m_instance;
+}
+
+PhysicalDeviceInfo VulkanPhysicalDevice::getPhysicalDeviceInfo() const
 {
     PhysicalDeviceInfo info{};
     info.deviceName = m_info.physicalDeviceProperties.deviceName;
     return info;
 }
 
-VulkanInstance& VulkanPhysicalDevice::getInstance() const
+SurfaceCapabilities VulkanPhysicalDevice::getSurfaceCapabilities(Surface* surface) const
 {
-    return m_instance;
+    SurfaceCapabilities capabilities{};
+
+    auto surfaceInfo = gatherSurfaceInfo(downcast(*surface));
+    for (auto format : surfaceInfo.formats)
+    {
+        capabilities.formats.push_back(ToTextureFormat(format.format));
+    }
+    for (auto presentMode : surfaceInfo.presentModes)
+    {
+        capabilities.presentModes.push_back(ToPresentMode(presentMode));
+    }
+    capabilities.compositeAlphaFlags = ToCompositeAlphaFlags(surfaceInfo.capabilities.supportedCompositeAlpha);
+
+    return capabilities;
 }
 
 VkInstance VulkanPhysicalDevice::getVkInstance() const
