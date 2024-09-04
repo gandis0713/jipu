@@ -31,6 +31,6 @@ extern "C"
 
     WGPU_EXPORT WGPUSurface wgpuInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
     {
-        return nullptr;
+        return procInstanceCreateSurface(instance, descriptor);
     }
 }
