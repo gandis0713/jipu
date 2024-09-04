@@ -12,16 +12,29 @@ WGPUTriangleSample::WGPUTriangleSample(const WGPUSampleDescriptor& descriptor)
 
 WGPUTriangleSample::~WGPUTriangleSample()
 {
+    // TODO: check ways release and destory.
     wgpuRenderPipelineRelease(m_renderPipeline);
     wgpuPipelineLayoutRelease(m_pipelineLayout);
     wgpuShaderModuleRelease(m_vertexShaderModule);
     wgpuShaderModuleRelease(m_fragShaderModule);
+
+    wgpuQueueRelease(m_queue);
+    wgpuDeviceDestroy(m_device);
+    wgpuDeviceRelease(m_device);
+    wgpuAdapterRelease(m_adapter);
+    wgpuInstanceRelease(m_instance);
 }
 
 void WGPUTriangleSample::init()
 {
     WGPUSample::init();
 
+    createInstance();
+    createSurface();
+    createAdapter();
+    createDevice();
+    createSurfaceConfigure();
+    createQueue();
     createShaderModule();
     createPipelineLayout();
     createPipeline();
@@ -35,12 +48,12 @@ void WGPUTriangleSample::update()
 void WGPUTriangleSample::draw()
 {
     WGPUSurfaceTexture surfaceTexture{};
-    wgpuSurfaceGetCurrentTexture(m_wgpuContext.surface, &surfaceTexture);
+    wgpuSurfaceGetCurrentTexture(m_surface, &surfaceTexture);
 
     WGPUTextureView surfaceTextureView = wgpuTextureCreateView(surfaceTexture.texture, NULL);
 
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
-    WGPUCommandEncoder commandEncoder = wgpuDeviceCreateCommandEncoder(m_wgpuContext.device, &commandEncoderDescriptor);
+    WGPUCommandEncoder commandEncoder = wgpuDeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
 
     WGPURenderPassColorAttachment colorAttachment{};
     colorAttachment.view = surfaceTextureView;
@@ -63,13 +76,103 @@ void WGPUTriangleSample::draw()
     WGPUCommandBufferDescriptor commandBufferDescriptor{};
     WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
 
-    wgpuQueueSubmit(m_wgpuContext.queue, 1, &commandBuffer);
-    wgpuSurfacePresent(m_wgpuContext.surface);
+    wgpuQueueSubmit(m_queue, 1, &commandBuffer);
+    wgpuSurfacePresent(m_surface);
 
     wgpuCommandBufferRelease(commandBuffer);
     wgpuCommandEncoderRelease(commandEncoder);
     wgpuTextureViewRelease(surfaceTextureView);
     wgpuTextureRelease(surfaceTexture.texture);
+}
+
+void WGPUTriangleSample::createInstance()
+{
+    WGPUInstanceDescriptor descriptor{};
+    descriptor.nextInChain = NULL;
+    m_instance = wgpuCreateInstance({}); // TODO
+
+    assert(m_instance);
+}
+
+void WGPUTriangleSample::createSurface()
+{
+    WGPUChainedStruct chain{};
+    chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
+
+    WGPUSurfaceDescriptorFromMetalLayer metalLayerDesc = {};
+    metalLayerDesc.chain = chain;
+    metalLayerDesc.layer = getWindowHandle();
+
+    WGPUSurfaceDescriptor surfaceDesc = {};
+    surfaceDesc.nextInChain = reinterpret_cast<WGPUChainedStruct const*>(&metalLayerDesc);
+    surfaceDesc.label = "Metal Surface";
+
+    m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDesc);
+
+    assert(m_surface);
+}
+
+void WGPUTriangleSample::createAdapter()
+{
+    auto cb = [](WGPURequestAdapterStatus status, WGPUAdapter adapter, char const* message, WGPU_NULLABLE void* userdata) {
+        if (status != WGPURequestAdapterStatus_Success)
+        {
+            throw std::runtime_error("Failed to request adapter.");
+        }
+
+        *static_cast<WGPUAdapter*>(userdata) = adapter;
+    };
+
+    WGPURequestAdapterOptions descriptor{
+        .backendType = WGPUBackendType_Metal,
+        .compatibleSurface = m_surface,
+        .forceFallbackAdapter = false,
+        .powerPreference = WGPUPowerPreference_HighPerformance
+    };
+    wgpuInstanceRequestAdapter(m_instance, &descriptor, cb, &m_adapter);
+
+    assert(m_adapter);
+}
+
+void WGPUTriangleSample::createDevice()
+{
+    auto cb = [](WGPURequestDeviceStatus status, WGPUDevice device, char const* message, WGPU_NULLABLE void* userdata) {
+        if (status != WGPURequestDeviceStatus_Success)
+        {
+            throw std::runtime_error("Failed to request device.");
+        }
+
+        *static_cast<WGPUDevice*>(userdata) = device;
+    };
+
+    WGPUDeviceDescriptor deviceDescriptor{};
+    wgpuAdapterRequestDevice(m_adapter, &deviceDescriptor, cb, &m_device);
+
+    assert(m_device);
+}
+
+void WGPUTriangleSample::createSurfaceConfigure()
+{
+    wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+
+    m_surfaceConfigure = {
+        .device = m_device,
+        .usage = WGPUTextureUsage_RenderAttachment,
+        .format = m_surfaceCapabilities.formats[0],
+        .presentMode = WGPUPresentMode_Fifo,
+        .alphaMode = m_surfaceCapabilities.alphaModes[0],
+        .width = m_width,
+        .height = m_height,
+    };
+
+    wgpuSurfaceConfigure(m_surface, &m_surfaceConfigure);
+}
+
+void WGPUTriangleSample::createQueue()
+{
+    m_queue = wgpuDeviceGetQueue(m_device);
+
+    assert(m_queue);
 }
 
 void WGPUTriangleSample::createShaderModule()
@@ -96,7 +199,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        m_vertexShaderModule = wgpuDeviceCreateShaderModule(m_wgpuContext.device, &vertexShaderModuleDescriptor);
+        m_vertexShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
         fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
@@ -105,7 +208,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor fragShaderModuleDescriptor{};
         fragShaderModuleDescriptor.nextInChain = &fragShaderModuleWGSLDescriptor.chain;
 
-        m_fragShaderModule = wgpuDeviceCreateShaderModule(m_wgpuContext.device, &fragShaderModuleDescriptor);
+        m_fragShaderModule = wgpuDeviceCreateShaderModule(m_device, &fragShaderModuleDescriptor);
     }
 
     const char* shaderCode = R"(
@@ -129,13 +232,13 @@ void WGPUTriangleSample::createShaderModule()
     WGPUShaderModuleDescriptor shaderModuleDescriptor{};
     shaderModuleDescriptor.nextInChain = &shaderModuleWGSLDescriptor.chain;
 
-    m_shaderModule = wgpuDeviceCreateShaderModule(m_wgpuContext.device, &shaderModuleDescriptor);
+    m_shaderModule = wgpuDeviceCreateShaderModule(m_device, &shaderModuleDescriptor);
 }
 
 void WGPUTriangleSample::createPipelineLayout()
 {
     WGPUPipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    m_pipelineLayout = wgpuDeviceCreatePipelineLayout(m_wgpuContext.device, &pipelineLayoutDescriptor);
+    m_pipelineLayout = wgpuDeviceCreatePipelineLayout(m_device, &pipelineLayoutDescriptor);
 }
 
 void WGPUTriangleSample::createPipeline()
@@ -152,7 +255,7 @@ void WGPUTriangleSample::createPipeline()
     vertexState.module = m_shaderModule;
 
     WGPUColorTargetState colorTargetState{};
-    colorTargetState.format = m_wgpuContext.surfaceCapabilities.formats[0];
+    colorTargetState.format = m_surfaceCapabilities.formats[0];
     colorTargetState.writeMask = WGPUColorWriteMask_All;
 
     WGPUFragmentState fragState{};
@@ -175,7 +278,7 @@ void WGPUTriangleSample::createPipeline()
     renderPipelineDescriptor.vertex = vertexState;
     renderPipelineDescriptor.fragment = &fragState;
 
-    m_renderPipeline = wgpuDeviceCreateRenderPipeline(m_wgpuContext.device, &renderPipelineDescriptor);
+    m_renderPipeline = wgpuDeviceCreateRenderPipeline(m_device, &renderPipelineDescriptor);
 }
 
 } // namespace jipu

@@ -16,11 +16,28 @@ public:
     void update() override;
     void draw() override;
 
+    void createInstance();
+    void createSurface();
+    void createAdapter();
+    void createDevice();
+    void createSurfaceConfigure();
+    void createQueue();
     void createShaderModule();
     void createPipelineLayout();
     void createPipeline();
 
 private:
+    WGPUInstance m_instance = nullptr;
+
+    WGPUSurface m_surface = nullptr;
+    WGPUSurfaceCapabilities m_surfaceCapabilities{};
+    WGPUSurfaceConfiguration m_surfaceConfigure{};
+
+    WGPUAdapter m_adapter = nullptr;
+    WGPUDevice m_device = nullptr;
+
+    WGPUQueue m_queue = nullptr;
+
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
     WGPUShaderModule m_vertexShaderModule = nullptr;
