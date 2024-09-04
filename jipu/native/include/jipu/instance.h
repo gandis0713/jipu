@@ -1,7 +1,6 @@
 #pragma once
 
 #include "export.h"
-#include "jipu/adapter.h"
 #include "jipu/physical_device.h"
 #include "jipu/surface.h"
 

@@ -11,7 +11,6 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
 set(SRC_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_adapter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_api.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group.cpp
@@ -37,7 +36,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture_view.cpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_api.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group.h
@@ -66,7 +64,6 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/jipu/instance.cpp
 
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/include/jipu/command_buffer.h

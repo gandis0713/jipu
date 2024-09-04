@@ -19,6 +19,10 @@
 namespace jipu
 {
 
+struct DeviceDescriptor
+{
+};
+
 class JIPU_EXPORT Device
 {
 public:
