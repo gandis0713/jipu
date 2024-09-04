@@ -14,10 +14,13 @@ class WebGPUInstance;
 class WebGPUAdapter : public RefCounted
 {
 public:
-    static WebGPUAdapter* create(WebGPUInstance* instance, WGPU_NULLABLE WGPURequestAdapterOptions const* options);
+    static WebGPUAdapter* create(WebGPUInstance* wgpuInstance, WGPU_NULLABLE WGPURequestAdapterOptions const* options);
 
 public:
     WebGPUAdapter() = delete;
+    explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
+                           std::unique_ptr<Instance> instance,
+                           std::unique_ptr<PhysicalDevice> physicalDevice);
     explicit WebGPUAdapter(WebGPUInstance* wgpuInstance,
                            std::unique_ptr<Instance> instance,
                            std::unique_ptr<PhysicalDevice> physicalDevice,
@@ -29,8 +32,11 @@ public:
     WebGPUAdapter(const WebGPUAdapter&) = delete;
     WebGPUAdapter& operator=(const WebGPUAdapter&) = delete;
 
-public:
+public: // WebGPU API
     void requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
+
+public:
+    PhysicalDevice* getPhysicalDevice() const;
 
 private:
     [[maybe_unused]] WebGPUInstance* m_wgpuInstance = nullptr;

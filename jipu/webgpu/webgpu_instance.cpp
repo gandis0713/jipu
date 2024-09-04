@@ -6,12 +6,23 @@
 namespace jipu
 {
 
-WebGPUInstance* WebGPUInstance::create(WGPUInstanceDescriptor const* descriptor)
+WebGPUInstance* WebGPUInstance::create(WGPUInstanceDescriptor const* wgpuDescriptor)
 {
-    return new WebGPUInstance(descriptor);
+    if (wgpuDescriptor)
+    {
+        return new WebGPUInstance(wgpuDescriptor);
+    }
+
+    return new WebGPUInstance();
 }
 
-WebGPUInstance::WebGPUInstance(WGPUInstanceDescriptor const* descriptor)
+WebGPUInstance::WebGPUInstance()
+    : m_wgpuDescriptor()
+{
+}
+
+WebGPUInstance::WebGPUInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
+    : m_wgpuDescriptor(*wgpuDescriptor)
 {
 }
 

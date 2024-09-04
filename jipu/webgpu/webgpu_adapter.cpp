@@ -23,7 +23,20 @@ WebGPUAdapter* WebGPUAdapter::create(WebGPUInstance* wgpuInstance, WGPU_NULLABLE
     // TODO: get correct physical device
     std::unique_ptr<PhysicalDevice> physicalDevice = std::move(instance->getPhysicalDevices()[0]);
 
-    return new WebGPUAdapter(wgpuInstance, std::move(instance), std::move(physicalDevice), options);
+    if (options)
+    {
+        return new WebGPUAdapter(wgpuInstance, std::move(instance), std::move(physicalDevice), options);
+    }
+
+    return new WebGPUAdapter(wgpuInstance, std::move(instance), std::move(physicalDevice));
+}
+
+WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Instance> instance, std::unique_ptr<PhysicalDevice> physicalDevice)
+    : m_wgpuInstance(wgpuInstance)
+    , m_options({})
+    , m_instance(std::move(instance))
+    , m_physicalDevice(std::move(physicalDevice))
+{
 }
 
 WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Instance> instance, std::unique_ptr<PhysicalDevice> physicalDevice, WGPURequestAdapterOptions const* options)
@@ -36,9 +49,20 @@ WebGPUAdapter::WebGPUAdapter(WebGPUInstance* wgpuInstance, std::unique_ptr<Insta
 
 void WebGPUAdapter::requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata)
 {
-    // TODO: Correct the device creation logic.
-    auto device = new WebGPUDevice(this, descriptor);
-    callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(device), "", userdata);
+    auto device = WebGPUDevice::create(this, descriptor);
+    if (device)
+    {
+        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Success, reinterpret_cast<WGPUDevice>(device), "Succeed to create device", userdata);
+    }
+    else
+    {
+        callback(WGPURequestDeviceStatus::WGPURequestDeviceStatus_Error, nullptr, "Failed to create device", userdata);
+    }
+}
+
+PhysicalDevice* WebGPUAdapter::getPhysicalDevice() const
+{
+    return m_physicalDevice.get();
 }
 
 } // namespace jipu

@@ -13,8 +13,12 @@ class WebGPUAdapter;
 class WebGPUDevice : public RefCounted
 {
 public:
+    static WebGPUDevice* create(WebGPUAdapter* wgpuAdapter, WGPUDeviceDescriptor const* wgpuDescriptor);
+
+public:
     WebGPUDevice() = delete;
-    explicit WebGPUDevice(WebGPUAdapter* adapter, WGPUDeviceDescriptor const* descriptor);
+    explicit WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device);
+    explicit WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device, WGPUDeviceDescriptor const* wgpuDescriptor);
 
 public:
     virtual ~WebGPUDevice() = default;
@@ -24,6 +28,7 @@ public:
 
 private:
     [[maybe_unused]] WebGPUAdapter* m_wgpuAdapter = nullptr;
+    [[maybe_unused]] const WGPUDeviceDescriptor m_descriptor{};
 
 private:
     std::unique_ptr<Device> m_device = nullptr;
