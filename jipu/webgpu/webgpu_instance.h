@@ -11,6 +11,9 @@ class WebGPUSurface;
 class WebGPUInstance : public RefCounted
 {
 public:
+    static WebGPUInstance* create(WGPUInstanceDescriptor const* descriptor);
+
+public:
     WebGPUInstance() = delete;
     explicit WebGPUInstance(WGPUInstanceDescriptor const* descriptor);
 

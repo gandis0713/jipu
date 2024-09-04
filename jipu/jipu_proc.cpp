@@ -10,7 +10,7 @@ namespace jipu
 
 WGPUInstance procCreateInstance(WGPUInstanceDescriptor const* wgpuDescriptor)
 {
-    return reinterpret_cast<WGPUInstance>(new WebGPUInstance(wgpuDescriptor));
+    return reinterpret_cast<WGPUInstance>(WebGPUInstance::create(wgpuDescriptor));
 }
 
 void procInstanceRequestAdapter(WGPUInstance instance, WGPURequestAdapterOptions const* options, WGPURequestAdapterCallback callback, void* userdata)
