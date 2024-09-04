@@ -25,6 +25,12 @@ WGPUSurface procInstanceCreateSurface(WGPUInstance instance, WGPUSurfaceDescript
     return reinterpret_cast<WGPUSurface>(webgpuInstance->createSurface(descriptor));
 }
 
+void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata)
+{
+    WebGPUAdapter* webgpuAdapter = reinterpret_cast<WebGPUAdapter*>(adapter);
+    webgpuAdapter->requestDevice(descriptor, callback, userdata);
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

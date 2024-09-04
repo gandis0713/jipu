@@ -24,6 +24,9 @@ public:
     WebGPUAdapter(const WebGPUAdapter&) = delete;
     WebGPUAdapter& operator=(const WebGPUAdapter&) = delete;
 
+public:
+    void requestDevice(WGPUDeviceDescriptor const* descriptor, WGPURequestDeviceCallback callback, void* userdata);
+
 private:
     [[maybe_unused]] WebGPUInstance* m_wgpuInstance = nullptr;
 
