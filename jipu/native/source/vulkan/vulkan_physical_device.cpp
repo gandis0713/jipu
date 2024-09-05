@@ -48,7 +48,8 @@ SurfaceCapabilities VulkanPhysicalDevice::getSurfaceCapabilities(Surface* surfac
     auto surfaceInfo = gatherSurfaceInfo(downcast(*surface));
     for (auto format : surfaceInfo.formats)
     {
-        capabilities.formats.push_back(ToTextureFormat(format.format));
+        if (isSupportedVkFormat(format.format))
+            capabilities.formats.push_back(ToTextureFormat(format.format));
     }
     for (auto presentMode : surfaceInfo.presentModes)
     {

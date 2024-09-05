@@ -101,6 +101,7 @@ VkSampleCountFlagBits VULKAN_EXPORT ToVkSampleCountFlagBits(uint32_t count);
 uint32_t ToSampleCount(VkSampleCountFlagBits flag);
 
 // Utils
+bool isSupportedVkFormat(VkFormat format);
 VkImageLayout GenerateFinalImageLayout(VkImageUsageFlags usage);
 // VkImageLayout GenerateFinalImageLayout(TextureUsageFlags usage);
 VkAccessFlags GenerateAccessFlags(VkImageLayout layout);
