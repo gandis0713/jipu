@@ -52,6 +52,24 @@ void procSurfaceConfigure(WGPUSurface surface, WGPUSurfaceConfiguration const* c
     return webgpuSurface->configure(config);
 }
 
+WGPUBindGroup procDeviceCreateBindGroup(WGPUDevice device, WGPUBindGroupDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUBindGroup>(webgpuDevice->createBindGroup(descriptor));
+}
+
+WGPUBindGroupLayout procDeviceCreateBindGroupLayout(WGPUDevice device, WGPUBindGroupLayoutDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUBindGroupLayout>(webgpuDevice->createBindGroupLayout(descriptor));
+}
+
+WGPUPipelineLayout procDeviceCreatePipelineLayout(WGPUDevice device, WGPUPipelineLayoutDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUPipelineLayout>(webgpuDevice->createPipelineLayout(descriptor));
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

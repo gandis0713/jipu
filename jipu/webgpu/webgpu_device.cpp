@@ -1,6 +1,9 @@
 #include "webgpu_device.h"
 
 #include "webgpu_adapter.h"
+#include "webgpu_bind_group.h"
+#include "webgpu_bind_group_layout.h"
+#include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
 
 namespace jipu
@@ -30,6 +33,21 @@ WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> d
 WebGPUQueue* WebGPUDevice::getQueue()
 {
     return WebGPUQueue::create(this);
+}
+
+WebGPUBindGroup* WebGPUDevice::createBindGroup(WGPUBindGroupDescriptor const* descriptor)
+{
+    return WebGPUBindGroup::create(this, descriptor);
+}
+
+WebGPUBindGroupLayout* WebGPUDevice::createBindGroupLayout(WGPUBindGroupLayoutDescriptor const* descriptor)
+{
+    return WebGPUBindGroupLayout::create(this, descriptor);
+}
+
+WebGPUPipelineLayout* WebGPUDevice::createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor)
+{
+    return WebGPUPipelineLayout::create(this, descriptor);
 }
 
 Device* WebGPUDevice::getDevice() const

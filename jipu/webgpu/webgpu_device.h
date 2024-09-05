@@ -11,6 +11,9 @@ namespace jipu
 
 class WebGPUAdapter;
 class WebGPUQueue;
+class WebGPUBindGroup;
+class WebGPUBindGroupLayout;
+class WebGPUPipelineLayout;
 class WebGPUDevice : public RefCounted
 {
 public:
@@ -29,6 +32,9 @@ public:
 
 public: // WebGPU API
     WebGPUQueue* getQueue();
+    WebGPUBindGroup* createBindGroup(WGPUBindGroupDescriptor const* descriptor);
+    WebGPUBindGroupLayout* createBindGroupLayout(WGPUBindGroupLayoutDescriptor const* descriptor);
+    WebGPUPipelineLayout* createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor);
 
 public:
     Device* getDevice() const;

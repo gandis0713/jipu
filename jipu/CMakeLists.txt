@@ -98,10 +98,16 @@ set(SRC_FILES
 
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_adapter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_adapter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group_layout.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_pipeline_layout.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.cpp

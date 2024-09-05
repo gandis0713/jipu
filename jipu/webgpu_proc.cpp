@@ -11,6 +11,9 @@ extern void procAdapterRequestDevice(WGPUAdapter adapter, WGPU_NULLABLE WGPUDevi
 extern WGPUQueue procDeviceGetQueue(WGPUDevice device);
 extern WGPUStatus procSurfaceGetCapabilities(WGPUSurface surface, WGPUAdapter adapter, WGPUSurfaceCapabilities* capabilities);
 extern void procSurfaceConfigure(WGPUSurface surface, WGPUSurfaceConfiguration const* config);
+extern WGPUBindGroup procDeviceCreateBindGroup(WGPUDevice device, WGPUBindGroupDescriptor const* descriptor);
+extern WGPUBindGroupLayout procDeviceCreateBindGroupLayout(WGPUDevice device, WGPUBindGroupLayoutDescriptor const* descriptor);
+extern WGPUPipelineLayout procDeviceCreatePipelineLayout(WGPUDevice device, WGPUPipelineLayoutDescriptor const* descriptor);
 
 } // namespace jipu
 
@@ -56,5 +59,20 @@ extern "C"
     WGPU_EXPORT void wgpuSurfaceConfigure(WGPUSurface surface, WGPUSurfaceConfiguration const* config) WGPU_FUNCTION_ATTRIBUTE
     {
         return procSurfaceConfigure(surface, config);
+    }
+
+    WGPU_EXPORT WGPUBindGroup wgpuDeviceCreateBindGroup(WGPUDevice device, WGPUBindGroupDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateBindGroup(device, descriptor);
+    }
+
+    WGPU_EXPORT WGPUBindGroupLayout wgpuDeviceCreateBindGroupLayout(WGPUDevice device, WGPUBindGroupLayoutDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreateBindGroupLayout(device, descriptor);
+    }
+
+    WGPU_EXPORT WGPUPipelineLayout wgpuDeviceCreatePipelineLayout(WGPUDevice device, WGPUPipelineLayoutDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procDeviceCreatePipelineLayout(device, descriptor);
     }
 }
