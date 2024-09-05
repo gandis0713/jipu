@@ -106,6 +106,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture.h
 
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/fmt.h
   # ${CMAKE_CURRENT_SOURCE_DIR}/common/cast.h
