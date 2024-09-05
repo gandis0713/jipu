@@ -1,4 +1,4 @@
-#include "webgpu.h"
+#include "webgpu_header.h"
 
 #include "webgpu/webgpu_adapter.h"
 #include "webgpu/webgpu_device.h"

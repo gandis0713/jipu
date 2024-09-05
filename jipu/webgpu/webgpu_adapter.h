@@ -1,6 +1,6 @@
 #pragma once
 
-#include <webgpu.h>
+#include "webgpu_header.h"
 
 #include "common/ref_counted.h"
 

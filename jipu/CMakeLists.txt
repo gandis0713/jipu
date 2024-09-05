@@ -222,6 +222,13 @@ target_compile_definitions(jipu_native
   "WGPU_IMPLEMENTATION"
 )
 
+if(USE_DAWN_WEBGPU)
+  target_compile_definitions(jipu_native
+    PRIVATE
+    "USE_DAWN_HEADER"
+  )
+endif()
+
 if(EXPORT_JIPU_VULKAN)
   target_compile_definitions(jipu_native
     PRIVATE

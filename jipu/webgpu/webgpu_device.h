@@ -1,10 +1,8 @@
 #pragma once
 
-#include <webgpu.h>
-
 #include "common/ref_counted.h"
-
 #include "jipu/device.h"
+#include "webgpu_header.h"
 
 namespace jipu
 {
