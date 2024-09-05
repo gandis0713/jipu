@@ -3,7 +3,6 @@
 #include "window.h"
 
 #include <filesystem>
-#include <webgpu.h>
 
 namespace jipu
 {

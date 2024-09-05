@@ -55,6 +55,13 @@ function(configure_sample target)
         )
     endif()
 
+    if(USE_DAWN_WEBGPU)
+        target_compile_definitions(${target}
+            PRIVATE
+            "USE_DAWN_HEADER"
+        )
+    endif()
+
     if(MSVC)
         target_compile_definitions(${target}
             PRIVATE
@@ -105,6 +112,7 @@ function(configure_sample target)
 endfunction()
 
 add_subdirectory(wgpu_triangle)
+add_subdirectory(wgpu_triangle2)
 
 # experimental
 if(EXPORT_JIPU_NATIVE)
