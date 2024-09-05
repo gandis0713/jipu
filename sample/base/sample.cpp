@@ -66,7 +66,7 @@ void Sample::createSwapchain()
     TextureFormat textureFormat = TextureFormat::kBGRA8UnormSrgb;
 #endif
     SwapchainDescriptor descriptor{
-        .surface = *m_surface,
+        .surface = m_surface.get(),
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,

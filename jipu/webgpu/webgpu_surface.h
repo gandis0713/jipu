@@ -31,6 +31,7 @@ public:
 
 public: // WebGPU API
     WGPUStatus getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCapabilities* capabilities);
+    void configure(WGPUSurfaceConfiguration const* config);
 
 public:
     enum class Type
@@ -65,10 +66,11 @@ private:
 };
 
 // Convert from WebGPU to JIPU
-WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format);
 WGPUCompositeAlphaMode ToWGPUCompositeAlphaMode(CompositeAlphaFlag flag);
+WGPUPresentMode ToWGPUPresentMode(PresentMode mode);
 
 // Convert from JIPU to WebGPU
-// TextureFormat ToWGPUTextureFormat(WGPUTextureFormat format);
+CompositeAlphaFlag ToCompositeAlphaMode(WGPUCompositeAlphaMode flag);
+PresentMode ToPresentMode(WGPUPresentMode mode);
 
 } // namespace jipu

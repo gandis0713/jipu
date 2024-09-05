@@ -9,15 +9,16 @@ namespace jipu
 
 enum class PresentMode
 {
-    kUndefined = 0,
+    kUndefined = 0x00000000,
     kImmediate,
     kFifo,
+    kFifoRelaxed,
     kMailbox,
 };
 
 enum class ColorSpace
 {
-    kUndefined = 0,
+    kUndefined = 0x00000000,
     kSRGBNonLinear,
     kSRGBLinear,
 };
@@ -25,10 +26,10 @@ enum class ColorSpace
 enum class CompositeAlphaFlag
 {
     kUndefined = 0x00000000,
-    kOpaque = 0x00000001,
-    kPreMultiplied = 0x00000002,
-    kPostMultiplied = 0x00000003,
-    kInherit = 0x00000004,
+    kOpaque,
+    kPreMultiplied,
+    kPostMultiplied,
+    kInherit,
 };
 
 struct SurfaceCapabilities

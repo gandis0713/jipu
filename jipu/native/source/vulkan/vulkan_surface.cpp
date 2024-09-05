@@ -73,6 +73,8 @@ PresentMode ToPresentMode(VkPresentModeKHR mode)
         return PresentMode::kMailbox;
     case VK_PRESENT_MODE_FIFO_KHR:
         return PresentMode::kFifo;
+    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+        return PresentMode::kFifoRelaxed;
     case VK_PRESENT_MODE_IMMEDIATE_KHR:
         return PresentMode::kImmediate;
     default:
@@ -87,6 +89,8 @@ VkPresentModeKHR ToVkPresentModeKHR(PresentMode mode)
         return VK_PRESENT_MODE_MAILBOX_KHR;
     case PresentMode::kFifo:
         return VK_PRESENT_MODE_FIFO_KHR;
+    case PresentMode::kFifoRelaxed:
+        return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
     case PresentMode::kImmediate:
         return VK_PRESENT_MODE_IMMEDIATE_KHR;
     default:

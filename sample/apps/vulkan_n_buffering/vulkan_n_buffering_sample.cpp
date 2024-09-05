@@ -179,7 +179,7 @@ void VulkanNBufferingSample::createSurface()
 
     m_surface = downcast(m_instance.get())->createSurface(vkdescriptor);
 
-    auto& vulkanSurface = downcast(*m_surface);
+    auto vulkanSurface = downcast(m_surface.get());
     m_surfaceInfo = downcast(m_physicalDevices[0].get())->gatherSurfaceInfo(vulkanSurface);
 }
 
@@ -200,7 +200,7 @@ void VulkanNBufferingSample::createSwapchain()
     TextureFormat textureFormat = TextureFormat::kBGRA8UnormSrgb;
 #endif
     SwapchainDescriptor descriptor{
-        .surface = *m_surface,
+        .surface = m_surface.get(),
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
