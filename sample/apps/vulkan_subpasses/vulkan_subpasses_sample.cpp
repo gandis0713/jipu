@@ -952,7 +952,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_offscreen.renderPasses.bindingGroupLayouts[0],
+                .layout = m_offscreen.renderPasses.bindingGroupLayouts[0].get(),
                 .buffers = { bufferBinding },
             };
 
@@ -981,7 +981,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_offscreen.renderPasses.bindingGroupLayouts[1],
+                .layout = m_offscreen.renderPasses.bindingGroupLayouts[1].get(),
                 .samplers = { colorSamplerBinding, normalSamplerBinding },
                 .textures = { colorTextureBinding, normalTextureBinding }
             };
@@ -1002,7 +1002,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_offscreen.subPasses.bindingGroupLayouts[0],
+                .layout = m_offscreen.subPasses.bindingGroupLayouts[0].get(),
                 .buffers = { bufferBinding }
             };
 
@@ -1033,7 +1033,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_offscreen.subPasses.bindingGroupLayouts[1],
+                .layout = m_offscreen.subPasses.bindingGroupLayouts[1].get(),
                 .samplers = { colorSamplerBinding, normalSamplerBinding },
                 .textures = { colorTextureBinding, normalTextureBinding }
             };
@@ -1453,7 +1453,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         };
 
         BindingGroupDescriptor descriptor{
-            .layout = *m_composition.renderPasses.bindingGroupLayouts[0],
+            .layout = m_composition.renderPasses.bindingGroupLayouts[0].get(),
             .buffers = { uniformBufferBinding },
             .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
             .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
@@ -1475,7 +1475,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             };
 
             BindingGroupDescriptor descriptor{
-                .layout = *m_composition.subPasses.bindingGroupLayouts[0],
+                .layout = m_composition.subPasses.bindingGroupLayouts[0].get(),
                 .buffers = { uniformBufferBinding }
             };
 
@@ -1499,7 +1499,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
             };
 
             BindingGroupDescriptor descriptor{
-                .layout = *m_composition.subPasses.bindingGroupLayouts[1],
+                .layout = m_composition.subPasses.bindingGroupLayouts[1].get(),
                 .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }
             };
 

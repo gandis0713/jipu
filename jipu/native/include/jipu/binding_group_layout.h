@@ -56,6 +56,9 @@ class JIPU_EXPORT BindingGroupLayout
 {
 public:
     virtual ~BindingGroupLayout() = default;
+
+protected:
+    BindingGroupLayout() = default;
 };
 
 } // namespace jipu

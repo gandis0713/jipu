@@ -405,7 +405,7 @@ void InstancingSample::createInstancingBindingGroup()
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_instancing.bindingGroupLayout,
+        .layout = m_instancing.bindingGroupLayout.get(),
         .buffers = { mvpBufferBinding }
     };
 
@@ -585,7 +585,7 @@ void InstancingSample::createNonInstancingBindingGroup()
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_nonInstancing.bindingGroupLayout,
+        .layout = m_nonInstancing.bindingGroupLayout.get(),
         .buffers = { bufferBinding, instancingBufferBinding }
     };
 

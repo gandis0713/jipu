@@ -102,6 +102,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_instance.cpp

@@ -569,7 +569,7 @@ void VulkanPipelineBarrierSample::createOffscreenBindingGroup()
     };
 
     BindingGroupDescriptor descriptor{
-        .layout = *m_offscreen.bindingGroupLayout,
+        .layout = m_offscreen.bindingGroupLayout.get(),
         .buffers = { bufferBinding },
     };
 
@@ -763,7 +763,7 @@ void VulkanPipelineBarrierSample::createOnscreenBindingGroup()
     };
 
     BindingGroupDescriptor descriptor{
-        .layout = *m_onscreen.bindingGroupLayout,
+        .layout = m_onscreen.bindingGroupLayout.get(),
         .samplers = { samplerBinding },
         .textures = { textureBinding },
     };

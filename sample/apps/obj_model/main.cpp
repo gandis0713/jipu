@@ -442,7 +442,7 @@ void OBJModelSample::createBindingGroup()
         };
 
         BindingGroupDescriptor descriptor{
-            .layout = *m_bindingGroupLayouts[0],
+            .layout = m_bindingGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
@@ -461,7 +461,7 @@ void OBJModelSample::createBindingGroup()
         };
 
         BindingGroupDescriptor descriptor{
-            .layout = *m_bindingGroupLayouts[1],
+            .layout = m_bindingGroupLayouts[1].get(),
             .samplers = { samplerBinding },
             .textures = { textureBinding },
         };

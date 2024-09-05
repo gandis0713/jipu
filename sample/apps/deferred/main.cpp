@@ -788,7 +788,7 @@ void DeferredSample::createOffscreenBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = *m_offscreen.bindingGroupLayouts[0],
+            .layout = m_offscreen.bindingGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
@@ -817,7 +817,7 @@ void DeferredSample::createOffscreenBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = *m_offscreen.bindingGroupLayouts[1],
+            .layout = m_offscreen.bindingGroupLayouts[1].get(),
             .samplers = { colorSamplerBinding, normalSamplerBinding },
             .textures = { colorTextureBinding, normalTextureBinding },
         };
@@ -1064,7 +1064,7 @@ void DeferredSample::createCompositionBindingGroup()
     };
 
     BindingGroupDescriptor descriptor{
-        .layout = *m_composition.bindingGroupLayouts[0],
+        .layout = m_composition.bindingGroupLayouts[0].get(),
         .buffers = { uniformBufferBinding },
         .samplers = { positionSamplerBinding, normalSamplerBinding, albedoSamplerBinding },
         .textures = { positionTextureBinding, normalTextureBinding, albedoTextureBinding }

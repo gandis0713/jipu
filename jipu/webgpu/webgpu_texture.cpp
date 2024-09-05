@@ -3,6 +3,18 @@
 namespace jipu
 {
 
+WebGPUTexture* create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor)
+{
+    return new WebGPUTexture(device, nullptr, descriptor);
+}
+
+WebGPUTexture::WebGPUTexture(WebGPUDevice* device, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor)
+    : m_wgpuDevice(device)
+    , m_descriptor(*descriptor)
+    , m_texture(std::move(texture))
+{
+}
+
 // Convert from WebGPU to JIPU
 WGPUTextureFormat ToWGPUTextureFormat(TextureFormat format)
 {

@@ -354,7 +354,7 @@ void ParticleSample::createComputeBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = *m_computeBindingGroupLayout,
+            .layout = m_computeBindingGroupLayout.get(),
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,
@@ -391,7 +391,7 @@ void ParticleSample::createComputeBindingGroup()
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
-            .layout = *m_computeBindingGroupLayout,
+            .layout = m_computeBindingGroupLayout.get(),
             .buffers = {
                 bufferUBOBinding,
                 bufferInBinding,

@@ -260,7 +260,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[0],
+                .layout = m_bindingGroupLayouts[0].get(),
                 .buffers = { uiTransformBinding },
             };
 
@@ -279,7 +279,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[1],
+                .layout = m_bindingGroupLayouts[1].get(),
                 .samplers = { fontSamplerBinding },
                 .textures = { fontTextureBinding },
             };

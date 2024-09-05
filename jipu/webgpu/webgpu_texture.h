@@ -15,11 +15,11 @@ class WebGPUTexture : public RefCounted
 {
 
 public:
-    // static WebGPUTexture* create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor);
+    static WebGPUTexture* create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor);
 
 public:
     WebGPUTexture() = delete;
-    // explicit WebGPUTexture(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor);
+    explicit WebGPUTexture(WebGPUDevice* device, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUTexture() = default;

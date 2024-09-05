@@ -36,7 +36,7 @@ struct TextureBinding
 class BindingGroupLayout;
 struct BindingGroupDescriptor
 {
-    const BindingGroupLayout& layout;
+    BindingGroupLayout* layout = nullptr;
     std::vector<BufferBinding> buffers{};
     std::vector<SamplerBinding> samplers{};
     std::vector<TextureBinding> textures{};
@@ -47,6 +47,9 @@ class JIPU_EXPORT BindingGroup
 {
 public:
     virtual ~BindingGroup() = default;
+
+protected:
+    BindingGroup() = default;
 };
 
 } // namespace jipu

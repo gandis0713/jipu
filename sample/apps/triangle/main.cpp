@@ -273,7 +273,7 @@ void TriangleSample::createBindingGroup()
     };
 
     BindingGroupDescriptor descriptor{
-        .layout = *m_bindingGroupLayout,
+        .layout = m_bindingGroupLayout.get(),
         .buffers = { bufferBinding },
     };
 

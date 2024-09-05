@@ -76,8 +76,8 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
 {
     auto& vulkanDevice = downcast(device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-    auto& vulkanBindingGroupLayout = downcast(m_descriptor.layout);
-    auto descriptorSetLayout = vulkanBindingGroupLayout.getVkDescriptorSetLayout();
+    auto vulkanBindingGroupLayout = downcast(m_descriptor.layout);
+    auto descriptorSetLayout = vulkanBindingGroupLayout->getVkDescriptorSetLayout();
 
     VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
     descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -101,7 +101,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
     for (auto i = 0; i < bufferSize; ++i)
     {
         const VkDescriptorBufferInfo& buffer = descriptor.buffers[i];
-        auto bufferLayout = vulkanBindingGroupLayout.getBufferBindingLayout(i);
+        auto bufferLayout = vulkanBindingGroupLayout->getBufferBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -121,7 +121,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
     for (auto i = 0; i < samplerSize; ++i)
     {
         const VkDescriptorImageInfo& sampler = descriptor.samplers[i];
-        auto samplerLayout = vulkanBindingGroupLayout.getSamplerBindingLayout(i);
+        auto samplerLayout = vulkanBindingGroupLayout->getSamplerBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -141,7 +141,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
     for (auto i = 0; i < textureSize; ++i)
     {
         const VkDescriptorImageInfo& texture = descriptor.textures[i];
-        auto textureLayout = vulkanBindingGroupLayout.getTextureBindingLayout(i);
+        auto textureLayout = vulkanBindingGroupLayout->getTextureBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

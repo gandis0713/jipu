@@ -12,7 +12,7 @@ namespace jipu
 
 struct VulkanBindingGroupDescriptor
 {
-    const BindingGroupLayout& layout;
+    BindingGroupLayout* layout = nullptr;
     std::vector<VkDescriptorBufferInfo> buffers{};
     std::vector<VkDescriptorImageInfo> samplers{};
     std::vector<VkDescriptorImageInfo> textures{};

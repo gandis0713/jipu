@@ -273,7 +273,7 @@ std::unique_ptr<BindingGroup> BlendSample::createBindingGroup(TextureView* textu
         .textureView = *textureView,
     };
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_bindingGroupLayout,
+        .layout = m_bindingGroupLayout.get(),
         .samplers = { imageSamplerBinding },
         .textures = { imageTextureBinding },
     };
