@@ -24,7 +24,7 @@ struct VulkanSwapchainDescriptor
 {
     const void* next = nullptr;
     VkSwapchainCreateFlagsKHR flags = 0u;
-    VulkanSurface& surface;
+    VulkanSurface* surface = nullptr;
     uint32_t minImageCount = 0;
     VkFormat imageFormat;
     VkColorSpaceKHR imageColorSpace;

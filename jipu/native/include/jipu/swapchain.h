@@ -13,7 +13,7 @@ namespace jipu
 
 struct SwapchainDescriptor
 {
-    Surface& surface;
+    Surface* surface = nullptr;
     TextureFormat textureFormat = TextureFormat::kUndefined;
     PresentMode presentMode = PresentMode::kUndefined;
     ColorSpace colorSpace = ColorSpace::kUndefined;

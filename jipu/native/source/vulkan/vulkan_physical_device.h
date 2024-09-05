@@ -44,7 +44,7 @@ public:
 
 public:
     const VulkanPhysicalDeviceInfo& getVulkanPhysicalDeviceInfo() const;
-    VulkanSurfaceInfo gatherSurfaceInfo(VulkanSurface& surface) const;
+    VulkanSurfaceInfo gatherSurfaceInfo(VulkanSurface* surface) const;
 
     int findMemoryTypeIndex(VkMemoryPropertyFlags flags) const;
     bool isDepthStencilSupported(VkFormat format) const;
