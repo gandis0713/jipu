@@ -218,7 +218,7 @@ std::unique_ptr<Texture> BlendSample::createTexture(const char* name)
 
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
-                                         .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .format = TextureFormat::kRGBA8UnormSrgb,
                                          .usage = TextureUsageFlagBits::kCopySrc |
                                                   TextureUsageFlagBits::kCopyDst |
                                                   TextureUsageFlagBits::kTextureBinding,

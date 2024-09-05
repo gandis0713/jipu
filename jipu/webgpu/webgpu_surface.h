@@ -32,6 +32,15 @@ public:
 public: // WebGPU API
     WGPUStatus getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCapabilities* capabilities);
 
+public:
+    enum class Type
+    {
+        kUndefined,
+        kMetalLayer,
+        kWindowsHWND,
+        kAndroidWindow,
+    };
+
 private:
     [[maybe_unused]] WebGPUInstance* m_wgpuInstance = nullptr;
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
@@ -40,6 +49,19 @@ private:
 private:
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Swapchain> m_swapchain = nullptr;
+
+private:
+    Type m_type = Type::kUndefined;
+
+    // metal
+    void* m_meterLayer = nullptr;
+
+    // android
+    void* m_androidNativeWindow = nullptr;
+
+    // windows
+    void* m_hInstance = nullptr;
+    void* m_HWND = nullptr;
 };
 
 // Convert from WebGPU to JIPU

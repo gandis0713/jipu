@@ -438,7 +438,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA16Unorm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -462,7 +462,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kRGBA_16161616_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA16Unorm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -487,7 +487,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kBGRA_8888_UInt_Norm;
+    descriptor.format = TextureFormat::kRGBA8Unorm;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();
@@ -515,7 +515,7 @@ void DeferredSample::createOffscreenColorMapTexture()
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
-    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm; // kRGBA_8888_UInt_Norm_SRGB
+    textureDescriptor.format = TextureFormat::kRGBA8Unorm; // kRGBA8UnormSrgb
     textureDescriptor.mipLevels = 1;
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = ktx.getWidth();
@@ -586,7 +586,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
 
     TextureDescriptor textureDescriptor{};
     textureDescriptor.type = TextureType::k2D;
-    textureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+    textureDescriptor.format = TextureFormat::kRGBA8Unorm;
     textureDescriptor.mipLevels = 1;
     textureDescriptor.sampleCount = 1;
     textureDescriptor.width = ktx.getWidth();
@@ -1250,7 +1250,7 @@ void DeferredSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.format = TextureFormat::kDepth32Float;
     descriptor.mipLevels = 1;
     descriptor.sampleCount = m_sampleCount;
     descriptor.width = m_swapchain->getWidth();

@@ -129,7 +129,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureDescriptor fontTextureDescriptor{};
         fontTextureDescriptor.type = TextureType::k2D;
-        fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+        fontTextureDescriptor.format = TextureFormat::kRGBA8Unorm;
         fontTextureDescriptor.width = fontTexWidth;
         fontTextureDescriptor.height = fontTexHeight;
         fontTextureDescriptor.depth = 1;

@@ -480,9 +480,9 @@ void VulkanPipelineBarrierSample::createCommandBuffer()
 void VulkanPipelineBarrierSample::createOffscreenTexture()
 {
 #if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kRGBA8Unorm;
 #else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kBGRA8Unorm;
 #endif
 
     TextureDescriptor textureDescriptor;
