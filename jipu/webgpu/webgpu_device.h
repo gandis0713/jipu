@@ -14,6 +14,7 @@ class WebGPUQueue;
 class WebGPUBindGroup;
 class WebGPUBindGroupLayout;
 class WebGPUPipelineLayout;
+class WebGPURenderPipeline;
 class WebGPUDevice : public RefCounted
 {
 public:
@@ -35,6 +36,7 @@ public: // WebGPU API
     WebGPUBindGroup* createBindGroup(WGPUBindGroupDescriptor const* descriptor);
     WebGPUBindGroupLayout* createBindGroupLayout(WGPUBindGroupLayoutDescriptor const* descriptor);
     WebGPUPipelineLayout* createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor);
+    WebGPURenderPipeline* createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor);
 
 public:
     Device* getDevice() const;

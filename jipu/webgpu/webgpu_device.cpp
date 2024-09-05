@@ -5,6 +5,7 @@
 #include "webgpu_bind_group_layout.h"
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
+#include "webgpu_render_pipeline.h"
 
 namespace jipu
 {
@@ -48,6 +49,11 @@ WebGPUBindGroupLayout* WebGPUDevice::createBindGroupLayout(WGPUBindGroupLayoutDe
 WebGPUPipelineLayout* WebGPUDevice::createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor)
 {
     return WebGPUPipelineLayout::create(this, descriptor);
+}
+
+WebGPURenderPipeline* WebGPUDevice::createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor)
+{
+    return WebGPURenderPipeline::create(this, descriptor);
 }
 
 Device* WebGPUDevice::getDevice() const
