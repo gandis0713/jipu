@@ -267,7 +267,7 @@ void OffscreenSample::createOffscreenBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_offscreen.uniformBuffer->getSize(),
-        .buffer = *m_offscreen.uniformBuffer,
+        .buffer = m_offscreen.uniformBuffer.get(),
     };
 
     BindingGroupDescriptor descriptor{
@@ -431,12 +431,12 @@ void OffscreenSample::createOnscreenBindingGroup()
 {
     SamplerBinding samplerBinding{
         .index = 0,
-        .sampler = *m_onscreen.sampler
+        .sampler = m_onscreen.sampler.get()
     };
 
     TextureBinding textureBinding{
         .index = 1,
-        .textureView = *m_offscreen.renderTextureView
+        .textureView = m_offscreen.renderTextureView.get()
     };
 
     BindingGroupDescriptor descriptor{

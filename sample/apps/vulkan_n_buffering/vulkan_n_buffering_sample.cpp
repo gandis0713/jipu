@@ -144,7 +144,7 @@ void VulkanNBufferingSample::draw()
                                  .loadOp = LoadOp::kClear,
                                  .storeOp = StoreOp::kStore,
                                  .clearValue = { 0.0, 0.0, 0.0, 0.0 } });
-    DepthStencilAttachment depthStencilAttachment{ .textureView = *m_depthStencilTextureView,
+    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
                                                    .depthLoadOp = LoadOp::kClear,
                                                    .depthStoreOp = StoreOp::kStore,
                                                    .stencilLoadOp = LoadOp::kDontCare,
@@ -425,7 +425,7 @@ void VulkanNBufferingSample::createBindingGroup()
             .index = 0,
             .offset = 0,
             .size = sizeof(UniformBufferObject),
-            .buffer = *m_uniformBuffer,
+            .buffer = m_uniformBuffer.get(),
         };
 
         BindingGroupDescriptor descriptor{
@@ -439,12 +439,12 @@ void VulkanNBufferingSample::createBindingGroup()
     {
         SamplerBinding samplerBinding{
             .index = 0,
-            .sampler = *m_imageSampler,
+            .sampler = m_imageSampler.get(),
         };
 
         TextureBinding textureBinding{
             .index = 1,
-            .textureView = *m_imageTextureView,
+            .textureView = m_imageTextureView.get(),
         };
 
         BindingGroupDescriptor descriptor{
@@ -552,12 +552,12 @@ void VulkanNBufferingSample::createRenderPipeline()
 void VulkanNBufferingSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
     BlitBuffer srcBuffer{
-        .buffer = src,
+        .buffer = &src,
         .offset = 0,
     };
 
     BlitBuffer dstBuffer{
-        .buffer = dst,
+        .buffer = &dst,
         .offset = 0,
     };
 
@@ -578,13 +578,13 @@ void VulkanNBufferingSample::copyBufferToTexture(Buffer& imageTextureStagingBuff
     uint32_t bytesPerData = sizeof(unsigned char); // TODO: from buffer.
 
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = imageTextureStagingBuffer,
+        .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = bytesPerData * imageTexture.getWidth() * channel,
         .rowsPerTexture = imageTexture.getHeight(),
     };
 
-    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();

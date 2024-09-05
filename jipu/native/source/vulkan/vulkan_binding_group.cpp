@@ -28,7 +28,7 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
         const BufferBinding& buffer = descriptor.buffers[i];
 
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = downcast(buffer.buffer).getVkBuffer();
+        bufferInfo.buffer = downcast(buffer.buffer)->getVkBuffer();
         bufferInfo.offset = buffer.offset;
         bufferInfo.range = buffer.size;
 
@@ -41,7 +41,7 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
         const SamplerBinding& sampler = descriptor.samplers[i];
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.sampler = downcast(sampler.sampler).getVkSampler();
+        imageInfo.sampler = downcast(sampler.sampler)->getVkSampler();
 
         vkdescriptor.samplers[i] = imageInfo;
     }
@@ -52,11 +52,11 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
     {
         const TextureBinding& texture = descriptor.textures[i];
 
-        auto& vulkanTextureView = downcast(texture.textureView);
-        auto vulkanTexture = downcast(vulkanTextureView.getTexture());
+        auto vulkanTextureView = downcast(texture.textureView);
+        auto vulkanTexture = downcast(vulkanTextureView->getTexture());
 
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageView = vulkanTextureView.getVkImageView();
+        imageInfo.imageView = vulkanTextureView->getVkImageView();
         imageInfo.imageLayout = vulkanTexture->getFinalLayout();
 
         vkdescriptor.textures[i] = imageInfo;

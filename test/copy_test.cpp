@@ -43,14 +43,14 @@ void CopyTest::SetUp()
     EXPECT_NE(nullptr, m_srcTexture);
 
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = *m_srcBuffer,
+        .buffer = m_srcBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
     BlitTexture blitTexture{
-        .texture = *m_srcTexture,
+        .texture = m_srcTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
 
@@ -95,14 +95,14 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     EXPECT_NE(nullptr, dstBuffer);
 
     BlitTextureBuffer dstBlitBuffer{
-        .buffer = *dstBuffer,
+        .buffer = dstBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
     BlitTexture srcBlitTexture{
-        .texture = *srcTexture,
+        .texture = srcTexture,
         .aspect = TextureAspectFlagBits::kColor,
     };
 
@@ -144,7 +144,7 @@ TEST_F(CopyTest, test_BufferToBuffer)
     EXPECT_NE(nullptr, commandEncoder);
 
     BlitBuffer srcBlitBuffer{
-        .buffer = *m_srcBuffer,
+        .buffer = m_srcBuffer.get(),
         .offset = 0,
     };
 
@@ -156,7 +156,7 @@ TEST_F(CopyTest, test_BufferToBuffer)
     EXPECT_NE(nullptr, buffer);
 
     BlitBuffer dstBlitBuffer{
-        .buffer = *buffer,
+        .buffer = buffer.get(),
         .offset = 0,
     };
 
@@ -194,14 +194,14 @@ TEST_F(CopyTest, test_BufferToTexture)
     EXPECT_NE(nullptr, texture);
 
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = *m_srcBuffer,
+        .buffer = m_srcBuffer.get(),
         .offset = 0,
         .bytesPerRow = static_cast<uint32_t>(m_image.width * m_image.channel * sizeof(char)),
         .rowsPerTexture = static_cast<uint32_t>(m_image.height),
     };
 
     BlitTexture blitTexture{
-        .texture = *texture,
+        .texture = texture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
 
@@ -252,12 +252,12 @@ TEST_F(CopyTest, test_TextureToTexture)
     EXPECT_NE(nullptr, dstTexture);
 
     BlitTexture srcBlitTexture{
-        .texture = *m_srcTexture,
+        .texture = m_srcTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
 
     BlitTexture dstBlitTexture{
-        .texture = *dstTexture,
+        .texture = dstTexture.get(),
         .aspect = TextureAspectFlagBits::kColor,
     };
 

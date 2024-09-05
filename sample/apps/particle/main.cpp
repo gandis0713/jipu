@@ -336,21 +336,21 @@ void ParticleSample::createComputeBindingGroup()
             .index = 0,
             .offset = 0,
             .size = m_uniformBuffer->getSize(),
-            .buffer = *m_uniformBuffer,
+            .buffer = m_uniformBuffer.get(),
         };
 
         BufferBinding bufferInBinding{
             .index = 1,
             .offset = 0,
             .size = m_vertexBuffers[0]->getSize(),
-            .buffer = *m_vertexBuffers[0],
+            .buffer = m_vertexBuffers[0].get(),
         };
 
         BufferBinding bufferOutBinding{
             .index = 2,
             .offset = 0,
             .size = m_vertexBuffers[1]->getSize(),
-            .buffer = *m_vertexBuffers[1],
+            .buffer = m_vertexBuffers[1].get(),
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
@@ -373,21 +373,21 @@ void ParticleSample::createComputeBindingGroup()
             .index = 0,
             .offset = 0,
             .size = m_uniformBuffer->getSize(),
-            .buffer = *m_uniformBuffer,
+            .buffer = m_uniformBuffer.get(),
         };
 
         BufferBinding bufferInBinding{
             .index = 1,
             .offset = 0,
             .size = m_vertexBuffers[1]->getSize(),
-            .buffer = *m_vertexBuffers[1],
+            .buffer = m_vertexBuffers[1].get(),
         };
 
         BufferBinding bufferOutBinding{
             .index = 2,
             .offset = 0,
             .size = m_vertexBuffers[0]->getSize(),
-            .buffer = *m_vertexBuffers[0],
+            .buffer = m_vertexBuffers[0].get(),
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{

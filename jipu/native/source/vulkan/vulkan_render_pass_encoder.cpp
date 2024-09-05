@@ -125,7 +125,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     {
         auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
 
-        const auto texture = downcast(depthStencilAttachment.textureView.getTexture());
+        const auto texture = downcast(depthStencilAttachment.textureView->getTexture());
 
         VkAttachmentDescription attachment{};
         attachment.format = ToVkFormat(texture->getFormat());
@@ -221,7 +221,7 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     if (descriptor.depthStencilAttachment.has_value())
     {
         auto depthStencilAttachment = descriptor.depthStencilAttachment.value();
-        vkdescriptor.attachments.push_back(downcast(depthStencilAttachment.textureView).getVkImageView());
+        vkdescriptor.attachments.push_back(downcast(depthStencilAttachment.textureView)->getVkImageView());
     }
 
     return vkdescriptor;

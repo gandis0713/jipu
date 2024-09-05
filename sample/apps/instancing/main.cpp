@@ -401,7 +401,7 @@ void InstancingSample::createInstancingBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_instancing.uniformBuffer->getSize(),
-        .buffer = *m_instancing.uniformBuffer,
+        .buffer = m_instancing.uniformBuffer.get(),
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
@@ -574,14 +574,14 @@ void InstancingSample::createNonInstancingBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_nonInstancing.uniformBuffer->getSize(),
-        .buffer = *m_nonInstancing.uniformBuffer,
+        .buffer = m_nonInstancing.uniformBuffer.get(),
     };
 
     BufferBinding instancingBufferBinding{
         .index = 1,
         .offset = 0,
         .size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size(),
-        .buffer = *m_nonInstancing.transformBuffer,
+        .buffer = m_nonInstancing.transformBuffer.get(),
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{

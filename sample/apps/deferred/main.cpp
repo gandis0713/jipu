@@ -374,7 +374,7 @@ void DeferredSample::draw()
         albedoColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
         DepthStencilAttachment depthStencilAttachment{
-            .textureView = *m_depthStencilTextureView
+            .textureView = m_depthStencilTextureView.get()
         };
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
@@ -407,7 +407,7 @@ void DeferredSample::draw()
         colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
         DepthStencilAttachment depthStencilAttachment{
-            .textureView = *m_depthStencilTextureView
+            .textureView = m_depthStencilTextureView.get()
         };
         depthStencilAttachment.depthLoadOp = LoadOp::kClear;
         depthStencilAttachment.depthStoreOp = StoreOp::kStore;
@@ -539,14 +539,14 @@ void DeferredSample::createOffscreenColorMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
         BlitTexture blitTexture{
-            .texture = *m_offscreen.colorMapTexture,
+            .texture = m_offscreen.colorMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
 
@@ -610,14 +610,14 @@ void DeferredSample::createOffscreenNormalMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *stagingBuffer,
+            .buffer = stagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight())
         };
 
         BlitTexture blitTexture{
-            .texture = *m_offscreen.normalMapTexture,
+            .texture = m_offscreen.normalMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
 
@@ -784,7 +784,7 @@ void DeferredSample::createOffscreenBindingGroup()
             .index = 0,
             .offset = 0,
             .size = sizeof(MVP),
-            .buffer = *m_offscreen.uniformBuffer,
+            .buffer = m_offscreen.uniformBuffer.get(),
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
@@ -798,22 +798,22 @@ void DeferredSample::createOffscreenBindingGroup()
     {
         SamplerBinding colorSamplerBinding{
             .index = 0,
-            .sampler = *m_offscreen.colorMapSampler,
+            .sampler = m_offscreen.colorMapSampler.get(),
         };
 
         SamplerBinding normalSamplerBinding{
             .index = 1,
-            .sampler = *m_offscreen.normalMapSampler,
+            .sampler = m_offscreen.normalMapSampler.get(),
         };
 
         TextureBinding colorTextureBinding{
             .index = 2,
-            .textureView = *m_offscreen.colorMapTextureView,
+            .textureView = m_offscreen.colorMapTextureView.get(),
         };
 
         TextureBinding normalTextureBinding{
             .index = 3,
-            .textureView = *m_offscreen.normalMapTextureView,
+            .textureView = m_offscreen.normalMapTextureView.get(),
         };
 
         BindingGroupDescriptor bindingGroupDescriptor{
@@ -996,7 +996,7 @@ void DeferredSample::createCompositionBindingGroup()
 
     SamplerBinding positionSamplerBinding{
         .index = 0,
-        .sampler = *m_composition.positionSampler
+        .sampler = m_composition.positionSampler.get()
     };
 
     {
@@ -1015,7 +1015,7 @@ void DeferredSample::createCompositionBindingGroup()
 
     SamplerBinding normalSamplerBinding{
         .index = 1,
-        .sampler = *m_composition.normalSampler
+        .sampler = m_composition.normalSampler.get()
 
     };
 
@@ -1035,7 +1035,7 @@ void DeferredSample::createCompositionBindingGroup()
 
     SamplerBinding albedoSamplerBinding{
         .index = 2,
-        .sampler = *m_composition.albedoSampler
+        .sampler = m_composition.albedoSampler.get()
 
     };
 
@@ -1043,24 +1043,24 @@ void DeferredSample::createCompositionBindingGroup()
     // positionTextureBinding.textureView = m_offscreen.positionColorAttachmentTextureView.get();
     TextureBinding positionTextureBinding{
         .index = 3,
-        .textureView = *m_offscreen.positionColorAttachmentTextureView
+        .textureView = m_offscreen.positionColorAttachmentTextureView.get()
     };
 
     TextureBinding normalTextureBinding{
         .index = 4,
-        .textureView = *m_offscreen.normalColorAttachmentTextureView
+        .textureView = m_offscreen.normalColorAttachmentTextureView.get()
     };
 
     TextureBinding albedoTextureBinding{
         .index = 5,
-        .textureView = *m_offscreen.albedoColorAttachmentTextureView
+        .textureView = m_offscreen.albedoColorAttachmentTextureView.get()
     };
 
     BufferBinding uniformBufferBinding{
         .index = 6,
         .offset = 0,
         .size = m_composition.uniformBuffer->getSize(),
-        .buffer = *m_composition.uniformBuffer,
+        .buffer = m_composition.uniformBuffer.get(),
     };
 
     BindingGroupDescriptor descriptor{

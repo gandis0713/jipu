@@ -16,8 +16,6 @@
 #include "jipu/surface.h"
 #include "jipu/swapchain.h"
 
-#include <webgpu.h>
-
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <spdlog/spdlog.h>
@@ -269,7 +267,7 @@ void TriangleSample::createBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_uniformBuffer->getSize(),
-        .buffer = *m_uniformBuffer,
+        .buffer = m_uniformBuffer.get(),
     };
 
     BindingGroupDescriptor descriptor{

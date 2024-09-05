@@ -166,7 +166,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     // copy buffer to texture
     {
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *m_fontBuffer,
+            .buffer = m_fontBuffer.get(),
             .offset = 0,
             .bytesPerRow = 0,
             .rowsPerTexture = 0,
@@ -178,7 +178,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
         BlitTexture blitTexture{
-            .texture = *m_fontTexture,
+            .texture = m_fontTexture.get(),
             .aspect = TextureAspectFlagBits::kColor
         };
         Extent3D extent{};
@@ -256,7 +256,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
                 .index = 0,
                 .offset = 0,
                 .size = m_uniformBuffer->getSize(),
-                .buffer = *m_uniformBuffer,
+                .buffer = m_uniformBuffer.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -270,12 +270,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         {
             SamplerBinding fontSamplerBinding{
                 .index = 0,
-                .sampler = *m_fontSampler,
+                .sampler = m_fontSampler.get(),
             };
 
             TextureBinding fontTextureBinding{
                 .index = 1,
-                .textureView = *m_fontTextureView,
+                .textureView = m_fontTextureView.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{

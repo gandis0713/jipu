@@ -62,16 +62,16 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
     copyRegion.dstOffset = 0; // Optional
     copyRegion.size = size;
 
-    VkBuffer srcBuffer = downcast(src.buffer).getVkBuffer();
-    VkBuffer dstBuffer = downcast(dst.buffer).getVkBuffer();
+    VkBuffer srcBuffer = downcast(src.buffer)->getVkBuffer();
+    VkBuffer dstBuffer = downcast(dst.buffer)->getVkBuffer();
 
     vkAPI.CmdCopyBuffer(vulkanCommandBuffer.getVkCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
 }
 
 void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureBuffer, const BlitTexture& texture, const Extent3D& extent)
 {
-    auto& vulkanTexture = downcast(texture.texture);
-    if (!(vulkanTexture.getUsage() & TextureUsageFlagBits::kCopyDst))
+    auto vulkanTexture = downcast(texture.texture);
+    if (!(vulkanTexture->getUsage() & TextureUsageFlagBits::kCopyDst))
         throw std::runtime_error("The texture is not used for copy dst.");
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
@@ -82,15 +82,15 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     VkImageSubresourceRange range;
     range.aspectMask = ToVkImageAspectFlags(texture.aspect);
     range.baseMipLevel = 0;
-    range.levelCount = texture.texture.getMipLevels();
+    range.levelCount = texture.texture->getMipLevels();
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
     // set pipeline barrier for dst
-    vulkanTexture.setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, range);
+    vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, range);
 
     // copy buffer to texture
-    auto& vulkanBuffer = downcast(textureBuffer.buffer);
+    auto vulkanBuffer = downcast(textureBuffer.buffer);
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -108,8 +108,8 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
                            .depth = extent.depth };
 
     vkAPI.CmdCopyBufferToImage(commandBuffer,
-                               vulkanBuffer.getVkBuffer(),
-                               vulkanTexture.getVkImage(),
+                               vulkanBuffer->getVkBuffer(),
+                               vulkanTexture->getVkImage(),
                                // dstImageLayout must be
                                //   VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR
                                //   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
@@ -118,12 +118,12 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
                                1,
                                &region);
 
-    if (uint32_t mipLevels = texture.texture.getMipLevels(); mipLevels > 1)
+    if (uint32_t mipLevels = texture.texture->getMipLevels(); mipLevels > 1)
     {
-        VkImage image = vulkanTexture.getVkImage();
+        VkImage image = vulkanTexture->getVkImage();
 
-        int32_t width = static_cast<int32_t>(texture.texture.getWidth());
-        int32_t height = static_cast<int32_t>(texture.texture.getHeight());
+        int32_t width = static_cast<int32_t>(texture.texture->getWidth());
+        int32_t height = static_cast<int32_t>(texture.texture->getHeight());
         for (uint32_t i = 1; i < mipLevels; ++i)
         {
 
@@ -135,7 +135,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
             srcSubresourceRange.layerCount = 1;
 
             // set pipeline barrier for src
-            vulkanTexture.setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
+            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
 
             VkImageBlit blit{};
             blit.srcOffsets[0] = { 0, 0, 0 };
@@ -158,7 +158,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
                                VK_FILTER_LINEAR);
 
             // set pipeline barrier for dst
-            vulkanTexture.setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
+            vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, srcSubresourceRange);
 
             width = std::max(width >> 1, 1);
             height = std::max(height >> 1, 1);
@@ -166,7 +166,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& textureB
     }
 
     // set pipeline barrier to restore final layout
-    vulkanTexture.setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vulkanTexture.getFinalLayout(), range);
+    vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vulkanTexture->getFinalLayout(), range);
 }
 
 void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent)
@@ -176,7 +176,7 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // set pipeline barrier to change image layout
-    auto& vulkanTexture = downcast(texture.texture);
+    auto vulkanTexture = downcast(texture.texture);
 
     VkImageSubresourceRange range{};
     range.aspectMask = ToVkImageAspectFlags(texture.aspect);
@@ -185,10 +185,10 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
     range.baseMipLevel = 0;
     range.levelCount = 1;
 
-    auto srcImage = vulkanTexture.getVkImage();
+    auto srcImage = vulkanTexture->getVkImage();
 
-    auto& vulkanBuffer = downcast(buffer.buffer);
-    auto dstBuffer = vulkanBuffer.getVkBuffer();
+    auto vulkanBuffer = downcast(buffer.buffer);
+    auto dstBuffer = vulkanBuffer->getVkBuffer();
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -204,11 +204,11 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
                            .depth = extent.depth };
 
     // layout transition before copy.
-    vulkanTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, range);
+    vulkanTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, range);
     vkAPI.CmdCopyImageToBuffer(vulkanCommandBuffer.getVkCommandBuffer(), srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstBuffer, 1, &region);
 
     // set pipeline barrier to restore final layout.
-    vulkanTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanTexture.getFinalLayout(), range);
+    vulkanTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanTexture->getFinalLayout(), range);
 }
 
 void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent)
@@ -225,8 +225,8 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
     srcSubresourceRange.baseMipLevel = 0;
     srcSubresourceRange.levelCount = 1;
 
-    auto& srcTexture = downcast(src.texture);
-    srcTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), srcTexture.getFinalLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
+    auto srcTexture = downcast(src.texture);
+    srcTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), srcTexture->getFinalLayout(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcSubresourceRange);
 
     // set pipeline barrier to change image layout for dst
     VkImageSubresourceRange dstSubresourceRange{};
@@ -236,8 +236,8 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
     dstSubresourceRange.baseMipLevel = 0;
     dstSubresourceRange.levelCount = 1;
 
-    auto& dstTexture = downcast(dst.texture);
-    dstTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstSubresourceRange);
+    auto dstTexture = downcast(dst.texture);
+    dstTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstSubresourceRange);
 
     VkImageCopy copyRegion = {};
     copyRegion.srcSubresource.aspectMask = ToVkImageAspectFlags(src.aspect);
@@ -258,8 +258,8 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
     copyRegion.extent.height = extent.height;
     copyRegion.extent.depth = extent.depth;
 
-    auto srcImage = srcTexture.getVkImage();
-    auto dstImage = dstTexture.getVkImage();
+    auto srcImage = srcTexture->getVkImage();
+    auto dstImage = dstTexture->getVkImage();
     vkAPI.CmdCopyImage(vulkanCommandBuffer.getVkCommandBuffer(),
                        srcImage,
                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -269,8 +269,8 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
                        &copyRegion);
 
     // set pipeline barrier to restore final layout.
-    srcTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcTexture.getFinalLayout(), srcSubresourceRange);
-    dstTexture.setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstTexture.getFinalLayout(), dstSubresourceRange);
+    srcTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcTexture->getFinalLayout(), srcSubresourceRange);
+    dstTexture->setPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstTexture->getFinalLayout(), dstSubresourceRange);
 }
 
 void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,

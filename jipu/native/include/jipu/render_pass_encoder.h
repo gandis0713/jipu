@@ -53,7 +53,7 @@ struct DepthStencilClearValue
 
 struct DepthStencilAttachment
 {
-    TextureView& textureView;
+    TextureView* textureView = nullptr;
     LoadOp depthLoadOp = LoadOp::kDontCare;
     StoreOp depthStoreOp = StoreOp::kDontCare;
     LoadOp stencilLoadOp = LoadOp::kDontCare;

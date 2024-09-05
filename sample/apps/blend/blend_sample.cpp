@@ -265,12 +265,12 @@ std::unique_ptr<BindingGroup> BlendSample::createBindingGroup(TextureView* textu
 {
     SamplerBinding imageSamplerBinding{
         .index = 0,
-        .sampler = *m_sampler,
+        .sampler = m_sampler.get(),
     };
 
     TextureBinding imageTextureBinding{
         .index = 1,
-        .textureView = *textureView,
+        .textureView = textureView,
     };
     BindingGroupDescriptor bindingGroupDescriptor{
         .layout = m_bindingGroupLayout.get(),
@@ -379,7 +379,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
 void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = imageTextureStagingBuffer,
+        .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
         .rowsPerTexture = 0
@@ -390,7 +390,7 @@ void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture
     blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
     blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();

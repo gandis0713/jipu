@@ -274,7 +274,7 @@ void VulkanSubpassesSample::draw()
             albedoColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             DepthStencilAttachment depthStencilAttachment{
-                .textureView = *m_depthStencilTextureView
+                .textureView = m_depthStencilTextureView.get()
             };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
@@ -316,7 +316,7 @@ void VulkanSubpassesSample::draw()
             colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             DepthStencilAttachment depthStencilAttachment{
-                .textureView = *m_depthStencilTextureView
+                .textureView = m_depthStencilTextureView.get()
             };
             depthStencilAttachment.depthLoadOp = LoadOp::kClear;
             depthStencilAttachment.depthStoreOp = StoreOp::kStore;
@@ -659,14 +659,14 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *m_offscreen.colorStagingBuffer,
+            .buffer = m_offscreen.colorStagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
         BlitTexture blitTexture{
-            .texture = *m_offscreen.colorMapTexture,
+            .texture = m_offscreen.colorMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
 
@@ -729,14 +729,14 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         // stagingBuffer->unmap();
 
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *m_offscreen.normalStagingBuffer,
+            .buffer = m_offscreen.normalStagingBuffer.get(),
             .offset = 0,
             .bytesPerRow = static_cast<uint32_t>(ktx.getWidth() * ktx.getChannel() * sizeof(char)),
             .rowsPerTexture = static_cast<uint32_t>(ktx.getHeight()),
         };
 
         BlitTexture blitTexture{
-            .texture = *m_offscreen.normalMapTexture,
+            .texture = m_offscreen.normalMapTexture.get(),
             .aspect = TextureAspectFlagBits::kColor,
         };
 
@@ -948,7 +948,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .index = 0,
                 .offset = 0,
                 .size = sizeof(MVP),
-                .buffer = *m_offscreen.uniformBuffer,
+                .buffer = m_offscreen.uniformBuffer.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -962,22 +962,22 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
         {
             SamplerBinding colorSamplerBinding{
                 .index = 0,
-                .sampler = *m_offscreen.colorMapSampler
+                .sampler = m_offscreen.colorMapSampler.get()
             };
 
             SamplerBinding normalSamplerBinding{
                 .index = 1,
-                .sampler = *m_offscreen.normalMapSampler
+                .sampler = m_offscreen.normalMapSampler.get()
             };
 
             TextureBinding colorTextureBinding{
                 .index = 2,
-                .textureView = *m_offscreen.colorMapTextureView
+                .textureView = m_offscreen.colorMapTextureView.get()
             };
 
             TextureBinding normalTextureBinding{
                 .index = 3,
-                .textureView = *m_offscreen.normalMapTextureView
+                .textureView = m_offscreen.normalMapTextureView.get()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -998,7 +998,7 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
                 .index = 0,
                 .offset = 0,
                 .size = sizeof(MVP),
-                .buffer = *m_offscreen.uniformBuffer,
+                .buffer = m_offscreen.uniformBuffer.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -1012,24 +1012,24 @@ void VulkanSubpassesSample::createOffscreenBindingGroup()
         {
             SamplerBinding colorSamplerBinding{
                 .index = 0,
-                .sampler = *m_offscreen.colorMapSampler
+                .sampler = m_offscreen.colorMapSampler.get()
             };
 
             SamplerBinding normalSamplerBinding{
                 .index = 1,
-                .sampler = *m_offscreen.normalMapSampler
+                .sampler = m_offscreen.normalMapSampler.get()
             };
 
             // colorTextureBinding.index = 2;
             // colorTextureBinding.textureView = m_offscreen.colorMapTextureView.get();
             TextureBinding colorTextureBinding{
                 .index = 2,
-                .textureView = *m_offscreen.colorMapTextureView
+                .textureView = m_offscreen.colorMapTextureView.get()
             };
 
             TextureBinding normalTextureBinding{
                 .index = 3,
-                .textureView = *m_offscreen.normalMapTextureView
+                .textureView = m_offscreen.normalMapTextureView.get()
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
@@ -1389,7 +1389,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
 
         SamplerBinding positionSamplerBinding{
             .index = 0,
-            .sampler = *m_composition.renderPasses.positionSampler
+            .sampler = m_composition.renderPasses.positionSampler.get()
         };
 
         {
@@ -1408,7 +1408,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
 
         SamplerBinding normalSamplerBinding{
             .index = 1,
-            .sampler = *m_composition.renderPasses.normalSampler
+            .sampler = m_composition.renderPasses.normalSampler.get()
         };
 
         {
@@ -1427,29 +1427,29 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
 
         SamplerBinding albedoSamplerBinding{
             .index = 2,
-            .sampler = *m_composition.renderPasses.albedoSampler
+            .sampler = m_composition.renderPasses.albedoSampler.get()
         };
 
         TextureBinding positionTextureBinding{
             .index = 3,
-            .textureView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
+            .textureView = m_offscreen.renderPasses.positionColorAttachmentTextureView.get()
         };
 
         TextureBinding normalTextureBinding{
             .index = 4,
-            .textureView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
+            .textureView = m_offscreen.renderPasses.normalColorAttachmentTextureView.get()
         };
 
         TextureBinding albedoTextureBinding{
             .index = 5,
-            .textureView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
+            .textureView = m_offscreen.renderPasses.albedoColorAttachmentTextureView.get()
         };
 
         BufferBinding uniformBufferBinding{
             .index = 6,
             .offset = 0,
             .size = m_composition.uniformBuffer->getSize(),
-            .buffer = *m_composition.uniformBuffer,
+            .buffer = m_composition.uniformBuffer.get(),
         };
 
         BindingGroupDescriptor descriptor{
@@ -1471,7 +1471,7 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
                 .index = 0,
                 .offset = 0,
                 .size = m_composition.uniformBuffer->getSize(),
-                .buffer = *m_composition.uniformBuffer,
+                .buffer = m_composition.uniformBuffer.get(),
             };
 
             BindingGroupDescriptor descriptor{
@@ -1485,17 +1485,17 @@ void VulkanSubpassesSample::createCompositionBindingGroup()
         {
             TextureBinding positionTextureBinding{
                 .index = 0,
-                .textureView = *m_offscreen.subPasses.positionColorAttachmentTextureView
+                .textureView = m_offscreen.subPasses.positionColorAttachmentTextureView.get()
             };
 
             TextureBinding normalTextureBinding{
                 .index = 1,
-                .textureView = *m_offscreen.subPasses.normalColorAttachmentTextureView
+                .textureView = m_offscreen.subPasses.normalColorAttachmentTextureView.get()
             };
 
             TextureBinding albedoTextureBinding{
                 .index = 2,
-                .textureView = *m_offscreen.subPasses.albedoColorAttachmentTextureView
+                .textureView = m_offscreen.subPasses.albedoColorAttachmentTextureView.get()
             };
 
             BindingGroupDescriptor descriptor{

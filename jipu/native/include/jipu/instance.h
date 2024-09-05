@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <string>
-#include <webgpu.h>
 
 namespace jipu
 {
