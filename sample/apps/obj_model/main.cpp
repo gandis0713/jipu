@@ -503,12 +503,12 @@ void OBJModelSample::createRenderPipeline()
         vertexAttributes.resize(2);
         {
             // position
-            vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+            vertexAttributes[0] = { .format = VertexFormat::kFloat32x3,
                                     .offset = offsetof(Vertex, pos),
                                     .location = 0 };
 
             // texture coodinate
-            vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+            vertexAttributes[1] = { .format = VertexFormat::kFloat32x2,
                                     .offset = offsetof(Vertex, texCoord),
                                     .location = 1 };
         }

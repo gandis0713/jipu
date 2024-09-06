@@ -308,12 +308,12 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(OffscreenVertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(OffscreenVertex, color);
     colorAttribute.location = 1;
 
@@ -478,12 +478,12 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(OnscreenVertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute texCoordAttribute{};
-    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.format = VertexFormat::kFloat32x2;
     texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
     texCoordAttribute.location = 1;
 

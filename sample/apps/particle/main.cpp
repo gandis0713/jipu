@@ -457,12 +457,12 @@ void ParticleSample::createRenderPipeline()
     vertexAttributes.resize(2);
     {
         // position
-        vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+        vertexAttributes[0] = { .format = VertexFormat::kFloat32x3,
                                 .offset = offsetof(Particle, position),
                                 .location = 0 };
 
         // texture coodinate
-        vertexAttributes[1] = { .format = VertexFormat::kSFLOATx4,
+        vertexAttributes[1] = { .format = VertexFormat::kFloat32x4,
                                 .offset = offsetof(Particle, color),
                                 .location = 1 };
     }

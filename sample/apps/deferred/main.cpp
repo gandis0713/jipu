@@ -859,22 +859,22 @@ void DeferredSample::createOffscreenPipeline()
     inputLayout.stride = sizeof(Vertex);
 
     VertexAttribute positionAttribute;
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute normalAttribute;
-    normalAttribute.format = VertexFormat::kSFLOATx3;
+    normalAttribute.format = VertexFormat::kFloat32x3;
     normalAttribute.offset = offsetof(Vertex, normal);
     normalAttribute.location = 1;
 
     VertexAttribute tangentAttribute;
-    tangentAttribute.format = VertexFormat::kSFLOATx4;
+    tangentAttribute.format = VertexFormat::kFloat32x4;
     tangentAttribute.offset = offsetof(Vertex, tangent);
     tangentAttribute.location = 2;
 
     VertexAttribute texCoordAttribute;
-    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.format = VertexFormat::kFloat32x2;
     texCoordAttribute.offset = offsetof(Vertex, texCoord);
     texCoordAttribute.location = 3;
 
@@ -1096,13 +1096,13 @@ void DeferredSample::createCompositionPipeline()
         std::vector<VertexAttribute> attributes(2);
 
         VertexAttribute positionAttribute{};
-        positionAttribute.format = VertexFormat::kSFLOATx3;
+        positionAttribute.format = VertexFormat::kFloat32x3;
         positionAttribute.offset = offsetof(CompositionVertex, position);
         positionAttribute.location = 0;
         attributes[0] = positionAttribute;
 
         VertexAttribute texCoordAttribute{};
-        texCoordAttribute.format = VertexFormat::kSFLOATx2;
+        texCoordAttribute.format = VertexFormat::kFloat32x2;
         texCoordAttribute.offset = offsetof(CompositionVertex, textureCoordinate);
         texCoordAttribute.location = 1;
         attributes[1] = texCoordAttribute;

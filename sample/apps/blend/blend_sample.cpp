@@ -314,12 +314,12 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx2;
+    positionAttribute.format = VertexFormat::kFloat32x2;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute texCoordAttribute{};
-    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.format = VertexFormat::kFloat32x2;
     texCoordAttribute.offset = offsetof(Vertex, texCoord);
     texCoordAttribute.location = 1;
 

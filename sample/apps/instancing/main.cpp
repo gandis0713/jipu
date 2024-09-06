@@ -442,13 +442,13 @@ void InstancingSample::createInstancingRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
     positionAttribute.slot = VERTEX_SLOT;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
     colorAttribute.slot = VERTEX_SLOT;
@@ -459,7 +459,7 @@ void InstancingSample::createInstancingRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexAttribute shiftAttribute{};
-    shiftAttribute.format = VertexFormat::kSFLOATx3;
+    shiftAttribute.format = VertexFormat::kFloat32x3;
     shiftAttribute.offset = offsetof(Transform, translation);
     shiftAttribute.location = 2;
     shiftAttribute.slot = INSTANCING_SLOT;
@@ -622,13 +622,13 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
     positionAttribute.slot = 0;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
     colorAttribute.slot = 0;

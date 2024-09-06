@@ -292,12 +292,12 @@ void QuerySample::createRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
 

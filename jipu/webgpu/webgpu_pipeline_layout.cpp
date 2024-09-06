@@ -23,4 +23,9 @@ WebGPUPipelineLayout::WebGPUPipelineLayout(WebGPUDevice* device, std::unique_ptr
 {
 }
 
+PipelineLayout* WebGPUPipelineLayout::getPipelineLayout() const
+{
+    return m_layout.get();
+}
+
 } // namespace jipu

@@ -26,6 +26,9 @@ public:
     WebGPUPipelineLayout& operator=(const WebGPUPipelineLayout&) = delete;
 
 public: // WebGPU API
+public:
+    PipelineLayout* getPipelineLayout() const;
+
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUPipelineLayoutDescriptor m_descriptor{};
