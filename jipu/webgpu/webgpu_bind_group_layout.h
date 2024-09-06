@@ -15,7 +15,7 @@ class WebGPUBindGroupLayout : public RefCounted
 {
 
 public:
-    static WebGPUBindGroupLayout* create(WebGPUDevice* device, WGPUBindGroupLayoutDescriptor const* descriptor);
+    static WebGPUBindGroupLayout* create(WebGPUDevice* wgpuDevice, WGPUBindGroupLayoutDescriptor const* descriptor);
 
 public:
     WebGPUBindGroupLayout() = delete;
@@ -38,5 +38,13 @@ private:
 private:
     std::unique_ptr<BindingGroupLayout> m_layout = nullptr;
 };
+
+// Convert from WebGPU to JIPU
+BindingStageFlags ToBindingStageFlags(WGPUShaderStage stages);
+BufferBindingType ToBufferBindingType(WGPUBufferBindingType type);
+
+// Conert from JIPU to WebGPU
+WGPUShaderStage ToWGPUShaderStage(BindingStageFlags stages);
+WGPUBufferBindingType ToWGPUBufferBindingType(BufferBindingType type);
 
 } // namespace jipu

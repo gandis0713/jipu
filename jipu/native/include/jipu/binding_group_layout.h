@@ -11,7 +11,8 @@ enum class BufferBindingType
 {
     kUndefined = 0,
     kUniform,
-    kStorage
+    kStorage,
+    kReadOnlyStorage,
 };
 
 struct BindingStageFlagBits
@@ -23,25 +24,27 @@ struct BindingStageFlagBits
 };
 using BindingStageFlags = uint32_t;
 
-struct BindingLayout
+struct BufferBindingLayout
+{
+    /// @brief The index of binding.
+    uint32_t index = 0;
+    BindingStageFlags stages = 0u;
+    BufferBindingType type = BufferBindingType::kUndefined;
+    bool dynamicOffset = false;
+};
+
+struct SamplerBindingLayout
 {
     /// @brief The index of binding.
     uint32_t index = 0;
     BindingStageFlags stages = 0u;
 };
 
-struct BufferBindingLayout : BindingLayout
+struct TextureBindingLayout
 {
-    BufferBindingType type = BufferBindingType::kUndefined;
-    bool dynamicOffset = false;
-};
-
-struct SamplerBindingLayout : BindingLayout
-{
-};
-
-struct TextureBindingLayout : BindingLayout
-{
+    /// @brief The index of binding.
+    uint32_t index = 0;
+    BindingStageFlags stages = 0u;
 };
 
 struct BindingGroupLayoutDescriptor
