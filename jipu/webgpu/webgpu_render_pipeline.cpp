@@ -106,7 +106,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
         }
     }
 
-    auto device = reinterpret_cast<WebGPUDevice*>(wgpuDevice)->getDevice();
+    auto device = wgpuDevice->getDevice();
     auto renderPipeline = device->createRenderPipeline(pipelineDescriptor);
 
     return new WebGPURenderPipeline(wgpuDevice, std::move(renderPipeline), descriptor);

@@ -15,11 +15,11 @@ class WebGPUShaderModule : public RefCounted
 {
 
 public:
-    static WebGPUShaderModule* create(WebGPUDevice* device, WGPUShaderModuleDescriptor const* descriptor);
+    static WebGPUShaderModule* create(WebGPUDevice* wgpuDevice, WGPUShaderModuleDescriptor const* descriptor);
 
 public:
     WebGPUShaderModule() = delete;
-    explicit WebGPUShaderModule(WebGPUDevice* device, std::unique_ptr<ShaderModule> shaderModule, WGPUShaderModuleDescriptor const* descriptor);
+    explicit WebGPUShaderModule(WebGPUDevice* wgpuDevice, std::unique_ptr<ShaderModule> shaderModule, WGPUShaderModuleDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUShaderModule() = default;

@@ -6,6 +6,7 @@
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
 #include "webgpu_render_pipeline.h"
+#include "webgpu_shader_module.h"
 
 namespace jipu
 {
@@ -54,6 +55,11 @@ WebGPUPipelineLayout* WebGPUDevice::createPipelineLayout(WGPUPipelineLayoutDescr
 WebGPURenderPipeline* WebGPUDevice::createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor)
 {
     return WebGPURenderPipeline::create(this, descriptor);
+}
+
+WebGPUShaderModule* WebGPUDevice::createShaderModule(WGPUShaderModuleDescriptor const* descriptor)
+{
+    return WebGPUShaderModule::create(this, descriptor);
 }
 
 Device* WebGPUDevice::getDevice() const

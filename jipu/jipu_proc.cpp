@@ -76,6 +76,12 @@ WGPURenderPipeline procDeviceCreateRenderPipeline(WGPUDevice device, WGPURenderP
     return reinterpret_cast<WGPURenderPipeline>(webgpuDevice->createRenderPipeline(descriptor));
 }
 
+WGPUShaderModule procDeviceCreateShaderModule(WGPUDevice device, WGPUShaderModuleDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUShaderModule>(webgpuDevice->createShaderModule(descriptor));
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

@@ -15,7 +15,7 @@ WebGPUPipelineLayout* WebGPUPipelineLayout::create(WebGPUDevice* wgpuDevice, WGP
         layoutDescriptor.layouts.push_back(reinterpret_cast<WebGPUBindGroupLayout*>(descriptor->bindGroupLayouts[i])->getBindingGroupLayout());
     }
 
-    auto device = reinterpret_cast<WebGPUDevice*>(wgpuDevice)->getDevice();
+    auto device = wgpuDevice->getDevice();
     auto layout = device->createPipelineLayout(layoutDescriptor);
 
     return new WebGPUPipelineLayout(wgpuDevice, std::move(layout), descriptor);
