@@ -308,17 +308,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         VertexInputLayout vertexInputLayout{};
         {
             VertexAttribute positionAttribute{};
-            positionAttribute.format = VertexFormat::kSFLOATx2;
+            positionAttribute.format = VertexFormat::kFloat32x2;
             positionAttribute.offset = offsetof(ImDrawVert, pos);
             positionAttribute.location = 0;
 
             VertexAttribute uiAttribute{};
-            uiAttribute.format = VertexFormat::kSFLOATx2;
+            uiAttribute.format = VertexFormat::kFloat32x2;
             uiAttribute.offset = offsetof(ImDrawVert, uv);
             uiAttribute.location = 1;
 
             VertexAttribute colorAttribute{};
-            colorAttribute.format = VertexFormat::kUNORM8x4;
+            colorAttribute.format = VertexFormat::kUnorm8x4;
             colorAttribute.offset = offsetof(ImDrawVert, col);
             colorAttribute.location = 2;
 
@@ -336,7 +336,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         VertexStage vertexStage{
-            { *vertexShaderModule, "main" },
+            { vertexShaderModule.get(), "main" },
             { vertexInputLayout },
         };
 
@@ -374,12 +374,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         FragmentStage fragmentStage{
-            { *fragmentShaderModule, "main" }, // ProgramableStage
+            { fragmentShaderModule.get(), "main" }, // ProgramableStage
             { target }
         };
 
         RenderPipelineDescriptor renderPipelineDescriptor{
-            { *m_pipelineLayout }, // PipelineDescriptor
+            m_pipelineLayout.get(), // PipelineDescriptor
             inputAssemblyStage,
             vertexStage,
             rasterizationStage,

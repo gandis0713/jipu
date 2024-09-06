@@ -101,7 +101,7 @@ void BlendSample::draw()
 void BlendSample::updateImGui()
 {
     static const std::vector<std::string> opItems = { "kAdd", "kSubtract", "kReversSubtract", "kMin", "kMax" };
-    static const std::vector<std::string> factorItems = { "kZero", "kOne", "kSrcColor", "kSrcAlpha", "kSrcAlphaSarurated",
+    static const std::vector<std::string> factorItems = { "kZero", "kOne", "kSrcColor", "kSrcAlpha", "kSrcAlphaSaturated",
                                                           "kOneMinusSrcColor", "kOneMinusSrcAlpha", "kDstColor", "kDstAlpha", "kOneMinusDstColor",
                                                           "kOneMinusDstAlpha", "kConstantColor", "kOneMinusConstantColor",
                                                           "kSrc1Color", "kOneMinusSrc1Color", "kSrc1Alpha", "kOneMinusSrc1Alpha" };

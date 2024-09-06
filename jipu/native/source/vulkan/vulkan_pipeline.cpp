@@ -674,7 +674,7 @@ VkBlendFactor ToVkBlendFactor(BlendFactor factor)
     case BlendFactor::kSrcAlpha:
         blendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         break;
-    case BlendFactor::kSrcAlphaSarurated:
+    case BlendFactor::kSrcAlphaSaturated:
         blendFactor = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE;
         break;
     case BlendFactor::kOneMinusSrcColor:

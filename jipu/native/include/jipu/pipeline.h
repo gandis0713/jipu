@@ -94,6 +94,7 @@ enum class VertexFormat
 enum class VertexMode
 {
     kVertex = 0,
+    kVertexBufferNotUsed,
     kInstance,
 };
 
@@ -149,11 +150,12 @@ enum class BlendOperation
 
 enum class BlendFactor
 {
-    kZero = 0,
+    kUndefined = 0,
+    kZero,
     kOne,
     kSrcColor,
     kSrcAlpha,
-    kSrcAlphaSarurated,
+    kSrcAlphaSaturated,
     kOneMinusSrcColor,
     kOneMinusSrcAlpha,
     kDstColor,
