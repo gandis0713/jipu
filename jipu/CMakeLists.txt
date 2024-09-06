@@ -104,6 +104,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_bind_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_buffer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_command_buffer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_device.cpp
@@ -114,6 +116,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_queue.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_render_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_render_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_render_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_sampler.cpp

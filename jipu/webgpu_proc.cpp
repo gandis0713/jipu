@@ -19,6 +19,7 @@ extern WGPUShaderModule procDeviceCreateShaderModule(WGPUDevice device, WGPUShad
 extern void procSurfaceGetCurrentTexture(WGPUSurface surface, WGPUSurfaceTexture* surfaceTexture);
 extern WGPUTextureView procTextureCreateView(WGPUTexture texture, WGPU_NULLABLE WGPUTextureViewDescriptor const* descriptor);
 extern WGPUCommandEncoder procDeviceCreateCommandEncoder(WGPUDevice device, WGPU_NULLABLE WGPUCommandEncoderDescriptor const* descriptor);
+extern WGPURenderPassEncoder procCommandEncoderBeginRenderPass(WGPUCommandEncoder commandEncoder, WGPURenderPassDescriptor const* descriptor);
 
 } // namespace jipu
 
@@ -104,5 +105,10 @@ extern "C"
     WGPU_EXPORT WGPUCommandEncoder wgpuDeviceCreateCommandEncoder(WGPUDevice device, WGPU_NULLABLE WGPUCommandEncoderDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
     {
         return procDeviceCreateCommandEncoder(device, descriptor);
+    }
+
+    WGPU_EXPORT WGPURenderPassEncoder wgpuCommandEncoderBeginRenderPass(WGPUCommandEncoder commandEncoder, WGPURenderPassDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procCommandEncoderBeginRenderPass(commandEncoder, descriptor);
     }
 }
