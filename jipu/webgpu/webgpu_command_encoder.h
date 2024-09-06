@@ -12,6 +12,7 @@ namespace jipu
 {
 
 class WebGPUDevice;
+class WebGPURenderPassEncoder;
 class WebGPUCommandEncoder : public RefCounted
 {
 
@@ -29,6 +30,8 @@ public:
     WebGPUCommandEncoder& operator=(const WebGPUCommandEncoder&) = delete;
 
 public: // WebGPU API
+    WebGPURenderPassEncoder* beginRenderPass(WGPURenderPassDescriptor const* descriptor);
+
 public:
     CommandEncoder* getCommandEncoder() const;
 

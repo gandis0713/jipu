@@ -104,9 +104,8 @@ WGPUCommandEncoder procDeviceCreateCommandEncoder(WGPUDevice device, WGPU_NULLAB
 
 WGPURenderPassEncoder procCommandEncoderBeginRenderPass(WGPUCommandEncoder commandEncoder, WGPURenderPassDescriptor const* descriptor)
 {
-    // WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
-    // return reinterpret_cast<WGPURenderPassEncoder>(webgpuCommandEncoder->beginRenderPass(descriptor));
-    return nullptr;
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return reinterpret_cast<WGPURenderPassEncoder>(webgpuCommandEncoder->beginRenderPass(descriptor));
 }
 
 namespace

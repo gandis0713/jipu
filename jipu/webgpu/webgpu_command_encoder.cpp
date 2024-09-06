@@ -1,6 +1,7 @@
 #include "webgpu_command_encoder.h"
 
 #include "webgpu_device.h"
+#include "webgpu_render_pass_encoder.h"
 
 namespace jipu
 {
@@ -22,6 +23,11 @@ WebGPUCommandEncoder::WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique
     , m_descriptor(*descriptor)
     , m_commandEncoder(std::move(commandEncoder))
 {
+}
+
+WebGPURenderPassEncoder* WebGPUCommandEncoder::beginRenderPass(WGPURenderPassDescriptor const* descriptor)
+{
+    return WebGPURenderPassEncoder::create(this, descriptor);
 }
 
 CommandEncoder* WebGPUCommandEncoder::getCommandEncoder() const
