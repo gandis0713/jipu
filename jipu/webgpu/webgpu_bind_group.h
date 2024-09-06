@@ -15,11 +15,11 @@ class WebGPUBindGroup : public RefCounted
 {
 
 public:
-    static WebGPUBindGroup* create(WebGPUDevice* device, WGPUBindGroupDescriptor const* descriptor);
+    static WebGPUBindGroup* create(WebGPUDevice* wgpuDevice, WGPUBindGroupDescriptor const* descriptor);
 
 public:
     WebGPUBindGroup() = delete;
-    explicit WebGPUBindGroup(WebGPUDevice* device, std::unique_ptr<BindingGroup> layout, WGPUBindGroupDescriptor const* descriptor);
+    explicit WebGPUBindGroup(WebGPUDevice* wgpuDevice, std::unique_ptr<BindingGroup> layout, WGPUBindGroupDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUBindGroup() = default;
@@ -36,7 +36,7 @@ private:
     [[maybe_unused]] const WGPUBindGroupDescriptor m_descriptor{};
 
 private:
-    std::unique_ptr<BindingGroup> m_layout = nullptr;
+    std::unique_ptr<BindingGroup> m_bindingGroup = nullptr;
 };
 
 } // namespace jipu

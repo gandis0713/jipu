@@ -1,23 +1,16 @@
 #include "webgpu_bind_group.h"
+
 #include "webgpu_bind_group_layout.h"
 #include "webgpu_buffer.h"
+#include "webgpu_device.h"
+#include "webgpu_sampler.h"
+#include "webgpu_texture_view.h"
 
 namespace jipu
 {
 
-WebGPUBindGroup* WebGPUBindGroup::create(WebGPUDevice* device, WGPUBindGroupDescriptor const* descriptor)
+WebGPUBindGroup* WebGPUBindGroup::create(WebGPUDevice* wgpuDevice, WGPUBindGroupDescriptor const* descriptor)
 {
-    // typedef struct WGPUBindGroupEntry
-    // {
-    //     WGPUChainedStruct const* nextInChain;
-    //     uint32_t binding;
-    //     WGPU_NULLABLE WGPUBuffer buffer;
-    //     uint64_t offset;
-    //     uint64_t size;
-    //     WGPU_NULLABLE WGPUSampler sampler;
-    //     WGPU_NULLABLE WGPUTextureView textureView;
-    // } WGPUBindGroupEntry WGPU_STRUCTURE_ATTRIBUTE;
-
     BindingGroupDescriptor bindingGroupDescriptor{};
     bindingGroupDescriptor.layout = reinterpret_cast<WebGPUBindGroupLayout*>(descriptor->layout)->getBindingGroupLayout();
 
@@ -36,26 +29,37 @@ WebGPUBindGroup* WebGPUBindGroup::create(WebGPUDevice* device, WGPUBindGroupDesc
 
         if (entry.sampler)
         {
+            bindingGroupDescriptor.samplers.push_back(SamplerBinding{
+                .index = entry.binding,
+                .sampler = reinterpret_cast<WebGPUSampler*>(entry.sampler)->getSampler(),
+            });
         }
 
         if (entry.textureView)
         {
+            bindingGroupDescriptor.textures.push_back(TextureBinding{
+                .index = entry.binding,
+                .textureView = reinterpret_cast<WebGPUTextureView*>(entry.textureView)->getTextureView(),
+            });
         }
     }
 
-    return nullptr;
+    auto device = wgpuDevice->getDevice();
+    auto bindingGroup = device->createBindingGroup(bindingGroupDescriptor);
+
+    return new WebGPUBindGroup(wgpuDevice, std::move(bindingGroup), descriptor);
 }
 
-WebGPUBindGroup::WebGPUBindGroup(WebGPUDevice* device, std::unique_ptr<BindingGroup> layout, WGPUBindGroupDescriptor const* descriptor)
-    : m_wgpuDevice(device)
+WebGPUBindGroup::WebGPUBindGroup(WebGPUDevice* wgpuDevice, std::unique_ptr<BindingGroup> bindingGroup, WGPUBindGroupDescriptor const* descriptor)
+    : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
-    , m_layout(std::move(layout))
+    , m_bindingGroup(std::move(bindingGroup))
 {
 }
 
 BindingGroup* WebGPUBindGroup::getBindingGroup() const
 {
-    return m_layout.get();
+    return m_bindingGroup.get();
 }
 
 } // namespace jipu
