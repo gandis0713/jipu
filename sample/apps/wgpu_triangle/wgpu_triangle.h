@@ -44,7 +44,7 @@ private:
 
     WGPUPipelineLayout m_pipelineLayout = nullptr;
     WGPURenderPipeline m_renderPipeline = nullptr;
-    WGPUShaderModule m_vertexShaderModule = nullptr;
+    WGPUShaderModule m_vertexSPIRVShaderModule = nullptr;
     WGPUShaderModule m_fragShaderModule = nullptr;
     WGPUShaderModule m_shaderModule = nullptr;
 };

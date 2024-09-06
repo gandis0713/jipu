@@ -15,7 +15,7 @@ WGPUTriangleSample::~WGPUTriangleSample()
     // TODO: check ways release and destory.
     wgpuRenderPipelineRelease(m_renderPipeline);
     wgpuPipelineLayoutRelease(m_pipelineLayout);
-    wgpuShaderModuleRelease(m_vertexShaderModule);
+    wgpuShaderModuleRelease(m_vertexSPIRVShaderModule);
     wgpuShaderModuleRelease(m_fragShaderModule);
 
     wgpuQueueRelease(m_queue);
@@ -199,7 +199,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleWGSLDescriptor.chain;
 
-        m_vertexShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertexSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleWGSLDescriptor fragShaderModuleWGSLDescriptor{};
         fragShaderModuleWGSLDescriptor.chain.sType = WGPUSType_ShaderModuleWGSLDescriptor;
