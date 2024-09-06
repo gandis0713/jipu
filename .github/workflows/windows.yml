@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-python@v5.2.0
         with:
           python-version: '3.12'
-          cache: 'pip'
       # https://github.com/marketplace/actions/run-vcpkg
       - name: Setup CMake
         uses: lukka/get-cmake@v3.30.2
