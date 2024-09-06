@@ -1,5 +1,8 @@
 #include "webgpu_texture.h"
 
+#include "jipu/texture.h"
+#include "webgpu_texture_view.h"
+
 namespace jipu
 {
 
@@ -24,6 +27,16 @@ WebGPUTexture::WebGPUTexture(WebGPUDevice* device, std::unique_ptr<Texture> text
     , m_descriptor(*descriptor)
     , m_ownTexture(std::move(texture))
 {
+}
+
+WebGPUTextureView* WebGPUTexture::createView(WGPUTextureViewDescriptor const* descriptor)
+{
+    return WebGPUTextureView::create(this, descriptor);
+}
+
+Texture* WebGPUTexture::getTexture() const
+{
+    return m_externalTexture ? m_externalTexture : m_ownTexture.get();
 }
 
 // Convert from WebGPU to JIPU

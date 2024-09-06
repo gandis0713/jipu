@@ -10,16 +10,16 @@
 namespace jipu
 {
 
-class WebGPUDevice;
+class WebGPUTexture;
 class WebGPUTextureView : public RefCounted
 {
 
 public:
-    static WebGPUTextureView* create(WebGPUDevice* device, WGPUTextureViewDescriptor const* descriptor);
+    static WebGPUTextureView* create(WebGPUTexture* texture, WGPUTextureViewDescriptor const* descriptor);
 
 public:
     WebGPUTextureView() = delete;
-    explicit WebGPUTextureView(WebGPUDevice* device, std::unique_ptr<TextureView> textureView, WGPUTextureViewDescriptor const* descriptor);
+    explicit WebGPUTextureView(WebGPUTexture* texture, std::unique_ptr<TextureView> textureView, WGPUTextureViewDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUTextureView() = default;
@@ -32,11 +32,19 @@ public:
     TextureView* getTextureView() const;
 
 private:
-    [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
+    [[maybe_unused]] WebGPUTexture* m_wgpuTexture = nullptr;
     [[maybe_unused]] const WGPUTextureViewDescriptor m_descriptor{};
 
 private:
     std::unique_ptr<TextureView> m_textureView = nullptr;
 };
+
+// Convert from WebGPU to JIPU
+WGPUTextureViewDimension ToWGPUTextureViewDimension(TextureViewDimension dimension);
+WGPUTextureAspect ToWGPUTextureAspect(TextureAspectFlags aspect);
+
+// Convert from JIPU to WebGPU
+TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension);
+TextureAspectFlags ToTextureAspectFlags(WGPUTextureAspect aspect);
 
 } // namespace jipu

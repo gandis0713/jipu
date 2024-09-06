@@ -310,7 +310,7 @@ void VulkanNBufferingSample::createImageTexture()
 void VulkanNBufferingSample::createImageTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.type = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
@@ -333,7 +333,7 @@ void VulkanNBufferingSample::createColorAttachmentTexture()
 void VulkanNBufferingSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.type = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
@@ -357,7 +357,7 @@ void VulkanNBufferingSample::createDepthStencilTexture()
 void VulkanNBufferingSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.type = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);

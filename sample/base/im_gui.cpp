@@ -145,7 +145,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureViewDescriptor fontTextureViewDescriptor{};
         fontTextureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
-        fontTextureViewDescriptor.type = TextureViewType::k2D;
+        fontTextureViewDescriptor.type = TextureViewDimension::k2D;
 
         m_fontTextureView = m_fontTexture->createTextureView(fontTextureViewDescriptor);
     }

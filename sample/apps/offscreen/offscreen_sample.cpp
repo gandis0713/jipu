@@ -204,7 +204,7 @@ void OffscreenSample::createOffscreenTextureView()
 {
     TextureViewDescriptor textureViewDescriptor;
     textureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
-    textureViewDescriptor.type = TextureViewType::k2D;
+    textureViewDescriptor.type = TextureViewDimension::k2D;
 
     m_offscreen.renderTextureView = m_offscreen.renderTexture->createTextureView(textureViewDescriptor);
 }

@@ -41,7 +41,7 @@ VulkanTextureView::~VulkanTextureView()
     vulkanDevice.vkAPI.DestroyImageView(vulkanDevice.getVkDevice(), m_imageView, nullptr);
 }
 
-TextureViewType VulkanTextureView::getType() const
+TextureViewDimension VulkanTextureView::getType() const
 {
     return m_descriptor.type;
 }
@@ -78,46 +78,42 @@ VkImageView VulkanTextureView::getVkImageView() const
 
 // Convert Helper
 
-VkImageViewType ToVkImageViewType(TextureViewType type)
+VkImageViewType ToVkImageViewType(TextureViewDimension type)
 {
     switch (type)
     {
-    case TextureViewType::k1D:
+    case TextureViewDimension::k1D:
         return VK_IMAGE_VIEW_TYPE_1D;
-    case TextureViewType::k1DArray:
-        return VK_IMAGE_VIEW_TYPE_1D_ARRAY;
-    case TextureViewType::k2D:
+    case TextureViewDimension::k2D:
         return VK_IMAGE_VIEW_TYPE_2D;
-    case TextureViewType::k2DArray:
+    case TextureViewDimension::k2DArray:
         return VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-    case TextureViewType::k3D:
+    case TextureViewDimension::k3D:
         return VK_IMAGE_VIEW_TYPE_3D;
-    case TextureViewType::kCube:
+    case TextureViewDimension::kCube:
         return VK_IMAGE_VIEW_TYPE_CUBE;
-    case TextureViewType::kCubeArray:
+    case TextureViewDimension::kCubeArray:
         return VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
     default:
         throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
-TextureViewType ToTextureViewType(VkImageViewType type)
+TextureViewDimension ToTextureViewType(VkImageViewType type)
 {
     switch (type)
     {
     case VK_IMAGE_VIEW_TYPE_1D:
-        return TextureViewType::k1D;
-    case VK_IMAGE_VIEW_TYPE_1D_ARRAY:
-        return TextureViewType::k1DArray;
+        return TextureViewDimension::k1D;
     case VK_IMAGE_VIEW_TYPE_2D:
-        return TextureViewType::k2D;
+        return TextureViewDimension::k2D;
     case VK_IMAGE_VIEW_TYPE_2D_ARRAY:
-        return TextureViewType::k2DArray;
+        return TextureViewDimension::k2DArray;
     case VK_IMAGE_VIEW_TYPE_3D:
-        return TextureViewType::k3D;
+        return TextureViewDimension::k3D;
     case VK_IMAGE_VIEW_TYPE_CUBE:
-        return TextureViewType::kCube;
+        return TextureViewDimension::kCube;
     case VK_IMAGE_VIEW_TYPE_CUBE_ARRAY:
-        return TextureViewType::kCubeArray;
+        return TextureViewDimension::kCubeArray;
     default:
         throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }

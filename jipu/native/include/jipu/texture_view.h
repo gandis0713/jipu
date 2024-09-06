@@ -7,11 +7,10 @@
 namespace jipu
 {
 
-enum class TextureViewType
+enum class TextureViewDimension
 {
     kUndefined = 0,
     k1D,
-    k1DArray,
     k2D,
     k2DArray,
     k3D,
@@ -30,7 +29,7 @@ using TextureAspectFlags = uint32_t;
 
 struct TextureViewDescriptor
 {
-    TextureViewType type = TextureViewType::kUndefined;
+    TextureViewDimension type = TextureViewDimension::kUndefined;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 
@@ -45,7 +44,7 @@ protected:
 
 public:
     virtual Texture* getTexture() const = 0;
-    virtual TextureViewType getType() const = 0;
+    virtual TextureViewDimension getType() const = 0;
     virtual TextureAspectFlags getAspect() const = 0;
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;

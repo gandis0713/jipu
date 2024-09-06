@@ -188,7 +188,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDesc
     for (std::unique_ptr<VulkanTexture>& texture : m_textures)
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewType::k2D;
+        descriptor.type = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
         auto textureView = std::make_unique<VulkanTextureView>(*texture, descriptor);
         m_textureViews.push_back(std::move(textureView));

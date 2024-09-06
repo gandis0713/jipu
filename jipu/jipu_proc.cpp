@@ -4,6 +4,7 @@
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
 #include "webgpu/webgpu_surface.h"
+#include "webgpu/webgpu_texture.h"
 
 #include <unordered_map>
 
@@ -86,6 +87,12 @@ void procSurfaceGetCurrentTexture(WGPUSurface surface, WGPUSurfaceTexture* surfa
 {
     WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
     return webgpuSurface->getCurrentTexture(surfaceTexture);
+}
+
+WGPUTextureView procTextureCreateView(WGPUTexture texture, WGPU_NULLABLE WGPUTextureViewDescriptor const* descriptor)
+{
+    WebGPUTexture* webgpuTexture = reinterpret_cast<WebGPUTexture*>(texture);
+    return reinterpret_cast<WGPUTextureView>(webgpuTexture->createView(descriptor));
 }
 
 namespace

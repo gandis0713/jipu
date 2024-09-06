@@ -9,6 +9,7 @@ namespace jipu
 {
 
 class WebGPUDevice;
+class WebGPUTextureView;
 class WebGPUTexture : public RefCounted
 {
 
@@ -28,6 +29,11 @@ public:
     WebGPUTexture& operator=(const WebGPUTexture&) = delete;
 
 public: // WebGPU API
+    WebGPUTextureView* createView(WGPUTextureViewDescriptor const* descriptor);
+
+public:
+    Texture* getTexture() const;
+
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUTextureDescriptor m_descriptor{};

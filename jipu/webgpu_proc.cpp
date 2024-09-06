@@ -17,6 +17,7 @@ extern WGPUPipelineLayout procDeviceCreatePipelineLayout(WGPUDevice device, WGPU
 extern WGPURenderPipeline procDeviceCreateRenderPipeline(WGPUDevice device, WGPURenderPipelineDescriptor const* descriptor);
 extern WGPUShaderModule procDeviceCreateShaderModule(WGPUDevice device, WGPUShaderModuleDescriptor const* descriptor);
 extern void procSurfaceGetCurrentTexture(WGPUSurface surface, WGPUSurfaceTexture* surfaceTexture);
+extern WGPUTextureView procTextureCreateView(WGPUTexture texture, WGPU_NULLABLE WGPUTextureViewDescriptor const* descriptor);
 
 } // namespace jipu
 
@@ -92,5 +93,10 @@ extern "C"
     WGPU_EXPORT void wgpuSurfaceGetCurrentTexture(WGPUSurface surface, WGPUSurfaceTexture* surfaceTexture) WGPU_FUNCTION_ATTRIBUTE
     {
         return procSurfaceGetCurrentTexture(surface, surfaceTexture);
+    }
+
+    WGPU_EXPORT WGPUTextureView wgpuTextureCreateView(WGPUTexture texture, WGPU_NULLABLE WGPUTextureViewDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procTextureCreateView(texture, descriptor);
     }
 }
