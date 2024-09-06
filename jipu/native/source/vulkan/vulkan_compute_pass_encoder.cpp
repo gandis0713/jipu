@@ -38,7 +38,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bin
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
     auto& vulkanBindingGroup = downcast(bindingGroup);
-    auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
+    auto vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
 
     const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
 
@@ -46,7 +46,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bin
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer.getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout.getVkPipelineLayout(),
+                                vulkanPipelineLayout->getVkPipelineLayout(),
                                 0,
                                 1,
                                 &descriptorSet,

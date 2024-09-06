@@ -26,7 +26,7 @@ public:
     VulkanComputePipeline& operator=(const VulkanComputePipeline&) = delete;
 
 public:
-    PipelineLayout& getPipelineLayout() const override;
+    PipelineLayout* getPipelineLayout() const override;
 
 public:
     VkPipeline getVkPipeline() const;
@@ -88,7 +88,7 @@ struct VulkanRenderPipelineDescriptor
     VkPipelineDepthStencilStateCreateInfo depthStencilState{};
     VulkanPipelineColorBlendStateCreateInfo colorBlendState{};
     VulkanPipelineDynamicStateCreateInfo dynamicState{};
-    VulkanPipelineLayout& layout;
+    VulkanPipelineLayout* layout = nullptr;
     VulkanRenderPass& renderPass;
     uint32_t subpass = 0;
     VkPipeline basePipelineHandle = VK_NULL_HANDLE;
@@ -108,7 +108,7 @@ public:
     VulkanRenderPipeline& operator=(const VulkanRenderPipeline&) = delete;
 
 public:
-    PipelineLayout& getPipelineLayout() const override;
+    PipelineLayout* getPipelineLayout() const override;
 
 public:
     VkPipeline getVkPipeline() const;

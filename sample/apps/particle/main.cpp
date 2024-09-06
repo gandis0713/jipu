@@ -419,11 +419,11 @@ void ParticleSample::createComputePipeline()
                                                    .codeSize = computeShaderSource.size() };
     auto computeShader = m_device->createShaderModule(shaderModuleDescriptor);
     ComputeStage computeStage{
-        { *computeShader, "main" }
+        { computeShader.get(), "main" }
     };
 
     ComputePipelineDescriptor computePipelineDescriptor{
-        { *m_computePipelineLayout },
+        m_computePipelineLayout.get(),
         computeStage
     };
 
@@ -473,7 +473,7 @@ void ParticleSample::createRenderPipeline()
     vertexInputLayout.stride = sizeof(Particle);
 
     VertexStage vertexStage{
-        { *m_vertexShaderModule, "main" },
+        { m_vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -495,12 +495,12 @@ void ParticleSample::createRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *m_fragmentShaderModule, "main" },
+        { m_fragmentShaderModule.get(), "main" },
         { target }
     };
 
     RenderPipelineDescriptor renderPipelineDescriptor{
-        { *m_renderPipelineLayout },
+        m_renderPipelineLayout.get(),
         inputAssembly,
         vertexStage,
         rasterizationStage,

@@ -506,7 +506,7 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     VertexStage vertexStage{
-        { *m_vertexShaderModule, "main" },
+        { m_vertexShaderModule.get(), "main" },
         layouts
     };
 
@@ -527,7 +527,7 @@ void VulkanNBufferingSample::createRenderPipeline()
     m_fragmentShaderModule = m_device->createShaderModule(fragmentShaderModuleDescriptor);
 
     FragmentStage fragmentStage{
-        { *m_fragmentShaderModule, "main" },
+        { m_fragmentShaderModule.get(), "main" },
         { { .format = m_swapchain->getTextureFormat() } }
     };
 
@@ -538,7 +538,7 @@ void VulkanNBufferingSample::createRenderPipeline()
     }
 
     RenderPipelineDescriptor descriptor{
-        { *m_pipelineLayout }, // PipelineDescriptor
+        m_pipelineLayout.get(), // PipelineDescriptor
         inputAssembly,
         vertexStage,
         rasterization,

@@ -1113,7 +1113,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
         VertexStage vertexStage{
-            { *m_offscreen.renderPasses.vertexShaderModule, "main" },
+            { m_offscreen.renderPasses.vertexShaderModule.get(), "main" },
             { inputLayout }
         };
 
@@ -1147,7 +1147,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         albedoTarget.format = m_offscreen.renderPasses.albedoColorAttachmentTexture->getFormat();
 
         FragmentStage fragmentStage{
-            { *m_offscreen.renderPasses.fragmentShaderModule, "main" },
+            { m_offscreen.renderPasses.fragmentShaderModule.get(), "main" },
             { positionTarget, normalTarget, albedoTarget }
         };
 
@@ -1155,7 +1155,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         depthStencil.format = m_depthStencilTexture->getFormat();
 
         RenderPipelineDescriptor descriptor{
-            { *m_offscreen.renderPasses.pipelineLayout },
+            m_offscreen.renderPasses.pipelineLayout.get(),
             inputAssembly,
             vertexStage,
             rasterizationStage,
@@ -1213,7 +1213,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
         VertexStage vertexStage{
-            { *m_offscreen.subPasses.vertexShaderModule, "main" },
+            { m_offscreen.subPasses.vertexShaderModule.get(), "main" },
             { inputLayout }
         };
 
@@ -1246,7 +1246,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         albedoTarget.format = m_offscreen.subPasses.albedoColorAttachmentTexture->getFormat();
 
         FragmentStage fragmentStage{
-            { *m_offscreen.subPasses.fragmentShaderModule, "main" },
+            { m_offscreen.subPasses.fragmentShaderModule.get(), "main" },
             { positionTarget, normalTarget, albedoTarget }
         };
 
@@ -1254,7 +1254,7 @@ void VulkanSubpassesSample::createOffscreenPipeline()
         depthStencil.format = m_depthStencilTexture->getFormat();
 
         RenderPipelineDescriptor descriptor{
-            { *m_offscreen.subPasses.pipelineLayout },
+            m_offscreen.subPasses.pipelineLayout.get(),
             inputAssembly,
             vertexStage,
             rasterizationStage,
@@ -1572,7 +1572,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         }
 
         VertexStage vertexStage{
-            { *vertexShaderModule, "main" },
+            { vertexShaderModule.get(), "main" },
             { vertexInputLayout }
         };
 
@@ -1598,7 +1598,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         target.format = m_swapchain->getTextureFormat();
 
         FragmentStage fragmentStage{
-            { *fragmentShaderModule, "main" },
+            { fragmentShaderModule.get(), "main" },
             { target }
         };
 
@@ -1607,7 +1607,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
         RenderPipelineDescriptor renderPipelineDescriptor{
-            { *m_composition.renderPasses.pipelineLayout },
+            m_composition.renderPasses.pipelineLayout.get(),
             inputAssemblyStage,
             vertexStage,
             rasterizationStage,
@@ -1658,7 +1658,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         }
 
         VertexStage vertexStage{
-            { *m_composition.subPasses.vertexShaderModule, "main" },
+            { m_composition.subPasses.vertexShaderModule.get(), "main" },
             { vertexInputLayout }
         };
 
@@ -1681,7 +1681,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         FragmentStage::Target target{};
         target.format = m_swapchain->getTextureFormat();
         FragmentStage fragmentStage{
-            { *m_composition.subPasses.fragmentShaderModule, "main" },
+            { m_composition.subPasses.fragmentShaderModule.get(), "main" },
             { target }
         };
 
@@ -1690,7 +1690,7 @@ void VulkanSubpassesSample::createCompositionPipeline()
         depthStencilStage.format = m_depthStencilTexture->getFormat();
 
         RenderPipelineDescriptor descriptor{
-            { *m_composition.subPasses.pipelineLayout },
+            m_composition.subPasses.pipelineLayout.get(),
             inputAssemblyStage,
             vertexStage,
             rasterizationStage,

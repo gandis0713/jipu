@@ -323,7 +323,7 @@ void OffscreenSample::createOffscreenRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -352,14 +352,14 @@ void OffscreenSample::createOffscreenRenderPipeline()
     target.format = m_offscreen.renderTexture->getFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" }, { target }
+        { fragmentShaderModule.get(), "main" }, { target }
     };
 
     // depth/stencil
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_offscreen.renderPipelineLayout },
+        m_offscreen.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
@@ -493,7 +493,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -522,7 +522,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -530,7 +530,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_onscreen.renderPipelineLayout },
+        m_onscreen.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

@@ -520,7 +520,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     VertexStage vertexStage{
-        { *m_vertexShaderModule, "main" },
+        { m_vertexShaderModule.get(), "main" },
         layouts
     };
 
@@ -542,7 +542,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     FragmentStage fragmentStage{
-        { *m_fragmentShaderModule, "main" },
+        { m_fragmentShaderModule.get(), "main" },
         { { .format = m_swapchain->getTextureFormat() } }
     };
 
@@ -553,7 +553,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     RenderPipelineDescriptor descriptor{
-        { *m_pipelineLayout },
+        m_pipelineLayout.get(),
         inputAssembly,
         vertexStage,
         rasterization,

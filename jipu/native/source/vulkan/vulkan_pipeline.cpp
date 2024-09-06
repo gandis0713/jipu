@@ -26,7 +26,7 @@ VulkanComputePipeline::~VulkanComputePipeline()
     vulkanDevice.vkAPI.DestroyPipeline(vulkanDevice.getVkDevice(), m_pipeline, nullptr);
 }
 
-PipelineLayout& VulkanComputePipeline::getPipelineLayout() const
+PipelineLayout* VulkanComputePipeline::getPipelineLayout() const
 {
     return m_descriptor.layout;
 }
@@ -38,7 +38,7 @@ VkPipeline VulkanComputePipeline::getVkPipeline() const
 
 void VulkanComputePipeline::initialize()
 {
-    auto computeShaderModule = downcast(m_descriptor.compute.shaderModule).getVkShaderModule();
+    auto computeShaderModule = downcast(m_descriptor.compute.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo computeStageInfo{};
     computeStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -50,7 +50,7 @@ void VulkanComputePipeline::initialize()
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
     pipelineCreateInfo.pNext = nullptr;
     pipelineCreateInfo.stage = computeStageInfo;
-    pipelineCreateInfo.layout = downcast(m_descriptor.layout).getVkPipelineLayout();
+    pipelineCreateInfo.layout = downcast(m_descriptor.layout)->getVkPipelineLayout();
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineCreateInfo.basePipelineIndex = -1;              // Optional
 
@@ -253,7 +253,7 @@ VulkanPipelineDynamicStateCreateInfo generateDynamicStateCreateInfo(const Render
 std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const RenderPipelineDescriptor& descriptor)
 {
     // Vertex Stage
-    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule).getVkShaderModule();
+    auto vertexShaderModule = downcast(descriptor.vertex.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo vertexStageInfo{};
     vertexStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -262,7 +262,7 @@ std::vector<VkPipelineShaderStageCreateInfo> generateShaderStageCreateInfo(const
     vertexStageInfo.pName = descriptor.vertex.entryPoint.c_str();
 
     // Fragment Stage
-    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule).getVkShaderModule();
+    auto fragmentShaderModule = downcast(descriptor.fragment.shaderModule)->getVkShaderModule();
 
     VkPipelineShaderStageCreateInfo fragmentStageInfo{};
     fragmentStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -433,7 +433,7 @@ VulkanRenderPipeline::~VulkanRenderPipeline()
     vulkanDevice.vkAPI.DestroyPipeline(vulkanDevice.getVkDevice(), m_pipeline, nullptr);
 }
 
-PipelineLayout& VulkanRenderPipeline::getPipelineLayout() const
+PipelineLayout* VulkanRenderPipeline::getPipelineLayout() const
 {
     return m_descriptor.layout;
 }
@@ -482,7 +482,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pDepthStencilState = &descriptor.depthStencilState;
     pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
-    pipelineInfo.layout = downcast(descriptor.layout).getVkPipelineLayout();
+    pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
     pipelineInfo.renderPass = descriptor.renderPass.getVkRenderPass();
     pipelineInfo.subpass = descriptor.subpass;
     pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;

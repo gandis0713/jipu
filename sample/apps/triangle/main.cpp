@@ -323,7 +323,7 @@ void TriangleSample::createRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -351,7 +351,7 @@ void TriangleSample::createRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -359,7 +359,7 @@ void TriangleSample::createRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_renderPipelineLayout },
+        m_renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

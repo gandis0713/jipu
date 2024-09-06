@@ -470,7 +470,7 @@ void InstancingSample::createInstancingRenderPipeline()
     instancingInputLayout.attributes = { shiftAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout, instancingInputLayout }
     };
 
@@ -499,7 +499,7 @@ void InstancingSample::createInstancingRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -507,7 +507,7 @@ void InstancingSample::createInstancingRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_instancing.renderPipelineLayout },
+        m_instancing.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
@@ -639,7 +639,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -668,7 +668,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -676,7 +676,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_nonInstancing.renderPipelineLayout },
+        m_nonInstancing.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

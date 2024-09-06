@@ -329,7 +329,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -358,7 +358,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     target.blend = blendState;
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -366,7 +366,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_renderPipelineLayout },
+        m_renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

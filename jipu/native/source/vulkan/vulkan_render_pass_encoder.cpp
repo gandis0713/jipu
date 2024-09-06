@@ -276,14 +276,14 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
 
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
-    auto& vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
+    auto vulkanPipelineLayout = downcast(m_pipeline.value().get().getPipelineLayout());
     auto& vulkanBindingGroup = downcast(bindingGroup);
     VkDescriptorSet set = vulkanBindingGroup.getVkDescriptorSet();
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer.getVkCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                vulkanPipelineLayout.getVkPipelineLayout(),
+                                vulkanPipelineLayout->getVkPipelineLayout(),
                                 index,
                                 1,
                                 &set,

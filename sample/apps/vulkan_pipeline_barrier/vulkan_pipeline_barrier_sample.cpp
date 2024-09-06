@@ -621,7 +621,7 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -650,7 +650,7 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
     target.format = m_offscreen.renderTexture->getFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -658,7 +658,7 @@ void VulkanPipelineBarrierSample::createOffscreenRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_offscreen.renderPipelineLayout },
+        m_offscreen.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
@@ -815,7 +815,7 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -843,7 +843,7 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -851,7 +851,7 @@ void VulkanPipelineBarrierSample::createOnscreenRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_onscreen.renderPipelineLayout },
+        m_onscreen.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

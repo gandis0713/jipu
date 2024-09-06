@@ -25,12 +25,12 @@ protected:
     Pipeline() = default;
 
 public:
-    virtual PipelineLayout& getPipelineLayout() const = 0;
+    virtual PipelineLayout* getPipelineLayout() const = 0;
 };
 
 struct ProgrammableStage
 {
-    ShaderModule& shaderModule;
+    ShaderModule* shaderModule = nullptr;
     std::string entryPoint = "main";
 };
 
@@ -188,14 +188,10 @@ struct DepthStencilStage
     TextureFormat format;
 };
 
-struct PipelineDescriptor
+struct RenderPipelineDescriptor
 {
     /// @brief pipeline layout
-    PipelineLayout& layout;
-};
-
-struct RenderPipelineDescriptor : PipelineDescriptor
-{
+    PipelineLayout* layout = nullptr;
     InputAssemblyStage inputAssembly{};
     VertexStage vertex;
     RasterizationStage rasterization{};
@@ -221,8 +217,10 @@ struct ComputeStage : ProgrammableStage
 {
 };
 
-struct ComputePipelineDescriptor : PipelineDescriptor
+struct ComputePipelineDescriptor
 {
+    /// @brief pipeline layout
+    PipelineLayout* layout = nullptr;
     ComputeStage compute;
 };
 

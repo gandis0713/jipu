@@ -881,7 +881,7 @@ void DeferredSample::createOffscreenPipeline()
     inputLayout.attributes = { positionAttribute, normalAttribute, tangentAttribute, texCoordAttribute };
 
     VertexStage vertexShage{
-        { *m_offscreen.vertexShaderModule, "main" },
+        { m_offscreen.vertexShaderModule.get(), "main" },
         { inputLayout }
     };
 
@@ -915,7 +915,7 @@ void DeferredSample::createOffscreenPipeline()
     albedoTarget.format = m_offscreen.albedoColorAttachmentTexture->getFormat();
 
     FragmentStage fragmentStage{
-        { *m_offscreen.fragmentShaderModule, "main" },
+        { m_offscreen.fragmentShaderModule.get(), "main" },
         { positionTarget, normalTarget, albedoTarget }
     };
 
@@ -923,7 +923,7 @@ void DeferredSample::createOffscreenPipeline()
     depthStencil.format = m_depthStencilTexture->getFormat();
 
     RenderPipelineDescriptor descriptor{
-        { *m_offscreen.pipelineLayout },
+        m_offscreen.pipelineLayout.get(),
         inputAssembly,
         vertexShage,
         rasterizationStage,
@@ -1121,7 +1121,7 @@ void DeferredSample::createCompositionPipeline()
     vertexShaderModule = m_device->createShaderModule(shaderModuleDescriptor);
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -1146,7 +1146,7 @@ void DeferredSample::createCompositionPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -1155,7 +1155,7 @@ void DeferredSample::createCompositionPipeline()
     depthStencilStage.format = m_depthStencilTexture->getFormat();
 
     RenderPipelineDescriptor renderPipelineDescriptor{
-        { *m_composition.pipelineLayout },
+        m_composition.pipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
