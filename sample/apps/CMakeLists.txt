@@ -112,7 +112,6 @@ function(configure_sample target)
 endfunction()
 
 add_subdirectory(wgpu_triangle)
-add_subdirectory(wgpu_triangle2)
 
 # experimental
 if(EXPORT_JIPU_NATIVE)
