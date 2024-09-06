@@ -300,7 +300,7 @@ void ParticleSample::createColorAttachmentTexture()
 void ParticleSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);

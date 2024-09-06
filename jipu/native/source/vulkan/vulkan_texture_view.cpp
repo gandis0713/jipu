@@ -14,7 +14,7 @@ VulkanTextureView::VulkanTextureView(VulkanTexture& texture, const TextureViewDe
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.image = texture.getVkImage();
-    imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.type);
+    imageViewCreateInfo.viewType = ToVkImageViewType(descriptor.dimension);
     imageViewCreateInfo.format = ToVkFormat(texture.getFormat());
 
     imageViewCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -41,9 +41,9 @@ VulkanTextureView::~VulkanTextureView()
     vulkanDevice.vkAPI.DestroyImageView(vulkanDevice.getVkDevice(), m_imageView, nullptr);
 }
 
-TextureViewDimension VulkanTextureView::getType() const
+TextureViewDimension VulkanTextureView::getDimension() const
 {
-    return m_descriptor.type;
+    return m_descriptor.dimension;
 }
 
 TextureAspectFlags VulkanTextureView::getAspect() const
@@ -98,7 +98,7 @@ VkImageViewType ToVkImageViewType(TextureViewDimension type)
         throw std::runtime_error(fmt::format("{} type does not support.", static_cast<uint32_t>(type)));
     }
 }
-TextureViewDimension ToTextureViewType(VkImageViewType type)
+TextureViewDimension ToTextureViewDimension(VkImageViewType type)
 {
     switch (type)
     {

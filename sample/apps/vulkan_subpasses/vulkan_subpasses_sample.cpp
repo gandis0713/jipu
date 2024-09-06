@@ -495,7 +495,7 @@ void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTextureView()
     // render passes
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.renderPasses.positionColorAttachmentTextureView = m_offscreen.renderPasses.positionColorAttachmentTexture->createTextureView(descriptor);
@@ -504,7 +504,7 @@ void VulkanSubpassesSample::createOffscreenPositionColorAttachmentTextureView()
     // subpasses
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.subPasses.positionColorAttachmentTextureView = m_offscreen.subPasses.positionColorAttachmentTexture->createTextureView(descriptor);
@@ -553,7 +553,7 @@ void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTextureView()
     // render passe
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.renderPasses.normalColorAttachmentTextureView = m_offscreen.renderPasses.normalColorAttachmentTexture->createTextureView(descriptor);
@@ -562,7 +562,7 @@ void VulkanSubpassesSample::createOffscreenNormalColorAttachmentTextureView()
     // subpasses
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.subPasses.normalColorAttachmentTextureView = m_offscreen.subPasses.normalColorAttachmentTexture->createTextureView(descriptor);
@@ -611,7 +611,7 @@ void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTextureView()
     // render passes
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.renderPasses.albedoColorAttachmentTextureView = m_offscreen.renderPasses.albedoColorAttachmentTexture->createTextureView(descriptor);
@@ -620,7 +620,7 @@ void VulkanSubpassesSample::createOffscreenAlbedoColorAttachmentTextureView()
     // subpasses
     {
         TextureViewDescriptor descriptor{};
-        descriptor.type = TextureViewDimension::k2D;
+        descriptor.dimension = TextureViewDimension::k2D;
         descriptor.aspect = TextureAspectFlagBits::kColor;
 
         m_offscreen.subPasses.albedoColorAttachmentTextureView = m_offscreen.subPasses.albedoColorAttachmentTexture->createTextureView(descriptor);
@@ -691,7 +691,7 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
 void VulkanSubpassesSample::createOffscreenColorMapTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.colorMapTextureView = m_offscreen.colorMapTexture->createTextureView(descriptor);
@@ -761,7 +761,7 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
 void VulkanSubpassesSample::createOffscreenNormalMapTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
@@ -2349,7 +2349,7 @@ void VulkanSubpassesSample::createDepthStencilTexture()
 void VulkanSubpassesSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);

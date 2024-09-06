@@ -29,7 +29,7 @@ using TextureAspectFlags = uint32_t;
 
 struct TextureViewDescriptor
 {
-    TextureViewDimension type = TextureViewDimension::kUndefined;
+    TextureViewDimension dimension = TextureViewDimension::kUndefined;
     TextureAspectFlags aspect = TextureAspectFlagBits::kUndefined;
 };
 
@@ -44,7 +44,7 @@ protected:
 
 public:
     virtual Texture* getTexture() const = 0;
-    virtual TextureViewDimension getType() const = 0;
+    virtual TextureViewDimension getDimension() const = 0;
     virtual TextureAspectFlags getAspect() const = 0;
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;

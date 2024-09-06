@@ -452,7 +452,7 @@ void DeferredSample::createOffscreenPositionColorAttachmentTexture()
 void DeferredSample::createOffscreenPositionColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.positionColorAttachmentTextureView = m_offscreen.positionColorAttachmentTexture->createTextureView(descriptor);
@@ -477,7 +477,7 @@ void DeferredSample::createOffscreenNormalColorAttachmentTexture()
 void DeferredSample::createOffscreenNormalColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.normalColorAttachmentTextureView = m_offscreen.normalColorAttachmentTexture->createTextureView(descriptor);
@@ -501,7 +501,7 @@ void DeferredSample::createOffscreenAlbedoColorAttachmentTexture()
 void DeferredSample::createOffscreenAlbedoColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.albedoColorAttachmentTextureView = m_offscreen.albedoColorAttachmentTexture->createTextureView(descriptor);
@@ -572,7 +572,7 @@ void DeferredSample::createOffscreenColorMapTexture()
 void DeferredSample::createOffscreenColorMapTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.colorMapTextureView = m_offscreen.colorMapTexture->createTextureView(descriptor);
@@ -643,7 +643,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
 void DeferredSample::createOffscreenNormalMapTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_offscreen.normalMapTextureView = m_offscreen.normalMapTexture->createTextureView(descriptor);
@@ -1264,7 +1264,7 @@ void DeferredSample::createDepthStencilTexture()
 void DeferredSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);

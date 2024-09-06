@@ -323,7 +323,7 @@ void OBJModelSample::createImageTexture()
 void OBJModelSample::createImageTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
@@ -346,7 +346,7 @@ void OBJModelSample::createColorAttachmentTexture()
 void OBJModelSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
@@ -370,7 +370,7 @@ void OBJModelSample::createDepthStencilTexture()
 void OBJModelSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);

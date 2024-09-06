@@ -238,7 +238,7 @@ std::unique_ptr<Texture> BlendSample::createTexture(const char* name)
 std::unique_ptr<TextureView> BlendSample::createTextureView(Texture* texture)
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewDimension::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     return texture->createTextureView(descriptor);

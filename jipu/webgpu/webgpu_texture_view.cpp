@@ -9,7 +9,7 @@ namespace jipu
 WebGPUTextureView* WebGPUTextureView::create(WebGPUTexture* wgpuTexture, WGPUTextureViewDescriptor const* descriptor)
 {
     TextureViewDescriptor viewDescriptor{};
-    viewDescriptor.type = ToTextureViewDimension(descriptor->dimension);
+    viewDescriptor.dimension = ToTextureViewDimension(descriptor->dimension);
     viewDescriptor.aspect = ToTextureAspectFlags(descriptor->aspect);
 
     auto textureView = wgpuTexture->getTexture()->createTextureView(viewDescriptor);

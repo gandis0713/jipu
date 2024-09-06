@@ -18,7 +18,7 @@ public:
 
 public:
     Texture* getTexture() const override;
-    TextureViewDimension getType() const override;
+    TextureViewDimension getDimension() const override;
     TextureAspectFlags getAspect() const override;
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
@@ -39,7 +39,7 @@ DOWN_CAST(VulkanTextureView, TextureView);
 
 // Convert Helper
 VkImageViewType ToVkImageViewType(TextureViewDimension type);
-TextureViewDimension ToTextureViewType(VkImageViewType type);
+TextureViewDimension ToTextureViewDimension(VkImageViewType type);
 VkImageAspectFlags ToVkImageAspectFlags(TextureAspectFlags flags);
 TextureAspectFlags ToTextureAspectFlags(VkImageAspectFlags flags);
 
