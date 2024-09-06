@@ -15,4 +15,9 @@ WebGPUSampler::WebGPUSampler(WebGPUDevice* device, std::unique_ptr<Sampler> samp
 {
 }
 
+Sampler* WebGPUSampler::getSampler() const
+{
+    return m_sampler.get();
+}
+
 } // namespace jipu

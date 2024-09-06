@@ -118,6 +118,8 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_surface.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture_view.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture_view.h
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/webgpu/webgpu_texture.h
 

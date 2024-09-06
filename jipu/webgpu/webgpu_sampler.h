@@ -28,6 +28,9 @@ public:
     WebGPUSampler& operator=(const WebGPUSampler&) = delete;
 
 public: // WebGPU API
+public:
+    Sampler* getSampler() const;
+
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUSamplerDescriptor m_descriptor{};
