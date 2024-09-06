@@ -2,6 +2,7 @@
 
 #include "fps.h"
 #include "hpc_watcher.h"
+#include "im_gui.h"
 #include "window.h"
 
 #include <deque>

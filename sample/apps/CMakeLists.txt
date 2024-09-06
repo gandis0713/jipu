@@ -33,7 +33,6 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        jipu::native
         jipu::sample_base
     )
 

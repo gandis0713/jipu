@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "im_gui.h"
-
 namespace jipu
 {
 
