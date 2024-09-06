@@ -65,7 +65,7 @@ WebGPURenderPipeline* WebGPURenderPipeline::create(WebGPUDevice* wgpuDevice, WGP
 
     // fragment stage
     {
-        FragmentStage fragmentStage = pipelineDescriptor.fragment;
+        FragmentStage& fragmentStage = pipelineDescriptor.fragment;
         // fragment stage: target
         {
             for (auto i = 0; i < descriptor->fragment->targetCount; ++i)
