@@ -17,6 +17,7 @@ class WebGPURenderPipeline;
 class WebGPUShaderModule;
 class WebGPUTexture;
 class WebGPUBuffer;
+class WebGPUCommandEncoder;
 class WebGPUDevice : public RefCounted
 {
 public:
@@ -43,6 +44,7 @@ public: // WebGPU API
     WebGPUTexture* createTexture(Texture* texture);
     WebGPUTexture* createTexture(WGPUTextureDescriptor const* descriptor);
     WebGPUBuffer* createBuffer(WGPUBufferDescriptor const* descriptor);
+    WebGPUCommandEncoder* createCommandEncoder(WGPUCommandEncoderDescriptor const* descriptor);
 
 public:
     Device* getDevice() const;

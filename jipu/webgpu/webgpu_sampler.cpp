@@ -3,7 +3,7 @@
 namespace jipu
 {
 
-WebGPUSampler* create(WebGPUDevice* device, WGPUSamplerDescriptor const* descriptor)
+WebGPUSampler* WebGPUSampler::create(WebGPUDevice* device, WGPUSamplerDescriptor const* descriptor)
 {
     return new WebGPUSampler(device, nullptr, descriptor);
 }

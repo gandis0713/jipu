@@ -95,6 +95,12 @@ WGPUTextureView procTextureCreateView(WGPUTexture texture, WGPU_NULLABLE WGPUTex
     return reinterpret_cast<WGPUTextureView>(webgpuTexture->createView(descriptor));
 }
 
+WGPUCommandEncoder procDeviceCreateCommandEncoder(WGPUDevice device, WGPU_NULLABLE WGPUCommandEncoderDescriptor const* descriptor)
+{
+    WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(device);
+    return reinterpret_cast<WGPUCommandEncoder>(webgpuDevice->createCommandEncoder(descriptor));
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

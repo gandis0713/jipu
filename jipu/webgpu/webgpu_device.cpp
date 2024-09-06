@@ -4,6 +4,7 @@
 #include "webgpu_bind_group.h"
 #include "webgpu_bind_group_layout.h"
 #include "webgpu_buffer.h"
+#include "webgpu_command_encoder.h"
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
 #include "webgpu_render_pipeline.h"
@@ -77,6 +78,11 @@ WebGPUTexture* WebGPUDevice::createTexture(WGPUTextureDescriptor const* descript
 WebGPUBuffer* WebGPUDevice::createBuffer(WGPUBufferDescriptor const* descriptor)
 {
     return WebGPUBuffer::create(this, descriptor);
+}
+
+WebGPUCommandEncoder* WebGPUDevice::createCommandEncoder(WGPUCommandEncoderDescriptor const* descriptor)
+{
+    return WebGPUCommandEncoder::create(this, descriptor);
 }
 
 Device* WebGPUDevice::getDevice() const
