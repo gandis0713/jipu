@@ -14,7 +14,7 @@ VulkanPipelineLayout::VulkanPipelineLayout(VulkanDevice& device, const PipelineL
     layouts.resize(descriptor.layouts.size());
     for (uint32_t i = 0; i < descriptor.layouts.size(); ++i)
     {
-        layouts[i] = downcast(descriptor.layouts[i]).getVkDescriptorSetLayout();
+        layouts[i] = downcast(descriptor.layouts[i])->getVkDescriptorSetLayout();
     }
 
     VkPipelineLayoutCreateInfo createInfo{ .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,

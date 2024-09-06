@@ -1,23 +1,28 @@
 #include "webgpu_pipeline_layout.h"
 
+#include "webgpu_bind_group_layout.h"
+#include "webgpu_device.h"
+
 namespace jipu
 {
 
-WebGPUPipelineLayout* WebGPUPipelineLayout::create(WebGPUDevice* device, WGPUPipelineLayoutDescriptor const* descriptor)
+WebGPUPipelineLayout* WebGPUPipelineLayout::create(WebGPUDevice* wgpuDevice, WGPUPipelineLayoutDescriptor const* descriptor)
 {
-    // for(auto i = 0; i < descriptor->bindGroupLayoutCount; ++i)
-    // {
-    //     descriptor->bindGroupLayouts[i];
-    // }
-    // PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-    // pipelineLayoutDescriptor.layouts
-    // return new WebGPUPipelineLayout(device, std::make_unique<PipelineLayout>(), descriptor);
+    PipelineLayoutDescriptor layoutDescriptor{};
 
-    return nullptr;
+    for (auto i = 0; i < descriptor->bindGroupLayoutCount; ++i)
+    {
+        layoutDescriptor.layouts.push_back(reinterpret_cast<WebGPUBindGroupLayout*>(descriptor->bindGroupLayouts[i])->getBindingGroupLayout());
+    }
+
+    auto device = reinterpret_cast<WebGPUDevice*>(wgpuDevice)->getDevice();
+    auto layout = device->createPipelineLayout(layoutDescriptor);
+
+    return new WebGPUPipelineLayout(wgpuDevice, std::move(layout), descriptor);
 }
 
-WebGPUPipelineLayout::WebGPUPipelineLayout(WebGPUDevice* device, std::unique_ptr<PipelineLayout> layout, WGPUPipelineLayoutDescriptor const* descriptor)
-    : m_wgpuDevice(device)
+WebGPUPipelineLayout::WebGPUPipelineLayout(WebGPUDevice* wgpuDevice, std::unique_ptr<PipelineLayout> layout, WGPUPipelineLayoutDescriptor const* descriptor)
+    : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
     , m_layout(std::move(layout))
 {

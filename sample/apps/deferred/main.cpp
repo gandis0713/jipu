@@ -829,7 +829,7 @@ void DeferredSample::createOffscreenBindingGroup()
 void DeferredSample::createOffscreenPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { *m_offscreen.bindingGroupLayouts[0], *m_offscreen.bindingGroupLayouts[1] };
+    descriptor.layouts = { m_offscreen.bindingGroupLayouts[0].get(), m_offscreen.bindingGroupLayouts[1].get() };
 
     m_offscreen.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }
@@ -1076,7 +1076,7 @@ void DeferredSample::createCompositionBindingGroup()
 void DeferredSample::createCompositionPipelineLayout()
 {
     PipelineLayoutDescriptor descriptor{};
-    descriptor.layouts = { *m_composition.bindingGroupLayouts[0] };
+    descriptor.layouts = { m_composition.bindingGroupLayouts[0].get() };
 
     m_composition.pipelineLayout = m_device->createPipelineLayout(descriptor);
 }

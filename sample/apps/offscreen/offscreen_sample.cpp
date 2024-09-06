@@ -283,7 +283,7 @@ void OffscreenSample::createOffscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_offscreen.bindingGroupLayout };
+        descriptor.layouts = { m_offscreen.bindingGroupLayout.get() };
 
         m_offscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -453,7 +453,7 @@ void OffscreenSample::createOnscreenRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_onscreen.bindingGroupLayout };
+        descriptor.layouts = { m_onscreen.bindingGroupLayout.get() };
 
         m_onscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

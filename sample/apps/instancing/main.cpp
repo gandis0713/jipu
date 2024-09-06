@@ -417,7 +417,7 @@ void InstancingSample::createInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_instancing.bindingGroupLayout };
+        descriptor.layouts = { m_instancing.bindingGroupLayout.get() };
 
         m_instancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -597,7 +597,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_nonInstancing.bindingGroupLayout };
+        descriptor.layouts = { m_nonInstancing.bindingGroupLayout.get() };
 
         m_nonInstancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

@@ -10,8 +10,7 @@
 namespace jipu
 {
 
-using BindingGroupLayoutRef = std::reference_wrapper<BindingGroupLayout>;
-using BindingGroupLayouts = std::vector<BindingGroupLayoutRef>;
+using BindingGroupLayouts = std::vector<BindingGroupLayout*>;
 
 class Device;
 class BindingGroupLayout;

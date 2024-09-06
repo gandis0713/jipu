@@ -286,7 +286,7 @@ void BlendSample::createRenderPipelineLayout()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_bindingGroupLayout };
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }

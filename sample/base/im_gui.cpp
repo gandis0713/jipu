@@ -291,7 +291,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     // create pipeline layout
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-        pipelineLayoutDescriptor.layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] };
+        pipelineLayoutDescriptor.layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() };
 
         m_pipelineLayout = device->createPipelineLayout(pipelineLayoutDescriptor);
     }
