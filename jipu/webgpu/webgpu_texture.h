@@ -13,11 +13,13 @@ class WebGPUTexture : public RefCounted
 {
 
 public:
-    static WebGPUTexture* create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor);
+    static WebGPUTexture* create(WebGPUDevice* wgpuDevice, Texture* texture);
+    static WebGPUTexture* create(WebGPUDevice* wgpuDevice, WGPUTextureDescriptor const* descriptor);
 
 public:
     WebGPUTexture() = delete;
-    explicit WebGPUTexture(WebGPUDevice* device, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor);
+    explicit WebGPUTexture(WebGPUDevice* wgpuDevice, Texture* texture);
+    explicit WebGPUTexture(WebGPUDevice* wgpuDevice, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUTexture() = default;
@@ -31,7 +33,8 @@ private:
     [[maybe_unused]] const WGPUTextureDescriptor m_descriptor{};
 
 private:
-    std::unique_ptr<Texture> m_texture = nullptr;
+    [[maybe_unused]] Texture* m_externalTexture = nullptr;            // For swapchain texture
+    [[maybe_unused]] std::unique_ptr<Texture> m_ownTexture = nullptr; // For own texture
 };
 
 // Convert from WebGPU to JIPU

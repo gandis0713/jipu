@@ -26,9 +26,9 @@ VkImageLayout generateInitialLayout(const ColorAttachment& colorAttachment)
 
     if (colorAttachment.loadOp == LoadOp::kLoad)
     {
-        auto& renderView = colorAttachment.resolveView.has_value() ? colorAttachment.resolveView.value().get() : colorAttachment.renderView;
+        auto renderView = colorAttachment.resolveView ? colorAttachment.resolveView : colorAttachment.renderView;
 
-        layout = downcast(renderView.getTexture())->getFinalLayout();
+        layout = downcast(renderView->getTexture())->getFinalLayout();
     }
 
     return layout;
@@ -86,7 +86,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
 
     for (const auto& colorAttachment : descriptor.colorAttachments)
     {
-        const auto texture = downcast(colorAttachment.renderView.getTexture());
+        const auto texture = downcast(colorAttachment.renderView->getTexture());
 
         VkAttachmentDescription attachment{};
         attachment.format = ToVkFormat(texture->getFormat());
@@ -105,7 +105,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     {
         for (auto colorAttachment : descriptor.colorAttachments)
         {
-            const auto texture = downcast(colorAttachment.renderView.getTexture());
+            const auto texture = downcast(colorAttachment.renderView->getTexture());
 
             VkAttachmentDescription attachment{};
             attachment.format = ToVkFormat(texture->getFormat());
@@ -201,7 +201,7 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     if (descriptor.colorAttachments.empty())
         throw std::runtime_error("The attachments for color is empty to create frame buffer descriptor.");
 
-    const auto texture = downcast(descriptor.colorAttachments[0].renderView.getTexture());
+    const auto texture = downcast(descriptor.colorAttachments[0].renderView->getTexture());
 
     VulkanFramebufferDescriptor vkdescriptor{};
     vkdescriptor.width = texture->getWidth();
@@ -210,12 +210,12 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     vkdescriptor.renderPass = renderPass.getVkRenderPass();
 
     for (const auto attachment : descriptor.colorAttachments)
-        vkdescriptor.attachments.push_back(downcast(attachment.renderView).getVkImageView());
+        vkdescriptor.attachments.push_back(downcast(attachment.renderView)->getVkImageView());
 
     if (descriptor.sampleCount > 1)
     {
         for (const auto attachment : descriptor.colorAttachments)
-            vkdescriptor.attachments.push_back(downcast(attachment.resolveView.value()).getVkImageView());
+            vkdescriptor.attachments.push_back(downcast(attachment.resolveView)->getVkImageView());
     }
 
     if (descriptor.depthStencilAttachment.has_value())

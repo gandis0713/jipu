@@ -3,15 +3,26 @@
 namespace jipu
 {
 
-WebGPUTexture* create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor)
+WebGPUTexture* WebGPUTexture::create(WebGPUDevice* wgpuDevice, Texture* texture)
+{
+    return new WebGPUTexture(wgpuDevice, texture);
+}
+
+WebGPUTexture* WebGPUTexture::create(WebGPUDevice* device, WGPUTextureDescriptor const* descriptor)
 {
     return new WebGPUTexture(device, nullptr, descriptor);
+}
+
+WebGPUTexture::WebGPUTexture(WebGPUDevice* device, Texture* texture)
+    : m_wgpuDevice(device)
+    , m_externalTexture(texture)
+{
 }
 
 WebGPUTexture::WebGPUTexture(WebGPUDevice* device, std::unique_ptr<Texture> texture, WGPUTextureDescriptor const* descriptor)
     : m_wgpuDevice(device)
     , m_descriptor(*descriptor)
-    , m_texture(std::move(texture))
+    , m_ownTexture(std::move(texture))
 {
 }
 

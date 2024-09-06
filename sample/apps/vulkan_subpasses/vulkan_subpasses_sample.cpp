@@ -246,28 +246,28 @@ void VulkanSubpassesSample::draw()
     auto vulkanDevice = downcast(m_device.get());
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
 
     // render passes
     if (!m_useSubpasses)
     {
         {
             ColorAttachment positionColorAttachment{
-                .renderView = *m_offscreen.renderPasses.positionColorAttachmentTextureView
+                .renderView = m_offscreen.renderPasses.positionColorAttachmentTextureView.get()
             };
             positionColorAttachment.loadOp = LoadOp::kClear;
             positionColorAttachment.storeOp = StoreOp::kStore;
             positionColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             ColorAttachment normalColorAttachment{
-                .renderView = *m_offscreen.renderPasses.normalColorAttachmentTextureView
+                .renderView = m_offscreen.renderPasses.normalColorAttachmentTextureView.get()
             };
             normalColorAttachment.loadOp = LoadOp::kClear;
             normalColorAttachment.storeOp = StoreOp::kStore;
             normalColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
             ColorAttachment albedoColorAttachment{
-                .renderView = *m_offscreen.renderPasses.albedoColorAttachmentTextureView
+                .renderView = m_offscreen.renderPasses.albedoColorAttachmentTextureView.get()
             };
             albedoColorAttachment.loadOp = LoadOp::kClear;
             albedoColorAttachment.storeOp = StoreOp::kStore;
@@ -351,7 +351,7 @@ void VulkanSubpassesSample::draw()
     {
         // subpasses
         auto& vulkanRenderPass = getSubpassesRenderPass();
-        auto& vulkanFramebuffer = getSubpassesFrameBuffer(renderView);
+        auto& vulkanFramebuffer = getSubpassesFrameBuffer(*renderView);
 
         RenderPassTimestampWrites timestampWrites;
         if (m_useTimestamp)
@@ -406,7 +406,7 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), *renderView);
 
     if (m_useTimestamp)
     {

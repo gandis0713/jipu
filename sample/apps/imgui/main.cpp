@@ -80,7 +80,7 @@ void ImGuiSample::update()
 
 void ImGuiSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
     {
         ColorAttachment attachment{
             .renderView = renderView
@@ -106,7 +106,7 @@ void ImGuiSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
         m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
     }

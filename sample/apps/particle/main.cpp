@@ -188,7 +188,7 @@ void ParticleSample::draw()
 
     // encode render command
     {
-        auto& renderView = m_swapchain->acquireNextTexture();
+        auto renderView = m_swapchain->acquireNextTexture();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
@@ -213,7 +213,7 @@ void ParticleSample::draw()
         renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
         renderPassEncoder->end();
 
-        drawImGui(renderCommandEncoder.get(), renderView);
+        drawImGui(renderCommandEncoder.get(), *renderView);
 
         renderCommandEncoder->finish();
 

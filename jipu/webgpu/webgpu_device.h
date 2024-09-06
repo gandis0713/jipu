@@ -2,6 +2,7 @@
 
 #include "common/ref_counted.h"
 #include "jipu/device.h"
+#include "jipu/texture.h"
 #include "webgpu_header.h"
 
 namespace jipu
@@ -14,6 +15,8 @@ class WebGPUBindGroupLayout;
 class WebGPUPipelineLayout;
 class WebGPURenderPipeline;
 class WebGPUShaderModule;
+class WebGPUTexture;
+class WebGPUBuffer;
 class WebGPUDevice : public RefCounted
 {
 public:
@@ -37,6 +40,9 @@ public: // WebGPU API
     WebGPUPipelineLayout* createPipelineLayout(WGPUPipelineLayoutDescriptor const* descriptor);
     WebGPURenderPipeline* createRenderPipeline(WGPURenderPipelineDescriptor const* descriptor);
     WebGPUShaderModule* createShaderModule(WGPUShaderModuleDescriptor const* descriptor);
+    WebGPUTexture* createTexture(Texture* texture);
+    WebGPUTexture* createTexture(WGPUTextureDescriptor const* descriptor);
+    WebGPUBuffer* createBuffer(WGPUBufferDescriptor const* descriptor);
 
 public:
     Device* getDevice() const;

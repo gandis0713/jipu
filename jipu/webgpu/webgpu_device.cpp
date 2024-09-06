@@ -3,10 +3,12 @@
 #include "webgpu_adapter.h"
 #include "webgpu_bind_group.h"
 #include "webgpu_bind_group_layout.h"
+#include "webgpu_buffer.h"
 #include "webgpu_pipeline_layout.h"
 #include "webgpu_queue.h"
 #include "webgpu_render_pipeline.h"
 #include "webgpu_shader_module.h"
+#include "webgpu_texture.h"
 
 namespace jipu
 {
@@ -60,6 +62,21 @@ WebGPURenderPipeline* WebGPUDevice::createRenderPipeline(WGPURenderPipelineDescr
 WebGPUShaderModule* WebGPUDevice::createShaderModule(WGPUShaderModuleDescriptor const* descriptor)
 {
     return WebGPUShaderModule::create(this, descriptor);
+}
+
+WebGPUTexture* WebGPUDevice::createTexture(Texture* texture)
+{
+    return WebGPUTexture::create(this, texture);
+}
+
+WebGPUTexture* WebGPUDevice::createTexture(WGPUTextureDescriptor const* descriptor)
+{
+    return WebGPUTexture::create(this, descriptor);
+}
+
+WebGPUBuffer* WebGPUDevice::createBuffer(WGPUBufferDescriptor const* descriptor)
+{
+    return WebGPUBuffer::create(this, descriptor);
 }
 
 Device* WebGPUDevice::getDevice() const

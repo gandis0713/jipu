@@ -3,7 +3,7 @@
 namespace jipu
 {
 
-WebGPUBuffer* create(WebGPUDevice* device, WGPUBufferDescriptor const* descriptor)
+WebGPUBuffer* WebGPUBuffer::create(WebGPUDevice* device, WGPUBufferDescriptor const* descriptor)
 {
     return new WebGPUBuffer(device, nullptr, descriptor);
 }

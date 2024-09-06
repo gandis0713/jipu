@@ -81,7 +81,7 @@ void QuerySample::update()
 
 void QuerySample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
     {
         ColorAttachment attachment{
             .renderView = renderView
@@ -133,7 +133,7 @@ void QuerySample::draw()
         }
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
         if (m_useTimestamp)
         {

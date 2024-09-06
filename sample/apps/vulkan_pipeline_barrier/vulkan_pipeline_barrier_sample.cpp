@@ -373,7 +373,7 @@ void VulkanPipelineBarrierSample::update()
 
 void VulkanPipelineBarrierSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
 
     // offscreen pass
     {
@@ -434,7 +434,7 @@ void VulkanPipelineBarrierSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), renderView);
+        drawImGui(commadEncoder.get(), *renderView);
 
         m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
     }

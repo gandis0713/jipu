@@ -38,8 +38,8 @@ struct Color
 
 struct ColorAttachment
 {
-    TextureView& renderView;
-    std::optional<TextureView::Ref> resolveView;
+    TextureView* renderView = nullptr;
+    TextureView* resolveView = nullptr;
     LoadOp loadOp = LoadOp::kDontCare;
     StoreOp storeOp = StoreOp::kDontCare;
     Color clearValue{};

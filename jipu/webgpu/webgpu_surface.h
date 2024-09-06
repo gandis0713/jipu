@@ -30,6 +30,7 @@ public:
 public: // WebGPU API
     WGPUStatus getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCapabilities* capabilities);
     void configure(WGPUSurfaceConfiguration const* config);
+    void getCurrentTexture(WGPUSurfaceTexture* surfaceTexture);
 
 public:
     enum class Type

@@ -82,6 +82,12 @@ WGPUShaderModule procDeviceCreateShaderModule(WGPUDevice device, WGPUShaderModul
     return reinterpret_cast<WGPUShaderModule>(webgpuDevice->createShaderModule(descriptor));
 }
 
+void procSurfaceGetCurrentTexture(WGPUSurface surface, WGPUSurfaceTexture* surfaceTexture)
+{
+    WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
+    return webgpuSurface->getCurrentTexture(surfaceTexture);
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

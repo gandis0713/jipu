@@ -242,7 +242,7 @@ void InstancingSample::update()
 
 void InstancingSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
     {
         CommandEncoderDescriptor commandDescriptor{};
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
@@ -272,7 +272,7 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            drawImGui(commadEncoder.get(), *renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }
@@ -292,7 +292,7 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            drawImGui(commadEncoder.get(), *renderView);
 
             m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
         }

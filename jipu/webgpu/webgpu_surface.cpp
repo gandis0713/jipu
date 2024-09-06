@@ -139,6 +139,23 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
     }
 }
 
+void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)
+{
+    if (m_swapchain == nullptr)
+    {
+        surfaceTexture->status = WGPUSurfaceGetCurrentTextureStatus_Error;
+        return;
+    }
+
+    auto currentTextureView = m_swapchain->acquireNextTexture();
+    auto currentTexture = currentTextureView->getTexture();
+
+    auto wgpuTexture = m_wgpuDevice->createTexture(currentTexture);
+
+    surfaceTexture->texture = reinterpret_cast<WGPUTexture>(wgpuTexture);
+    surfaceTexture->status = WGPUSurfaceGetCurrentTextureStatus_Success;
+}
+
 // Convert from WebGPU to JIPU
 WGPUCompositeAlphaMode ToWGPUCompositeAlphaMode(CompositeAlphaFlag flag)
 {

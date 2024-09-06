@@ -467,7 +467,7 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         ImGuiIO& io = ImGui::GetIO();
 
         ColorAttachment colorAttachment{
-            .renderView = renderView
+            .renderView = &renderView
         };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;

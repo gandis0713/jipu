@@ -349,25 +349,25 @@ void DeferredSample::draw()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
 
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTexture();
 
     {
         ColorAttachment positionColorAttachment{
-            .renderView = *m_offscreen.positionColorAttachmentTextureView
+            .renderView = m_offscreen.positionColorAttachmentTextureView.get()
         };
         positionColorAttachment.loadOp = LoadOp::kClear;
         positionColorAttachment.storeOp = StoreOp::kStore;
         positionColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
         ColorAttachment normalColorAttachment{
-            .renderView = *m_offscreen.normalColorAttachmentTextureView
+            .renderView = m_offscreen.normalColorAttachmentTextureView.get()
         };
         normalColorAttachment.loadOp = LoadOp::kClear;
         normalColorAttachment.storeOp = StoreOp::kStore;
         normalColorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
 
         ColorAttachment albedoColorAttachment{
-            .renderView = *m_offscreen.albedoColorAttachmentTextureView
+            .renderView = m_offscreen.albedoColorAttachmentTextureView.get()
         };
         albedoColorAttachment.loadOp = LoadOp::kClear;
         albedoColorAttachment.storeOp = StoreOp::kStore;
@@ -429,7 +429,7 @@ void DeferredSample::draw()
         renderPassEncoder->end();
     }
 
-    drawImGui(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), *renderView);
 
     m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
 }
