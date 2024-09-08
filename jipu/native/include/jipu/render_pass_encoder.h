@@ -20,6 +20,7 @@ enum class LoadOp : uint8_t
     kDontCare = 0,
     kLoad,
     kClear,
+    kExpandResolveTexture,
 };
 
 enum class StoreOp : uint8_t

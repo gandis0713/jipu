@@ -39,4 +39,14 @@ private:
     std::unique_ptr<RenderPassEncoder> m_renderPassEncoder = nullptr;
 };
 
+// Convert from WebGPU to JIPU
+WGPUColor ToWGPUColor(Color color);
+WGPULoadOp ToWGPULoadOp(LoadOp loadOp);
+WGPUStoreOp ToWGPUStoreOp(StoreOp storeOp);
+
+// Convert from JIPU to WebGPU
+Color ToColor(WGPUColor color);
+LoadOp ToLoadOp(WGPULoadOp loadOp);
+StoreOp ToStoreOp(WGPUStoreOp storeOp);
+
 } // namespace jipu
