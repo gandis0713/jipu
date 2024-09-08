@@ -8,13 +8,15 @@ namespace jipu
 
 WebGPUTextureView* WebGPUTextureView::create(WebGPUTexture* wgpuTexture, WGPUTextureViewDescriptor const* descriptor)
 {
+    WGPUTextureViewDescriptor wgpuDescriptor = descriptor ? *descriptor : GenerateWGPUTextureViewDescriptor(wgpuTexture);
+
     TextureViewDescriptor viewDescriptor{};
-    viewDescriptor.dimension = ToTextureViewDimension(descriptor->dimension);
-    viewDescriptor.aspect = ToTextureAspectFlags(descriptor->aspect);
+    viewDescriptor.dimension = ToTextureViewDimension(wgpuDescriptor.dimension);
+    viewDescriptor.aspect = ToTextureAspectFlags(wgpuTexture, wgpuDescriptor.aspect);
 
     auto textureView = wgpuTexture->getTexture()->createTextureView(viewDescriptor);
 
-    return new WebGPUTextureView(wgpuTexture, std::move(textureView), descriptor);
+    return new WebGPUTextureView(wgpuTexture, std::move(textureView), &wgpuDescriptor);
 }
 
 WebGPUTextureView::WebGPUTextureView(WebGPUTexture* wgpuTexture, std::unique_ptr<TextureView> textureView, WGPUTextureViewDescriptor const* descriptor)
@@ -27,6 +29,22 @@ WebGPUTextureView::WebGPUTextureView(WebGPUTexture* wgpuTexture, std::unique_ptr
 TextureView* WebGPUTextureView::getTextureView() const
 {
     return m_textureView.get();
+}
+
+WGPUTextureViewDescriptor GenerateWGPUTextureViewDescriptor(WebGPUTexture* wgpuTexture)
+{
+    auto texture = wgpuTexture->getTexture();
+
+    WGPUTextureViewDescriptor descriptor{};
+    descriptor.dimension = WGPUTextureViewDimension::WGPUTextureViewDimension_2D;
+    descriptor.aspect = WGPUTextureAspect::WGPUTextureAspect_All;
+    descriptor.baseMipLevel = 0;
+    descriptor.mipLevelCount = 1;
+    descriptor.baseArrayLayer = 0;
+    descriptor.arrayLayerCount = 1;
+    descriptor.format = ToWGPUTextureFormat(texture->getFormat());
+
+    return descriptor;
 }
 
 // Convert from WebGPU to JIPU
@@ -97,13 +115,23 @@ TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension)
     }
 }
 
-TextureAspectFlags ToTextureAspectFlags(WGPUTextureAspect aspect)
+TextureAspectFlags ToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect)
 {
     TextureAspectFlags flags = TextureAspectFlagBits::kUndefined;
 
     if (aspect & WGPUTextureAspect::WGPUTextureAspect_All)
     {
-        flags |= TextureAspectFlagBits::kColor | TextureAspectFlagBits::kDepth | TextureAspectFlagBits::kStencil;
+        auto usage = wgpuTexture->getTexture()->getUsage();
+
+        if (usage & TextureUsageFlagBits::kDepthStencil)
+        {
+            flags |= TextureAspectFlagBits::kDepth | TextureAspectFlagBits::kStencil;
+        }
+
+        if (usage & TextureUsageFlagBits::kColorAttachment)
+        {
+            flags |= TextureAspectFlagBits::kColor;
+        }
     }
     else if (aspect & WGPUTextureAspect::WGPUTextureAspect_DepthOnly)
     {

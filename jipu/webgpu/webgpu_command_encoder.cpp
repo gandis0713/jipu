@@ -21,6 +21,7 @@ WebGPUCommandEncoder* WebGPUCommandEncoder::create(WebGPUDevice* wgpuDevice, WGP
 WebGPUCommandEncoder::WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<CommandEncoder> commandEncoder, std::unique_ptr<CommandBuffer> commandBuffer, WGPUCommandEncoderDescriptor const* descriptor)
     : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
+    , m_commandBuffer(std::move(commandBuffer))
     , m_commandEncoder(std::move(commandEncoder))
 {
 }

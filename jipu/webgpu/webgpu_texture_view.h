@@ -39,12 +39,15 @@ private:
     std::unique_ptr<TextureView> m_textureView = nullptr;
 };
 
+// Generators
+WGPUTextureViewDescriptor GenerateWGPUTextureViewDescriptor(WebGPUTexture* wgpuTexture);
+
 // Convert from WebGPU to JIPU
 WGPUTextureViewDimension ToWGPUTextureViewDimension(TextureViewDimension dimension);
 WGPUTextureAspect ToWGPUTextureAspect(TextureAspectFlags aspect);
 
 // Convert from JIPU to WebGPU
 TextureViewDimension ToTextureViewDimension(WGPUTextureViewDimension dimension);
-TextureAspectFlags ToTextureAspectFlags(WGPUTextureAspect aspect);
+TextureAspectFlags ToTextureAspectFlags(WebGPUTexture* wgpuTexture, WGPUTextureAspect aspect);
 
 } // namespace jipu
