@@ -79,14 +79,14 @@ void BlendSample::draw()
         auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_renderPipeline1);
+        renderPassEncoder->setPipeline(m_renderPipeline1.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup1);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-        renderPassEncoder->setPipeline(*m_renderPipeline2);
+        renderPassEncoder->setPipeline(m_renderPipeline2.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup2);
         renderPassEncoder->setBlendConstant({ 0.5, 0.5, 0.5, 0.0 });
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);

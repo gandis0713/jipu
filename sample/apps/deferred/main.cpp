@@ -387,7 +387,7 @@ void DeferredSample::draw()
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_offscreen.renderPipeline);
+        renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroups[0]);
@@ -420,7 +420,7 @@ void DeferredSample::draw()
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_composition.renderPipeline);
+        renderPassEncoder->setPipeline(m_composition.renderPipeline.get());
         renderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
         renderPassEncoder->setBindingGroup(0, *m_composition.bindingGroups[0]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);

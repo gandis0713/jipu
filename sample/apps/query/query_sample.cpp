@@ -120,7 +120,7 @@ void QuerySample::draw()
         {
             renderPassEncoder->beginOcclusionQuery(0);
         }
-        renderPassEncoder->setPipeline(*m_renderPipeline);
+        renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);

@@ -121,7 +121,7 @@ void OffscreenSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_offscreen.renderPipeline);
+        renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_offscreen.indexBuffer, IndexFormat::kUint16);
@@ -151,7 +151,7 @@ void OffscreenSample::draw()
         auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_onscreen.renderPipeline);
+        renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_onscreen.indexBuffer, IndexFormat::kUint16);

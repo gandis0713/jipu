@@ -37,7 +37,7 @@ public:
     VulkanRenderPassEncoder(VulkanCommandBuffer& commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
-    void setPipeline(RenderPipeline& pipeline) override;
+    void setPipeline(RenderPipeline* pipeline) override;
     void setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset = {}) override;
     void setVertexBuffer(uint32_t slot, Buffer& buffer) override;
     void setIndexBuffer(Buffer& buffer, IndexFormat format) override;
@@ -75,7 +75,7 @@ private:
 
 private:
     VulkanCommandBuffer& m_commandBuffer;
-    std::optional<VulkanRenderPipeline::Ref> m_pipeline = std::nullopt;
+    VulkanRenderPipeline* m_pipeline = nullptr;
 
     uint32_t m_passIndex = 0;
 
