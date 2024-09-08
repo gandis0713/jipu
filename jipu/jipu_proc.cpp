@@ -4,6 +4,7 @@
 #include "webgpu/webgpu_command_encoder.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
+#include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
 
@@ -106,6 +107,12 @@ WGPURenderPassEncoder procCommandEncoderBeginRenderPass(WGPUCommandEncoder comma
 {
     WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
     return reinterpret_cast<WGPURenderPassEncoder>(webgpuCommandEncoder->beginRenderPass(descriptor));
+}
+
+void procRenderPassEncoderSetPipeline(WGPURenderPassEncoder renderPassEncoder, WGPURenderPipeline pipeline)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->setPipeline(pipeline);
 }
 
 namespace

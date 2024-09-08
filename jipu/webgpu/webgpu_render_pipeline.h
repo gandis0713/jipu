@@ -26,6 +26,9 @@ public:
     WebGPURenderPipeline& operator=(const WebGPURenderPipeline&) = delete;
 
 public: // WebGPU API
+public:
+    RenderPipeline* getRenderPipeline() const;
+
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPURenderPipelineDescriptor m_descriptor{};

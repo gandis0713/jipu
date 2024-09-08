@@ -1,6 +1,7 @@
 #include "webgpu_render_pass_encoder.h"
 
 #include "webgpu_command_encoder.h"
+#include "webgpu_render_pipeline.h"
 #include "webgpu_texture_view.h"
 
 namespace jipu
@@ -65,6 +66,12 @@ WebGPURenderPassEncoder::WebGPURenderPassEncoder(WebGPUCommandEncoder* wgpuComma
     , m_descriptor(*descriptor)
     , m_renderPassEncoder(std::move(renderPassEncoder))
 {
+}
+
+void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
+{
+    auto renderPipeline = reinterpret_cast<WebGPURenderPipeline*>(wgpuPipeline)->getRenderPipeline();
+    m_renderPassEncoder->setPipeline(renderPipeline);
 }
 
 RenderPassEncoder* WebGPURenderPassEncoder::getRenderPassEncoder() const

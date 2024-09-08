@@ -28,6 +28,8 @@ public:
     WebGPURenderPassEncoder& operator=(const WebGPURenderPassEncoder&) = delete;
 
 public: // WebGPU API
+    void setPipeline(WGPURenderPipeline pipeline);
+
 public:
     RenderPassEncoder* getRenderPassEncoder() const;
 

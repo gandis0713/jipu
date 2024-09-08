@@ -119,6 +119,12 @@ WebGPURenderPipeline::WebGPURenderPipeline(WebGPUDevice* wgpuDevice, std::unique
 {
 }
 
+RenderPipeline* WebGPURenderPipeline::getRenderPipeline() const
+{
+    return m_pipeline.get();
+}
+
+// Convert from WebGPU to JIPU
 WGPUVertexFormat ToWGPUVertexFormat(VertexFormat format)
 {
     switch (format)
