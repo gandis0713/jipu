@@ -104,7 +104,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& 
 
     submit(submits);
 
-    swapchain.present(*this);
+    swapchain.present(this);
 }
 
 VkQueue VulkanQueue::getVkQueue() const

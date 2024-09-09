@@ -8,17 +8,20 @@
 namespace jipu
 {
 
-WebGPUQueue* WebGPUQueue::create(WebGPUDevice* wgpuDevice)
+WebGPUQueue* WebGPUQueue::create(WebGPUDevice* wgpuDevice, WGPUQueueDescriptor const* descriptor)
 {
     auto device = wgpuDevice->getDevice();
+
+    // TODO: create queue by descriptor here
     auto queue = device->createQueue(QueueDescriptor{ .flags = QueueFlagBits::kGraphics |
                                                                QueueFlagBits::kCompute |
                                                                QueueFlagBits::kTransfer });
-    return new WebGPUQueue(wgpuDevice, std::move(queue));
+    return new WebGPUQueue(wgpuDevice, std::move(queue), descriptor);
 }
 
-WebGPUQueue::WebGPUQueue(WebGPUDevice* wgpuDevice, std::unique_ptr<Queue> queue)
+WebGPUQueue::WebGPUQueue(WebGPUDevice* wgpuDevice, std::unique_ptr<Queue> queue, WGPUQueueDescriptor const* descriptor)
     : m_wgpuDevice(wgpuDevice)
+    , m_descriptor(*descriptor)
     , m_queue(std::move(queue))
 {
 }
@@ -34,6 +37,11 @@ void WebGPUQueue::submit(size_t commandCount, WGPUCommandBuffer const* commands)
     }
 
     m_queue->submit(commandBuffers);
+}
+
+Queue* WebGPUQueue::getQueue() const
+{
+    return m_queue.get();
 }
 
 } // namespace jipu

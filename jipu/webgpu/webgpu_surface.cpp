@@ -3,6 +3,7 @@
 #include "webgpu_adapter.h"
 #include "webgpu_device.h"
 #include "webgpu_instance.h"
+#include "webgpu_queue.h"
 #include "webgpu_texture.h"
 
 namespace jipu
@@ -15,8 +16,8 @@ WebGPUSurface* WebGPUSurface::create(WebGPUInstance* instance, WGPUSurfaceDescri
 
 WebGPUSurface::WebGPUSurface(WebGPUInstance* instance, WGPUSurfaceDescriptor const* descriptor)
     : m_wgpuInstance(instance)
-    , m_wgpuDevice(nullptr)
     , m_descriptor(*descriptor)
+    , m_configuration({})
     , m_surface(nullptr)
     , m_swapchain(nullptr)
 {
@@ -137,6 +138,8 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
 
         m_swapchain = device->createSwapchain(descriptor);
     }
+
+    m_configuration = *config;
 }
 
 void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)
@@ -150,10 +153,23 @@ void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)
     auto currentTextureView = m_swapchain->acquireNextTexture();
     auto currentTexture = currentTextureView->getTexture();
 
-    auto wgpuTexture = m_wgpuDevice->createTexture(currentTexture);
+    auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
+    auto wgpuTexture = wgpuDevice->createTexture(currentTexture);
 
     surfaceTexture->texture = reinterpret_cast<WGPUTexture>(wgpuTexture);
     surfaceTexture->status = WGPUSurfaceGetCurrentTextureStatus_Success;
+}
+
+void WebGPUSurface::present()
+{
+    if (m_swapchain == nullptr)
+    {
+        return;
+    }
+    auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
+    auto wgpuQueue = wgpuDevice->getQueue();
+
+    m_swapchain->present(wgpuQueue->getQueue());
 }
 
 // Convert from WebGPU to JIPU

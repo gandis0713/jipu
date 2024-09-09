@@ -31,6 +31,7 @@ public: // WebGPU API
     WGPUStatus getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCapabilities* capabilities);
     void configure(WGPUSurfaceConfiguration const* config);
     void getCurrentTexture(WGPUSurfaceTexture* surfaceTexture);
+    void present();
 
 public:
     enum class Type
@@ -43,8 +44,8 @@ public:
 
 private:
     [[maybe_unused]] WebGPUInstance* m_wgpuInstance = nullptr;
-    [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
     [[maybe_unused]] const WGPUSurfaceDescriptor m_descriptor{};
+    [[maybe_unused]] WGPUSurfaceConfiguration m_configuration{};
 
 private:
     std::unique_ptr<Surface> m_surface = nullptr;

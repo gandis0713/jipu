@@ -233,17 +233,17 @@ uint32_t VulkanSwapchain::getHeight() const
     return m_descriptor.imageExtent.height;
 }
 
-void VulkanSwapchain::present(Queue& queue)
+void VulkanSwapchain::present(Queue* queue)
 {
     VulkanDevice& vulkanDevice = downcast(m_device);
-    VulkanQueue& vulkanQueue = downcast(queue);
+    auto vulkanQueue = downcast(queue);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // present
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    auto waitSemaphores = downcast(queue).getSemaphores();
+    auto waitSemaphores = vulkanQueue->getSemaphores();
     presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     presentInfo.pWaitSemaphores = waitSemaphores.data();
 
@@ -253,7 +253,7 @@ void VulkanSwapchain::present(Queue& queue)
     presentInfo.pImageIndices = &m_acquiredImageIndex;
     presentInfo.pResults = nullptr; // Optional
 
-    vkAPI.QueuePresentKHR(vulkanQueue.getVkQueue(), &presentInfo);
+    vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
 }
 
 TextureView* VulkanSwapchain::acquireNextTexture()

@@ -14,22 +14,18 @@
 namespace jipu
 {
 
-WebGPUDevice* WebGPUDevice::create(WebGPUAdapter* wgpuAdapter, WGPUDeviceDescriptor const* wgpuDescriptor)
+WebGPUDevice* WebGPUDevice::create(WebGPUAdapter* wgpuAdapter, WGPUDeviceDescriptor const* descriptor)
 {
+    WGPUDeviceDescriptor wgpuDescriptor = descriptor ? *descriptor : GenerateWGPUDeviceDescriptor(wgpuAdapter);
+
     auto physicalDevice = wgpuAdapter->getPhysicalDevice();
     auto device = physicalDevice->createDevice(DeviceDescriptor{});
-    return new WebGPUDevice(wgpuAdapter, std::move(device), wgpuDescriptor);
-}
-
-WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device)
-    : m_wgpuAdapter(wgpuAdapter)
-    , m_descriptor({})
-    , m_device(std::move(device))
-{
+    return new WebGPUDevice(wgpuAdapter, std::move(device), &wgpuDescriptor);
 }
 
 WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device, WGPUDeviceDescriptor const* descriptor)
     : m_wgpuAdapter(wgpuAdapter)
+    , m_wgpuQueue(nullptr)
     , m_descriptor(*descriptor)
     , m_device(std::move(device))
 {
@@ -37,7 +33,12 @@ WebGPUDevice::WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> d
 
 WebGPUQueue* WebGPUDevice::getQueue()
 {
-    return WebGPUQueue::create(this);
+    if (!m_wgpuQueue)
+    {
+        m_wgpuQueue = WebGPUQueue::create(this, &m_descriptor.defaultQueue);
+    }
+
+    return m_wgpuQueue;
 }
 
 WebGPUBindGroup* WebGPUDevice::createBindGroup(WGPUBindGroupDescriptor const* descriptor)
@@ -88,6 +89,14 @@ WebGPUCommandEncoder* WebGPUDevice::createCommandEncoder(WGPUCommandEncoderDescr
 Device* WebGPUDevice::getDevice() const
 {
     return m_device.get();
+}
+
+// Generators
+WGPUDeviceDescriptor GenerateWGPUDeviceDescriptor(WebGPUAdapter* wgpuAdapter)
+{
+    WGPUDeviceDescriptor descriptor{};
+    // TODO
+    return descriptor;
 }
 
 } // namespace jipu

@@ -25,7 +25,6 @@ public:
 
 public:
     WebGPUDevice() = delete;
-    explicit WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device);
     explicit WebGPUDevice(WebGPUAdapter* wgpuAdapter, std::unique_ptr<Device> device, WGPUDeviceDescriptor const* wgpuDescriptor);
 
 public:
@@ -51,10 +50,14 @@ public:
 
 private:
     [[maybe_unused]] WebGPUAdapter* m_wgpuAdapter = nullptr;
+    [[maybe_unused]] WebGPUQueue* m_wgpuQueue = nullptr;
     [[maybe_unused]] const WGPUDeviceDescriptor m_descriptor{};
 
 private:
     std::unique_ptr<Device> m_device = nullptr;
 };
+
+// Generators
+WGPUDeviceDescriptor GenerateWGPUDeviceDescriptor(WebGPUAdapter* wgpuAdapter);
 
 } // namespace jipu
