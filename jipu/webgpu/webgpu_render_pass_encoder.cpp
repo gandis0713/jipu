@@ -100,6 +100,11 @@ void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount,
     m_renderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
+void WebGPURenderPassEncoder::end()
+{
+    m_renderPassEncoder->end();
+}
+
 RenderPassEncoder* WebGPURenderPassEncoder::getRenderPassEncoder() const
 {
     return m_renderPassEncoder.get();
