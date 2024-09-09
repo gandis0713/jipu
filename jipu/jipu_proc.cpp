@@ -115,6 +115,12 @@ void procRenderPassEncoderSetPipeline(WGPURenderPassEncoder renderPassEncoder, W
     return webgpuRenderPassEncoder->setPipeline(pipeline);
 }
 
+void procRenderPassEncoderDraw(WGPURenderPassEncoder renderPassEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
+    return webgpuRenderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{

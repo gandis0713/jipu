@@ -15,6 +15,11 @@ WebGPURenderPassEncoder* WebGPURenderPassEncoder::create(WebGPUCommandEncoder* w
 
     // RenderPassEncoderDescriptor: colorAttachments
     {
+        if (descriptor->colorAttachmentCount <= 0)
+        {
+            throw std::runtime_error("colorAttachmentCount must be greater than 0");
+        }
+
         for (auto i = 0; i < descriptor->colorAttachmentCount; i++)
         {
             auto wgpuColorAttachment = descriptor->colorAttachments[i];
@@ -72,6 +77,27 @@ void WebGPURenderPassEncoder::setPipeline(WGPURenderPipeline wgpuPipeline)
 {
     auto renderPipeline = reinterpret_cast<WebGPURenderPipeline*>(wgpuPipeline)->getRenderPipeline();
     m_renderPassEncoder->setPipeline(renderPipeline);
+
+    // TODO: default viewport
+    {
+        auto textureView = reinterpret_cast<WebGPUTextureView*>(m_descriptor.colorAttachments[0].view)->getTextureView();
+        auto width = textureView->getWidth();
+        auto height = textureView->getHeight();
+        m_renderPassEncoder->setViewport(0, 0, width, height, 0, 1);
+    }
+
+    // TODO: default scissor
+    {
+        auto textureView = reinterpret_cast<WebGPUTextureView*>(m_descriptor.colorAttachments[0].view)->getTextureView();
+        auto width = textureView->getWidth();
+        auto height = textureView->getHeight();
+        m_renderPassEncoder->setScissor(0, 0, width, height);
+    }
+}
+
+void WebGPURenderPassEncoder::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
+{
+    m_renderPassEncoder->draw(vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
 RenderPassEncoder* WebGPURenderPassEncoder::getRenderPassEncoder() const

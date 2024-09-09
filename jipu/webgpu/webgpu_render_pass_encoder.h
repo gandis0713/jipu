@@ -29,6 +29,7 @@ public:
 
 public: // WebGPU API
     void setPipeline(WGPURenderPipeline pipeline);
+    void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);
 
 public:
     RenderPassEncoder* getRenderPassEncoder() const;
