@@ -565,7 +565,7 @@ void DeferredSample::createOffscreenColorMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ commandBuffer.get() });
     }
 }
 
@@ -636,7 +636,7 @@ void DeferredSample::createOffscreenNormalMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *commandBuffer });
+        m_queue->submit({ commandBuffer.get() });
     }
 }
 

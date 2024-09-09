@@ -18,7 +18,7 @@ class VULKAN_EXPORT VulkanCommandEncoder : public CommandEncoder
 {
 public:
     VulkanCommandEncoder() = delete;
-    VulkanCommandEncoder(VulkanCommandBuffer& commandBuffer, const CommandEncoderDescriptor& descriptor);
+    VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
     ~VulkanCommandEncoder() override = default;
 
     std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) override;
@@ -42,16 +42,16 @@ public:
                          Buffer* destination,
                          uint64_t destinationOffset) override;
 
-    CommandBuffer& finish() override;
+    CommandBuffer* finish() override;
 
 public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor);
 
 public:
-    VulkanCommandBuffer& getCommandBuffer() const;
+    VulkanCommandBuffer* getCommandBuffer() const;
 
 private:
-    VulkanCommandBuffer& m_commandBuffer;
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

@@ -24,6 +24,7 @@ extern void procRenderPassEncoderSetPipeline(WGPURenderPassEncoder renderPassEnc
 extern void procRenderPassEncoderDraw(WGPURenderPassEncoder renderPassEncoder, uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance);
 extern void procRenderPassEncoderEnd(WGPURenderPassEncoder renderPassEncoder);
 extern WGPUCommandBuffer procCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUCommandBufferDescriptor const* descriptor);
+extern void procQueueSubmit(WGPUQueue queue, size_t commandCount, WGPUCommandBuffer const* commands);
 
 } // namespace jipu
 
@@ -134,5 +135,10 @@ extern "C"
     WGPU_EXPORT WGPUCommandBuffer wgpuCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUCommandBufferDescriptor const* descriptor) WGPU_FUNCTION_ATTRIBUTE
     {
         return procCommandEncoderFinish(commandEncoder, descriptor);
+    }
+
+    WGPU_EXPORT void wgpuQueueSubmit(WGPUQueue queue, size_t commandCount, WGPUCommandBuffer const* commands) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procQueueSubmit(queue, commandCount, commands);
     }
 }

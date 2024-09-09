@@ -183,7 +183,7 @@ void ParticleSample::draw()
         computeCommandEncoder->finish();
 
         if (separateCmdBuffer)
-            m_queue->submit({ *m_computeCommandBuffer });
+            m_queue->submit({ m_computeCommandBuffer.get() });
     }
 
     // encode render command
@@ -218,11 +218,11 @@ void ParticleSample::draw()
         renderCommandEncoder->finish();
 
         if (separateCmdBuffer)
-            m_queue->submit({ *m_renderCommandBuffer }, *m_swapchain);
+            m_queue->submit({ m_renderCommandBuffer.get() }, *m_swapchain);
     }
 
     if (!separateCmdBuffer)
-        m_queue->submit({ *m_computeCommandBuffer, *m_renderCommandBuffer }, *m_swapchain);
+        m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, *m_swapchain);
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }

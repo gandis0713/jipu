@@ -23,6 +23,9 @@ public:
     WebGPUQueue(const WebGPUQueue&) = delete;
     WebGPUQueue& operator=(const WebGPUQueue&) = delete;
 
+public: // WebGPU API
+    void submit(size_t commandCount, WGPUCommandBuffer const* commands);
+
 private:
     [[maybe_unused]] WebGPUDevice* m_wgpuDevice = nullptr;
 

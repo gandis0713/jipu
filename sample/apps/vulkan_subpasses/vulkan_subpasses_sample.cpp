@@ -684,7 +684,7 @@ void VulkanSubpassesSample::createOffscreenColorMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *m_copyColorTextureCommandBuffer });
+        m_queue->submit({ m_copyColorTextureCommandBuffer.get() });
     }
 }
 
@@ -754,7 +754,7 @@ void VulkanSubpassesSample::createOffscreenNormalMapTexture()
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
         commandEncoder->finish();
 
-        m_queue->submit({ *m_copyNomralTextureCommandBuffer });
+        m_queue->submit({ m_copyNomralTextureCommandBuffer.get() });
     }
 }
 

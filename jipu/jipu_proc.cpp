@@ -5,6 +5,7 @@
 #include "webgpu/webgpu_command_encoder.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
+#include "webgpu/webgpu_queue.h"
 #include "webgpu/webgpu_render_pass_encoder.h"
 #include "webgpu/webgpu_surface.h"
 #include "webgpu/webgpu_texture.h"
@@ -132,6 +133,12 @@ WGPUCommandBuffer procCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WG
 {
     WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
     return reinterpret_cast<WGPUCommandBuffer>(webgpuCommandEncoder->finish(descriptor));
+}
+
+void procQueueSubmit(WGPUQueue queue, size_t commandCount, WGPUCommandBuffer const* commands)
+{
+    WebGPUQueue* webgpuQueue = reinterpret_cast<WebGPUQueue*>(queue);
+    return webgpuQueue->submit(commandCount, commands);
 }
 
 namespace

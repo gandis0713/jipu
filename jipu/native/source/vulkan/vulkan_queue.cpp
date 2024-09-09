@@ -73,14 +73,14 @@ VulkanQueue::~VulkanQueue()
     // Doesn't need to destroy VkQueue.
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers)
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     submit(submits);
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapchain& swapchain)
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain)
 {
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
@@ -92,7 +92,7 @@ void VulkanQueue::submit(std::vector<CommandBuffer::Ref> commandBuffers, Swapcha
     // we assume the last command buffer is for rendering.
     auto renderCommandBufferIndex = commandBufferCount - 1;
 
-    auto& renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
+    auto renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
     auto acquireImageSemaphore = vulkanSwapchain.getPresentSemaphore();
 
     // add signal semaphore to signal that render command buffer is finished.
@@ -117,7 +117,7 @@ std::vector<VkSemaphore> VulkanQueue::getSemaphores() const
     return { m_semaphore };
 }
 
-std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer::Ref> commandBuffers)
+std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
 {
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
@@ -129,12 +129,12 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
 
     for (auto i = 0; i < commandBufferSize; ++i)
     {
-        submitInfo[i].cmdBuf = downcast(commandBuffers[i]).getVkCommandBuffer();
+        submitInfo[i].cmdBuf = downcast(commandBuffers[i])->getVkCommandBuffer();
 
         auto nextIndex = i + 1;
         if (nextIndex < commandBufferSize)
         {
-            std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffers[i]).getSignalSemaphore();
+            std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffers[i])->getSignalSemaphore();
             submitInfo[i].signal.first.push_back(signalSemaphore.first);
             submitInfo[i].signal.second.push_back(signalSemaphore.second);
         }
@@ -146,7 +146,7 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
             submitInfo[i].wait.second.push_back(submitInfo[preIndex].signal.second[0]);
         }
 
-        auto waitSems = downcast(commandBuffers[i]).ejectWaitSemaphores();
+        auto waitSems = downcast(commandBuffers[i])->ejectWaitSemaphores();
         for (auto sem : waitSems)
         {
             submitInfo[i].wait.first.push_back(sem.first);

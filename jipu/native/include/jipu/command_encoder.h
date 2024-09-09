@@ -65,7 +65,7 @@ public:
                                  Buffer* destination,
                                  uint64_t destinationOffset) = 0;
 
-    virtual CommandBuffer& finish() = 0;
+    virtual CommandBuffer* finish() = 0;
 };
 
 } // namespace jipu
