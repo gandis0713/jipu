@@ -425,7 +425,7 @@ void DeferredSample::draw()
         renderPassEncoder->setBindingGroup(0, *m_composition.bindingGroups[0]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
-        renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+        renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
         renderPassEncoder->end();
     }
 

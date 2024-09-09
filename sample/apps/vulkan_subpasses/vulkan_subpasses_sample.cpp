@@ -343,7 +343,7 @@ void VulkanSubpassesSample::draw()
             renderPassEncoder->setBindingGroup(0, *m_composition.renderPasses.bindingGroups[0]);
             renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
-            renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+            renderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
             renderPassEncoder->end();
         }
     }
@@ -401,7 +401,7 @@ void VulkanSubpassesSample::draw()
         vulkanRenderPassEncoder->setVertexBuffer(0, *m_composition.vertexBuffer);
         vulkanRenderPassEncoder->setBindingGroup(0, *m_composition.subPasses.bindingGroups[0]);
         vulkanRenderPassEncoder->setBindingGroup(1, *m_composition.subPasses.bindingGroups[1]);
-        vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()));
+        vulkanRenderPassEncoder->draw(static_cast<uint32_t>(m_composition.vertices.size()), 1, 0, 0);
 
         vulkanRenderPassEncoder->end();
     }

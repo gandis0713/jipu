@@ -210,7 +210,7 @@ void ParticleSample::draw()
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
         renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()));
+        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
         renderPassEncoder->end();
 
         drawImGui(renderCommandEncoder.get(), *renderView);

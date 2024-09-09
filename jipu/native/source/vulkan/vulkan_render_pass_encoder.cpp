@@ -355,12 +355,15 @@ void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
     vulkanDevice.vkAPI.CmdSetBlendConstants(vulkanCommandBuffer.getVkCommandBuffer(), blendConstants);
 }
 
-void VulkanRenderPassEncoder::draw(uint32_t vertexCount)
+void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
+                                   uint32_t instanceCount,
+                                   uint32_t firstVertex,
+                                   uint32_t firstInstance)
 {
     auto& vulkanCommandBuffer = downcast(m_commandBuffer);
     auto& vulkanDevice = downcast(vulkanCommandBuffer.getDevice());
 
-    vulkanDevice.vkAPI.CmdDraw(vulkanCommandBuffer.getVkCommandBuffer(), vertexCount, 1, 0, 0);
+    vulkanDevice.vkAPI.CmdDraw(vulkanCommandBuffer.getVkCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
 }
 
 void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,

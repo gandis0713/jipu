@@ -53,7 +53,11 @@ public:
                     float height) override;
     void setBlendConstant(const Color& color) override;
 
-    void draw(uint32_t vertexCount) override;
+    void draw(uint32_t vertexCount,
+              uint32_t instanceCount,
+              uint32_t firstVertex,
+              uint32_t firstInstance) override;
+
     void drawIndexed(uint32_t indexCount,
                      uint32_t instanceCount,
                      uint32_t indexOffset,
