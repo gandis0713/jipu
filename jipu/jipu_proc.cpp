@@ -141,6 +141,12 @@ void procQueueSubmit(WGPUQueue queue, size_t commandCount, WGPUCommandBuffer con
     return webgpuQueue->submit(commandCount, commands);
 }
 
+void procSurfacePresent(WGPUSurface surface)
+{
+    WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
+    return webgpuSurface->present();
+}
+
 namespace
 {
 std::unordered_map<const char*, WGPUProc> sProcMap{
