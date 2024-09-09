@@ -1,5 +1,6 @@
 #include "webgpu_command_encoder.h"
 
+#include "webgpu_command_buffer.h"
 #include "webgpu_device.h"
 #include "webgpu_render_pass_encoder.h"
 
@@ -29,6 +30,12 @@ WebGPUCommandEncoder::WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique
 WebGPURenderPassEncoder* WebGPUCommandEncoder::beginRenderPass(WGPURenderPassDescriptor const* descriptor)
 {
     return WebGPURenderPassEncoder::create(this, descriptor);
+}
+
+WebGPUCommandBuffer* WebGPUCommandEncoder::finish(WGPUCommandBufferDescriptor const* descriptor)
+{
+    // TODO: create command buffer by descriptor here
+    return new WebGPUCommandBuffer(this, std::move(m_commandBuffer), descriptor);
 }
 
 CommandEncoder* WebGPUCommandEncoder::getCommandEncoder() const

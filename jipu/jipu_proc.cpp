@@ -1,6 +1,7 @@
 #include "webgpu_header.h"
 
 #include "webgpu/webgpu_adapter.h"
+#include "webgpu/webgpu_command_buffer.h"
 #include "webgpu/webgpu_command_encoder.h"
 #include "webgpu/webgpu_device.h"
 #include "webgpu/webgpu_instance.h"
@@ -125,6 +126,12 @@ void procRenderPassEncoderEnd(WGPURenderPassEncoder renderPassEncoder)
 {
     WebGPURenderPassEncoder* webgpuRenderPassEncoder = reinterpret_cast<WebGPURenderPassEncoder*>(renderPassEncoder);
     return webgpuRenderPassEncoder->end();
+}
+
+WGPUCommandBuffer procCommandEncoderFinish(WGPUCommandEncoder commandEncoder, WGPU_NULLABLE WGPUCommandBufferDescriptor const* descriptor)
+{
+    WebGPUCommandEncoder* webgpuCommandEncoder = reinterpret_cast<WebGPUCommandEncoder*>(commandEncoder);
+    return reinterpret_cast<WGPUCommandBuffer>(webgpuCommandEncoder->finish(descriptor));
 }
 
 namespace
