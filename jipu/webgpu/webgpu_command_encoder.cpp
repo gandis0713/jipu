@@ -34,6 +34,7 @@ WebGPURenderPassEncoder* WebGPUCommandEncoder::beginRenderPass(WGPURenderPassDes
 
 WebGPUCommandBuffer* WebGPUCommandEncoder::finish(WGPUCommandBufferDescriptor const* descriptor)
 {
+    [[maybe_unused]] auto command_buffer = m_commandEncoder->finish();
     // TODO: create command buffer by descriptor here
     return new WebGPUCommandBuffer(this, std::move(m_commandBuffer), descriptor);
 }
