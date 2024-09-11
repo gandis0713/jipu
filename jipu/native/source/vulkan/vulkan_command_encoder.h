@@ -3,6 +3,7 @@
 #include "export.h"
 
 #include "common/cast.h"
+#include "jipu/command.h"
 #include "jipu/command_encoder.h"
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"

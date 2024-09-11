@@ -3,7 +3,7 @@
 
 #include "vulkan_binding_group.h"
 #include "vulkan_buffer.h"
-#include "vulkan_command_buffer.h"
+#include "vulkan_command_encoder.h"
 #include "vulkan_device.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
@@ -240,13 +240,13 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
     return vkdescriptor;
 }
 
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor)
-    : VulkanRenderPassEncoder(commandBuffer, generateVulkanRenderPassEncoderDescriptor(commandBuffer->getDevice(), descriptor))
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor)
+    : VulkanRenderPassEncoder(commandEncoder, generateVulkanRenderPassEncoderDescriptor(commandEncoder->getCommandBuffer()->getDevice(), descriptor))
 {
 }
 
-VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor)
-    : m_commandBuffer(commandBuffer)
+VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const VulkanRenderPassEncoderDescriptor& descriptor)
+    : m_commandEncoder(commandEncoder)
     , m_descriptor(descriptor)
 {
     resetQuery();
@@ -257,7 +257,7 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
     m_pipeline = downcast(pipeline);
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice.vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
@@ -268,7 +268,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
     if (!m_pipeline)
         throw std::runtime_error("The pipeline is null opt");
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
     auto& vulkanBindingGroup = downcast(bindingGroup);
@@ -287,7 +287,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
 
 void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     auto& vulkanBuffer = downcast(buffer);
@@ -298,7 +298,7 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 
 void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     auto& vulkanBuffer = downcast(buffer);
@@ -312,7 +312,7 @@ void VulkanRenderPassEncoder::setViewport(float x,
                                           float minDepth,
                                           float maxDepth)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     VkViewport viewport{ x, y, width, height, minDepth, maxDepth };
@@ -324,7 +324,7 @@ void VulkanRenderPassEncoder::setScissor(float x,
                                          float width,
                                          float height)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     VkRect2D scissorRect{};
@@ -338,7 +338,7 @@ void VulkanRenderPassEncoder::setScissor(float x,
 
 void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     float blendConstants[4] = { static_cast<float>(color.r),
@@ -354,7 +354,7 @@ void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
                                    uint32_t firstVertex,
                                    uint32_t firstInstance)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice.vkAPI.CmdDraw(vulkanCommandBuffer->getVkCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
@@ -366,7 +366,7 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
                                           uint32_t vertexOffset,
                                           uint32_t firstInstance)
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice.vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(),
@@ -384,7 +384,7 @@ void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
         throw std::runtime_error("The occlusion query set is nullptr to begin occlusion query.");
     }
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
 
@@ -402,7 +402,7 @@ void VulkanRenderPassEncoder::endOcclusionQuery()
         throw std::runtime_error("The occlusion query set is nullptr to end occlusion query.");
     }
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
 
@@ -419,13 +419,13 @@ void VulkanRenderPassEncoder::end()
 
     // TODO: generate stage from binding group.
     VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     vulkanCommandBuffer->setSignalPipelineStage(flags);
 }
 
 void VulkanRenderPassEncoder::nextPass()
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     vulkanDevice.vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
@@ -434,7 +434,7 @@ void VulkanRenderPassEncoder::nextPass()
 
 void VulkanRenderPassEncoder::resetQuery()
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     const auto& vkAPI = vulkanDevice.vkAPI;
@@ -459,7 +459,7 @@ void VulkanRenderPassEncoder::resetQuery()
 
 void VulkanRenderPassEncoder::beginRenderPass()
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     const auto& vkAPI = vulkanDevice.vkAPI;
@@ -489,7 +489,7 @@ void VulkanRenderPassEncoder::beginRenderPass()
 
 void VulkanRenderPassEncoder::endRenderPass()
 {
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     const auto& vkAPI = vulkanDevice.vkAPI;

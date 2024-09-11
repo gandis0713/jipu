@@ -1,5 +1,6 @@
 #pragma once
 
+#include "jipu/command.h"
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
 #include "vulkan_export.h"
@@ -28,13 +29,13 @@ struct VulkanRenderPassEncoderDescriptor
 class VulkanDevice;
 class VulkanRenderPass;
 class VulkanFramebuffer;
-class VulkanCommandBuffer;
+class VulkanCommandEncoder;
 class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:
     VulkanRenderPassEncoder() = delete;
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const RenderPassEncoderDescriptor& descriptor);
-    VulkanRenderPassEncoder(VulkanCommandBuffer* commandBuffer, const VulkanRenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor);
+    VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const VulkanRenderPassEncoderDescriptor& descriptor);
     ~VulkanRenderPassEncoder() override = default;
 
     void setPipeline(RenderPipeline* pipeline) override;
@@ -78,12 +79,13 @@ private:
     void endRenderPass();
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandEncoder* m_commandEncoder = nullptr;
     VulkanRenderPipeline* m_pipeline = nullptr;
 
     uint32_t m_passIndex = 0;
 
     const VulkanRenderPassEncoderDescriptor m_descriptor{};
+    std::vector<std::unique_ptr<Command>> m_commands{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
