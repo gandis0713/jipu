@@ -122,7 +122,7 @@ private:
     };
     std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
 };
 } // namespace jipu

@@ -165,7 +165,7 @@ private:
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     int m_lightMax = 1000;
 };
 
@@ -382,8 +382,7 @@ void DeferredSample::draw()
 
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment },
-            .depthStencilAttachment = depthStencilAttachment,
-            .sampleCount = m_sampleCount
+            .depthStencilAttachment = depthStencilAttachment
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
@@ -415,8 +414,7 @@ void DeferredSample::draw()
 
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { colorAttachment },
-            .depthStencilAttachment = depthStencilAttachment,
-            .sampleCount = m_sampleCount
+            .depthStencilAttachment = depthStencilAttachment
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);

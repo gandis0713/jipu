@@ -90,7 +90,7 @@ private:
     std::vector<Particle> m_vertices{};
 
     void* m_uniformBufferMappedPointer = nullptr;
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     uint32_t m_particleCount = 8192;
     uint64_t m_previousTime = 0;
     uint64_t m_vertexIndex = 0;
@@ -201,8 +201,7 @@ void ParticleSample::draw()
         colorAttachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { colorAttachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { colorAttachment }
         };
 
         std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);

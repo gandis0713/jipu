@@ -111,7 +111,7 @@ private:
 
     std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 4;
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
@@ -214,8 +214,7 @@ void OBJModelSample::draw()
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
     RenderPassEncoderDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
-                                                      .depthStencilAttachment = depthStencilAttachment,
-                                                      .sampleCount = m_sampleCount };
+                                                      .depthStencilAttachment = depthStencilAttachment };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

@@ -291,8 +291,7 @@ void VulkanSubpassesSample::draw()
             RenderPassEncoderDescriptor renderPassDescriptor{
                 .colorAttachments = { positionColorAttachment, normalColorAttachment, albedoColorAttachment },
                 .depthStencilAttachment = depthStencilAttachment,
-                .timestampWrites = timestampWrites,
-                .sampleCount = m_sampleCount
+                .timestampWrites = timestampWrites
             };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
@@ -333,8 +332,7 @@ void VulkanSubpassesSample::draw()
             RenderPassEncoderDescriptor renderPassDescriptor{
                 .colorAttachments = { colorAttachment },
                 .depthStencilAttachment = depthStencilAttachment,
-                .timestampWrites = timestampWrites,
-                .sampleCount = m_sampleCount
+                .timestampWrites = timestampWrites
             };
 
             auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);

@@ -417,8 +417,7 @@ void VulkanPipelineBarrierSample::draw()
         attachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { attachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { attachment }
         };
 
         CommandEncoderDescriptor commandDescriptor{};

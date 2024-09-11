@@ -71,8 +71,7 @@ void BlendSample::draw()
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
             .occlusionQuerySet = nullptr,
-            .timestampWrites = {},
-            .sampleCount = m_sampleCount
+            .timestampWrites = {}
         };
 
         CommandEncoderDescriptor commandDescriptor{};

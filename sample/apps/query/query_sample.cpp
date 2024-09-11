@@ -108,8 +108,7 @@ void QuerySample::draw()
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
             .occlusionQuerySet = occlusionQuerySet,
-            .timestampWrites = timestampWrites,
-            .sampleCount = m_sampleCount
+            .timestampWrites = timestampWrites
         };
 
         CommandEncoderDescriptor commandDescriptor{};

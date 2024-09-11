@@ -217,7 +217,7 @@ private:
     std::unique_ptr<QuerySet> m_multipass2QuerySet = nullptr;
     std::unique_ptr<QuerySet> m_subpassQuerySet = nullptr;
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     int m_lightMax = 1000;
     bool m_useSubpasses = false;
     bool m_useTimestamp = false;

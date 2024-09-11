@@ -149,7 +149,7 @@ private:
     std::vector<Transform> m_transforms{};
 
     std::unique_ptr<Camera> m_camera = nullptr;
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
 
     struct
     {
@@ -255,8 +255,7 @@ void InstancingSample::draw()
         attachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { attachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { attachment }
         };
 
         if (m_imguiSettings.useInstancing)

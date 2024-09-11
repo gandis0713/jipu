@@ -473,8 +473,7 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         colorAttachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { colorAttachment },
-            .sampleCount = 1
+            .colorAttachments = { colorAttachment }
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);

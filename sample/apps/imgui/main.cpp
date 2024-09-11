@@ -45,7 +45,7 @@ private:
         { { 0.5, 0.5, 0.0 }, { 0.0, 0.0, 1.0 } },
     };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
 };
 
 ImGuiSample::ImGuiSample(const SampleDescriptor& descriptor)
@@ -90,8 +90,7 @@ void ImGuiSample::draw()
         attachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { attachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { attachment }
         };
 
         CommandEncoderDescriptor commandDescriptor{};

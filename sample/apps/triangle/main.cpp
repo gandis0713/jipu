@@ -87,7 +87,7 @@ private:
             { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
         };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
 };
 
@@ -173,8 +173,7 @@ void TriangleSample::draw()
         attachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { attachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { attachment }
         };
 
         CommandEncoderDescriptor commandDescriptor{};

@@ -152,8 +152,7 @@ void VulkanNBufferingSample::draw()
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
     RenderPassEncoderDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
-                                                      .depthStencilAttachment = depthStencilAttachment,
-                                                      .sampleCount = m_sampleCount };
+                                                      .depthStencilAttachment = depthStencilAttachment };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_renderPipeline.get());

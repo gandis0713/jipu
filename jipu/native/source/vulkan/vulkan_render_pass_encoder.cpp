@@ -51,13 +51,16 @@ std::vector<VkClearValue> generateClearColor(const RenderPassEncoderDescriptor& 
                 colorClearValue.color.float32[3] = colorAttachment.clearValue.a;
 
                 clearValues.push_back(colorClearValue);
+
+                if (colorAttachment.resolveView)
+                {
+                    clearValues.push_back(colorClearValue);
+                }
             }
         }
     };
 
     addColorClearValue(clearValues, descriptor.colorAttachments);
-    if (descriptor.sampleCount > 1)
-        addColorClearValue(clearValues, descriptor.colorAttachments);
 
     if (descriptor.depthStencilAttachment.has_value())
     {
@@ -92,20 +95,17 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
         attachment.format = ToVkFormat(texture->getFormat());
         attachment.loadOp = ToVkAttachmentLoadOp(colorAttachment.loadOp);
         attachment.storeOp = ToVkAttachmentStoreOp(colorAttachment.storeOp);
-        attachment.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+        attachment.samples = ToVkSampleCountFlagBits(colorAttachment.renderView->getTexture()->getSampleCount());
         attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachment.initialLayout = generateInitialLayout(colorAttachment);
         attachment.finalLayout = texture->getFinalLayout();
 
         vkdescriptor.attachmentDescriptions.push_back(attachment);
-    }
 
-    if (descriptor.sampleCount > 1)
-    {
-        for (auto colorAttachment : descriptor.colorAttachments)
+        if (colorAttachment.resolveView)
         {
-            const auto texture = downcast(colorAttachment.renderView->getTexture());
+            const auto texture = downcast(colorAttachment.resolveView->getTexture());
 
             VkAttachmentDescription attachment{};
             attachment.format = ToVkFormat(texture->getFormat());
@@ -133,7 +133,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
         attachment.storeOp = ToVkAttachmentStoreOp(depthStencilAttachment.depthStoreOp);
         attachment.stencilLoadOp = ToVkAttachmentLoadOp(depthStencilAttachment.stencilLoadOp);
         attachment.stencilStoreOp = ToVkAttachmentStoreOp(depthStencilAttachment.stencilStoreOp);
-        attachment.samples = ToVkSampleCountFlagBits(descriptor.sampleCount);
+        attachment.samples = ToVkSampleCountFlagBits(depthStencilAttachment.textureView->getTexture()->getSampleCount());
         attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
@@ -145,25 +145,21 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
         subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 
         // color attachments
-        uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.colorAttachments.size());
-        for (auto i = 0; i < colorAttachmentCount; ++i)
+        // uint32_t colorAttachmentCount = static_cast<uint32_t>(descriptor.colorAttachments.size());
+        uint32_t index = 0;
+        for (auto colorAttachment : descriptor.colorAttachments)
         {
             // attachment references
             VkAttachmentReference colorAttachmentReference{};
-            colorAttachmentReference.attachment = i;
+            colorAttachmentReference.attachment = index++;
             colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             subpassDescription.colorAttachments.push_back(colorAttachmentReference);
-        }
 
-        std::vector<VkAttachmentReference> resolveAttachmentReferences{};
-        if (descriptor.sampleCount > 1)
-        {
-            // resolve attachments
-            for (uint32_t i = colorAttachmentCount; i < colorAttachmentCount * 2; ++i)
+            if (colorAttachment.resolveView)
             {
                 VkAttachmentReference resolveAttachmentReference{};
-                resolveAttachmentReference.attachment = i;
+                resolveAttachmentReference.attachment = index++;
                 resolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                 subpassDescription.resolveAttachments.push_back(resolveAttachmentReference);
@@ -210,11 +206,9 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     vkdescriptor.renderPass = renderPass.getVkRenderPass();
 
     for (const auto attachment : descriptor.colorAttachments)
-        vkdescriptor.attachments.push_back(downcast(attachment.renderView)->getVkImageView());
-
-    if (descriptor.sampleCount > 1)
     {
-        for (const auto attachment : descriptor.colorAttachments)
+        vkdescriptor.attachments.push_back(downcast(attachment.renderView)->getVkImageView());
+        if (attachment.resolveView)
             vkdescriptor.attachments.push_back(downcast(attachment.resolveView)->getVkImageView());
     }
 

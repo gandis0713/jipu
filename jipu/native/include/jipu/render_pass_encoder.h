@@ -75,7 +75,6 @@ struct RenderPassEncoderDescriptor
     std::optional<DepthStencilAttachment> depthStencilAttachment = std::nullopt;
     QuerySet* occlusionQuerySet = nullptr;
     RenderPassTimestampWrites timestampWrites{};
-    uint32_t sampleCount = 0;
 };
 
 enum IndexFormat
