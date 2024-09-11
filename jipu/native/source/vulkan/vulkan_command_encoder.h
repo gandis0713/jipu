@@ -14,6 +14,11 @@
 namespace jipu
 {
 
+struct EncodingContext
+{
+    std::vector<std::unique_ptr<Command>> commands{};
+};
+
 class VulkanCommandBuffer;
 class VULKAN_EXPORT VulkanCommandEncoder : public CommandEncoder
 {
@@ -50,9 +55,11 @@ public:
 
 public:
     VulkanCommandBuffer* getCommandBuffer() const;
+    EncodingContext& getEncodingContext();
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
+    EncodingContext m_encodingContext{};
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

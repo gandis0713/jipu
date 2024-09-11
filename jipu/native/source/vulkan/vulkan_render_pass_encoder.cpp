@@ -255,6 +255,13 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
 
 void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
+    {
+        SetRenderPipelineCommand command{ { .type = CommandType::kSetRenderPipeline },
+                                          .pipeline = pipeline };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(command));
+    }
+
     m_pipeline = downcast(pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
@@ -265,6 +272,15 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
+    {
+        SetBindGroupCommand command{ { .type = CommandType::kSetBindGroup },
+                                     .index = index,
+                                     .bindingGroup = &bindingGroup,
+                                     .dynamicOffset = dynamicOffset };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(command));
+    }
+
     if (!m_pipeline)
         throw std::runtime_error("The pipeline is null opt");
 
@@ -287,6 +303,14 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
 
 void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 {
+    {
+        SetVertexBufferCommand command{ { .type = CommandType::kSetVertexBuffer },
+                                        .slot = slot,
+                                        .buffer = &buffer };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetVertexBufferCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -298,6 +322,14 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 
 void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
 {
+    {
+        SetIndexBufferCommand command{ { .type = CommandType::kSetIndexBuffer },
+                                       .buffer = &buffer,
+                                       .format = format };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetIndexBufferCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -312,6 +344,20 @@ void VulkanRenderPassEncoder::setViewport(float x,
                                           float minDepth,
                                           float maxDepth)
 {
+    {
+        SetViewportCommand command{
+            { .type = CommandType::kSetViewport },
+            .x = x,
+            .y = y,
+            .width = width,
+            .height = height,
+            .minDepth = minDepth,
+            .maxDepth = maxDepth,
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetViewportCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -324,6 +370,18 @@ void VulkanRenderPassEncoder::setScissor(float x,
                                          float width,
                                          float height)
 {
+    {
+        SetScissorCommand command{
+            { .type = CommandType::kSetScissor },
+            .x = x,
+            .y = y,
+            .width = width,
+            .height = height
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetScissorCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -338,6 +396,15 @@ void VulkanRenderPassEncoder::setScissor(float x,
 
 void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
 {
+    {
+        SetBlendConstantCommand command{
+            { .type = CommandType::kSetBlendConstant },
+            .color = color
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<SetBlendConstantCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -354,6 +421,18 @@ void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
                                    uint32_t firstVertex,
                                    uint32_t firstInstance)
 {
+    {
+        DrawCommand command{
+            { .type = CommandType::kDraw },
+            .vertexCount = vertexCount,
+            .instanceCount = instanceCount,
+            .firstVertex = firstVertex,
+            .firstInstance = firstInstance,
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<DrawCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -366,6 +445,19 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
                                           uint32_t vertexOffset,
                                           uint32_t firstInstance)
 {
+    {
+        DrawIndexedCommand command{
+            { .type = CommandType::kDrawIndexed },
+            .indexCount = indexCount,
+            .instanceCount = instanceCount,
+            .indexOffset = indexOffset,
+            .vertexOffset = vertexOffset,
+            .firstInstance = firstInstance,
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<DrawIndexedCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
@@ -382,6 +474,16 @@ void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
     if (m_descriptor.occlusionQuerySet == nullptr)
     {
         throw std::runtime_error("The occlusion query set is nullptr to begin occlusion query.");
+    }
+
+    {
+        BeginOcclusionQueryCommand command{
+            { .type = CommandType::kBeginOcclusionQuery },
+            .querySet = m_descriptor.occlusionQuerySet,
+            .queryIndex = queryIndex
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<BeginOcclusionQueryCommand>(command));
     }
 
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
@@ -402,6 +504,15 @@ void VulkanRenderPassEncoder::endOcclusionQuery()
         throw std::runtime_error("The occlusion query set is nullptr to end occlusion query.");
     }
 
+    {
+        EndOcclusionQueryCommand command{
+            { .type = CommandType::kEndOcclusionQuery },
+            .querySet = m_descriptor.occlusionQuerySet
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<EndOcclusionQueryCommand>(command));
+    }
+
     auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
     auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
@@ -415,6 +526,14 @@ void VulkanRenderPassEncoder::endOcclusionQuery()
 
 void VulkanRenderPassEncoder::end()
 {
+    {
+        EndRenderPassCommand command{
+            { .type = CommandType::kEndRenderPass }
+        };
+        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        encodingContext.commands.push_back(std::make_unique<EndRenderPassCommand>(command));
+    }
+
     endRenderPass();
 
     // TODO: generate stage from binding group.

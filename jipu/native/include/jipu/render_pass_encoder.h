@@ -79,7 +79,8 @@ struct RenderPassEncoderDescriptor
 
 enum IndexFormat
 {
-    kUint16 = 0,
+    kUndefined = 0,
+    kUint16,
     kUint32,
 };
 
