@@ -75,6 +75,7 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
+    // auto vulkanCommandRecorder =
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     submit(submits);

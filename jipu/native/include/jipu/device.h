@@ -5,6 +5,7 @@
 #include "jipu/binding_group_layout.h"
 #include "jipu/buffer.h"
 #include "jipu/command_buffer.h"
+#include "jipu/command_encoder.h"
 #include "jipu/pipeline.h"
 #include "jipu/pipeline_layout.h"
 #include "jipu/query_set.h"
@@ -38,7 +39,6 @@ public:
     virtual std::unique_ptr<Buffer> createBuffer(const BufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<BindingGroup> createBindingGroup(const BindingGroupDescriptor& descriptor) = 0;
     virtual std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const BindingGroupLayoutDescriptor& descriptor) = 0;
-    virtual std::unique_ptr<CommandBuffer> createCommandBuffer(const CommandBufferDescriptor& descriptor) = 0;
     virtual std::unique_ptr<PipelineLayout> createPipelineLayout(const PipelineLayoutDescriptor& descriptor) = 0;
     virtual std::unique_ptr<QuerySet> createQuerySet(const QuerySetDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Queue> createQueue(const QueueDescriptor& descriptor) = 0;
@@ -48,6 +48,7 @@ public:
     virtual std::unique_ptr<ShaderModule> createShaderModule(const ShaderModuleDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Swapchain> createSwapchain(const SwapchainDescriptor& descriptor) = 0;
     virtual std::unique_ptr<Texture> createTexture(const TextureDescriptor& descriptor) = 0;
+    virtual std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) = 0;
 };
 
 } // namespace jipu

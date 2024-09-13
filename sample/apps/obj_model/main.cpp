@@ -47,8 +47,6 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
-
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
@@ -109,8 +107,6 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
-
     uint32_t m_sampleCount = 4;
 };
 
@@ -144,9 +140,6 @@ OBJModelSample::~OBJModelSample()
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-
-    // release command buffer after finising queue.
-    m_renderCommandBuffer.reset();
 }
 
 void OBJModelSample::init()
@@ -154,8 +147,6 @@ void OBJModelSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     // create buffer
     createVertexBuffer();
@@ -198,7 +189,7 @@ void OBJModelSample::draw()
     auto renderView = m_swapchain->acquireNextTexture();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
     std::vector<ColorAttachment> colorAttachments{}; // in currently. use only one.
     colorAttachments.push_back({ .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
@@ -229,7 +220,9 @@ void OBJModelSample::draw()
 
     drawImGui(commandEncoder.get(), *renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+
+    m_queue->submit({ commandBuffer.get() }, *m_swapchain);
 }
 
 void OBJModelSample::createVertexBuffer()
@@ -563,12 +556,6 @@ void OBJModelSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void OBJModelSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
 void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
     BlitBuffer srcBuffer{
@@ -581,15 +568,14 @@ void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
         .offset = 0,
     };
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
     commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src.getSize());
 
-    m_queue->submit({ commandEncoder->finish() });
+    CommandBufferDescriptor commandBufferDescriptor{};
+    auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
+    m_queue->submit({});
 }
 
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
@@ -612,14 +598,14 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
     extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
+
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-    m_queue->submit({ commandEndoer->finish() });
+    CommandBufferDescriptor commandBufferDescriptor{};
+    auto commandBuffer = commandEndoer->finish(commandBufferDescriptor);
+    m_queue->submit({});
 }
 
 void OBJModelSample::updateUniformBuffer()

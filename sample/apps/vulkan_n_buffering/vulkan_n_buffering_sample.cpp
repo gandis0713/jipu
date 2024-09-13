@@ -56,8 +56,6 @@ void VulkanNBufferingSample::init()
 
     createHPCWatcher();
 
-    createCommandBuffer();
-
     // create buffer
     createVertexBuffer();
     createIndexBuffer();
@@ -180,12 +178,6 @@ void VulkanNBufferingSample::createSurface()
 
     auto vulkanSurface = downcast(m_surface.get());
     m_surfaceInfo = downcast(m_physicalDevices[0].get())->gatherSurfaceInfo(vulkanSurface);
-}
-
-void VulkanNBufferingSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void VulkanNBufferingSample::createSwapchain()

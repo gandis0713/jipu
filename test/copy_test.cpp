@@ -59,12 +59,8 @@ void CopyTest::SetUp()
     extent.height = m_image.height;
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    EXPECT_NE(nullptr, commandBuffer);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
@@ -74,7 +70,10 @@ void CopyTest::SetUp()
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandEncoder->finish() });
+
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    EXPECT_NE(nullptr, commandBuffer);
+    queue->submit({ commandBuffer.get() });
 }
 
 void CopyTest::TearDown()
@@ -111,12 +110,8 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     extent.width = srcTexture->getWidth();
     extent.height = srcTexture->getHeight();
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    EXPECT_NE(nullptr, commandBuffer);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
@@ -126,7 +121,9 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandEncoder->finish() });
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    EXPECT_NE(nullptr, commandBuffer);
+    queue->submit({ commandBuffer.get() });
 
     char* dstBufferPointer = static_cast<char*>(dstBuffer->map());
     char firstData = *dstBufferPointer;
@@ -135,12 +132,9 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
 
 TEST_F(CopyTest, test_BufferToBuffer)
 {
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    EXPECT_NE(nullptr, commandBuffer);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
     BlitBuffer srcBlitBuffer{
@@ -167,7 +161,9 @@ TEST_F(CopyTest, test_BufferToBuffer)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandEncoder->finish() });
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    EXPECT_NE(nullptr, commandBuffer);
+    queue->submit({ commandBuffer.get() });
 
     void* dstBufferPointer = buffer->map();
     EXPECT_NE(nullptr, dstBufferPointer);
@@ -210,12 +206,8 @@ TEST_F(CopyTest, test_BufferToTexture)
     extent.height = m_image.height;
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    EXPECT_NE(nullptr, commandBuffer);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
@@ -225,7 +217,9 @@ TEST_F(CopyTest, test_BufferToTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandEncoder->finish() });
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    EXPECT_NE(nullptr, commandBuffer);
+    queue->submit({ commandBuffer.get() });
 
     copyTextureToBuffer(texture.get()); // to check copied texture data.
 }
@@ -266,12 +260,8 @@ TEST_F(CopyTest, test_TextureToTexture)
     extent.width = m_srcTexture->getWidth();
     extent.height = m_srcTexture->getHeight();
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    EXPECT_NE(nullptr, commandBuffer);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
     EXPECT_NE(nullptr, commandEncoder);
 
     commandEncoder->copyTextureToTexture(srcBlitTexture, dstBlitTexture, extent);
@@ -281,7 +271,9 @@ TEST_F(CopyTest, test_TextureToTexture)
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
-    queue->submit({ commandEncoder->finish() });
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    EXPECT_NE(nullptr, commandBuffer);
+    queue->submit({ commandBuffer.get() });
 
     copyTextureToBuffer(dstTexture.get()); // to check copied texture data.
 }

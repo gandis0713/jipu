@@ -47,8 +47,6 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
-
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 

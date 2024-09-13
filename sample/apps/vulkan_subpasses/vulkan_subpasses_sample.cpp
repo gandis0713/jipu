@@ -116,8 +116,6 @@ void VulkanSubpassesSample::init()
 
     createHPCWatcher();
 
-    createCommandBuffer();
-
     createMultipassQuerySet();
     createSubpassQuerySet();
 
@@ -2383,12 +2381,6 @@ void VulkanSubpassesSample::createSubpassQuerySet()
     bufferDescriptor.usage = BufferUsageFlagBits::kQueryResolve | BufferUsageFlagBits::kMapRead;
 
     m_subpassQueryBuffer = m_device->createBuffer(bufferDescriptor);
-}
-
-void VulkanSubpassesSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 } // namespace jipu

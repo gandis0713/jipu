@@ -5,26 +5,27 @@
 #include "common/cast.h"
 #include "jipu/command.h"
 #include "jipu/command_encoder.h"
+#include "jipu/compute_pass_encoder.h"
 #include "jipu/render_pass_encoder.h"
+
 #include "vulkan_api.h"
 #include "vulkan_export.h"
-
 #include "vulkan_render_pass_encoder.h"
 
 namespace jipu
 {
 
-struct EncodingContext
+struct CommandEncodingContext
 {
     std::vector<std::unique_ptr<Command>> commands{};
 };
 
-class VulkanCommandBuffer;
+class VulkanDevice;
 class VULKAN_EXPORT VulkanCommandEncoder : public CommandEncoder
 {
 public:
     VulkanCommandEncoder() = delete;
-    VulkanCommandEncoder(VulkanCommandBuffer* commandBuffer, const CommandEncoderDescriptor& descriptor);
+    VulkanCommandEncoder(VulkanDevice* device, const CommandEncoderDescriptor& descriptor);
     ~VulkanCommandEncoder() override = default;
 
     std::unique_ptr<ComputePassEncoder> beginComputePass(const ComputePassEncoderDescriptor& descriptor) override;
@@ -48,18 +49,18 @@ public:
                          Buffer* destination,
                          uint64_t destinationOffset) override;
 
-    CommandBuffer* finish() override;
+    std::unique_ptr<CommandBuffer> finish(const CommandBufferDescriptor& descriptor) override;
 
 public:
     std::unique_ptr<RenderPassEncoder> beginRenderPass(const VulkanRenderPassEncoderDescriptor& descriptor);
 
 public:
-    VulkanCommandBuffer* getCommandBuffer() const;
-    EncodingContext& getEncodingContext();
+    VulkanDevice* getDevice() const;
+    CommandEncodingContext& getEncodingContext();
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
-    EncodingContext m_encodingContext{};
+    VulkanDevice* m_device = nullptr;
+    CommandEncodingContext m_commandEncodingContext{};
 };
 DOWN_CAST(VulkanCommandEncoder, CommandEncoder);
 

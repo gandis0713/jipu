@@ -10,19 +10,16 @@ namespace jipu
 WebGPUCommandEncoder* WebGPUCommandEncoder::create(WebGPUDevice* wgpuDevice, WGPUCommandEncoderDescriptor const* descriptor)
 {
     auto device = wgpuDevice->getDevice();
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = device->createCommandEncoder(commandEncoderDescriptor);
 
-    return new WebGPUCommandEncoder(wgpuDevice, std::move(commandEncoder), std::move(commandBuffer), descriptor);
+    return new WebGPUCommandEncoder(wgpuDevice, std::move(commandEncoder), descriptor);
 }
 
-WebGPUCommandEncoder::WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<CommandEncoder> commandEncoder, std::unique_ptr<CommandBuffer> commandBuffer, WGPUCommandEncoderDescriptor const* descriptor)
+WebGPUCommandEncoder::WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<CommandEncoder> commandEncoder, WGPUCommandEncoderDescriptor const* descriptor)
     : m_wgpuDevice(wgpuDevice)
     , m_descriptor(*descriptor)
-    , m_commandBuffer(std::move(commandBuffer))
     , m_commandEncoder(std::move(commandEncoder))
 {
 }
@@ -34,9 +31,9 @@ WebGPURenderPassEncoder* WebGPUCommandEncoder::beginRenderPass(WGPURenderPassDes
 
 WebGPUCommandBuffer* WebGPUCommandEncoder::finish(WGPUCommandBufferDescriptor const* descriptor)
 {
-    [[maybe_unused]] auto command_buffer = m_commandEncoder->finish();
+    [[maybe_unused]] auto commandBuffer = m_commandEncoder->finish(CommandBufferDescriptor{});
     // TODO: create command buffer by descriptor here
-    return new WebGPUCommandBuffer(this, std::move(m_commandBuffer), descriptor);
+    return new WebGPUCommandBuffer(this, std::move(commandBuffer), descriptor);
 }
 
 CommandEncoder* WebGPUCommandEncoder::getCommandEncoder() const

@@ -57,8 +57,6 @@ private:
     void updateOffscreenUniformBuffer();
 
 private:
-    void createCommandBuffer();
-
     void createOffscreenTexture();
     void createOffscreenTextureView();
     void createOffscreenVertexBuffer();

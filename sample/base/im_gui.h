@@ -65,7 +65,6 @@ private:
     std::vector<std::unique_ptr<BindingGroup>> m_bindingGroups{};
     std::unique_ptr<PipelineLayout> m_pipelineLayout = nullptr;
     std::unique_ptr<RenderPipeline> m_pipeline = nullptr;
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
 };
 
 } // namespace jipu

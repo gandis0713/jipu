@@ -45,7 +45,6 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
 
@@ -106,7 +105,6 @@ private:
     };
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
@@ -182,7 +180,6 @@ InstancingSample::~InstancingSample()
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void InstancingSample::init()
@@ -190,8 +187,6 @@ void InstancingSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
     createTransforms();
@@ -244,8 +239,7 @@ void InstancingSample::draw()
 {
     auto renderView = m_swapchain->acquireNextTexture();
     {
-        CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
 
         ColorAttachment attachment{
             .renderView = renderView
@@ -260,7 +254,7 @@ void InstancingSample::draw()
 
         if (m_imguiSettings.useInstancing)
         {
-            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+            auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
             renderPassEncoder->setBindingGroup(0, *m_instancing.bindingGroup);
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, *m_vertexBuffer);
@@ -271,13 +265,13 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), *renderView);
-
-            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+            drawImGui(commandEncoder.get(), *renderView);
+            auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+            m_queue->submit({ commandBuffer.get() }, *m_swapchain);
         }
         else
         {
-            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+            auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
             renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
             renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
             renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
@@ -291,9 +285,10 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), *renderView);
+            drawImGui(commandEncoder.get(), *renderView);
 
-            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+            auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+            m_queue->submit({ commandBuffer.get() }, *m_swapchain);
         }
     }
 }
@@ -307,12 +302,6 @@ void InstancingSample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void InstancingSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void InstancingSample::createVertexBuffer()

@@ -82,9 +82,6 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     m_device = device;
     m_queue = queue;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
-
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
     m_padding.bottom = 170.0f;
@@ -187,10 +184,11 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         extent.depth = 1;
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-        queue->submit({ commandEncoder->finish() });
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        queue->submit({ commandBuffer.get() });
     }
 
     // create uniform buffer
@@ -523,8 +521,6 @@ void Im_Gui::clear()
     m_pipelineLayout.reset();
     m_bindingGroups.clear();
     m_bindingGroupLayouts.clear();
-
-    m_commandBuffer.reset();
 }
 
 } // namespace jipu

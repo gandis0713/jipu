@@ -33,8 +33,6 @@ OffscreenSample::~OffscreenSample()
     m_onscreen.vertexBuffer.reset();
     m_onscreen.indexBuffer.reset();
     m_onscreen.sampler.reset();
-
-    m_commandBuffer.reset();
 }
 
 void OffscreenSample::init()
@@ -42,8 +40,6 @@ void OffscreenSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createOffscreenTexture();
     createOffscreenTextureView();
@@ -117,9 +113,9 @@ void OffscreenSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_offscreen.bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_offscreen.vertexBuffer);
@@ -129,7 +125,8 @@ void OffscreenSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        m_queue->submit({ commadEncoder->finish() });
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
     }
 
     // onscreen pass
@@ -146,9 +143,9 @@ void OffscreenSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
@@ -158,9 +155,10 @@ void OffscreenSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
     }
 }
 
@@ -169,12 +167,6 @@ void OffscreenSample::updateImGui()
     recordImGui({ [&]() {
         profilingWindow();
     } });
-}
-
-void OffscreenSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void OffscreenSample::createOffscreenTexture()

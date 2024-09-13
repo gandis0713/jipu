@@ -5,20 +5,26 @@
 #include "common/cast.h"
 #include "jipu/command_buffer.h"
 #include "vulkan_api.h"
+#include "vulkan_command_encoder.h"
+#include "vulkan_command_recorder.h"
 #include "vulkan_export.h"
+
+#include <vector>
 
 namespace jipu
 {
 
 class VulkanDevice;
+class VulkanCommandEncoder;
 class VULKAN_EXPORT VulkanCommandBuffer : public CommandBuffer
 {
 public:
     VulkanCommandBuffer() = delete;
-    VulkanCommandBuffer(VulkanDevice& device, const CommandBufferDescriptor& descriptor);
+    VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor);
     ~VulkanCommandBuffer() override;
 
-    std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
+public:
+    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
 
 public:
     VulkanDevice& getDevice() const;
@@ -33,7 +39,8 @@ public:
     std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> ejectWaitSemaphores();
 
 private:
-    VulkanDevice& m_device;
+    VulkanDevice* m_device = nullptr;
+    CommandEncodingContext m_commandEncodingContext;
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;

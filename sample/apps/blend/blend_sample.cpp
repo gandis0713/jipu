@@ -24,7 +24,6 @@ BlendSample::~BlendSample()
     m_bindingGroupLayout.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void BlendSample::init()
@@ -32,8 +31,6 @@ void BlendSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createVertexBuffer();
     createIndexBuffer();
@@ -75,7 +72,7 @@ void BlendSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline1.get());
@@ -93,7 +90,8 @@ void BlendSample::draw()
 
         drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
     }
 }
 
@@ -148,12 +146,6 @@ void BlendSample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void BlendSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void BlendSample::createVertexBuffer()
@@ -395,14 +387,12 @@ void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture
     extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-    m_queue->submit({ commandEndoer->finish() });
+    auto commandBuffer = commandEndoer->finish(CommandBufferDescriptor{});
+    m_queue->submit({ commandBuffer.get() });
 }
 
 } // namespace jipu

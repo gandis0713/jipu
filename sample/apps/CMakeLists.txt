@@ -128,7 +128,7 @@ endif()
 
 # experimental
 if(EXPORT_JIPU_VULKAN)
-    add_subdirectory(vulkan_subpasses)
-    add_subdirectory(vulkan_n_buffering)
-    add_subdirectory(vulkan_pipeline_barrier)
+    # add_subdirectory(vulkan_subpasses)
+    # add_subdirectory(vulkan_n_buffering)
+    # add_subdirectory(vulkan_pipeline_barrier)
 endif()

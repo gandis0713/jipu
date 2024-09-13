@@ -221,10 +221,10 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     return vkdescriptor;
 }
 
-VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(VulkanDevice& device, const RenderPassEncoderDescriptor& descriptor)
+VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor)
 {
-    auto& renderPass = device.getRenderPass(generateVulkanRenderPassDescriptor(descriptor));
-    auto& framebuffer = device.getFrameBuffer(generateVulkanFramebufferDescriptor(renderPass, descriptor));
+    auto& renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor));
+    auto& framebuffer = device->getFrameBuffer(generateVulkanFramebufferDescriptor(renderPass, descriptor));
 
     VulkanRenderPassEncoderDescriptor vkdescriptor{};
     vkdescriptor.clearValues = generateClearColor(descriptor);
@@ -241,7 +241,7 @@ VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(Vulk
 }
 
 VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEncoder, const RenderPassEncoderDescriptor& descriptor)
-    : VulkanRenderPassEncoder(commandEncoder, generateVulkanRenderPassEncoderDescriptor(commandEncoder->getCommandBuffer()->getDevice(), descriptor))
+    : VulkanRenderPassEncoder(commandEncoder, generateVulkanRenderPassEncoderDescriptor(commandEncoder->getDevice(), descriptor))
 {
 }
 
@@ -250,7 +250,6 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
     , m_descriptor(descriptor)
 {
     resetQuery();
-    beginRenderPass();
 }
 
 void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
@@ -258,83 +257,37 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
     {
         SetRenderPipelineCommand command{ { .type = CommandType::kSetRenderPipeline },
                                           .pipeline = pipeline };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(command));
+        auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+        commandEncodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
     }
-
-    m_pipeline = downcast(pipeline);
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    vulkanDevice.vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline->getVkPipeline());
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
-    {
-        SetBindGroupCommand command{ { .type = CommandType::kSetBindGroup },
-                                     .index = index,
-                                     .bindingGroup = &bindingGroup,
-                                     .dynamicOffset = dynamicOffset };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(command));
-    }
-
-    if (!m_pipeline)
-        throw std::runtime_error("The pipeline is null opt");
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
-    auto& vulkanBindingGroup = downcast(bindingGroup);
-    VkDescriptorSet set = vulkanBindingGroup.getVkDescriptorSet();
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-
-    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
-                                index,
-                                1,
-                                &set,
-                                static_cast<uint32_t>(dynamicOffset.size()),
-                                dynamicOffset.data());
+    SetBindGroupCommand command{ { .type = CommandType::kSetBindGroup },
+                                 .index = index,
+                                 .bindingGroup = &bindingGroup,
+                                 .dynamicOffset = dynamicOffset };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 {
-    {
-        SetVertexBufferCommand command{ { .type = CommandType::kSetVertexBuffer },
-                                        .slot = slot,
-                                        .buffer = &buffer };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetVertexBufferCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    auto& vulkanBuffer = downcast(buffer);
-    VkBuffer vertexBuffers[] = { vulkanBuffer.getVkBuffer() };
-    VkDeviceSize offsets[] = { 0 };
-    vulkanDevice.vkAPI.CmdBindVertexBuffers(vulkanCommandBuffer->getVkCommandBuffer(), slot, 1, vertexBuffers, offsets);
+    SetVertexBufferCommand command{ { .type = CommandType::kSetVertexBuffer },
+                                    .slot = slot,
+                                    .buffer = &buffer };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetVertexBufferCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
 {
-    {
-        SetIndexBufferCommand command{ { .type = CommandType::kSetIndexBuffer },
-                                       .buffer = &buffer,
-                                       .format = format };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetIndexBufferCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    auto& vulkanBuffer = downcast(buffer);
-    vulkanDevice.vkAPI.CmdBindIndexBuffer(vulkanCommandBuffer->getVkCommandBuffer(), vulkanBuffer.getVkBuffer(), 0, ToVkIndexType(format));
+    SetIndexBufferCommand command{ { .type = CommandType::kSetIndexBuffer },
+                                   .buffer = &buffer,
+                                   .format = format };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetIndexBufferCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setViewport(float x,
@@ -344,25 +297,18 @@ void VulkanRenderPassEncoder::setViewport(float x,
                                           float minDepth,
                                           float maxDepth)
 {
-    {
-        SetViewportCommand command{
-            { .type = CommandType::kSetViewport },
-            .x = x,
-            .y = y,
-            .width = width,
-            .height = height,
-            .minDepth = minDepth,
-            .maxDepth = maxDepth,
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetViewportCommand>(command));
-    }
 
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    VkViewport viewport{ x, y, width, height, minDepth, maxDepth };
-    vulkanDevice.vkAPI.CmdSetViewport(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &viewport);
+    SetViewportCommand command{
+        { .type = CommandType::kSetViewport },
+        .x = x,
+        .y = y,
+        .width = width,
+        .height = height,
+        .minDepth = minDepth,
+        .maxDepth = maxDepth,
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetViewportCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setScissor(float x,
@@ -370,50 +316,26 @@ void VulkanRenderPassEncoder::setScissor(float x,
                                          float width,
                                          float height)
 {
-    {
-        SetScissorCommand command{
-            { .type = CommandType::kSetScissor },
-            .x = x,
-            .y = y,
-            .width = width,
-            .height = height
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetScissorCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    VkRect2D scissorRect{};
-    scissorRect.offset.x = x;
-    scissorRect.offset.y = y;
-    scissorRect.extent.width = width;
-    scissorRect.extent.height = height;
-
-    vulkanDevice.vkAPI.CmdSetScissor(vulkanCommandBuffer->getVkCommandBuffer(), 0, 1, &scissorRect);
+    SetScissorCommand command{
+        { .type = CommandType::kSetScissor },
+        .x = x,
+        .y = y,
+        .width = width,
+        .height = height
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetScissorCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
 {
-    {
-        SetBlendConstantCommand command{
-            { .type = CommandType::kSetBlendConstant },
-            .color = color
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<SetBlendConstantCommand>(command));
-    }
 
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    float blendConstants[4] = { static_cast<float>(color.r),
-                                static_cast<float>(color.g),
-                                static_cast<float>(color.b),
-                                static_cast<float>(color.a) };
-
-    vulkanDevice.vkAPI.CmdSetBlendConstants(vulkanCommandBuffer->getVkCommandBuffer(), blendConstants);
+    SetBlendConstantCommand command{
+        { .type = CommandType::kSetBlendConstant },
+        .color = color
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetBlendConstantCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
@@ -421,22 +343,15 @@ void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
                                    uint32_t firstVertex,
                                    uint32_t firstInstance)
 {
-    {
-        DrawCommand command{
-            { .type = CommandType::kDraw },
-            .vertexCount = vertexCount,
-            .instanceCount = instanceCount,
-            .firstVertex = firstVertex,
-            .firstInstance = firstInstance,
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<DrawCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    vulkanDevice.vkAPI.CmdDraw(vulkanCommandBuffer->getVkCommandBuffer(), vertexCount, instanceCount, firstVertex, firstInstance);
+    DrawCommand command{
+        { .type = CommandType::kDraw },
+        .vertexCount = vertexCount,
+        .instanceCount = instanceCount,
+        .firstVertex = firstVertex,
+        .firstInstance = firstInstance,
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<DrawCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
@@ -445,28 +360,16 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
                                           uint32_t vertexOffset,
                                           uint32_t firstInstance)
 {
-    {
-        DrawIndexedCommand command{
-            { .type = CommandType::kDrawIndexed },
-            .indexCount = indexCount,
-            .instanceCount = instanceCount,
-            .indexOffset = indexOffset,
-            .vertexOffset = vertexOffset,
-            .firstInstance = firstInstance,
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<DrawIndexedCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    vulkanDevice.vkAPI.CmdDrawIndexed(vulkanCommandBuffer->getVkCommandBuffer(),
-                                      indexCount,
-                                      instanceCount,
-                                      indexOffset,
-                                      vertexOffset,
-                                      firstInstance);
+    DrawIndexedCommand command{
+        { .type = CommandType::kDrawIndexed },
+        .indexCount = indexCount,
+        .instanceCount = instanceCount,
+        .indexOffset = indexOffset,
+        .vertexOffset = vertexOffset,
+        .firstInstance = firstInstance,
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<DrawIndexedCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
@@ -476,25 +379,13 @@ void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
         throw std::runtime_error("The occlusion query set is nullptr to begin occlusion query.");
     }
 
-    {
-        BeginOcclusionQueryCommand command{
-            { .type = CommandType::kBeginOcclusionQuery },
-            .querySet = m_descriptor.occlusionQuerySet,
-            .queryIndex = queryIndex
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<BeginOcclusionQueryCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
-
-    auto& vkAPI = vulkanDevice.vkAPI;
-    vkAPI.CmdBeginQuery(vulkanCommandBuffer->getVkCommandBuffer(),
-                        vulkanOcclusionQuerySet->getVkQueryPool(),
-                        queryIndex,
-                        0);
+    BeginOcclusionQueryCommand command{
+        { .type = CommandType::kBeginOcclusionQuery },
+        .querySet = m_descriptor.occlusionQuerySet,
+        .queryIndex = queryIndex
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<BeginOcclusionQueryCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::endOcclusionQuery()
@@ -504,124 +395,62 @@ void VulkanRenderPassEncoder::endOcclusionQuery()
         throw std::runtime_error("The occlusion query set is nullptr to end occlusion query.");
     }
 
-    {
-        EndOcclusionQueryCommand command{
-            { .type = CommandType::kEndOcclusionQuery },
-            .querySet = m_descriptor.occlusionQuerySet
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<EndOcclusionQueryCommand>(command));
-    }
-
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
-
-    auto& vkAPI = vulkanDevice.vkAPI;
-
-    vkAPI.CmdEndQuery(vulkanCommandBuffer->getVkCommandBuffer(),
-                      vulkanOcclusionQuerySet->getVkQueryPool(),
-                      0);
+    EndOcclusionQueryCommand command{
+        { .type = CommandType::kEndOcclusionQuery },
+        .querySet = m_descriptor.occlusionQuerySet
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<EndOcclusionQueryCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::end()
 {
-    {
-        EndRenderPassCommand command{
-            { .type = CommandType::kEndRenderPass }
-        };
-        auto& encodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        encodingContext.commands.push_back(std::make_unique<EndRenderPassCommand>(command));
-    }
+    EndRenderPassCommand command{
+        { .type = CommandType::kEndRenderPass }
+    };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<EndRenderPassCommand>(std::move(command)));
 
-    endRenderPass();
+    // endRenderPass();
 
-    // TODO: generate stage from binding group.
-    VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    vulkanCommandBuffer->setSignalPipelineStage(flags);
+    // // TODO: generate stage from binding group.
+    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
+    // vulkanCommandBuffer->setSignalPipelineStage(flags);
 }
 
 void VulkanRenderPassEncoder::nextPass()
 {
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
+    // auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    vulkanDevice.vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
-    ++m_passIndex;
+    // vulkanDevice.vkAPI.CmdNextSubpass(vulkanCommandBuffer->getVkCommandBuffer(), VK_SUBPASS_CONTENTS_INLINE);
+    // ++m_passIndex;
 }
 
 void VulkanRenderPassEncoder::resetQuery()
 {
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
+    // auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
-    const auto& vkAPI = vulkanDevice.vkAPI;
-    if (m_descriptor.timestampWrites.querySet)
-    {
-        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
-        vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
-                                vulkanQuerySet->getVkQueryPool(),
-                                0,
-                                vulkanQuerySet->getCount());
-    }
+    // const auto& vkAPI = vulkanDevice.vkAPI;
+    // if (m_descriptor.timestampWrites.querySet)
+    // {
+    //     auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
+    //     vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
+    //                             vulkanQuerySet->getVkQueryPool(),
+    //                             0,
+    //                             vulkanQuerySet->getCount());
+    // }
 
-    if (m_descriptor.occlusionQuerySet)
-    {
-        auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
-        vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
-                                vulkanOcclusionQuerySet->getVkQueryPool(),
-                                0,
-                                vulkanOcclusionQuerySet->getCount());
-    }
-}
-
-void VulkanRenderPassEncoder::beginRenderPass()
-{
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    const auto& vkAPI = vulkanDevice.vkAPI;
-    if (m_descriptor.timestampWrites.querySet)
-    {
-        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
-        vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
-                                vulkanQuerySet->getVkQueryPool(),
-                                0,
-                                vulkanQuerySet->getCount());
-        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                vulkanQuerySet->getVkQueryPool(),
-                                m_descriptor.timestampWrites.beginQueryIndex);
-    }
-
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_descriptor.renderPass;
-    renderPassInfo.framebuffer = m_descriptor.framebuffer;
-    renderPassInfo.renderArea = m_descriptor.renderArea;
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(m_descriptor.clearValues.size());
-    renderPassInfo.pClearValues = m_descriptor.clearValues.data();
-
-    vkAPI.CmdBeginRenderPass(vulkanCommandBuffer->getVkCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-}
-
-void VulkanRenderPassEncoder::endRenderPass()
-{
-    auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-
-    const auto& vkAPI = vulkanDevice.vkAPI;
-    vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
-
-    if (m_descriptor.timestampWrites.querySet)
-    {
-        auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
-        vkAPI.CmdWriteTimestamp(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                                vulkanQuerySet->getVkQueryPool(),
-                                m_descriptor.timestampWrites.endQueryIndex);
-    }
+    // if (m_descriptor.occlusionQuerySet)
+    // {
+    //     auto vulkanOcclusionQuerySet = downcast(m_descriptor.occlusionQuerySet);
+    //     vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
+    //                             vulkanOcclusionQuerySet->getVkQueryPool(),
+    //                             0,
+    //                             vulkanOcclusionQuerySet->getCount());
+    // }
 }
 
 // Convert Helper

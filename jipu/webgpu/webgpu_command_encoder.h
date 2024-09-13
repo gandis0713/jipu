@@ -22,7 +22,7 @@ public:
 
 public:
     WebGPUCommandEncoder() = delete;
-    explicit WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<CommandEncoder> commandEncoder, std::unique_ptr<CommandBuffer> commandBuffer, WGPUCommandEncoderDescriptor const* descriptor);
+    explicit WebGPUCommandEncoder(WebGPUDevice* wgpuDevice, std::unique_ptr<CommandEncoder> commandEncoder, WGPUCommandEncoderDescriptor const* descriptor);
 
 public:
     virtual ~WebGPUCommandEncoder() = default;
@@ -42,7 +42,6 @@ private:
     [[maybe_unused]] const WGPUCommandEncoderDescriptor m_descriptor{};
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
 };
 

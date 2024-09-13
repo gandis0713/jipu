@@ -10,12 +10,12 @@ namespace jipu
 
 class VulkanBindingGroup;
 class VulkanComputePipeline;
-class VulkanCommandBuffer;
+class VulkanCommandEncoder;
 class VULKAN_EXPORT VulkanComputePassEncoder : public ComputePassEncoder
 {
 public:
     VulkanComputePassEncoder() = delete;
-    VulkanComputePassEncoder(VulkanCommandBuffer* commandBuffer, const ComputePassEncoderDescriptor& descriptor);
+    VulkanComputePassEncoder(VulkanCommandEncoder* commandEncoder, const ComputePassEncoderDescriptor& descriptor);
     ~VulkanComputePassEncoder() override = default;
 
 public:
@@ -25,7 +25,7 @@ public:
     void end() override;
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandEncoder* m_commandEncoder = nullptr;
 
 private:
     std::optional<VulkanComputePipeline::Ref> m_pipeline = std::nullopt;

@@ -43,7 +43,6 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
@@ -52,7 +51,6 @@ private:
     void createRenderPipeline();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
@@ -105,7 +103,6 @@ TriangleSample::~TriangleSample()
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void TriangleSample::init()
@@ -113,8 +110,6 @@ void TriangleSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
 
@@ -177,9 +172,9 @@ void TriangleSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
@@ -189,9 +184,10 @@ void TriangleSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
     }
 }
 
@@ -200,12 +196,6 @@ void TriangleSample::updateImGui()
     recordImGui({ [&]() {
         profilingWindow();
     } });
-}
-
-void TriangleSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void TriangleSample::createVertexBuffer()

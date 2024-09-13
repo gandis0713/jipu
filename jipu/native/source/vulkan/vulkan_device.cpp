@@ -88,11 +88,6 @@ std::unique_ptr<BindingGroupLayout> VulkanDevice::createBindingGroupLayout(const
     return std::make_unique<VulkanBindingGroupLayout>(*this, descriptor);
 }
 
-std::unique_ptr<CommandBuffer> VulkanDevice::createCommandBuffer(const CommandBufferDescriptor& descriptor)
-{
-    return std::make_unique<VulkanCommandBuffer>(*this, descriptor);
-}
-
 std::unique_ptr<PipelineLayout> VulkanDevice::createPipelineLayout(const PipelineLayoutDescriptor& descriptor)
 {
     return std::make_unique<VulkanPipelineLayout>(*this, descriptor);
@@ -156,6 +151,11 @@ std::unique_ptr<Texture> VulkanDevice::createTexture(const VulkanTextureDescript
 std::unique_ptr<Swapchain> VulkanDevice::createSwapchain(const VulkanSwapchainDescriptor& descriptor)
 {
     return std::make_unique<VulkanSwapchain>(*this, descriptor);
+}
+
+std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
+{
+    return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
 VulkanRenderPass& VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)

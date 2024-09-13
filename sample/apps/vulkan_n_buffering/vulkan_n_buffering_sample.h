@@ -50,7 +50,6 @@ private:
 private:
     void createSurface() override;
     void createSwapchain() override;
-    void createCommandBuffer();
 
     void createVertexBuffer();
     void createIndexBuffer();

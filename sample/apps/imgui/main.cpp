@@ -24,12 +24,10 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createRenderPipeline();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<RenderPipeline> m_renderPipeline = nullptr;
 
@@ -57,7 +55,6 @@ ImGuiSample::~ImGuiSample()
 {
     m_renderPipeline.reset();
     m_vertexBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void ImGuiSample::init()
@@ -66,7 +63,6 @@ void ImGuiSample::init()
 
     createHPCWatcher();
 
-    createCommandBuffer();
     createVertexBuffer();
     createRenderPipeline();
 }
@@ -94,7 +90,7 @@ void ImGuiSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
 
@@ -107,7 +103,8 @@ void ImGuiSample::draw()
 
         drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
     }
 }
 
@@ -116,12 +113,6 @@ void ImGuiSample::updateImGui()
     recordImGui({ [&]() {
         profilingWindow();
     } });
-}
-
-void ImGuiSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void ImGuiSample::createVertexBuffer()

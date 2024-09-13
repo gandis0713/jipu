@@ -305,8 +305,6 @@ VulkanPipelineBarrierSample::~VulkanPipelineBarrierSample()
     m_onscreen.vertexBuffer.reset();
     m_onscreen.indexBuffer.reset();
     m_onscreen.sampler.reset();
-
-    m_commandBuffer.reset();
 }
 
 void VulkanPipelineBarrierSample::init()
@@ -314,8 +312,6 @@ void VulkanPipelineBarrierSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createOffscreenTexture();
     createOffscreenTextureView();
@@ -421,9 +417,9 @@ void VulkanPipelineBarrierSample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
-        auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
+        auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_onscreen.bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_onscreen.vertexBuffer);
@@ -433,9 +429,9 @@ void VulkanPipelineBarrierSample::draw()
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commadEncoder.get(), *renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
     }
 }
 
@@ -468,12 +464,6 @@ void VulkanPipelineBarrierSample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void VulkanPipelineBarrierSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void VulkanPipelineBarrierSample::createOffscreenTexture()

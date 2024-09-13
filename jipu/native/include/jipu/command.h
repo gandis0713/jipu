@@ -2,6 +2,7 @@
 
 #include "binding_group.h"
 #include "buffer.h"
+#include "command_encoder.h"
 #include "pipeline.h"
 #include "query_set.h"
 #include "render_pass_encoder.h"
@@ -43,6 +44,7 @@ enum class CommandType
 struct Command
 {
     CommandType type;
+    std::unique_ptr<Command> next = nullptr;
 };
 
 struct BeginComputePassCommand : public Command
@@ -71,22 +73,37 @@ struct ClearBufferCommand : public Command
 
 struct CopyBufferToBufferCommand : public Command
 {
+    BlitBuffer src{};
+    BlitBuffer dst{};
+    uint64_t size = 0;
 };
 
 struct CopyBufferToTextureCommand : public Command
 {
+    BlitTextureBuffer buffer{};
+    BlitTexture texture{};
+    Extent3D extent{};
 };
 
 struct CopyTextureToBufferCommand : public Command
 {
+    BlitTexture texture{};
+    BlitTextureBuffer buffer{};
+    Extent3D extent{};
 };
 
 struct CopyTextureToTextureCommand : public Command
 {
+    BlitTexture src{};
+    BlitTexture dst{};
+    Extent3D extent{};
 };
 
 struct DispatchCommand : public Command
 {
+    uint32_t x = 0;
+    uint32_t y = 0;
+    uint32_t z = 0;
 };
 
 struct DispatchIndirectCommand : public Command
@@ -131,10 +148,16 @@ struct EndOcclusionQueryCommand : public Command
 
 struct ResolveQuerySetCommand : public Command
 {
+    QuerySet* querySet = nullptr;
+    uint32_t firstQuery = 0;
+    // uint32_t queryCount = 0;
+    Buffer* destination = nullptr;
+    uint64_t destinationOffset = 0;
 };
 
 struct SetComputePipelineCommand : public Command
 {
+    ComputePipeline* pipeline = nullptr;
 };
 
 struct SetRenderPipelineCommand : public Command

@@ -7,9 +7,10 @@
 namespace jipu
 {
 
-VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice& device, const CommandBufferDescriptor& descriptor)
-    : m_device(device)
-    , m_commandPool(device.getVkCommandPool())
+VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor)
+    : m_device(commandEncoder->getDevice())
+    , m_commandEncodingContext(std::move(commandEncoder->getEncodingContext()))
+    , m_commandPool(m_device->getVkCommandPool())
 {
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
     commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -17,8 +18,8 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice& device, const CommandBuff
     commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     commandBufferAllocateInfo.commandBufferCount = 1; // create command buffer only one.
 
-    const VulkanAPI& vkAPI = device.vkAPI;
-    if (vkAPI.AllocateCommandBuffers(device.getVkDevice(), &commandBufferAllocateInfo, &m_commandBuffer) != VK_SUCCESS)
+    const VulkanAPI& vkAPI = m_device->vkAPI;
+    if (vkAPI.AllocateCommandBuffers(m_device->getVkDevice(), &commandBufferAllocateInfo, &m_commandBuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers.");
     }
@@ -26,20 +27,19 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice& device, const CommandBuff
 
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
-    auto& vulkanDevice = downcast(m_device);
-    vulkanDevice.vkAPI.FreeCommandBuffers(vulkanDevice.getVkDevice(), m_commandPool, 1, &m_commandBuffer);
+    m_device->vkAPI.FreeCommandBuffers(m_device->getVkDevice(), m_commandPool, 1, &m_commandBuffer);
     if (m_signalSemaphore)
-        vulkanDevice.vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_signalSemaphore, nullptr);
+        m_device->vkAPI.DestroySemaphore(m_device->getVkDevice(), m_signalSemaphore, nullptr);
 }
 
-std::unique_ptr<CommandEncoder> VulkanCommandBuffer::createCommandEncoder(const CommandEncoderDescriptor& descriptor)
+std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
 {
-    return std::make_unique<VulkanCommandEncoder>(this, descriptor);
+    return std::make_unique<VulkanCommandRecorder>(this);
 }
 
 VulkanDevice& VulkanCommandBuffer::getDevice() const
 {
-    return m_device;
+    return *m_device;
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
@@ -62,8 +62,7 @@ std::pair<VkSemaphore, VkPipelineStageFlags> VulkanCommandBuffer::getSignalSemap
         semaphoreCreateInfo.pNext = nullptr;
         semaphoreCreateInfo.flags = 0;
 
-        auto& vulkanDevice = downcast(m_device);
-        if (vulkanDevice.vkAPI.CreateSemaphore(vulkanDevice.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_signalSemaphore) != VK_SUCCESS)
+        if (m_device->vkAPI.CreateSemaphore(m_device->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_signalSemaphore) != VK_SUCCESS)
         {
             throw std::runtime_error("Failed to create render queue semephore.");
         }

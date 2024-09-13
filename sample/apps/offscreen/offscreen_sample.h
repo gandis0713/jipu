@@ -37,8 +37,6 @@ private:
     void updateOffscreenUniformBuffer();
 
 private:
-    void createCommandBuffer();
-
     void createOffscreenTexture();
     void createOffscreenTextureView();
     void createOffscreenVertexBuffer();
@@ -58,8 +56,6 @@ private:
     void createCamera();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;

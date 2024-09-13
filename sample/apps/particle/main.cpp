@@ -54,7 +54,6 @@ private:
     void createComputeBindingGroup();
     void createComputePipeline();
     void createRenderPipeline();
-    void createCommandBuffer();
 
     void updateUniformBuffer();
 
@@ -84,9 +83,6 @@ private:
     std::vector<std::unique_ptr<Buffer>> m_vertexBuffers{};
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
 
-    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
-    std::unique_ptr<CommandBuffer> m_computeCommandBuffer = nullptr;
-
     std::vector<Particle> m_vertices{};
 
     void* m_uniformBufferMappedPointer = nullptr;
@@ -106,10 +102,6 @@ ParticleSample::ParticleSample(const SampleDescriptor& descriptor)
 
 ParticleSample::~ParticleSample()
 {
-    // release command buffer after finishing queue.
-    m_renderCommandBuffer.reset();
-    m_computeCommandBuffer.reset();
-
     m_renderPipeline.reset();
     m_renderPipelineLayout.reset();
 
@@ -143,8 +135,6 @@ void ParticleSample::init()
 
     createComputePipeline();
     createRenderPipeline();
-
-    createCommandBuffer();
 }
 
 void ParticleSample::update()
@@ -168,10 +158,11 @@ void ParticleSample::updateImGui()
 
 void ParticleSample::draw()
 {
+    std::unique_ptr<CommandBuffer> computeCommandBuffer = nullptr;
     // encoder compute command
     {
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> computeCommandEncoder = m_computeCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> computeCommandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
         ComputePassEncoderDescriptor computePassDescriptor{};
         std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
@@ -180,18 +171,19 @@ void ParticleSample::draw()
         computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
         computePassEncoder->end();
 
-        computeCommandEncoder->finish();
+        computeCommandBuffer = computeCommandEncoder->finish(CommandBufferDescriptor{});
 
         if (separateCmdBuffer)
-            m_queue->submit({ m_computeCommandBuffer.get() });
+            m_queue->submit({ computeCommandBuffer.get() });
     }
 
+    std::unique_ptr<CommandBuffer> renderCommandBuffer = nullptr;
     // encode render command
     {
         auto renderView = m_swapchain->acquireNextTexture();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> renderCommandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> renderCommandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
         ColorAttachment colorAttachment{
             .renderView = renderView
@@ -214,14 +206,14 @@ void ParticleSample::draw()
 
         drawImGui(renderCommandEncoder.get(), *renderView);
 
-        renderCommandEncoder->finish();
+        renderCommandBuffer = renderCommandEncoder->finish(CommandBufferDescriptor{});
 
         if (separateCmdBuffer)
-            m_queue->submit({ m_renderCommandBuffer.get() }, *m_swapchain);
+            m_queue->submit({ renderCommandBuffer.get() }, *m_swapchain);
     }
 
     if (!separateCmdBuffer)
-        m_queue->submit({ m_computeCommandBuffer.get(), m_renderCommandBuffer.get() }, *m_swapchain);
+        m_queue->submit({ computeCommandBuffer.get(), renderCommandBuffer.get() }, *m_swapchain);
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
@@ -507,13 +499,6 @@ void ParticleSample::createRenderPipeline()
     };
 
     m_renderPipeline = m_device->createRenderPipeline(renderPipelineDescriptor);
-}
-
-void ParticleSample::createCommandBuffer()
-{
-    CommandBufferDescriptor commandBufferDescriptor{};
-    m_renderCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-    m_computeCommandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
 }
 
 void ParticleSample::updateUniformBuffer()

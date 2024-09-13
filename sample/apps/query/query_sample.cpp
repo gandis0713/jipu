@@ -22,7 +22,6 @@ QuerySample::~QuerySample()
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void QuerySample::init()
@@ -30,8 +29,6 @@ void QuerySample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
 
@@ -112,7 +109,7 @@ void QuerySample::draw()
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         if (m_useOcclusion)
@@ -152,7 +149,8 @@ void QuerySample::draw()
                                             0);
         }
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
 
         if (m_useTimestamp)
         {
@@ -184,12 +182,6 @@ void QuerySample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void QuerySample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void QuerySample::createVertexBuffer()

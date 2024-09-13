@@ -37,7 +37,6 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
     void createSampler();
@@ -51,7 +50,6 @@ private:
     void copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture);
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Texture> m_texture1 = nullptr;

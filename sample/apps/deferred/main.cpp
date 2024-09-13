@@ -45,8 +45,6 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
-
     void createDepthStencilTexture();
     void createDepthStencilTextureView();
 
@@ -161,7 +159,6 @@ private:
         };
     } m_composition;
 
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Texture> m_depthStencilTexture = nullptr;
     std::unique_ptr<TextureView> m_depthStencilTextureView = nullptr;
 
@@ -216,8 +213,6 @@ DeferredSample::~DeferredSample()
     m_offscreen.normalColorAttachmentTexture.reset();
     m_offscreen.positionColorAttachmentTextureView.reset();
     m_offscreen.positionColorAttachmentTexture.reset();
-
-    m_commandBuffer.reset();
 }
 
 void DeferredSample::init()
@@ -225,8 +220,6 @@ void DeferredSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createDepthStencilTexture();
     createDepthStencilTextureView();
@@ -347,7 +340,7 @@ void DeferredSample::updateImGui()
 void DeferredSample::draw()
 {
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
     auto renderView = m_swapchain->acquireNextTexture();
 
@@ -429,7 +422,10 @@ void DeferredSample::draw()
 
     drawImGui(commandEncoder.get(), *renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+    CommandBufferDescriptor descriptor{};
+    auto commandBuffer = commandEncoder->finish(descriptor);
+
+    m_queue->submit({ commandBuffer.get() }, *m_swapchain);
 }
 
 void DeferredSample::createOffscreenPositionColorAttachmentTexture()
@@ -553,15 +549,12 @@ void DeferredSample::createOffscreenColorMapTexture()
         extent.height = ktx.getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{};
-
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-        commandEncoder->finish();
+        CommandBufferDescriptor commandBufferDescriptor{};
+        auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
         m_queue->submit({ commandBuffer.get() });
     }
@@ -624,15 +617,13 @@ void DeferredSample::createOffscreenNormalMapTexture()
         extent.height = ktx.getHeight();
         extent.depth = 1;
 
-        CommandBufferDescriptor commandBufferDescriptor{};
-
-        auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
-        commandEncoder->finish();
+
+        CommandBufferDescriptor commandBufferDescriptor{};
+        auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
 
         m_queue->submit({ commandBuffer.get() });
     }
@@ -1266,12 +1257,6 @@ void DeferredSample::createDepthStencilTextureView()
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
-}
-
-void DeferredSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 } // namespace jipu
