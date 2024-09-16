@@ -25,16 +25,6 @@ std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const
 
 std::unique_ptr<RenderPassEncoder> VulkanCommandEncoder::beginRenderPass(const RenderPassEncoderDescriptor& descriptor)
 {
-    BeginRenderPassCommand command{
-        { .type = CommandType::kBeginRenderPass },
-        .colorAttachments = descriptor.colorAttachments,
-        .depthStencilAttachment = descriptor.depthStencilAttachment,
-        .occlusionQuerySet = descriptor.occlusionQuerySet,
-        .timestampWrites = descriptor.timestampWrites,
-    };
-
-    m_commandEncodingContext.commands.push_back(std::make_unique<BeginRenderPassCommand>(std::move(command)));
-
     return std::make_unique<VulkanRenderPassEncoder>(this, descriptor);
 }
 

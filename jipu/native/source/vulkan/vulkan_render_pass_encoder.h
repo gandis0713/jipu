@@ -1,8 +1,8 @@
 #pragma once
 
-#include "jipu/command.h"
 #include "jipu/render_pass_encoder.h"
 #include "vulkan_api.h"
+#include "vulkan_command.h"
 #include "vulkan_export.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"

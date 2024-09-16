@@ -1,7 +1,7 @@
 #pragma once
 
-#include "jipu/command.h"
 #include "vulkan_api.h"
+#include "vulkan_command.h"
 #include "vulkan_export.h"
 
 namespace jipu

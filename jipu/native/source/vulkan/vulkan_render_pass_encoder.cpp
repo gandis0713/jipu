@@ -249,17 +249,28 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
     : m_commandEncoder(commandEncoder)
     , m_descriptor(descriptor)
 {
+    BeginRenderPassCommand command{
+        { .type = CommandType::kBeginRenderPass },
+        .renderPass = descriptor.renderPass,
+        .framebuffer = descriptor.framebuffer,
+        .renderArea = descriptor.renderArea,
+        .clearValues = descriptor.clearValues,
+        .occlusionQuerySet = descriptor.occlusionQuerySet,
+        .timestampWrites = descriptor.timestampWrites
+    };
+
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<BeginRenderPassCommand>(std::move(command)));
+
     resetQuery();
 }
 
 void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 {
-    {
-        SetRenderPipelineCommand command{ { .type = CommandType::kSetRenderPipeline },
-                                          .pipeline = pipeline };
-        auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
-        commandEncodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
-    }
+    SetRenderPipelineCommand command{ { .type = CommandType::kSetRenderPipeline },
+                                      .pipeline = pipeline };
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    commandEncodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
 }
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
