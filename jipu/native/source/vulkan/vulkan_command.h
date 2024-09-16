@@ -15,31 +15,37 @@ namespace jipu
 enum class CommandType
 {
     kBeginComputePass,
-    kEndComputePass,
-    kBeginRenderPass,
-    kEndRenderPass,
-    kClearBuffer,
-    kCopyBufferToBuffer,
-    kCopyBufferToTexture,
-    kCopyTextureToBuffer,
-    kCopyTextureToTexture,
+    kSetComputePipeline,
+    kSetComputeBindGroup,
     kDispatch,
     kDispatchIndirect,
+    kEndComputePass,
+
+    kBeginRenderPass,
+    kSetRenderPipeline,
+    kSetRenderBindGroup,
+    kSetIndexBuffer,
+    kSetVertexBuffer,
+    kSetViewport,
+    kSetScissor,
+    kSetBlendConstant,
     kDraw,
     kDrawIndexed,
     kDrawIndirect,
     kDrawIndexedIndirect,
+    kEndRenderPass,
+
+    kClearBuffer,
+
+    kCopyBufferToBuffer,
+    kCopyBufferToTexture,
+    kCopyTextureToBuffer,
+    kCopyTextureToTexture,
+
     kBeginOcclusionQuery,
     kEndOcclusionQuery,
     kResolveQuerySet,
-    kSetComputePipeline,
-    kSetRenderPipeline,
-    kSetViewport,
-    kSetScissor,
-    kSetBlendConstant,
-    kSetBindGroup,
-    kSetIndexBuffer,
-    kSetVertexBuffer,
+
     kWriteTimestamp
 };
 

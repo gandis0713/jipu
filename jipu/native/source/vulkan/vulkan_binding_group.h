@@ -5,6 +5,7 @@
 #include "common/cast.h"
 #include "jipu/binding_group.h"
 #include "vulkan_api.h"
+#include "vulkan_binding_group_layout.h"
 #include "vulkan_export.h"
 
 namespace jipu
@@ -12,7 +13,7 @@ namespace jipu
 
 struct VulkanBindingGroupDescriptor
 {
-    BindingGroupLayout* layout = nullptr;
+    VulkanBindingGroupLayout* layout = nullptr;
     std::vector<VkDescriptorBufferInfo> buffers{};
     std::vector<VkDescriptorImageInfo> samplers{};
     std::vector<VkDescriptorImageInfo> textures{};
@@ -27,6 +28,10 @@ public:
     VulkanBindingGroup(VulkanDevice& device, const VulkanBindingGroupDescriptor& descriptor);
     ~VulkanBindingGroup() override;
 
+public:
+    VulkanBindingGroupLayout* getLayout() const;
+
+public:
     VkDescriptorSet getVkDescriptorSet() const;
 
 private:

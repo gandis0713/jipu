@@ -75,7 +75,6 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
-    // auto vulkanCommandRecorder =
     std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
 
     submit(submits);
@@ -127,6 +126,12 @@ std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<C
 
     auto commandBufferSize = commandBuffers.size();
     submitInfo.resize(commandBufferSize);
+
+    for (auto i = 0; i < commandBufferSize; ++i)
+    {
+        auto commandBufferRecorder = downcast(commandBuffers[i])->createCommandRecorder();
+        commandBufferRecorder->record();
+    }
 
     for (auto i = 0; i < commandBufferSize; ++i)
     {

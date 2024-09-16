@@ -26,6 +26,136 @@ VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
 {
 }
 
+void VulkanCommandRecorder::record()
+{
+    beginRecord();
+
+    const auto& commandEncodingContext = m_commandBuffer->getCommandEncodingContext();
+    const auto& commands = commandEncodingContext.commands;
+
+    for (auto it = commands.begin(); it != commands.end(); ++it)
+    {
+        const auto command = (*it).get();
+        switch (command->type)
+        {
+        case CommandType::kBeginComputePass:
+            beginComputePass(reinterpret_cast<BeginComputePassCommand*>(command));
+            break;
+        case CommandType::kEndComputePass: {
+            endComputePass(reinterpret_cast<EndComputePassCommand*>(command));
+            {
+                auto next = std::next(it);
+                if (next != commands.end())
+                {
+                    const auto nextCommand = (*next).get();
+
+                    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+                    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+                    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+
+                    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
+                                             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, // TODO: generate stage from binding group.
+                                             0,
+                                             0,
+                                             nullptr,
+                                             0,
+                                             nullptr,
+                                             0,
+                                             nullptr);
+
+                    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
+
+                    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+                    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
+                }
+            }
+        }
+        break;
+        case CommandType::kSetComputePipeline:
+            setComputePipeline(reinterpret_cast<SetComputePipelineCommand*>(command));
+            break;
+        case CommandType::kDispatch:
+            dispatch(reinterpret_cast<DispatchCommand*>(command));
+            break;
+        case CommandType::kDispatchIndirect:
+            // TODO: dispatch indirect
+            break;
+        case CommandType::kBeginRenderPass:
+            beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command));
+            break;
+        case CommandType::kSetRenderPipeline:
+            setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command));
+            break;
+        case CommandType::kSetVertexBuffer:
+            setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command));
+            break;
+        case CommandType::kSetIndexBuffer:
+            setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command));
+            break;
+        case CommandType::kSetViewport:
+            setViewport(reinterpret_cast<SetViewportCommand*>(command));
+            break;
+        case CommandType::kSetScissor:
+            setScissor(reinterpret_cast<SetScissorCommand*>(command));
+            break;
+        case CommandType::kSetBlendConstant:
+            setBlendConstant(reinterpret_cast<SetBlendConstantCommand*>(command));
+            break;
+        case CommandType::kDraw:
+            draw(reinterpret_cast<DrawCommand*>(command));
+            break;
+        case CommandType::kDrawIndexed:
+            drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command));
+            break;
+        case CommandType::kDrawIndirect:
+            // TODO: draw indirect
+            break;
+        case CommandType::kDrawIndexedIndirect:
+            // TODO: draw indexed indirect
+            break;
+        case CommandType::kBeginOcclusionQuery:
+            beginOcclusionQuery(reinterpret_cast<BeginOcclusionQueryCommand*>(command));
+            break;
+        case CommandType::kEndOcclusionQuery:
+            endOcclusionQuery(reinterpret_cast<EndOcclusionQueryCommand*>(command));
+            break;
+        case CommandType::kEndRenderPass:
+            endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command));
+            break;
+        case CommandType::kSetComputeBindGroup:
+            setComputeBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command));
+            break;
+        case CommandType::kSetRenderBindGroup:
+            setRenderBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command));
+            break;
+        case CommandType::kClearBuffer:
+            // TODO: clear buffer
+            break;
+        case CommandType::kCopyBufferToBuffer:
+            copyBufferToBuffer(reinterpret_cast<CopyBufferToBufferCommand*>(command));
+            break;
+        case CommandType::kCopyBufferToTexture:
+            copyBufferToTexture(reinterpret_cast<CopyBufferToTextureCommand*>(command));
+            break;
+        case CommandType::kCopyTextureToBuffer:
+            copyTextureToBuffer(reinterpret_cast<CopyTextureToBufferCommand*>(command));
+            break;
+        case CommandType::kCopyTextureToTexture:
+            copyTextureToTexture(reinterpret_cast<CopyTextureToTextureCommand*>(command));
+            break;
+        case CommandType::kResolveQuerySet:
+            resolveQuerySet(reinterpret_cast<ResolveQuerySetCommand*>(command));
+            break;
+        case CommandType::kWriteTimestamp:
+            // TODO: write timestamp
+            break;
+        }
+    }
+
+    endRecord();
+}
+
 void VulkanCommandRecorder::beginRecord()
 {
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
@@ -73,6 +203,8 @@ void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* comman
 
 void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 {
+    // TODO: set pipeline barrier
+
     auto x = command->x;
     auto y = command->y;
     auto z = command->z;
@@ -86,11 +218,7 @@ void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 
 void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 {
-    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
-
-    // // TODO: generate stage from binding group.
-    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-    // vulkanCommandBuffer->setSignalPipelineStage(flags);
+    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
@@ -99,9 +227,9 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
     auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
 
     const auto& vkAPI = vulkanDevice.vkAPI;
-    // if (vulkanCommand.timestampWrites.querySet)
+    // if (command->timestampWrites.querySet)
     // {
-    //     auto vulkanQuerySet = downcast(vulkanCommand.timestampWrites.querySet);
+    //     auto vulkanQuerySet = downcast(command->timestampWrites.querySet);
     //     vkAPI.CmdResetQueryPool(vulkanCommandBuffer->getVkCommandBuffer(),
     //                             vulkanQuerySet->getVkQueryPool(),
     //                             0,
@@ -109,7 +237,7 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
     //     vkAPI.CmdWriteTimestamp(vulkanCommandBuffer->getVkCommandBuffer(),
     //                             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
     //                             vulkanQuerySet->getVkQueryPool(),
-    //                             vulkanCommand.timestampWrites.beginQueryIndex);
+    //                             command->timestampWrites.beginQueryIndex);
     // }
 
     VkRenderPassBeginInfo renderPassInfo{};
@@ -211,6 +339,8 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 
 void VulkanCommandRecorder::draw(DrawCommand* command)
 {
+    // TODO: set pipeline barrier
+
     auto vertexCount = command->vertexCount;
     auto instanceCount = command->instanceCount;
     auto firstVertex = command->firstVertex;
@@ -224,6 +354,8 @@ void VulkanCommandRecorder::draw(DrawCommand* command)
 
 void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 {
+    // TODO: set pipeline barrier
+
     auto indexCount = command->indexCount;
     auto instanceCount = command->instanceCount;
     auto indexOffset = command->indexOffset;
@@ -280,6 +412,8 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
     const auto& vkAPI = vulkanDevice.vkAPI;
     vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
 
+    setLastCommandToSync(command);
+
     // if (m_descriptor.timestampWrites.querySet)
     // {
     //     auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
@@ -290,7 +424,31 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
     // }
 }
 
-void VulkanCommandRecorder::setBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
+{
+    if (!m_pipeline)
+        throw std::runtime_error("The pipeline is null");
+
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanBindingGroup = downcast(command->bindingGroup);
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+
+    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
+
+    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                command->index,
+                                1,
+                                &descriptorSet,
+                                static_cast<uint32_t>(command->dynamicOffset.size()),
+                                command->dynamicOffset.data());
+}
+
+void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
 {
     if (!m_pipeline)
         throw std::runtime_error("The pipeline is null");
@@ -333,6 +491,8 @@ void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* comman
     VkBuffer dstBuffer = downcast(dst.buffer)->getVkBuffer();
 
     vkAPI.CmdCopyBuffer(vulkanCommandBuffer->getVkCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
+
+    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* command)
@@ -438,6 +598,8 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
 
     // set pipeline barrier to restore final layout
     vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vulkanTexture->getFinalLayout(), range);
+
+    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* command)
@@ -484,6 +646,8 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
 
     // set pipeline barrier to restore final layout.
     vulkanTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanTexture->getFinalLayout(), range);
+
+    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* command)
@@ -550,6 +714,8 @@ void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* co
     // set pipeline barrier to restore final layout.
     srcTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcTexture->getFinalLayout(), srcSubresourceRange);
     dstTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstTexture->getFinalLayout(), dstSubresourceRange);
+
+    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
@@ -576,9 +742,43 @@ void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
                                   VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
 }
 
+void VulkanCommandRecorder::setPipelineBarrier(Command* src, Command* dst)
+{
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+
+    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
+                             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, // TODO: generate stage from binding group.
+                             0,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr,
+                             0,
+                             nullptr);
+
+    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
+
+    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
+}
+
+void VulkanCommandRecorder::setLastCommandToSync(Command* command)
+{
+    m_lastCmdToSync = command;
+}
+
 VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 {
     return m_commandBuffer;
+}
+
+// Generator
+VkPipelineStageFlags generatePipelineStageFlags(Command* cmd)
+{
+    return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 }
 
 } // namespace jipu

@@ -275,7 +275,7 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 
 void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
-    SetBindGroupCommand command{ { .type = CommandType::kSetBindGroup },
+    SetBindGroupCommand command{ { .type = CommandType::kSetRenderBindGroup },
                                  .index = index,
                                  .bindingGroup = &bindingGroup,
                                  .dynamicOffset = dynamicOffset };
@@ -427,7 +427,7 @@ void VulkanRenderPassEncoder::end()
     // // TODO: generate stage from binding group.
     // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
     // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    // vulkanCommandBuffer->setSignalPipelineStage(flags);
+    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
 }
 
 void VulkanRenderPassEncoder::nextPass()

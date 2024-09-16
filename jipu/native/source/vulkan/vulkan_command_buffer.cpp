@@ -42,12 +42,17 @@ VulkanDevice& VulkanCommandBuffer::getDevice() const
     return *m_device;
 }
 
+const CommandEncodingContext& VulkanCommandBuffer::getCommandEncodingContext() const
+{
+    return m_commandEncodingContext;
+}
+
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
 {
     return m_commandBuffer;
 }
 
-void VulkanCommandBuffer::setSignalPipelineStage(VkPipelineStageFlags stage)
+void VulkanCommandBuffer::setSignalSemaphoreStage(VkPipelineStageFlags stage)
 {
     m_signalStage = stage;
 }

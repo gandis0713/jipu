@@ -1,5 +1,4 @@
 #include "vulkan_binding_group.h"
-#include "vulkan_binding_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_device.h"
 #include "vulkan_sampler.h"
@@ -15,7 +14,7 @@ namespace jipu
 VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingGroupDescriptor& descriptor)
 {
     VulkanBindingGroupDescriptor vkdescriptor{
-        .layout = descriptor.layout
+        .layout = downcast(descriptor.layout)
     };
 
     const uint64_t bufferSize = descriptor.buffers.size();
@@ -167,6 +166,11 @@ VulkanBindingGroup::~VulkanBindingGroup()
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     vkAPI.FreeDescriptorSets(vulkanDevice.getVkDevice(), vulkanDevice.getVkDescriptorPool(), 1, &m_descriptorSet);
+}
+
+VulkanBindingGroupLayout* VulkanBindingGroup::getLayout() const
+{
+    return downcast(m_descriptor.layout);
 }
 
 VkDescriptorSet VulkanBindingGroup::getVkDescriptorSet() const

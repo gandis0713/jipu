@@ -31,7 +31,7 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
 void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bindingGroup, std::vector<uint32_t> dynamicOffset)
 {
     SetBindGroupCommand command{
-        { .type = CommandType::kSetBindGroup },
+        { .type = CommandType::kSetComputeBindGroup },
         .index = index,
         .bindingGroup = &bindingGroup,
         .dynamicOffset = dynamicOffset,

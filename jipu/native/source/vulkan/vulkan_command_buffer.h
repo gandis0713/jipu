@@ -28,11 +28,12 @@ public:
 
 public:
     VulkanDevice& getDevice() const;
+    const CommandEncodingContext& getCommandEncodingContext() const;
 
 public:
     VkCommandBuffer getVkCommandBuffer() const;
 
-    void setSignalPipelineStage(VkPipelineStageFlags stage);
+    void setSignalSemaphoreStage(VkPipelineStageFlags stage);
     std::pair<VkSemaphore, VkPipelineStageFlags> getSignalSemaphore();
 
     void injectWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags stage);
@@ -40,7 +41,7 @@ public:
 
 private:
     VulkanDevice* m_device = nullptr;
-    CommandEncodingContext m_commandEncodingContext;
+    CommandEncodingContext m_commandEncodingContext{};
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
