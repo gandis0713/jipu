@@ -26,14 +26,9 @@ public:
     VulkanBindingGroupLayout(VulkanDevice& device, const VulkanBindingGroupLayoutDescriptor& descriptor);
     ~VulkanBindingGroupLayout() override;
 
-    // const std::vector<BufferBindingLayout>& getBufferBindingLayouts() const;
-    // std::optional<BufferBindingLayout> getBufferBindingLayout(uint32_t index) const;
-
-    // const std::vector<SamplerBindingLayout>& getSamplerBindingLayouts() const;
-    // std::optional<SamplerBindingLayout> getSamplerBindingLayout(uint32_t index) const;
-
-    // const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
-    // std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
+    std::vector<BufferBindingLayout> getBufferBindingLayouts() const override;
+    std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const override;
+    std::vector<TextureBindingLayout> getTextureBindingLayouts() const override;
 
     std::vector<VkDescriptorSetLayoutBinding> getBufferDescriptorSetLayouts() const;
     VkDescriptorSetLayoutBinding getBufferDescriptorSetLayout(uint32_t index) const;

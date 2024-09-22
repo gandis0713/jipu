@@ -84,6 +84,45 @@ VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
     vulkanDevice.vkAPI.DestroyDescriptorSetLayout(vulkanDevice.getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
+std::vector<BufferBindingLayout> VulkanBindingGroupLayout::getBufferBindingLayouts() const
+{
+    std::vector<BufferBindingLayout> layouts{};
+    for (const auto& buffer : m_descriptor.buffers)
+    {
+        layouts.push_back({ .index = buffer.binding,
+                            .type = ToBufferBindingType(buffer.descriptorType),
+                            .dynamicOffset = buffer.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
+                                             buffer.descriptorType == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,
+                            .stages = ToBindingStageFlags(buffer.stageFlags) });
+    }
+
+    return layouts;
+}
+
+std::vector<SamplerBindingLayout> VulkanBindingGroupLayout::getSamplerBindingLayouts() const
+{
+    std::vector<SamplerBindingLayout> layouts{};
+    for (const auto& sampler : m_descriptor.samplers)
+    {
+        layouts.push_back({ .index = sampler.binding,
+                            .stages = ToBindingStageFlags(sampler.stageFlags) });
+    }
+
+    return layouts;
+}
+
+std::vector<TextureBindingLayout> VulkanBindingGroupLayout::getTextureBindingLayouts() const
+{
+    std::vector<TextureBindingLayout> layouts{};
+    for (const auto& texture : m_descriptor.textures)
+    {
+        layouts.push_back({ .index = texture.binding,
+                            .stages = ToBindingStageFlags(texture.stageFlags) });
+    }
+
+    return layouts;
+}
+
 std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferDescriptorSetLayouts() const
 {
     return m_descriptor.buffers;

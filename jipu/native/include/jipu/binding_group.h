@@ -50,9 +50,9 @@ public:
 
 public:
     virtual BindingGroupLayout* getLayout() const = 0;
-    virtual std::vector<BufferBinding> getBufferBindings() const = 0;
-    virtual std::vector<SamplerBinding> getSmaplerBindings() const = 0;
-    virtual std::vector<TextureBinding> getTextureBindings() const = 0;
+    virtual const std::vector<BufferBinding>& getBufferBindings() const = 0;
+    virtual const std::vector<SamplerBinding>& getSmaplerBindings() const = 0;
+    virtual const std::vector<TextureBinding>& getTextureBindings() const = 0;
 
 protected:
     BindingGroup() = default;

@@ -179,17 +179,17 @@ BindingGroupLayout* VulkanBindingGroup::getLayout() const
     return downcast(m_descriptor.layout);
 }
 
-std::vector<BufferBinding> VulkanBindingGroup::getBufferBindings() const
+const std::vector<BufferBinding>& VulkanBindingGroup::getBufferBindings() const
 {
     return m_descriptor.buffers;
 }
 
-std::vector<SamplerBinding> VulkanBindingGroup::getSmaplerBindings() const
+const std::vector<SamplerBinding>& VulkanBindingGroup::getSmaplerBindings() const
 {
     return m_descriptor.samplers;
 }
 
-std::vector<TextureBinding> VulkanBindingGroup::getTextureBindings() const
+const std::vector<TextureBinding>& VulkanBindingGroup::getTextureBindings() const
 {
     return m_descriptor.textures;
 }

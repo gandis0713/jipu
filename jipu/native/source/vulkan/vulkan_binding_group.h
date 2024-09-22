@@ -21,9 +21,9 @@ public:
 
 public:
     BindingGroupLayout* getLayout() const override;
-    std::vector<BufferBinding> getBufferBindings() const override;
-    std::vector<SamplerBinding> getSmaplerBindings() const override;
-    std::vector<TextureBinding> getTextureBindings() const override;
+    const std::vector<BufferBinding>& getBufferBindings() const override;
+    const std::vector<SamplerBinding>& getSmaplerBindings() const override;
+    const std::vector<TextureBinding>& getTextureBindings() const override;
 
 public:
     VkDescriptorSet getVkDescriptorSet() const;

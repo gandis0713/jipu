@@ -60,6 +60,11 @@ class JIPU_EXPORT BindingGroupLayout
 public:
     virtual ~BindingGroupLayout() = default;
 
+public:
+    virtual std::vector<BufferBindingLayout> getBufferBindingLayouts() const = 0;
+    virtual std::vector<SamplerBindingLayout> getSamplerBindingLayouts() const = 0;
+    virtual std::vector<TextureBindingLayout> getTextureBindingLayouts() const = 0;
+
 protected:
     BindingGroupLayout() = default;
 };
