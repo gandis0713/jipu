@@ -84,12 +84,12 @@ VulkanBindingGroupLayout::~VulkanBindingGroupLayout()
     vulkanDevice.vkAPI.DestroyDescriptorSetLayout(vulkanDevice.getVkDevice(), m_descriptorSetLayout, nullptr);
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getBufferDescriptorSetLayouts() const
 {
     return m_descriptor.buffers;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.buffers.empty())
         throw std::runtime_error("Failed to find buffer binding layout due to empty.");
@@ -100,12 +100,12 @@ VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getBufferBindingLayout(ui
     return m_descriptor.buffers[index];
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getSamplerDescriptorSetLayouts() const
 {
     return m_descriptor.samplers;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.samplers.empty())
         throw std::runtime_error("Failed to find sampler binding layout due to empty.");
@@ -116,12 +116,12 @@ VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getSamplerBindingLayout(u
     return m_descriptor.samplers[index];
 }
 
-std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureBindingLayouts() const
+std::vector<VkDescriptorSetLayoutBinding> VulkanBindingGroupLayout::getTextureDescriptorSetLayouts() const
 {
     return m_descriptor.textures;
 }
 
-VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureBindingLayout(uint32_t index) const
+VkDescriptorSetLayoutBinding VulkanBindingGroupLayout::getTextureDescriptorSetLayout(uint32_t index) const
 {
     if (m_descriptor.textures.empty())
         throw std::runtime_error("Failed to find texture binding layout due to empty.");

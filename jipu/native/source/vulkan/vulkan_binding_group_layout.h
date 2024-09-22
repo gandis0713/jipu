@@ -35,14 +35,14 @@ public:
     // const std::vector<TextureBindingLayout>& getTextureBindingLayouts() const;
     // std::optional<TextureBindingLayout> getTextureBindingLayout(uint32_t index) const;
 
-    std::vector<VkDescriptorSetLayoutBinding> getBufferBindingLayouts() const;
-    VkDescriptorSetLayoutBinding getBufferBindingLayout(uint32_t index) const;
+    std::vector<VkDescriptorSetLayoutBinding> getBufferDescriptorSetLayouts() const;
+    VkDescriptorSetLayoutBinding getBufferDescriptorSetLayout(uint32_t index) const;
 
-    std::vector<VkDescriptorSetLayoutBinding> getSamplerBindingLayouts() const;
-    VkDescriptorSetLayoutBinding getSamplerBindingLayout(uint32_t index) const;
+    std::vector<VkDescriptorSetLayoutBinding> getSamplerDescriptorSetLayouts() const;
+    VkDescriptorSetLayoutBinding getSamplerDescriptorSetLayout(uint32_t index) const;
 
-    std::vector<VkDescriptorSetLayoutBinding> getTextureBindingLayouts() const;
-    VkDescriptorSetLayoutBinding getTextureBindingLayout(uint32_t index) const;
+    std::vector<VkDescriptorSetLayoutBinding> getTextureDescriptorSetLayouts() const;
+    VkDescriptorSetLayoutBinding getTextureDescriptorSetLayout(uint32_t index) const;
 
     VkDescriptorSetLayout getVkDescriptorSetLayout() const;
 

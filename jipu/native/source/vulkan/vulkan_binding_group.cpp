@@ -106,7 +106,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const BindingGroupD
     for (auto i = 0; i < bufferSize; ++i)
     {
         const VkDescriptorBufferInfo& buffer = vkdescriptor.buffers[i];
-        auto bufferLayout = vulkanBindingGroupLayout->getBufferBindingLayout(i);
+        auto bufferLayout = vulkanBindingGroupLayout->getBufferDescriptorSetLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -126,7 +126,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const BindingGroupD
     for (auto i = 0; i < samplerSize; ++i)
     {
         const VkDescriptorImageInfo& sampler = vkdescriptor.samplers[i];
-        auto samplerLayout = vulkanBindingGroupLayout->getSamplerBindingLayout(i);
+        auto samplerLayout = vulkanBindingGroupLayout->getSamplerDescriptorSetLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -146,7 +146,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const BindingGroupD
     for (auto i = 0; i < textureSize; ++i)
     {
         const VkDescriptorImageInfo& texture = vkdescriptor.textures[i];
-        auto textureLayout = vulkanBindingGroupLayout->getTextureBindingLayout(i);
+        auto textureLayout = vulkanBindingGroupLayout->getTextureDescriptorSetLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
