@@ -11,6 +11,14 @@
 namespace jipu
 {
 
+struct VulkanBindingGroupDescriptor
+{
+    VulkanBindingGroupLayout* layout = nullptr;
+    std::vector<VkDescriptorBufferInfo> buffers{};
+    std::vector<VkDescriptorImageInfo> samplers{};
+    std::vector<VkDescriptorImageInfo> textures{};
+};
+
 VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingGroupDescriptor& descriptor)
 {
     VulkanBindingGroupDescriptor vkdescriptor{
@@ -65,14 +73,12 @@ VulkanBindingGroupDescriptor generateVulkanBindingGroupDescriptor(const BindingG
 }
 
 VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const BindingGroupDescriptor& descriptor)
-    : VulkanBindingGroup(device, generateVulkanBindingGroupDescriptor(descriptor))
-{
-}
-
-VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBindingGroupDescriptor& descriptor)
-    : m_device(device)
+    : BindingGroup()
+    , m_device(device)
     , m_descriptor(descriptor)
 {
+    auto vkdescriptor = generateVulkanBindingGroupDescriptor(descriptor);
+
     auto& vulkanDevice = downcast(device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
     auto vulkanBindingGroupLayout = downcast(m_descriptor.layout);
@@ -99,7 +105,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
 
     for (auto i = 0; i < bufferSize; ++i)
     {
-        const VkDescriptorBufferInfo& buffer = descriptor.buffers[i];
+        const VkDescriptorBufferInfo& buffer = vkdescriptor.buffers[i];
         auto bufferLayout = vulkanBindingGroupLayout->getBufferBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
@@ -119,7 +125,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
 
     for (auto i = 0; i < samplerSize; ++i)
     {
-        const VkDescriptorImageInfo& sampler = descriptor.samplers[i];
+        const VkDescriptorImageInfo& sampler = vkdescriptor.samplers[i];
         auto samplerLayout = vulkanBindingGroupLayout->getSamplerBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
@@ -139,7 +145,7 @@ VulkanBindingGroup::VulkanBindingGroup(VulkanDevice& device, const VulkanBinding
 
     for (auto i = 0; i < textureSize; ++i)
     {
-        const VkDescriptorImageInfo& texture = descriptor.textures[i];
+        const VkDescriptorImageInfo& texture = vkdescriptor.textures[i];
         auto textureLayout = vulkanBindingGroupLayout->getTextureBindingLayout(i);
 
         VkWriteDescriptorSet descriptorWrite{};
@@ -168,9 +174,24 @@ VulkanBindingGroup::~VulkanBindingGroup()
     vkAPI.FreeDescriptorSets(vulkanDevice.getVkDevice(), vulkanDevice.getVkDescriptorPool(), 1, &m_descriptorSet);
 }
 
-VulkanBindingGroupLayout* VulkanBindingGroup::getLayout() const
+BindingGroupLayout* VulkanBindingGroup::getLayout() const
 {
     return downcast(m_descriptor.layout);
+}
+
+std::vector<BufferBinding> VulkanBindingGroup::getBufferBindings() const
+{
+    return m_descriptor.buffers;
+}
+
+std::vector<SamplerBinding> VulkanBindingGroup::getSmaplerBindings() const
+{
+    return m_descriptor.samplers;
+}
+
+std::vector<TextureBinding> VulkanBindingGroup::getTextureBindings() const
+{
+    return m_descriptor.textures;
 }
 
 VkDescriptorSet VulkanBindingGroup::getVkDescriptorSet() const

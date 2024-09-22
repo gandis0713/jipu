@@ -43,33 +43,6 @@ void VulkanCommandRecorder::record()
             break;
         case CommandType::kEndComputePass: {
             endComputePass(reinterpret_cast<EndComputePassCommand*>(command));
-            {
-                auto next = std::next(it);
-                if (next != commands.end())
-                {
-                    const auto nextCommand = (*next).get();
-
-                    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-                    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-                    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-
-                    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
-                                             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, // TODO: generate stage from binding group.
-                                             0,
-                                             0,
-                                             nullptr,
-                                             0,
-                                             nullptr,
-                                             0,
-                                             nullptr);
-
-                    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
-
-                    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-                    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
-                }
-            }
         }
         break;
         case CommandType::kSetComputePipeline:
@@ -79,7 +52,7 @@ void VulkanCommandRecorder::record()
             dispatch(reinterpret_cast<DispatchCommand*>(command));
             break;
         case CommandType::kDispatchIndirect:
-            // TODO: dispatch indirect
+            dispatchIndirect(reinterpret_cast<DispatchIndirectCommand*>(command));
             break;
         case CommandType::kBeginRenderPass:
             beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command));
@@ -201,6 +174,30 @@ void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* comman
                           downcast(command->pipeline)->getVkPipeline());
 }
 
+void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
+{
+    if (!m_pipeline)
+        throw std::runtime_error("The pipeline is null");
+
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
+    auto vulkanBindingGroup = downcast(command->bindingGroup);
+    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+
+    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
+
+    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+                                VK_PIPELINE_BIND_POINT_COMPUTE,
+                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                command->index,
+                                1,
+                                &descriptorSet,
+                                static_cast<uint32_t>(command->dynamicOffset.size()),
+                                command->dynamicOffset.data());
+}
+
 void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 {
     // TODO: set pipeline barrier
@@ -216,9 +213,14 @@ void VulkanCommandRecorder::dispatch(DispatchCommand* command)
     vkAPI.CmdDispatch(vulkanCommandBuffer->getVkCommandBuffer(), x, y, z);
 }
 
+void VulkanCommandRecorder::dispatchIndirect(DispatchIndirectCommand* command)
+{
+    // TODO: dispatch indirect
+}
+
 void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 {
-    setLastCommandToSync(command);
+    // do nothing.
 }
 
 void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
@@ -412,8 +414,6 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
     const auto& vkAPI = vulkanDevice.vkAPI;
     vkAPI.CmdEndRenderPass(vulkanCommandBuffer->getVkCommandBuffer());
 
-    setLastCommandToSync(command);
-
     // if (m_descriptor.timestampWrites.querySet)
     // {
     //     auto vulkanQuerySet = downcast(m_descriptor.timestampWrites.querySet);
@@ -448,30 +448,6 @@ void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
                                 command->dynamicOffset.data());
 }
 
-void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
-{
-    if (!m_pipeline)
-        throw std::runtime_error("The pipeline is null");
-
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    auto vulkanBindingGroup = downcast(command->bindingGroup);
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
-
-    const VulkanAPI& vkAPI = downcast(vulkanDevice).vkAPI;
-
-    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
-
-    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_BIND_POINT_COMPUTE,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
-                                command->index,
-                                1,
-                                &descriptorSet,
-                                static_cast<uint32_t>(command->dynamicOffset.size()),
-                                command->dynamicOffset.data());
-}
-
 void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
     auto& src = command->src;
@@ -491,8 +467,6 @@ void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* comman
     VkBuffer dstBuffer = downcast(dst.buffer)->getVkBuffer();
 
     vkAPI.CmdCopyBuffer(vulkanCommandBuffer->getVkCommandBuffer(), srcBuffer, dstBuffer, 1, &copyRegion);
-
-    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* command)
@@ -598,8 +572,6 @@ void VulkanCommandRecorder::copyBufferToTexture(CopyBufferToTextureCommand* comm
 
     // set pipeline barrier to restore final layout
     vulkanTexture->setPipelineBarrier(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, vulkanTexture->getFinalLayout(), range);
-
-    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* command)
@@ -646,8 +618,6 @@ void VulkanCommandRecorder::copyTextureToBuffer(CopyTextureToBufferCommand* comm
 
     // set pipeline barrier to restore final layout.
     vulkanTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vulkanTexture->getFinalLayout(), range);
-
-    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* command)
@@ -714,8 +684,6 @@ void VulkanCommandRecorder::copyTextureToTexture(CopyTextureToTextureCommand* co
     // set pipeline barrier to restore final layout.
     srcTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, srcTexture->getFinalLayout(), srcSubresourceRange);
     dstTexture->setPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstTexture->getFinalLayout(), dstSubresourceRange);
-
-    setLastCommandToSync(command);
 }
 
 void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
@@ -742,34 +710,6 @@ void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
                                   VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
 }
 
-void VulkanCommandRecorder::setPipelineBarrier(Command* src, Command* dst)
-{
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto& vulkanDevice = downcast(vulkanCommandBuffer->getDevice());
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-
-    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
-                             VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                             VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, // TODO: generate stage from binding group.
-                             0,
-                             0,
-                             nullptr,
-                             0,
-                             nullptr,
-                             0,
-                             nullptr);
-
-    // auto vulkanCommandBuffer = downcast(m_commandBuffer);
-
-    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
-    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
-}
-
-void VulkanCommandRecorder::setLastCommandToSync(Command* command)
-{
-    m_lastCmdToSync = command;
-}
-
 VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 {
     return m_commandBuffer;
@@ -779,6 +719,82 @@ VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 VkPipelineStageFlags generatePipelineStageFlags(Command* cmd)
 {
     return VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+}
+
+VkAccessFlags generateBufferAccessFlags(BufferUsageFlags usage)
+{
+    VkAccessFlags flags = 0;
+
+    if (usage & BufferUsageFlagBits::kMapRead)
+    {
+        flags |= VK_ACCESS_HOST_READ_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kMapWrite)
+    {
+        flags |= VK_ACCESS_HOST_WRITE_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kCopySrc)
+    {
+        flags |= VK_ACCESS_TRANSFER_READ_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kCopyDst)
+    {
+        flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kIndex)
+    {
+        flags |= VK_ACCESS_INDEX_READ_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kVertex)
+    {
+        flags |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kUniform)
+    {
+        flags |= VK_ACCESS_UNIFORM_READ_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kStorage)
+    {
+        flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    }
+    if (usage & BufferUsageFlagBits::kQueryResolve)
+    {
+        flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    }
+
+    return flags;
+}
+
+VkAccessFlags generateTextureAccessFlags(TextureUsageFlags usage)
+{
+    VkAccessFlags flags = 0;
+
+    if (usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT)
+    {
+        flags |= VK_ACCESS_TRANSFER_READ_BIT;
+    }
+    if (usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+    {
+        flags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+    }
+    if (usage & VK_IMAGE_USAGE_SAMPLED_BIT)
+    {
+        flags |= VK_ACCESS_SHADER_READ_BIT;
+    }
+    if (usage & VK_IMAGE_USAGE_STORAGE_BIT)
+    {
+        flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    }
+    if (usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+    {
+        flags |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    }
+    if (usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+    {
+        flags |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    }
+
+    return flags;
 }
 
 } // namespace jipu

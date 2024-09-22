@@ -11,25 +11,19 @@
 namespace jipu
 {
 
-struct VulkanBindingGroupDescriptor
-{
-    VulkanBindingGroupLayout* layout = nullptr;
-    std::vector<VkDescriptorBufferInfo> buffers{};
-    std::vector<VkDescriptorImageInfo> samplers{};
-    std::vector<VkDescriptorImageInfo> textures{};
-};
-
 class VulkanDevice;
 class VULKAN_EXPORT VulkanBindingGroup : public BindingGroup
 {
 public:
     VulkanBindingGroup() = delete;
     VulkanBindingGroup(VulkanDevice& device, const BindingGroupDescriptor& descriptor);
-    VulkanBindingGroup(VulkanDevice& device, const VulkanBindingGroupDescriptor& descriptor);
     ~VulkanBindingGroup() override;
 
 public:
-    VulkanBindingGroupLayout* getLayout() const;
+    BindingGroupLayout* getLayout() const override;
+    std::vector<BufferBinding> getBufferBindings() const override;
+    std::vector<SamplerBinding> getSmaplerBindings() const override;
+    std::vector<TextureBinding> getTextureBindings() const override;
 
 public:
     VkDescriptorSet getVkDescriptorSet() const;
@@ -39,14 +33,11 @@ private:
 
 private:
     VulkanDevice& m_device;
-    const VulkanBindingGroupDescriptor m_descriptor;
+    const BindingGroupDescriptor m_descriptor;
 
 public:
     using Ref = std::reference_wrapper<VulkanBindingGroup>;
 };
 DOWN_CAST(VulkanBindingGroup, BindingGroup);
-
-// Generate Helper
-VulkanBindingGroupDescriptor VULKAN_EXPORT generateVulkanBindingGroupDescriptor(const BindingGroupDescriptor& descriptor);
 
 } // namespace jipu

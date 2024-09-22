@@ -33,6 +33,7 @@ private:
     void setComputePipeline(SetComputePipelineCommand* command);
     void setComputeBindingGroup(SetBindGroupCommand* command);
     void dispatch(DispatchCommand* command);
+    void dispatchIndirect(DispatchIndirectCommand* command);
     void endComputePass(EndComputePassCommand* command);
 
     // render pass
@@ -62,17 +63,13 @@ private:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 private:
-    void setPipelineBarrier(Command* src, Command* dst);
-    void setLastCommandToSync(Command* command);
-
-private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     Pipeline* m_pipeline = nullptr;
-
-    Command* m_lastCmdToSync = nullptr;
 };
 
 // Generator
 VkPipelineStageFlags generatePipelineStageFlags(Command* cmd);
+VkAccessFlags generateBufferAccessFlags(BufferUsageFlags usage);
+VkAccessFlags generateTextureAccessFlags(TextureUsageFlags usage);
 
 } // namespace jipu
