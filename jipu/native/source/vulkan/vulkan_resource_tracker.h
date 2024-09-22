@@ -1,33 +1,62 @@
 #pragma once
 
+#include <unordered_map>
+#include <vector>
+
 #include "vulkan_api.h"
 #include "vulkan_command.h"
-#include "vulkan_export.h"
 
 namespace jipu
 {
 
-class VulkanCommandBuffer;
-class VulkanRenderPipeline;
-class VULKAN_EXPORT VulkanCommandRecorder
+class Buffer;
+class Texture;
+class BindingGroup;
+
+struct BufferUsageInfo
 {
+    VkPipelineStageFlags stageFlags = 0;
+    VkAccessFlags accessFlags = 0;
+};
+
+struct TextureUsageInfo
+{
+    VkPipelineStageFlags stageFlags = 0;
+    VkAccessFlags accessFlags = 0;
+    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+};
+
+struct PassResourceInfo
+{
+    struct
+    {
+        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+        std::unordered_map<Texture*, TextureUsageInfo> textures;
+    } read;
+
+    struct
+    {
+        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+        std::unordered_map<Texture*, TextureUsageInfo> textures;
+    } write;
+
+    void clear()
+    {
+        read.buffers.clear();
+        read.textures.clear();
+
+        write.buffers.clear();
+        write.textures.clear();
+    }
+};
+
+class VulkanResourceTracker final
+{
+
 public:
-    VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
-    ~VulkanCommandRecorder() = default;
-
-    VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
-    VulkanCommandRecorder& operator=(const VulkanCommandRecorder&) = delete;
-
-    void record();
+    void reset();
 
 public:
-    VulkanCommandBuffer* getCommandBuffer() const;
-
-private:
-    void beginRecord();
-    void endRecord();
-
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
     void setComputePipeline(SetComputePipelineCommand* command);
@@ -61,13 +90,8 @@ private:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
-    Pipeline* m_pipeline = nullptr;
+    std::vector<PassResourceInfo> m_passResourceInfos;
+    PassResourceInfo m_ongoingPassResourceInfo;
 };
-
-// Generator
-VkPipelineStageFlags generatePipelineStageFlags(Command* cmd);
-VkAccessFlags generateBufferAccessFlags(BufferUsageFlags usage);
-VkAccessFlags generateTextureAccessFlags(TextureUsageFlags usage);
 
 } // namespace jipu
