@@ -4,6 +4,7 @@
 
 #include "common/cast.h"
 #include "jipu/command_buffer.h"
+
 #include "vulkan_api.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_recorder.h"
@@ -27,7 +28,7 @@ public:
     std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
 
 public:
-    VulkanDevice& getDevice() const;
+    VulkanDevice* getDevice() const;
     const CommandEncodingContext& getCommandEncodingContext() const;
 
 public:
@@ -40,8 +41,7 @@ public:
     std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> ejectWaitSemaphores();
 
 private:
-    VulkanDevice* m_device = nullptr;
-    CommandEncodingContext m_commandEncodingContext{};
+    VulkanCommandEncoder* m_commandEncoder = nullptr;
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
