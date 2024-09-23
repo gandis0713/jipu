@@ -14,7 +14,12 @@ namespace jipu
 VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandEncoder* commandEncoder, const ComputePassEncoderDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
 {
-    // do nothing.
+    BeginComputePassCommand command{
+        { .type = CommandType::kBeginComputePass }
+    };
+
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
+    commandEncodingContext.commands.push_back(std::make_unique<BeginComputePassCommand>(std::move(command)));
 }
 
 void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
@@ -24,7 +29,7 @@ void VulkanComputePassEncoder::setPipeline(ComputePipeline& pipeline)
         .pipeline = &pipeline
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
     commandEncodingContext.commands.push_back(std::make_unique<SetComputePipelineCommand>(std::move(command)));
 }
 
@@ -37,7 +42,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bin
         .dynamicOffset = dynamicOffset,
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
     commandEncodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
@@ -50,7 +55,7 @@ void VulkanComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z)
         .z = z,
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
     commandEncodingContext.commands.push_back(std::make_unique<DispatchCommand>(std::move(command)));
 }
 
@@ -60,7 +65,7 @@ void VulkanComputePassEncoder::end()
         { .type = CommandType::kEndComputePass },
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->getEncodingContext();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
     commandEncodingContext.commands.push_back(std::make_unique<EndComputePassCommand>(std::move(command)));
 }
 
