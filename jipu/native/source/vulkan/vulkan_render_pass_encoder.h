@@ -83,7 +83,6 @@ private:
     // uint32_t m_passIndex = 0;
 
     const VulkanRenderPassEncoderDescriptor m_descriptor{};
-    std::vector<std::unique_ptr<Command>> m_commands{};
 };
 DOWN_CAST(VulkanRenderPassEncoder, RenderPassEncoder);
 
