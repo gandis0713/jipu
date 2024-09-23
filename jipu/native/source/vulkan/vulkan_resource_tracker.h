@@ -32,29 +32,31 @@ struct PassResourceInfo
     {
         std::unordered_map<Buffer*, BufferUsageInfo> buffers;
         std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } read;
+    } consumer;
 
     struct
     {
         std::unordered_map<Buffer*, BufferUsageInfo> buffers;
         std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } write;
+    } producer;
 
     void clear()
     {
-        read.buffers.clear();
-        read.textures.clear();
+        consumer.buffers.clear();
+        consumer.textures.clear();
 
-        write.buffers.clear();
-        write.textures.clear();
+        producer.buffers.clear();
+        producer.textures.clear();
     }
 };
 
+class VulkanCommandEncoder;
 class VulkanResourceTracker final
 {
-
 public:
-    void reset();
+    VulkanResourceTracker() = default;
+    VulkanResourceTracker(VulkanCommandEncoder* commandEncoder);
+    ~VulkanResourceTracker() = default;
 
 public:
     // compute pass
@@ -88,6 +90,18 @@ public:
 
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
+
+public:
+    bool findBufferProducer(Buffer* buffer) const;
+    bool findTextureProducer(Texture* texture) const;
+    BufferUsageInfo extractBufferUsageInfo(Buffer* buffer);
+    TextureUsageInfo extractTextureUsageInfo(Texture* texture);
+
+public:
+    std::vector<PassResourceInfo> getPassResourceInfos() const;
+
+private:
+    VulkanCommandEncoder* m_commandEncoder = nullptr;
 
 private:
     std::vector<PassResourceInfo> m_passResourceInfos;
