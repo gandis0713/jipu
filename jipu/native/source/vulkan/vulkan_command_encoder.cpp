@@ -14,12 +14,6 @@ VulkanCommandEncoder::VulkanCommandEncoder(VulkanDevice* device, const CommandEn
 
 std::unique_ptr<ComputePassEncoder> VulkanCommandEncoder::beginComputePass(const ComputePassEncoderDescriptor& descriptor)
 {
-    BeginComputePassCommand command{
-        { .type = CommandType::kBeginComputePass }
-    };
-
-    m_commandEncodingContext.commands.push_back(std::make_unique<BeginComputePassCommand>(std::move(command)));
-
     return std::make_unique<VulkanComputePassEncoder>(this, descriptor);
 }
 
@@ -111,7 +105,7 @@ VulkanDevice* VulkanCommandEncoder::getDevice() const
     return m_device;
 }
 
-CommandEncodingContext& VulkanCommandEncoder::getEncodingContext()
+CommandEncodingContext& VulkanCommandEncoder::getContext()
 {
     return m_commandEncodingContext;
 }
