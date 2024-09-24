@@ -11,7 +11,7 @@
 #include "vulkan_command.h"
 #include "vulkan_export.h"
 #include "vulkan_render_pass_encoder.h"
-#include "vulkan_resource_tracker.h"
+#include "vulkan_resource_synchronizer.h"
 
 namespace jipu
 {
@@ -19,7 +19,7 @@ namespace jipu
 struct CommandEncodingContext
 {
     std::vector<std::unique_ptr<Command>> commands{};
-    VulkanResourceTracker resourceTracker{};
+    VulkanResourceSynchronizer resourceSynchronizer{};
 };
 
 class VulkanDevice;

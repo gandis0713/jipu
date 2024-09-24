@@ -298,6 +298,8 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
                                     .buffer = &buffer };
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
+
+    commandEncodingContext.resourceSynchronizer.setVertexBuffer(&command);
     commandEncodingContext.commands.push_back(std::make_unique<SetVertexBufferCommand>(std::move(command)));
 }
 
@@ -306,7 +308,10 @@ void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
     SetIndexBufferCommand command{ { .type = CommandType::kSetIndexBuffer },
                                    .buffer = &buffer,
                                    .format = format };
+
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
+
+    commandEncodingContext.resourceSynchronizer.setIndexBuffer(&command);
     commandEncodingContext.commands.push_back(std::make_unique<SetIndexBufferCommand>(std::move(command)));
 }
 
@@ -327,6 +332,7 @@ void VulkanRenderPassEncoder::setViewport(float x,
         .minDepth = minDepth,
         .maxDepth = maxDepth,
     };
+
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
     commandEncodingContext.commands.push_back(std::make_unique<SetViewportCommand>(std::move(command)));
 }

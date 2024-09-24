@@ -51,12 +51,12 @@ struct PassResourceInfo
 };
 
 class VulkanCommandEncoder;
-class VulkanResourceTracker final
+class VulkanResourceSynchronizer final
 {
 public:
-    VulkanResourceTracker() = default;
-    VulkanResourceTracker(VulkanCommandEncoder* commandEncoder);
-    ~VulkanResourceTracker() = default;
+    VulkanResourceSynchronizer() = default;
+    VulkanResourceSynchronizer(VulkanCommandEncoder* commandEncoder);
+    ~VulkanResourceSynchronizer() = default;
 
 public:
     // compute pass

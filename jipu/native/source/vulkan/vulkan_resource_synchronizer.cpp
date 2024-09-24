@@ -1,4 +1,4 @@
-#include "vulkan_resource_tracker.h"
+#include "vulkan_resource_synchronizer.h"
 
 #include "vulkan_binding_group.h"
 #include "vulkan_binding_group_layout.h"
@@ -9,22 +9,22 @@
 
 namespace jipu
 {
-VulkanResourceTracker::VulkanResourceTracker(VulkanCommandEncoder* commandEncoder)
+VulkanResourceSynchronizer::VulkanResourceSynchronizer(VulkanCommandEncoder* commandEncoder)
     : m_commandEncoder(commandEncoder)
 {
 }
 
-void VulkanResourceTracker::beginComputePass(BeginComputePassCommand* command)
+void VulkanResourceSynchronizer::beginComputePass(BeginComputePassCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::setComputePipeline(SetComputePipelineCommand* command)
+void VulkanResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
+void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* command)
 {
     // consumer
     if (false) // TODO
@@ -121,33 +121,33 @@ void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
     }
 }
 
-void VulkanResourceTracker::dispatch(DispatchCommand* command)
+void VulkanResourceSynchronizer::dispatch(DispatchCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::dispatchIndirect(DispatchIndirectCommand* command)
+void VulkanResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
 {
     // TODO
 }
 
-void VulkanResourceTracker::endComputePass(EndComputePassCommand* command)
+void VulkanResourceSynchronizer::endComputePass(EndComputePassCommand* command)
 {
     m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
     m_ongoingPassResourceInfo.clear();
 }
 
-void VulkanResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
+void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
+{
+    command->renderPass;
+}
+
+void VulkanResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::setRenderPipeline(SetRenderPipelineCommand* command)
-{
-    // do nothing.
-}
-
-void VulkanResourceTracker::setVertexBuffer(SetVertexBufferCommand* command)
+void VulkanResourceSynchronizer::setVertexBuffer(SetVertexBufferCommand* command)
 {
     // consumer
     {
@@ -185,7 +185,7 @@ void VulkanResourceTracker::setVertexBuffer(SetVertexBufferCommand* command)
     }
 }
 
-void VulkanResourceTracker::setIndexBuffer(SetIndexBufferCommand* command)
+void VulkanResourceSynchronizer::setIndexBuffer(SetIndexBufferCommand* command)
 {
     // consumer
     {
@@ -223,48 +223,48 @@ void VulkanResourceTracker::setIndexBuffer(SetIndexBufferCommand* command)
     }
 }
 
-void VulkanResourceTracker::setViewport(SetViewportCommand* command)
+void VulkanResourceSynchronizer::setViewport(SetViewportCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::setScissor(SetScissorCommand* command)
+void VulkanResourceSynchronizer::setScissor(SetScissorCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::setBlendConstant(SetBlendConstantCommand* command)
+void VulkanResourceSynchronizer::setBlendConstant(SetBlendConstantCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::draw(DrawCommand* command)
+void VulkanResourceSynchronizer::draw(DrawCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::drawIndexed(DrawIndexedCommand* command)
+void VulkanResourceSynchronizer::drawIndexed(DrawIndexedCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
+void VulkanResourceSynchronizer::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::endOcclusionQuery(EndOcclusionQueryCommand* command)
+void VulkanResourceSynchronizer::endOcclusionQuery(EndOcclusionQueryCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::endRenderPass(EndRenderPassCommand* command)
+void VulkanResourceSynchronizer::endRenderPass(EndRenderPassCommand* command)
 {
     m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
     m_ongoingPassResourceInfo.clear();
 }
 
-void VulkanResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
+void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
 {
     // consumer
     {
@@ -400,32 +400,32 @@ void VulkanResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
     }
 }
 
-void VulkanResourceTracker::copyBufferToBuffer(CopyBufferToBufferCommand* command)
+void VulkanResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::copyBufferToTexture(CopyBufferToTextureCommand* command)
+void VulkanResourceSynchronizer::copyBufferToTexture(CopyBufferToTextureCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::copyTextureToBuffer(CopyTextureToBufferCommand* command)
+void VulkanResourceSynchronizer::copyTextureToBuffer(CopyTextureToBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::copyTextureToTexture(CopyTextureToTextureCommand* command)
+void VulkanResourceSynchronizer::copyTextureToTexture(CopyTextureToTextureCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceTracker::resolveQuerySet(ResolveQuerySetCommand* command)
+void VulkanResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* command)
 {
     // do nothing.
 }
 
-bool VulkanResourceTracker::findBufferProducer(Buffer* buffer) const
+bool VulkanResourceSynchronizer::findBufferProducer(Buffer* buffer) const
 {
     auto it = std::find_if(m_passResourceInfos.begin(), m_passResourceInfos.end(), [buffer](const PassResourceInfo& passResourceInfo) {
         return passResourceInfo.producer.buffers.find(buffer) != passResourceInfo.producer.buffers.end();
@@ -434,7 +434,7 @@ bool VulkanResourceTracker::findBufferProducer(Buffer* buffer) const
     return it != m_passResourceInfos.end();
 }
 
-bool VulkanResourceTracker::findTextureProducer(Texture* texture) const
+bool VulkanResourceSynchronizer::findTextureProducer(Texture* texture) const
 {
     auto it = std::find_if(m_passResourceInfos.begin(), m_passResourceInfos.end(), [texture](const PassResourceInfo& passResourceInfo) {
         return passResourceInfo.producer.textures.find(texture) != passResourceInfo.producer.textures.end();
@@ -443,7 +443,7 @@ bool VulkanResourceTracker::findTextureProducer(Texture* texture) const
     return it != m_passResourceInfos.end();
 }
 
-BufferUsageInfo VulkanResourceTracker::extractBufferUsageInfo(Buffer* buffer)
+BufferUsageInfo VulkanResourceSynchronizer::extractBufferUsageInfo(Buffer* buffer)
 {
     auto it = std::find_if(m_passResourceInfos.begin(), m_passResourceInfos.end(), [buffer](const PassResourceInfo& passResourceInfo) {
         return passResourceInfo.producer.buffers.find(buffer) != passResourceInfo.producer.buffers.end();
@@ -455,7 +455,7 @@ BufferUsageInfo VulkanResourceTracker::extractBufferUsageInfo(Buffer* buffer)
     return bufferUsageInfo;
 }
 
-TextureUsageInfo VulkanResourceTracker::extractTextureUsageInfo(Texture* texture)
+TextureUsageInfo VulkanResourceSynchronizer::extractTextureUsageInfo(Texture* texture)
 {
     auto it = std::find_if(m_passResourceInfos.begin(), m_passResourceInfos.end(), [texture](const PassResourceInfo& passResourceInfo) {
         return passResourceInfo.producer.textures.find(texture) != passResourceInfo.producer.textures.end();
@@ -467,7 +467,7 @@ TextureUsageInfo VulkanResourceTracker::extractTextureUsageInfo(Texture* texture
     return textureUsageInfo;
 }
 
-std::vector<PassResourceInfo> VulkanResourceTracker::getPassResourceInfos() const
+std::vector<PassResourceInfo> VulkanResourceSynchronizer::getPassResourceInfos() const
 {
     return m_passResourceInfos;
 }
