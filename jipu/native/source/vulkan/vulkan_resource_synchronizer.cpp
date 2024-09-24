@@ -139,7 +139,7 @@ void VulkanResourceSynchronizer::endComputePass(EndComputePassCommand* command)
 
 void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
 {
-    command->renderPass;
+    // do nothing.
 }
 
 void VulkanResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
