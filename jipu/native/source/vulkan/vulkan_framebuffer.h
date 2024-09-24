@@ -50,7 +50,7 @@ public:
     VulkanFramebufferCache(VulkanDevice& device);
     ~VulkanFramebufferCache() = default;
 
-    VulkanFramebuffer& getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
+    VulkanFramebuffer* getFrameBuffer(const VulkanFramebufferDescriptor& descriptor);
 
     void clear();
 

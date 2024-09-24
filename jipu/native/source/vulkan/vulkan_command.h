@@ -12,6 +12,10 @@
 
 namespace jipu
 {
+
+class VulkanRenderPass;
+class VulkanFramebuffer;
+
 enum class CommandType
 {
     kBeginComputePass,
@@ -66,8 +70,8 @@ struct EndComputePassCommand : public Command
 
 struct BeginRenderPassCommand : public Command
 {
-    VkRenderPass renderPass = VK_NULL_HANDLE;
-    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    VulkanRenderPass* renderPass = nullptr;
+    VulkanFramebuffer* framebuffer = nullptr;
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
 

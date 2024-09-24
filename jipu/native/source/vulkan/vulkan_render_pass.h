@@ -41,13 +41,12 @@ public:
     VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassDescriptor& descriptor);
     ~VulkanRenderPass();
 
+public:
     VkRenderPass getVkRenderPass() const;
 
 private:
-    void initialize(const VulkanRenderPassDescriptor& descriptors);
-
-private:
     VulkanDevice& m_device;
+    VulkanRenderPassDescriptor m_descriptor{};
 
 private:
     VkRenderPass m_renderPass = VK_NULL_HANDLE;
@@ -60,7 +59,7 @@ public:
     VulkanRenderPassCache(VulkanDevice& device);
     ~VulkanRenderPassCache() = default;
 
-    VulkanRenderPass& getRenderPass(const VulkanRenderPassDescriptor& descriptor);
+    VulkanRenderPass* getRenderPass(const VulkanRenderPassDescriptor& descriptor);
 
     void clear();
 

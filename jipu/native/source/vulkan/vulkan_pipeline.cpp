@@ -483,7 +483,7 @@ void VulkanRenderPipeline::initialize()
     pipelineInfo.pColorBlendState = &colorBlendCreateInfo;
     pipelineInfo.pDynamicState = &dynamicStateCreateInfo;
     pipelineInfo.layout = downcast(descriptor.layout)->getVkPipelineLayout();
-    pipelineInfo.renderPass = descriptor.renderPass.getVkRenderPass();
+    pipelineInfo.renderPass = descriptor.renderPass->getVkRenderPass();
     pipelineInfo.subpass = descriptor.subpass;
     pipelineInfo.basePipelineHandle = descriptor.basePipelineHandle;
     pipelineInfo.basePipelineIndex = descriptor.basePipelineIndex;

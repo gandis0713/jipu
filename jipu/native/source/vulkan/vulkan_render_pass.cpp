@@ -11,6 +11,7 @@ namespace jipu
 
 VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassDescriptor& descriptor)
     : m_device(device)
+    , m_descriptor(descriptor)
 {
     std::vector<VkSubpassDescription> subpassDescriptions{};
     subpassDescriptions.resize(descriptor.subpassDescriptions.size());
@@ -51,10 +52,6 @@ VulkanRenderPass::~VulkanRenderPass()
     auto& vulkanDevice = downcast(m_device);
 
     vulkanDevice.vkAPI.DestroyRenderPass(vulkanDevice.getVkDevice(), m_renderPass, nullptr);
-}
-
-void VulkanRenderPass::initialize(const VulkanRenderPassDescriptor& descriptors)
-{
 }
 
 VkRenderPass VulkanRenderPass::getVkRenderPass() const
@@ -166,12 +163,12 @@ VulkanRenderPassCache::VulkanRenderPassCache(VulkanDevice& device)
 {
 }
 
-VulkanRenderPass& VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass* VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return *(it->second);
+        return it->second.get();
     }
 
     // create new renderpass
@@ -181,7 +178,7 @@ VulkanRenderPass& VulkanRenderPassCache::getRenderPass(const VulkanRenderPassDes
     VulkanRenderPass* renderPassPtr = renderPass.get();
     auto result = m_cache.emplace(descriptor, std::move(renderPass));
 
-    return *renderPassPtr;
+    return renderPassPtr;
 }
 
 void VulkanRenderPassCache::clear()

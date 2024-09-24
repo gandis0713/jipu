@@ -251,8 +251,8 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = command->renderPass;
-    renderPassInfo.framebuffer = command->framebuffer;
+    renderPassInfo.renderPass = command->renderPass->getVkRenderPass();
+    renderPassInfo.framebuffer = command->framebuffer->getVkFrameBuffer();
     renderPassInfo.renderArea = command->renderArea;
     renderPassInfo.clearValueCount = static_cast<uint32_t>(command->clearValues.size());
     renderPassInfo.pClearValues = command->clearValues.data();

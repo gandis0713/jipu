@@ -13,11 +13,16 @@
 namespace jipu
 {
 
+class VulkanDevice;
+class VulkanRenderPass;
+class VulkanFramebuffer;
+class VulkanCommandEncoder;
+
 struct VulkanRenderPassEncoderDescriptor
 {
     const void* next = nullptr;
-    VkRenderPass renderPass = VK_NULL_HANDLE;
-    VkFramebuffer framebuffer = VK_NULL_HANDLE;
+    VulkanRenderPass* renderPass = nullptr;
+    VulkanFramebuffer* framebuffer = nullptr;
     VkRect2D renderArea{};
     std::vector<VkClearValue> clearValues{};
 
@@ -26,10 +31,6 @@ struct VulkanRenderPassEncoderDescriptor
     RenderPassTimestampWrites timestampWrites{};
 };
 
-class VulkanDevice;
-class VulkanRenderPass;
-class VulkanFramebuffer;
-class VulkanCommandEncoder;
 class VULKAN_EXPORT VulkanRenderPassEncoder : public RenderPassEncoder
 {
 public:

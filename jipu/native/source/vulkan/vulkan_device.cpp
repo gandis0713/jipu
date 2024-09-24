@@ -158,12 +158,12 @@ std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const Command
     return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
-VulkanRenderPass& VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
+VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
 }
 
-VulkanFramebuffer& VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer* VulkanDevice::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     return m_frameBufferCache.getFrameBuffer(descriptor);
 }

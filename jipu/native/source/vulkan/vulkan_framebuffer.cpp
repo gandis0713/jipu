@@ -97,12 +97,12 @@ VulkanFramebufferCache::VulkanFramebufferCache(VulkanDevice& device)
     // TODO
 }
 
-VulkanFramebuffer& VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
+VulkanFramebuffer* VulkanFramebufferCache::getFrameBuffer(const VulkanFramebufferDescriptor& descriptor)
 {
     auto it = m_cache.find(descriptor);
     if (it != m_cache.end())
     {
-        return *(it->second);
+        return it->second.get();
     }
 
     auto framebuffer = std::make_unique<VulkanFramebuffer>(m_device, descriptor);
@@ -111,7 +111,7 @@ VulkanFramebuffer& VulkanFramebufferCache::getFrameBuffer(const VulkanFramebuffe
     VulkanFramebuffer* framebufferPtr = framebuffer.get();
     m_cache.emplace(descriptor, std::move(framebuffer));
 
-    return *framebufferPtr;
+    return framebufferPtr;
 }
 
 void VulkanFramebufferCache::clear()

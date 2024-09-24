@@ -192,7 +192,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPassEn
     return vkdescriptor;
 }
 
-VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass& renderPass, const RenderPassEncoderDescriptor& descriptor)
+VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass* renderPass, const RenderPassEncoderDescriptor& descriptor)
 {
     if (descriptor.colorAttachments.empty())
         throw std::runtime_error("The attachments for color is empty to create frame buffer descriptor.");
@@ -203,7 +203,7 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
     vkdescriptor.width = texture->getWidth();
     vkdescriptor.height = texture->getHeight();
     vkdescriptor.layers = 1;
-    vkdescriptor.renderPass = renderPass.getVkRenderPass();
+    vkdescriptor.renderPass = renderPass->getVkRenderPass();
 
     for (const auto attachment : descriptor.colorAttachments)
     {
@@ -223,15 +223,15 @@ VulkanFramebufferDescriptor generateVulkanFramebufferDescriptor(VulkanRenderPass
 
 VulkanRenderPassEncoderDescriptor generateVulkanRenderPassEncoderDescriptor(VulkanDevice* device, const RenderPassEncoderDescriptor& descriptor)
 {
-    auto& renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor));
-    auto& framebuffer = device->getFrameBuffer(generateVulkanFramebufferDescriptor(renderPass, descriptor));
+    auto renderPass = device->getRenderPass(generateVulkanRenderPassDescriptor(descriptor));
+    auto framebuffer = device->getFrameBuffer(generateVulkanFramebufferDescriptor(renderPass, descriptor));
 
     VulkanRenderPassEncoderDescriptor vkdescriptor{};
     vkdescriptor.clearValues = generateClearColor(descriptor);
-    vkdescriptor.renderPass = renderPass.getVkRenderPass();
-    vkdescriptor.framebuffer = framebuffer.getVkFrameBuffer();
+    vkdescriptor.renderPass = renderPass;
+    vkdescriptor.framebuffer = framebuffer;
     vkdescriptor.renderArea.offset = { 0, 0 };
-    vkdescriptor.renderArea.extent = { framebuffer.getWidth(), framebuffer.getHeight() };
+    vkdescriptor.renderArea.extent = { framebuffer->getWidth(), framebuffer->getHeight() };
 
     // TODO: convert timestampWrites for vulkan.
     vkdescriptor.occlusionQuerySet = descriptor.occlusionQuerySet;
@@ -261,7 +261,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
 
-    // commandEncodingContext.resourceTracker.beginRenderPass(&command);
+    commandEncodingContext.resourceSynchronizer.beginRenderPass(&command);
     commandEncodingContext.commands.push_back(std::make_unique<BeginRenderPassCommand>(std::move(command)));
 
     resetQuery();
@@ -274,7 +274,7 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
 
-    // commandEncodingContext.resourceTracker.setRenderPipeline(&command);
+    // commandEncodingContext.resourceSynchronizer.setRenderPipeline(&command);
     commandEncodingContext.commands.push_back(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
 }
 
@@ -287,7 +287,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->getContext();
 
-    commandEncodingContext.resourceTracker.setRenderBindingGroup(&command);
+    commandEncodingContext.resourceSynchronizer.setRenderBindingGroup(&command);
     commandEncodingContext.commands.push_back(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
