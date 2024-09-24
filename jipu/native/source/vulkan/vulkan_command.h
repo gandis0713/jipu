@@ -18,6 +18,8 @@ class VulkanFramebuffer;
 
 enum class CommandType
 {
+    kNone = 0,
+
     kBeginComputePass,
     kSetComputePipeline,
     kSetComputeBindGroup,
