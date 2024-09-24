@@ -575,7 +575,7 @@ void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 
     CommandBufferDescriptor commandBufferDescriptor{};
     auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
-    m_queue->submit({});
+    m_queue->submit({ commandBuffer.get() });
 }
 
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
@@ -605,7 +605,7 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
 
     CommandBufferDescriptor commandBufferDescriptor{};
     auto commandBuffer = commandEndoer->finish(commandBufferDescriptor);
-    m_queue->submit({});
+    m_queue->submit({ commandBuffer.get() });
 }
 
 void OBJModelSample::updateUniformBuffer()
