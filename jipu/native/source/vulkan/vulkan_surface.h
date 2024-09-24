@@ -49,6 +49,10 @@ public:
     VulkanSurface(VulkanInstance& instance, const VulkanSurfaceDescriptor& descriptor);
     ~VulkanSurface() override;
 
+public:
+    void present() override;
+
+public:
     VkSurfaceKHR getVkSurface() const;
 
 private:

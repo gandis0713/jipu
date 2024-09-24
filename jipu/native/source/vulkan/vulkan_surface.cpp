@@ -28,6 +28,11 @@ VulkanSurface::~VulkanSurface()
     vkAPI.DestroySurfaceKHR(vulkanInstance.getVkInstance(), m_surface, nullptr);
 }
 
+void VulkanSurface::present()
+{
+    spdlog::info(__func__);
+}
+
 VkSurfaceKHR VulkanSurface::getVkSurface() const
 {
     return m_surface;
