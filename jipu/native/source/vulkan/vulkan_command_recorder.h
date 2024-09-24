@@ -7,8 +7,10 @@
 namespace jipu
 {
 
+class VulkanPipeline;
 class VulkanCommandBuffer;
 class VulkanRenderPipeline;
+class VulkanComputePipeline;
 class VULKAN_EXPORT VulkanCommandRecorder
 {
 public:
@@ -62,7 +64,8 @@ private:
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
-    Pipeline* m_pipeline = nullptr;
+    VulkanRenderPipeline* m_renderPipeline = nullptr;
+    VulkanComputePipeline* m_computePipeline = nullptr;
 };
 
 // Generator

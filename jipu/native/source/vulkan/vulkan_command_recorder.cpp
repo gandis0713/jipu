@@ -130,6 +130,9 @@ void VulkanCommandRecorder::record()
         case CommandType::kPipelineBarrier:
             // TODO: pipeline barrier
             break;
+        default:
+            throw std::runtime_error("Unknown command type.");
+            break;
         }
     }
 
@@ -170,7 +173,7 @@ void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
 
 void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* command)
 {
-    m_pipeline = command->pipeline;
+    m_computePipeline = downcast(command->pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
@@ -178,18 +181,18 @@ void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* comman
 
     vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(),
                           VK_PIPELINE_BIND_POINT_COMPUTE,
-                          downcast(command->pipeline)->getVkPipeline());
+                          m_computePipeline->getVkPipeline());
 }
 
 void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
 {
-    if (!m_pipeline)
+    if (!m_computePipeline)
         throw std::runtime_error("The pipeline is null");
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
     auto vulkanBindingGroup = downcast(command->bindingGroup);
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto vulkanPipelineLayout = downcast(m_computePipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
@@ -262,12 +265,12 @@ void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 
 void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
 {
-    auto pipeline = downcast(command->pipeline);
+    m_renderPipeline = downcast(command->pipeline);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
 
-    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getVkPipeline());
+    vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipeline->getVkPipeline());
 }
 
 void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
@@ -348,8 +351,6 @@ void VulkanCommandRecorder::setBlendConstant(SetBlendConstantCommand* command)
 
 void VulkanCommandRecorder::draw(DrawCommand* command)
 {
-    // TODO: set pipeline barrier
-
     auto vertexCount = command->vertexCount;
     auto instanceCount = command->instanceCount;
     auto firstVertex = command->firstVertex;
@@ -363,8 +364,6 @@ void VulkanCommandRecorder::draw(DrawCommand* command)
 
 void VulkanCommandRecorder::drawIndexed(DrawIndexedCommand* command)
 {
-    // TODO: set pipeline barrier
-
     auto indexCount = command->indexCount;
     auto instanceCount = command->instanceCount;
     auto indexOffset = command->indexOffset;
@@ -433,13 +432,13 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
 {
-    if (!m_pipeline)
+    if (!m_renderPipeline)
         throw std::runtime_error("The pipeline is null");
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
     auto vulkanBindingGroup = downcast(command->bindingGroup);
-    auto vulkanPipelineLayout = downcast(m_pipeline->getPipelineLayout());
+    auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
 
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
