@@ -24,6 +24,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_allocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_synchronizer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_physical_device.cpp
@@ -52,6 +53,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_allocator.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_synchronizer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_physical_device.h
