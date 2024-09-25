@@ -11,15 +11,17 @@
 #include "vulkan_command.h"
 #include "vulkan_export.h"
 #include "vulkan_render_pass_encoder.h"
-#include "vulkan_resource_synchronizer.h"
+#include "vulkan_resource_tracker.h"
+
+#include <queue>
 
 namespace jipu
 {
 
 struct CommandEncodingContext
 {
-    std::vector<std::unique_ptr<Command>> commands{};
-    VulkanResourceSynchronizer resourceSynchronizer{};
+    std::queue<std::unique_ptr<Command>> commands;
+    VulkanResourceTracker resourceTracker{};
 };
 
 class VulkanDevice;
@@ -58,7 +60,8 @@ public:
 
 public:
     VulkanDevice* getDevice() const;
-    CommandEncodingContext& getContext();
+    CommandEncodingContext& contextReference();
+    CommandEncodingContext extractContext();
 
 private:
     VulkanDevice* m_device = nullptr;

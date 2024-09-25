@@ -37,7 +37,7 @@ void VulkanCommandEncoder::copyBufferToBuffer(const BlitBuffer& src, const BlitB
         .size = size
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
+    m_commandEncodingContext.commands.push(std::make_unique<CopyBufferToBufferCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, const BlitTexture& texture, const Extent3D& extent)
@@ -49,7 +49,7 @@ void VulkanCommandEncoder::copyBufferToTexture(const BlitTextureBuffer& buffer, 
         .extent = extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
+    m_commandEncodingContext.commands.push(std::make_unique<CopyBufferToTextureCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const BlitTextureBuffer& buffer, const Extent3D& extent)
@@ -61,7 +61,7 @@ void VulkanCommandEncoder::copyTextureToBuffer(const BlitTexture& texture, const
         .extent = extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
+    m_commandEncodingContext.commands.push(std::make_unique<CopyTextureToBufferCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const BlitTexture& dst, const Extent3D& extent)
@@ -73,7 +73,7 @@ void VulkanCommandEncoder::copyTextureToTexture(const BlitTexture& src, const Bl
         .extent = extent
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<CopyTextureToTextureCommand>(std::move(command)));
+    m_commandEncodingContext.commands.push(std::make_unique<CopyTextureToTextureCommand>(std::move(command)));
 }
 
 void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
@@ -92,7 +92,7 @@ void VulkanCommandEncoder::resolveQuerySet(QuerySet* querySet,
         .destinationOffset = destinationOffset
     };
 
-    m_commandEncodingContext.commands.push_back(std::make_unique<ResolveQuerySetCommand>(std::move(command)));
+    m_commandEncodingContext.commands.push(std::make_unique<ResolveQuerySetCommand>(std::move(command)));
 }
 
 std::unique_ptr<CommandBuffer> VulkanCommandEncoder::finish(const CommandBufferDescriptor& descriptor)
@@ -105,9 +105,14 @@ VulkanDevice* VulkanCommandEncoder::getDevice() const
     return m_device;
 }
 
-CommandEncodingContext& VulkanCommandEncoder::getContext()
+CommandEncodingContext& VulkanCommandEncoder::contextReference()
 {
     return m_commandEncodingContext;
+}
+
+CommandEncodingContext VulkanCommandEncoder::extractContext()
+{
+    return std::move(m_commandEncodingContext);
 }
 
 } // namespace jipu

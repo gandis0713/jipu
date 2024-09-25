@@ -33,17 +33,16 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
 
 std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
 {
-    return std::make_unique<VulkanCommandRecorder>(this);
+    VulkanCommandRecorderDescriptor descriptor{
+        .commandEncodingContext = m_commandEncoder->extractContext()
+    };
+
+    return std::make_unique<VulkanCommandRecorder>(this, std::move(descriptor));
 }
 
 VulkanDevice* VulkanCommandBuffer::getDevice() const
 {
     return m_commandEncoder->getDevice();
-}
-
-const CommandEncodingContext& VulkanCommandBuffer::getCommandEncodingContext() const
-{
-    return m_commandEncoder->getContext();
 }
 
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const

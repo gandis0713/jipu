@@ -53,8 +53,6 @@ enum class CommandType
     kResolveQuerySet,
 
     kWriteTimestamp,
-
-    kPipelineBarrier,
 };
 
 struct Command
@@ -228,16 +226,6 @@ struct SetVertexBufferCommand : public Command
 
 struct WriteTimestampCommand : public Command
 {
-};
-
-struct PipelineBarrierCommand : public Command
-{
-    VkPipelineStageFlags srcStageMask;
-    VkPipelineStageFlags dstStageMask;
-    VkDependencyFlags dependencyFlags;
-    std::vector<VkMemoryBarrier> memoryBarriers{};
-    std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers{};
-    std::vector<VkImageMemoryBarrier> imageMemoryBarriers{};
 };
 
 } // namespace jipu

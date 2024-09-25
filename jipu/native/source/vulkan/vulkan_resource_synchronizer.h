@@ -5,6 +5,7 @@
 
 #include "vulkan_api.h"
 #include "vulkan_command.h"
+#include "vulkan_resource_tracker.h"
 
 namespace jipu
 {
@@ -12,50 +13,18 @@ namespace jipu
 class Buffer;
 class Texture;
 class BindingGroup;
+class VulkanCommandBuffer;
 
-struct BufferUsageInfo
+struct VulkanResourceSynchronizerDescriptor
 {
-    VkPipelineStageFlags stageFlags = 0;
-    VkAccessFlags accessFlags = 0;
+    std::vector<PassResourceInfo> passResourceInfos{};
 };
 
-struct TextureUsageInfo
-{
-    VkPipelineStageFlags stageFlags = 0;
-    VkAccessFlags accessFlags = 0;
-    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
-};
-
-struct PassResourceInfo
-{
-    struct
-    {
-        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-        std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } consumer;
-
-    struct
-    {
-        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-        std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } producer;
-
-    void clear()
-    {
-        consumer.buffers.clear();
-        consumer.textures.clear();
-
-        producer.buffers.clear();
-        producer.textures.clear();
-    }
-};
-
-class VulkanCommandEncoder;
 class VulkanResourceSynchronizer final
 {
 public:
     VulkanResourceSynchronizer() = default;
-    VulkanResourceSynchronizer(VulkanCommandEncoder* commandEncoder);
+    VulkanResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanResourceSynchronizerDescriptor& descriptor);
     ~VulkanResourceSynchronizer() = default;
 
 public:
@@ -92,20 +61,32 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    bool findBufferProducer(Buffer* buffer) const;
-    bool findTextureProducer(Texture* texture) const;
-    BufferUsageInfo extractBufferUsageInfo(Buffer* buffer);
-    TextureUsageInfo extractTextureUsageInfo(Texture* texture);
-
-public:
-    std::vector<PassResourceInfo> getPassResourceInfos() const;
+    bool findProducedBuffer(Buffer* buffer) const;
+    bool findProducedTexture(Texture* texture) const;
+    BufferUsageInfo extractProducedBufferUsageInfo(Buffer* buffer);
+    TextureUsageInfo extractProducedTextureUsageInfo(Texture* texture);
 
 private:
-    VulkanCommandEncoder* m_commandEncoder = nullptr;
+    void increasePassIndex();
+    int32_t currentPassIndex() const;
 
 private:
-    std::vector<PassResourceInfo> m_passResourceInfos;
-    PassResourceInfo m_ongoingPassResourceInfo;
+    struct PipelineBarrier
+    {
+        VkPipelineStageFlags srcStageMask;
+        VkPipelineStageFlags dstStageMask;
+        VkDependencyFlags dependencyFlags;
+        std::vector<VkMemoryBarrier> memoryBarriers{};
+        std::vector<VkBufferMemoryBarrier> bufferMemoryBarriers{};
+        std::vector<VkImageMemoryBarrier> imageMemoryBarriers{};
+    };
+
+    void sync(const PipelineBarrier& barrier);
+
+private:
+    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanResourceSynchronizerDescriptor m_descriptor{};
+    int32_t m_currentPassIndex = -1;
 };
 
 } // namespace jipu

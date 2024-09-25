@@ -21,8 +21,9 @@
 namespace jipu
 {
 
-VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
+VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
+    , m_descriptor(std::move(descriptor))
 {
 }
 
@@ -35,12 +36,11 @@ void VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    const auto& commandEncodingContext = m_commandBuffer->getCommandEncodingContext();
-    const auto& commands = commandEncodingContext.commands;
+    auto& commands = m_descriptor.commandEncodingContext.commands;
 
-    for (auto it = commands.begin(); it != commands.end(); ++it)
+    while (!commands.empty())
     {
-        const auto command = (*it).get();
+        const auto command = commands.front().get();
         switch (command->type)
         {
         case CommandType::kBeginComputePass:
@@ -127,13 +127,12 @@ void VulkanCommandRecorder::record()
         case CommandType::kWriteTimestamp:
             // TODO: write timestamp
             break;
-        case CommandType::kPipelineBarrier:
-            // TODO: pipeline barrier
-            break;
         default:
             throw std::runtime_error("Unknown command type.");
             break;
         }
+
+        commands.pop();
     }
 
     endRecord();

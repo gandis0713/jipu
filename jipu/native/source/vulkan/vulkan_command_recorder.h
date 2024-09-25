@@ -2,6 +2,7 @@
 
 #include "vulkan_api.h"
 #include "vulkan_command.h"
+#include "vulkan_command_encoder.h"
 #include "vulkan_export.h"
 
 namespace jipu
@@ -11,11 +12,17 @@ class VulkanPipeline;
 class VulkanCommandBuffer;
 class VulkanRenderPipeline;
 class VulkanComputePipeline;
+
+struct VulkanCommandRecorderDescriptor
+{
+    CommandEncodingContext commandEncodingContext{};
+};
+
 class VULKAN_EXPORT VulkanCommandRecorder
 {
 public:
     VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
+    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor);
     ~VulkanCommandRecorder() = default;
 
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
@@ -64,6 +71,9 @@ private:
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandRecorderDescriptor m_descriptor{};
+
+private:
     VulkanRenderPipeline* m_renderPipeline = nullptr;
     VulkanComputePipeline* m_computePipeline = nullptr;
 };
