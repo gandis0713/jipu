@@ -35,74 +35,7 @@ void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* com
 
 void VulkanResourceSynchronizer::dispatch(DispatchCommand* command)
 {
-    // consumer
-    {
-        PipelineBarrier pipelineBarrier{
-            .srcStageMask = VK_PIPELINE_STAGE_NONE,
-            .dstStageMask = VK_PIPELINE_STAGE_NONE,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
-        };
-
-        auto& currentPassResourceInfo = m_descriptor.passResourceInfos[currentPassIndex()];
-        for (const auto& [buffer, bufferUsageInfo] : currentPassResourceInfo.consumer.buffers)
-        {
-            if (findProducedBuffer(buffer))
-            {
-                auto producedBufferUsageInfo = extractProducedBufferUsageInfo(buffer);
-
-                pipelineBarrier.srcStageMask |= producedBufferUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= bufferUsageInfo.stageFlags;
-                pipelineBarrier.bufferMemoryBarriers.push_back({
-                    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                    .pNext = nullptr,
-                    .srcAccessMask = producedBufferUsageInfo.accessFlags,
-                    .dstAccessMask = bufferUsageInfo.accessFlags,
-                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .buffer = downcast(buffer)->getVkBuffer(),
-                    .offset = 0,
-                    .size = downcast(buffer)->getSize(),
-                });
-            }
-        }
-
-        for (const auto& [texture, textureUsageInfo] : currentPassResourceInfo.consumer.textures)
-        {
-            if (findProducedTexture(texture))
-            {
-                auto producedTextureUsageInfo = extractProducedTextureUsageInfo(texture);
-                auto consumedTextureUsageInfo = TextureUsageInfo{ .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                                                  .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                                                                  .layout = VK_IMAGE_LAYOUT_GENERAL };
-
-                pipelineBarrier.srcStageMask |= producedTextureUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= consumedTextureUsageInfo.stageFlags;
-                pipelineBarrier.imageMemoryBarriers.push_back({
-                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                    .pNext = nullptr,
-                    .srcAccessMask = producedTextureUsageInfo.accessFlags,
-                    .dstAccessMask = consumedTextureUsageInfo.accessFlags,
-                    .oldLayout = producedTextureUsageInfo.layout,
-                    .newLayout = consumedTextureUsageInfo.layout,
-                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = downcast(texture)->getVkImage(),
-                    .subresourceRange = {
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = VK_REMAINING_MIP_LEVELS,
-                        .baseArrayLayer = 0,
-                        .layerCount = VK_REMAINING_ARRAY_LAYERS,
-                    },
-                });
-            }
-        }
-
-        if (!pipelineBarrier.bufferMemoryBarriers.empty() || !pipelineBarrier.imageMemoryBarriers.empty())
-        {
-            sync(pipelineBarrier);
-        }
-    }
+    sync();
 }
 
 void VulkanResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
@@ -118,6 +51,8 @@ void VulkanResourceSynchronizer::endComputePass(EndComputePassCommand* command)
 void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
 {
     increasePassIndex();
+
+    sync();
 }
 
 void VulkanResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
@@ -127,80 +62,12 @@ void VulkanResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* com
 
 void VulkanResourceSynchronizer::setVertexBuffer(SetVertexBufferCommand* command)
 {
-    // consumer
-    {
-        PipelineBarrier pipelineBarrier{
-            .srcStageMask = VK_PIPELINE_STAGE_NONE,
-            .dstStageMask = VK_PIPELINE_STAGE_NONE,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
-        };
-
-        auto buffer = command->buffer;
-        if (findProducedBuffer(buffer))
-        {
-            auto producedBufferUsageInfo = extractProducedBufferUsageInfo(buffer);
-            auto consumedBufferUsageInfo = BufferUsageInfo{ .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                                                            .accessFlags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT };
-
-            pipelineBarrier.srcStageMask |= producedBufferUsageInfo.stageFlags;
-            pipelineBarrier.dstStageMask |= consumedBufferUsageInfo.stageFlags;
-            pipelineBarrier.bufferMemoryBarriers.push_back({
-                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                .pNext = nullptr,
-                .srcAccessMask = producedBufferUsageInfo.accessFlags,
-                .dstAccessMask = consumedBufferUsageInfo.accessFlags,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .buffer = downcast(buffer)->getVkBuffer(),
-                .offset = 0,
-                .size = downcast(buffer)->getSize(),
-            });
-        }
-
-        if (!pipelineBarrier.bufferMemoryBarriers.empty())
-        {
-            sync(pipelineBarrier);
-        }
-    }
+    // do nothing.
 }
 
 void VulkanResourceSynchronizer::setIndexBuffer(SetIndexBufferCommand* command)
 {
-    // consumer
-    {
-        PipelineBarrier pipelineBarrier{
-            .srcStageMask = VK_PIPELINE_STAGE_NONE,
-            .dstStageMask = VK_PIPELINE_STAGE_NONE,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
-        };
-
-        auto buffer = command->buffer;
-        if (findProducedBuffer(buffer))
-        {
-            auto producedBufferUsageInfo = extractProducedBufferUsageInfo(buffer);
-            auto consumedBufferUsageInfo = BufferUsageInfo{ .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                                                            .accessFlags = VK_ACCESS_INDEX_READ_BIT };
-
-            pipelineBarrier.srcStageMask |= producedBufferUsageInfo.stageFlags;
-            pipelineBarrier.dstStageMask |= consumedBufferUsageInfo.stageFlags;
-            pipelineBarrier.bufferMemoryBarriers.push_back({
-                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                .pNext = nullptr,
-                .srcAccessMask = producedBufferUsageInfo.accessFlags,
-                .dstAccessMask = consumedBufferUsageInfo.accessFlags,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .buffer = downcast(buffer)->getVkBuffer(),
-                .offset = 0,
-                .size = downcast(buffer)->getSize(),
-            });
-        }
-
-        if (!pipelineBarrier.bufferMemoryBarriers.empty())
-        {
-            sync(pipelineBarrier);
-        }
-    }
+    // do nothing.
 }
 
 void VulkanResourceSynchronizer::setViewport(SetViewportCommand* command)
@@ -245,139 +112,7 @@ void VulkanResourceSynchronizer::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
 {
-    // consumer
-    {
-        PipelineBarrier pipelineBarrier{
-            .srcStageMask = VK_PIPELINE_STAGE_NONE,
-            .dstStageMask = VK_PIPELINE_STAGE_NONE,
-            .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
-        };
-
-        auto bindingGroup = command->bindingGroup;
-        auto bindingGroupLayout = command->bindingGroup->getLayout();
-
-        auto bufferBindings = bindingGroup->getBufferBindings();
-        auto bufferBindingLayouts = bindingGroupLayout->getBufferBindingLayouts();
-        for (auto i = 0; i < bufferBindings.size(); ++i)
-        {
-            auto& bufferBinding = bufferBindings[i];
-            auto& bufferBindingLayout = bufferBindingLayouts[i];
-
-            if (findProducedBuffer(bufferBinding.buffer))
-            {
-                auto producedBufferUsageInfo = extractProducedBufferUsageInfo(bufferBinding.buffer);
-                auto consumedBufferUsageInfo = BufferUsageInfo{ .stageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
-                                                                              VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // TODO: set by shader stage.
-                                                                .accessFlags = VK_ACCESS_SHADER_READ_BIT };
-
-                if (bufferBindingLayout.stages & BindingStageFlagBits::kComputeStage)
-                {
-                    producedBufferUsageInfo.stageFlags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                }
-                if (bufferBindingLayout.stages & BindingStageFlagBits::kVertexStage)
-                {
-                    producedBufferUsageInfo.stageFlags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-                }
-                if (bufferBindingLayout.stages & BindingStageFlagBits::kFragmentStage)
-                {
-                    producedBufferUsageInfo.stageFlags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                }
-
-                switch (bufferBindingLayout.type)
-                {
-                case BufferBindingType::kUniform:
-                    producedBufferUsageInfo.accessFlags |= VK_ACCESS_UNIFORM_READ_BIT;
-                    break;
-                case BufferBindingType::kStorage:
-                    producedBufferUsageInfo.accessFlags |= VK_ACCESS_SHADER_WRITE_BIT;
-                    break;
-                case BufferBindingType::kReadOnlyStorage:
-                    producedBufferUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
-                    break;
-                default:
-                    producedBufferUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
-                    break;
-                }
-
-                pipelineBarrier.srcStageMask |= producedBufferUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= consumedBufferUsageInfo.stageFlags;
-                pipelineBarrier.bufferMemoryBarriers.push_back({
-                    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                    .pNext = nullptr,
-                    .srcAccessMask = producedBufferUsageInfo.accessFlags,
-                    .dstAccessMask = consumedBufferUsageInfo.accessFlags,
-                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .buffer = downcast(bufferBinding.buffer)->getVkBuffer(),
-                    .offset = 0,
-                    .size = downcast(bufferBinding.buffer)->getSize(),
-                });
-            }
-        }
-
-        auto textureBindings = bindingGroup->getTextureBindings();
-        auto textureBindingLayouts = bindingGroupLayout->getTextureBindingLayouts();
-        for (auto i = 0; i < textureBindings.size(); ++i)
-        {
-            auto& textureBinding = textureBindings[i];
-            auto& textureBindingLayout = textureBindingLayouts[i];
-
-            if (findProducedTexture(textureBinding.textureView->getTexture()))
-            {
-                auto producedTextureUsageInfo = extractProducedTextureUsageInfo(textureBinding.textureView->getTexture());
-                auto consumedTextureUsageInfo = TextureUsageInfo{ .stageFlags = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT |
-                                                                                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, // TODO: set by shader stage.
-                                                                  .accessFlags = VK_ACCESS_SHADER_READ_BIT,
-                                                                  .layout = VK_IMAGE_LAYOUT_GENERAL };
-
-                if (textureBindingLayout.stages & BindingStageFlagBits::kComputeStage)
-                {
-                    producedTextureUsageInfo.stageFlags |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-                }
-                if (textureBindingLayout.stages & BindingStageFlagBits::kVertexStage)
-                {
-                    producedTextureUsageInfo.stageFlags |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
-                }
-                if (textureBindingLayout.stages & BindingStageFlagBits::kFragmentStage)
-                {
-                    producedTextureUsageInfo.stageFlags |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-                }
-                producedTextureUsageInfo.accessFlags |= VK_ACCESS_SHADER_READ_BIT;
-                producedTextureUsageInfo.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-                pipelineBarrier.srcStageMask |= producedTextureUsageInfo.stageFlags;
-                pipelineBarrier.dstStageMask |= consumedTextureUsageInfo.stageFlags;
-                pipelineBarrier.imageMemoryBarriers.push_back({
-                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                    .pNext = nullptr,
-                    .srcAccessMask = producedTextureUsageInfo.accessFlags,
-                    .dstAccessMask = consumedTextureUsageInfo.accessFlags,
-                    .oldLayout = producedTextureUsageInfo.layout,
-                    .newLayout = consumedTextureUsageInfo.layout,
-                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = downcast(textureBinding.textureView->getTexture())->getVkImage(),
-                    .subresourceRange = {
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = VK_REMAINING_MIP_LEVELS,
-                        .baseArrayLayer = 0,
-                        .layerCount = VK_REMAINING_ARRAY_LAYERS,
-                    },
-                });
-            }
-        }
-
-        if (!pipelineBarrier.bufferMemoryBarriers.empty() || !pipelineBarrier.imageMemoryBarriers.empty())
-        {
-            sync(pipelineBarrier);
-        }
-    }
-
-    // producer
-    {
-        // TODO
-    }
+    // do nothing.
 }
 
 void VulkanResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
@@ -405,7 +140,7 @@ void VulkanResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* command
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::sync(const PipelineBarrier& barrier)
+void VulkanResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
 {
     auto& srcStageMask = barrier.srcStageMask;
     auto& dstStageMask = barrier.dstStageMask;
@@ -430,62 +165,67 @@ void VulkanResourceSynchronizer::sync(const PipelineBarrier& barrier)
                              imageMemoryBarriers.data());
 }
 
-bool VulkanResourceSynchronizer::findProducedBuffer(Buffer* buffer) const
+bool VulkanResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
     auto begin = passResourceInfos.begin();
     auto end = passResourceInfos.begin() + currentPassIndex();
     auto it = std::find_if(begin, end, [buffer](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.producer.buffers.find(buffer) != passResourceInfo.producer.buffers.end();
+        return passResourceInfo.src.buffers.find(buffer) != passResourceInfo.src.buffers.end();
     });
 
     return it != passResourceInfos.end();
 }
 
-bool VulkanResourceSynchronizer::findProducedTexture(Texture* texture) const
+bool VulkanResourceSynchronizer::findSrcTexture(Texture* texture) const
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
     auto begin = passResourceInfos.begin();
     auto end = passResourceInfos.begin() + currentPassIndex();
     auto it = std::find_if(begin, end, [texture](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.producer.textures.find(texture) != passResourceInfo.producer.textures.end();
+        return passResourceInfo.src.textures.find(texture) != passResourceInfo.src.textures.end();
     });
 
     return it != passResourceInfos.end();
 }
 
-BufferUsageInfo VulkanResourceSynchronizer::extractProducedBufferUsageInfo(Buffer* buffer)
+BufferUsageInfo VulkanResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
     auto begin = passResourceInfos.begin();
     auto end = passResourceInfos.begin() + currentPassIndex();
     auto it = std::find_if(begin, end, [buffer](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.producer.buffers.find(buffer) != passResourceInfo.producer.buffers.end();
+        return passResourceInfo.src.buffers.find(buffer) != passResourceInfo.src.buffers.end();
     });
 
-    auto bufferUsageInfo = it->producer.buffers.at(buffer);
-    it->producer.buffers.erase(buffer); // remove it
+    auto bufferUsageInfo = it->src.buffers.at(buffer);
+    it->src.buffers.erase(buffer); // remove it
 
     return bufferUsageInfo;
 }
 
-TextureUsageInfo VulkanResourceSynchronizer::extractProducedTextureUsageInfo(Texture* texture)
+TextureUsageInfo VulkanResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
     auto begin = passResourceInfos.begin();
     auto end = passResourceInfos.begin() + currentPassIndex();
     auto it = std::find_if(begin, end, [texture](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.producer.textures.find(texture) != passResourceInfo.producer.textures.end();
+        return passResourceInfo.src.textures.find(texture) != passResourceInfo.src.textures.end();
     });
 
-    auto textureUsageInfo = it->producer.textures.at(texture);
-    it->producer.textures.erase(texture); // remove it
+    auto textureUsageInfo = it->src.textures.at(texture);
+    it->src.textures.erase(texture); // remove it
 
     return textureUsageInfo;
+}
+
+const PassResourceInfo& VulkanResourceSynchronizer::getCurrentPassResourceInfo() const
+{
+    return m_descriptor.passResourceInfos[currentPassIndex()];
 }
 
 void VulkanResourceSynchronizer::increasePassIndex()
@@ -496,6 +236,72 @@ void VulkanResourceSynchronizer::increasePassIndex()
 int32_t VulkanResourceSynchronizer::currentPassIndex() const
 {
     return m_currentPassIndex;
+}
+
+void VulkanResourceSynchronizer::sync()
+{
+    PipelineBarrier pipelineBarrier{
+        .srcStageMask = VK_PIPELINE_STAGE_NONE,
+        .dstStageMask = VK_PIPELINE_STAGE_NONE,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
+    };
+
+    const auto& currentPassResourceInfo = getCurrentPassResourceInfo();
+    for (const auto& [buffer, dstBufferUsageInfo] : currentPassResourceInfo.src.buffers)
+    {
+        if (findSrcBuffer(buffer))
+        {
+            auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer);
+
+            pipelineBarrier.srcStageMask |= srcBufferUsageInfo.stageFlags;
+            pipelineBarrier.dstStageMask |= dstBufferUsageInfo.stageFlags;
+            pipelineBarrier.bufferMemoryBarriers.push_back({
+                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = srcBufferUsageInfo.accessFlags,
+                .dstAccessMask = dstBufferUsageInfo.accessFlags,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .buffer = downcast(buffer)->getVkBuffer(),
+                .offset = 0,
+                .size = downcast(buffer)->getSize(),
+            });
+        }
+    }
+
+    for (const auto& [texture, dstTextureUsageInfo] : currentPassResourceInfo.src.textures)
+    {
+        if (findSrcTexture(texture))
+        {
+            auto srcTextureUsageInfo = extractSrcTextureUsageInfo(texture);
+
+            pipelineBarrier.srcStageMask |= srcTextureUsageInfo.stageFlags;
+            pipelineBarrier.dstStageMask |= dstTextureUsageInfo.stageFlags;
+            pipelineBarrier.imageMemoryBarriers.push_back({
+                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                .pNext = nullptr,
+                .srcAccessMask = srcTextureUsageInfo.accessFlags,
+                .dstAccessMask = dstTextureUsageInfo.accessFlags,
+                .oldLayout = srcTextureUsageInfo.layout,
+                .newLayout = dstTextureUsageInfo.layout,
+                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                .image = downcast(texture)->getVkImage(),
+                .subresourceRange = {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = VK_REMAINING_MIP_LEVELS,
+                    .baseArrayLayer = 0,
+                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
+                },
+            });
+        }
+    }
+
+    if (!pipelineBarrier.bufferMemoryBarriers.empty() || !pipelineBarrier.imageMemoryBarriers.empty())
+    {
+        cmdPipelineBarrier(pipelineBarrier);
+    }
 }
 
 } // namespace jipu

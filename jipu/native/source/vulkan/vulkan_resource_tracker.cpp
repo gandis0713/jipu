@@ -21,13 +21,13 @@ void VulkanResourceTracker::setComputePipeline(SetComputePipelineCommand* comman
 
 void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
 {
-    // consumer
+    // dst
     if (false) // TODO
     {
         auto bufferBindings = command->bindingGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_ongoingPassResourceInfo.consumer.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_ongoingPassResourceInfo.dst.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
             };
@@ -36,7 +36,7 @@ void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
         auto textureBindings = command->bindingGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_ongoingPassResourceInfo.consumer.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_ongoingPassResourceInfo.dst.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_READ_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -44,12 +44,12 @@ void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
         }
     }
 
-    // producer
+    // src
     {
         auto bufferBindings = command->bindingGroup->getBufferBindings();
         for (auto& bufferBinding : bufferBindings)
         {
-            m_ongoingPassResourceInfo.producer.buffers[bufferBinding.buffer] = BufferUsageInfo{
+            m_ongoingPassResourceInfo.src.buffers[bufferBinding.buffer] = BufferUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
             };
@@ -58,7 +58,7 @@ void VulkanResourceTracker::setComputeBindingGroup(SetBindGroupCommand* command)
         auto textureBindings = command->bindingGroup->getTextureBindings();
         for (auto& textureBinding : textureBindings)
         {
-            m_ongoingPassResourceInfo.producer.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
+            m_ongoingPassResourceInfo.src.textures[textureBinding.textureView->getTexture()] = TextureUsageInfo{
                 .stageFlags = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
                 .accessFlags = VK_ACCESS_SHADER_WRITE_BIT,
                 .layout = VK_IMAGE_LAYOUT_GENERAL,
@@ -95,9 +95,9 @@ void VulkanResourceTracker::setRenderPipeline(SetRenderPipelineCommand* command)
 
 void VulkanResourceTracker::setVertexBuffer(SetVertexBufferCommand* command)
 {
-    // consumer
+    // dst
     {
-        m_ongoingPassResourceInfo.consumer.buffers[command->buffer] = BufferUsageInfo{
+        m_ongoingPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
         };
@@ -106,9 +106,9 @@ void VulkanResourceTracker::setVertexBuffer(SetVertexBufferCommand* command)
 
 void VulkanResourceTracker::setIndexBuffer(SetIndexBufferCommand* command)
 {
-    // consumer
+    // dst
     {
-        m_ongoingPassResourceInfo.consumer.buffers[command->buffer] = BufferUsageInfo{
+        m_ongoingPassResourceInfo.dst.buffers[command->buffer] = BufferUsageInfo{
             .stageFlags = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
             .accessFlags = VK_ACCESS_INDEX_READ_BIT,
         };
@@ -158,7 +158,7 @@ void VulkanResourceTracker::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
 {
-    // consumer
+    // dst
     {
         auto bindingGroup = command->bindingGroup;
         auto bindingGroupLayout = command->bindingGroup->getLayout();
@@ -231,7 +231,7 @@ void VulkanResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
         }
     }
 
-    // producer
+    // src
     {
         // TODO
     }

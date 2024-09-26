@@ -60,15 +60,18 @@ public:
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
-public:
-    bool findProducedBuffer(Buffer* buffer) const;
-    bool findProducedTexture(Texture* texture) const;
-    BufferUsageInfo extractProducedBufferUsageInfo(Buffer* buffer);
-    TextureUsageInfo extractProducedTextureUsageInfo(Texture* texture);
-
 private:
+    bool findSrcBuffer(Buffer* buffer) const;
+    bool findSrcTexture(Texture* texture) const;
+    BufferUsageInfo extractSrcBufferUsageInfo(Buffer* buffer);
+    TextureUsageInfo extractSrcTextureUsageInfo(Texture* texture);
+
     void increasePassIndex();
     int32_t currentPassIndex() const;
+    const PassResourceInfo& getCurrentPassResourceInfo() const;
+
+private:
+    void sync();
 
 private:
     struct PipelineBarrier
@@ -81,7 +84,7 @@ private:
         std::vector<VkImageMemoryBarrier> imageMemoryBarriers{};
     };
 
-    void sync(const PipelineBarrier& barrier);
+    void cmdPipelineBarrier(const PipelineBarrier& barrier);
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
