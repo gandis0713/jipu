@@ -28,13 +28,13 @@ struct TextureUsageInfo
 
 struct PassResourceInfo
 {
-    struct Source
+    struct Source // consumer
     {
         std::unordered_map<Buffer*, BufferUsageInfo> buffers;
         std::unordered_map<Texture*, TextureUsageInfo> textures;
     } dst;
 
-    struct Destination
+    struct Destination // producer
     {
         std::unordered_map<Buffer*, BufferUsageInfo> buffers;
         std::unordered_map<Texture*, TextureUsageInfo> textures;

@@ -4,6 +4,8 @@
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
+#include "vulkan_framebuffer.h"
+#include "vulkan_render_pass.h"
 #include "vulkan_texture.h"
 
 namespace jipu
@@ -85,7 +87,37 @@ void VulkanResourceTracker::endComputePass(EndComputePassCommand* command)
 
 void VulkanResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
 {
-    // TODO
+    // src
+    {
+        auto& framebuffer = command->framebuffer;
+        auto& renderPass = command->renderPass;
+
+        const auto& framebufferColorAttachments = framebuffer->getColorAttachments();
+        const auto& renderPassColorAttachments = renderPass->getColorAttachments();
+
+        for (auto i = 0; i < framebufferColorAttachments.size(); ++i)
+        {
+            const auto& framebufferColorAttachment = framebufferColorAttachments[i];
+            const auto& renderPassColorAttachment = renderPassColorAttachments[i];
+
+            if (framebufferColorAttachment.resolveView)
+            {
+                m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                    .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                    .layout = renderPassColorAttachment.resolveAttachment.value().finalLayout,
+                };
+            }
+            else
+            {
+                m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+                    .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                    .layout = renderPassColorAttachment.renderAttachment.finalLayout,
+                };
+            }
+        }
+    }
 }
 
 void VulkanResourceTracker::setRenderPipeline(SetRenderPipelineCommand* command)
