@@ -24,11 +24,18 @@ struct VulkanSubpassDescription
     std::vector<uint32_t> preserveAttachments{};
 };
 
+struct RenderPassColorAttachment
+{
+    VkAttachmentDescription renderAttachment{};
+    std::optional<VkAttachmentDescription> resolveAttachment = std::nullopt;
+};
+
 struct VulkanRenderPassDescriptor
 {
     const void* next;
     VkRenderPassCreateFlags flags;
-    std::vector<VkAttachmentDescription> attachmentDescriptions{};
+    std::vector<RenderPassColorAttachment> colorAttachmentDescriptions{};
+    std::optional<VkAttachmentDescription> depthStencilAttachment = std::nullopt;
     std::vector<VulkanSubpassDescription> subpassDescriptions{};
     std::vector<VkSubpassDependency> subpassDependencies{};
 };

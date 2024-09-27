@@ -285,37 +285,37 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipeli
 
     for (const auto& target : descriptor.fragment.targets)
     {
-        VkAttachmentDescription attachment{};
+        RenderPassColorAttachment renderPassColorAttachment{};
 
-        attachment.format = ToVkFormat(target.format);
-        attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment.samples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
-        attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        VkAttachmentDescription renderAttachment{};
+        renderAttachment.format = ToVkFormat(target.format);
+        renderAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        renderAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        renderAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        renderAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        renderAttachment.samples = ToVkSampleCountFlagBits(descriptor.rasterization.sampleCount);
+        renderAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        renderAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        vkdescriptor.attachmentDescriptions.push_back(attachment);
-    }
+        renderPassColorAttachment.renderAttachment = renderAttachment;
 
-    if (descriptor.rasterization.sampleCount > 1)
-    {
-        for (const auto& target : descriptor.fragment.targets)
+        if (descriptor.rasterization.sampleCount > 1)
         {
-            VkAttachmentDescription attachment{};
+            VkAttachmentDescription resolveAttachment{};
 
-            attachment.format = ToVkFormat(target.format);
-            attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-            attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachment.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
-            attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            resolveAttachment.format = ToVkFormat(target.format);
+            resolveAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            resolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            resolveAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            resolveAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            resolveAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // should use VK_SAMPLE_COUNT_1_BIT for resolve attachment.
+            resolveAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            resolveAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            vkdescriptor.attachmentDescriptions.push_back(attachment);
+            renderPassColorAttachment.resolveAttachment = resolveAttachment;
         }
+
+        vkdescriptor.colorAttachmentDescriptions.push_back(renderPassColorAttachment);
     }
 
     if (descriptor.depthStencil.has_value())
@@ -332,7 +332,7 @@ VulkanRenderPassDescriptor generateVulkanRenderPassDescriptor(const RenderPipeli
         attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        vkdescriptor.attachmentDescriptions.push_back(attachment);
+        vkdescriptor.depthStencilAttachment = attachment;
     }
 
     {

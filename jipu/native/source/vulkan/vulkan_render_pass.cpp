@@ -13,6 +13,17 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassD
     : m_device(device)
     , m_descriptor(descriptor)
 {
+    std::vector<VkAttachmentDescription> attachmentDescriptions{};
+    for (const auto& colorAttachment : descriptor.colorAttachmentDescriptions)
+    {
+        attachmentDescriptions.push_back(colorAttachment.renderAttachment);
+        if (colorAttachment.resolveAttachment.has_value())
+            attachmentDescriptions.push_back(colorAttachment.resolveAttachment.value());
+    }
+
+    if (descriptor.depthStencilAttachment.has_value())
+        attachmentDescriptions.push_back(descriptor.depthStencilAttachment.value());
+
     std::vector<VkSubpassDescription> subpassDescriptions{};
     subpassDescriptions.resize(descriptor.subpassDescriptions.size());
     for (auto i = 0; i < descriptor.subpassDescriptions.size(); ++i)
@@ -34,8 +45,8 @@ VulkanRenderPass::VulkanRenderPass(VulkanDevice& device, const VulkanRenderPassD
 
     VkRenderPassCreateInfo renderPassCreateInfo{};
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(descriptor.attachmentDescriptions.size());
-    renderPassCreateInfo.pAttachments = descriptor.attachmentDescriptions.data();
+    renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachmentDescriptions.size());
+    renderPassCreateInfo.pAttachments = attachmentDescriptions.data();
     renderPassCreateInfo.subpassCount = static_cast<uint32_t>(subpassDescriptions.size());
     renderPassCreateInfo.pSubpasses = subpassDescriptions.data();
     renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(descriptor.subpassDependencies.size());
@@ -65,17 +76,31 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
 
     combineHash(hash, descriptor.flags);
 
-    for (auto attachment : descriptor.attachmentDescriptions)
+    for (const auto& colorAttachment : descriptor.colorAttachmentDescriptions)
     {
-        combineHash(hash, attachment.finalLayout);
-        combineHash(hash, attachment.flags);
-        combineHash(hash, attachment.format);
-        combineHash(hash, attachment.initialLayout);
-        combineHash(hash, attachment.loadOp);
-        combineHash(hash, attachment.samples);
-        combineHash(hash, attachment.stencilLoadOp);
-        combineHash(hash, attachment.stencilStoreOp);
-        combineHash(hash, attachment.storeOp);
+        combineHash(hash, colorAttachment.renderAttachment.finalLayout);
+        combineHash(hash, colorAttachment.renderAttachment.flags);
+        combineHash(hash, colorAttachment.renderAttachment.format);
+        combineHash(hash, colorAttachment.renderAttachment.initialLayout);
+        combineHash(hash, colorAttachment.renderAttachment.loadOp);
+        combineHash(hash, colorAttachment.renderAttachment.samples);
+        combineHash(hash, colorAttachment.renderAttachment.stencilLoadOp);
+        combineHash(hash, colorAttachment.renderAttachment.stencilStoreOp);
+        combineHash(hash, colorAttachment.renderAttachment.storeOp);
+
+        if (colorAttachment.resolveAttachment.has_value())
+        {
+            const auto& resolveAttachment = colorAttachment.resolveAttachment.value();
+            combineHash(hash, resolveAttachment.finalLayout);
+            combineHash(hash, resolveAttachment.flags);
+            combineHash(hash, resolveAttachment.format);
+            combineHash(hash, resolveAttachment.initialLayout);
+            combineHash(hash, resolveAttachment.loadOp);
+            combineHash(hash, resolveAttachment.samples);
+            combineHash(hash, resolveAttachment.stencilLoadOp);
+            combineHash(hash, resolveAttachment.stencilStoreOp);
+            combineHash(hash, resolveAttachment.storeOp);
+        }
     }
 
     for (auto subpass : descriptor.subpassDescriptions)
@@ -105,26 +130,46 @@ size_t VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescript
 bool VulkanRenderPassCache::Functor::operator()(const VulkanRenderPassDescriptor& lhs,
                                                 const VulkanRenderPassDescriptor& rhs) const
 {
-    if (lhs.attachmentDescriptions.size() != rhs.attachmentDescriptions.size() ||
+    if (lhs.colorAttachmentDescriptions.size() != rhs.colorAttachmentDescriptions.size() ||
+        lhs.depthStencilAttachment.has_value() != rhs.depthStencilAttachment.has_value() ||
         lhs.subpassDescriptions.size() != rhs.subpassDescriptions.size() ||
         lhs.subpassDependencies.size() != rhs.subpassDependencies.size())
     {
         return false;
     }
 
-    for (auto i = 0; i < lhs.attachmentDescriptions.size(); ++i)
+    for (auto i = 0; i < lhs.colorAttachmentDescriptions.size(); ++i)
     {
-        if (lhs.attachmentDescriptions[i].finalLayout != rhs.attachmentDescriptions[i].finalLayout ||
-            lhs.attachmentDescriptions[i].flags != rhs.attachmentDescriptions[i].flags ||
-            lhs.attachmentDescriptions[i].format != rhs.attachmentDescriptions[i].format ||
-            lhs.attachmentDescriptions[i].initialLayout != rhs.attachmentDescriptions[i].initialLayout ||
-            lhs.attachmentDescriptions[i].loadOp != rhs.attachmentDescriptions[i].loadOp ||
-            lhs.attachmentDescriptions[i].samples != rhs.attachmentDescriptions[i].samples ||
-            lhs.attachmentDescriptions[i].stencilLoadOp != rhs.attachmentDescriptions[i].stencilLoadOp ||
-            lhs.attachmentDescriptions[i].stencilStoreOp != rhs.attachmentDescriptions[i].stencilStoreOp ||
-            lhs.attachmentDescriptions[i].storeOp != rhs.attachmentDescriptions[i].storeOp)
+        if (lhs.colorAttachmentDescriptions[i].renderAttachment.finalLayout != rhs.colorAttachmentDescriptions[i].renderAttachment.finalLayout ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.flags != rhs.colorAttachmentDescriptions[i].renderAttachment.flags ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.format != rhs.colorAttachmentDescriptions[i].renderAttachment.format ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.initialLayout != rhs.colorAttachmentDescriptions[i].renderAttachment.initialLayout ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.loadOp != rhs.colorAttachmentDescriptions[i].renderAttachment.loadOp ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.samples != rhs.colorAttachmentDescriptions[i].renderAttachment.samples ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.stencilLoadOp != rhs.colorAttachmentDescriptions[i].renderAttachment.stencilLoadOp ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.stencilStoreOp != rhs.colorAttachmentDescriptions[i].renderAttachment.stencilStoreOp ||
+            lhs.colorAttachmentDescriptions[i].renderAttachment.storeOp != rhs.colorAttachmentDescriptions[i].renderAttachment.storeOp)
         {
             return false;
+        }
+
+        if (lhs.colorAttachmentDescriptions[i].resolveAttachment.has_value() && rhs.colorAttachmentDescriptions[i].resolveAttachment.has_value())
+        {
+            auto lhsAttachmentDescription = lhs.colorAttachmentDescriptions[i].resolveAttachment.value();
+            auto rhsAttachmentDescription = rhs.colorAttachmentDescriptions[i].resolveAttachment.value();
+
+            if (lhsAttachmentDescription.finalLayout != rhsAttachmentDescription.finalLayout ||
+                lhsAttachmentDescription.flags != rhsAttachmentDescription.flags ||
+                lhsAttachmentDescription.format != rhsAttachmentDescription.format ||
+                lhsAttachmentDescription.initialLayout != rhsAttachmentDescription.initialLayout ||
+                lhsAttachmentDescription.loadOp != rhsAttachmentDescription.loadOp ||
+                lhsAttachmentDescription.samples != rhsAttachmentDescription.samples ||
+                lhsAttachmentDescription.stencilLoadOp != rhsAttachmentDescription.stencilLoadOp ||
+                lhsAttachmentDescription.stencilStoreOp != rhsAttachmentDescription.stencilStoreOp ||
+                lhsAttachmentDescription.storeOp != rhsAttachmentDescription.storeOp)
+            {
+                return false;
+            }
         }
     }
 
