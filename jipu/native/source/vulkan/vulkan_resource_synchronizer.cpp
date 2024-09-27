@@ -285,85 +285,75 @@ void VulkanResourceSynchronizer::sync()
     auto& currentDstPassBuffers = currentPassResourceInfo.dst.buffers;
     for (auto it = currentDstPassBuffers.begin(); it != currentDstPassBuffers.end();)
     {
-        auto& buffer = it->first;
-        auto& dstBufferUsageInfo = it->second;
+        auto buffer = it->first;
+        auto dstBufferUsageInfo = it->second;
 
-        if (!m_activatedDstResource.buffers.contains(buffer))
+        if (m_activatedDstResource.buffers.contains(buffer))
         {
-            ++it; // increase iterator
-            continue;
+            if (findSrcBuffer(buffer))
+            {
+                auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer); // extract src resource
+
+                pipelineBarrier.srcStageMask |= srcBufferUsageInfo.stageFlags;
+                pipelineBarrier.dstStageMask |= dstBufferUsageInfo.stageFlags;
+                pipelineBarrier.bufferMemoryBarriers.push_back({
+                    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = srcBufferUsageInfo.accessFlags,
+                    .dstAccessMask = dstBufferUsageInfo.accessFlags,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .buffer = downcast(buffer)->getVkBuffer(),
+                    .offset = 0,
+                    .size = downcast(buffer)->getSize(),
+                });
+
+                it = currentDstPassBuffers.erase(it); // extract dst resource
+            }
         }
 
-        if (findSrcBuffer(buffer))
-        {
-            auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer);
-
-            pipelineBarrier.srcStageMask |= srcBufferUsageInfo.stageFlags;
-            pipelineBarrier.dstStageMask |= dstBufferUsageInfo.stageFlags;
-            pipelineBarrier.bufferMemoryBarriers.push_back({
-                .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-                .pNext = nullptr,
-                .srcAccessMask = srcBufferUsageInfo.accessFlags,
-                .dstAccessMask = dstBufferUsageInfo.accessFlags,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .buffer = downcast(buffer)->getVkBuffer(),
-                .offset = 0,
-                .size = downcast(buffer)->getSize(),
-            });
-
-            it = currentDstPassBuffers.erase(it); // erase dst resource
-        }
-        else
-        {
-            ++it; // increase iterator
-        }
+        ++it; // increase iterator
     }
 
     // textures
     auto& currentDstPassTextures = currentPassResourceInfo.dst.textures;
     for (auto it = currentDstPassTextures.begin(); it != currentDstPassTextures.end();)
     {
-        auto& texture = it->first;
-        auto& dstTextureUsageInfo = it->second;
+        auto texture = it->first;
+        auto dstTextureUsageInfo = it->second;
 
-        if (!m_activatedDstResource.textures.contains(texture))
+        if (m_activatedDstResource.textures.contains(texture))
         {
-            ++it; // increase iterator
-            continue;
+            if (findSrcTexture(texture))
+            {
+                auto srcTextureUsageInfo = extractSrcTextureUsageInfo(texture);
+
+                pipelineBarrier.srcStageMask |= srcTextureUsageInfo.stageFlags;
+                pipelineBarrier.dstStageMask |= dstTextureUsageInfo.stageFlags;
+                pipelineBarrier.imageMemoryBarriers.push_back({
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                    .pNext = nullptr,
+                    .srcAccessMask = srcTextureUsageInfo.accessFlags,
+                    .dstAccessMask = dstTextureUsageInfo.accessFlags,
+                    .oldLayout = srcTextureUsageInfo.layout,
+                    .newLayout = dstTextureUsageInfo.layout,
+                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                    .image = downcast(texture)->getVkImage(),
+                    .subresourceRange = {
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .baseMipLevel = 0,
+                        .levelCount = VK_REMAINING_MIP_LEVELS,
+                        .baseArrayLayer = 0,
+                        .layerCount = VK_REMAINING_ARRAY_LAYERS,
+                    },
+                });
+
+                it = currentDstPassTextures.erase(it); // extract dst resource
+            }
         }
 
-        if (findSrcTexture(texture))
-        {
-            auto srcTextureUsageInfo = extractSrcTextureUsageInfo(texture);
-
-            pipelineBarrier.srcStageMask |= srcTextureUsageInfo.stageFlags;
-            pipelineBarrier.dstStageMask |= dstTextureUsageInfo.stageFlags;
-            pipelineBarrier.imageMemoryBarriers.push_back({
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .pNext = nullptr,
-                .srcAccessMask = srcTextureUsageInfo.accessFlags,
-                .dstAccessMask = dstTextureUsageInfo.accessFlags,
-                .oldLayout = srcTextureUsageInfo.layout,
-                .newLayout = dstTextureUsageInfo.layout,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = downcast(texture)->getVkImage(),
-                .subresourceRange = {
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                    .baseMipLevel = 0,
-                    .levelCount = VK_REMAINING_MIP_LEVELS,
-                    .baseArrayLayer = 0,
-                    .layerCount = VK_REMAINING_ARRAY_LAYERS,
-                },
-            });
-
-            it = currentDstPassTextures.erase(it); // erase dst resource
-        }
-        else
-        {
-            ++it; // increase iterator
-        }
+        ++it; // increase iterator
     }
 
     // cmd pipeline barrier

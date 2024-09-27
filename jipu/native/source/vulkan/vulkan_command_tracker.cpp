@@ -15,6 +15,7 @@ void VulkanCommandTracker::setComputePipeline(SetComputePipelineCommand* command
 
 void VulkanCommandTracker::setComputeBindingGroup(SetBindGroupCommand* command)
 {
+    // do nothing.
 }
 
 void VulkanCommandTracker::dispatch(DispatchCommand* command)
@@ -29,6 +30,7 @@ void VulkanCommandTracker::dispatchIndirect(DispatchIndirectCommand* command)
 
 void VulkanCommandTracker::endComputePass(EndComputePassCommand* command)
 {
+    // do nothing.
 }
 
 void VulkanCommandTracker::beginRenderPass(BeginRenderPassCommand* command)
@@ -43,10 +45,12 @@ void VulkanCommandTracker::setRenderPipeline(SetRenderPipelineCommand* command)
 
 void VulkanCommandTracker::setVertexBuffer(SetVertexBufferCommand* command)
 {
+    // do nothing.
 }
 
 void VulkanCommandTracker::setIndexBuffer(SetIndexBufferCommand* command)
 {
+    // do nothing.
 }
 
 void VulkanCommandTracker::setViewport(SetViewportCommand* command)
