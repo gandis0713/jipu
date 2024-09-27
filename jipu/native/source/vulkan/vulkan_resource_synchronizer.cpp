@@ -290,7 +290,7 @@ void VulkanResourceSynchronizer::sync()
 
         if (!m_activatedDstResource.buffers.contains(buffer))
         {
-            ++it;
+            ++it; // increase iterator
             continue;
         }
 
@@ -311,9 +311,13 @@ void VulkanResourceSynchronizer::sync()
                 .offset = 0,
                 .size = downcast(buffer)->getSize(),
             });
-        }
 
-        it = currentDstPassBuffers.erase(it);
+            it = currentDstPassBuffers.erase(it); // erase dst resource
+        }
+        else
+        {
+            ++it; // increase iterator
+        }
     }
 
     // textures
@@ -325,7 +329,7 @@ void VulkanResourceSynchronizer::sync()
 
         if (!m_activatedDstResource.textures.contains(texture))
         {
-            ++it;
+            ++it; // increase iterator
             continue;
         }
 
@@ -353,9 +357,13 @@ void VulkanResourceSynchronizer::sync()
                     .layerCount = VK_REMAINING_ARRAY_LAYERS,
                 },
             });
-        }
 
-        it = currentDstPassTextures.erase(it);
+            it = currentDstPassTextures.erase(it); // erase dst resource
+        }
+        else
+        {
+            ++it; // increase iterator
+        }
     }
 
     // cmd pipeline barrier
