@@ -37,6 +37,9 @@ public:
     VulkanFramebuffer() = delete;
     VulkanFramebuffer(VulkanDevice& device, const VulkanFramebufferDescriptor& descriptor);
     ~VulkanFramebuffer();
+
+public:
+    const std::vector<FramebufferColorAttachment>& getColorAttachments() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
 

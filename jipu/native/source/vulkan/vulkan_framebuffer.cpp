@@ -50,6 +50,11 @@ VulkanFramebuffer::~VulkanFramebuffer()
     m_device.vkAPI.DestroyFramebuffer(m_device.getVkDevice(), m_framebuffer, nullptr);
 }
 
+const std::vector<FramebufferColorAttachment>& VulkanFramebuffer::getColorAttachments() const
+{
+    return m_descriptor.colorAttachments;
+}
+
 uint32_t VulkanFramebuffer::getWidth() const
 {
     return m_descriptor.width;
