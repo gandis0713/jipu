@@ -439,7 +439,10 @@ void VulkanRenderPassEncoder::end()
     EndRenderPassCommand command{
         { .type = CommandType::kEndRenderPass }
     };
+
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+
+    commandEncodingContext.resourceTracker.endRenderPass(&command);
     commandEncodingContext.commands.push(std::make_unique<EndRenderPassCommand>(std::move(command)));
 
     // endRenderPass();
