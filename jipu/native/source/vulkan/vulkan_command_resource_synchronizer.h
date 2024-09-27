@@ -29,7 +29,6 @@ public:
     ~VulkanCommandResourceSynchronizer() = default;
 
 public:
-public:
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
     void setComputePipeline(SetComputePipelineCommand* command);
@@ -61,6 +60,9 @@ public:
 
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
+
+public:
+    std::vector<PassResourceInfo> getNotSynchronizedPassResourceInfos();
 
 private:
     bool findSrcBuffer(Buffer* buffer) const;

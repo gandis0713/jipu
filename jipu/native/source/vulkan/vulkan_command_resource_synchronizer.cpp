@@ -173,6 +173,11 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
     // do nothing.
 }
 
+std::vector<PassResourceInfo> VulkanCommandResourceSynchronizer::getNotSynchronizedPassResourceInfos()
+{
+    return m_descriptor.passResourceInfos;
+}
+
 void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
 {
     auto& srcStageMask = barrier.srcStageMask;

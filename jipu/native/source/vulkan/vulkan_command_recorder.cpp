@@ -24,7 +24,7 @@ namespace jipu
 VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(std::move(descriptor))
-    , m_resourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingContext.resourceTracker.extractPassResourceInfos() })
+    , m_commandResourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingContext.commandResourceTracker.extractPassResourceInfos() })
 {
 }
 
@@ -168,7 +168,7 @@ void VulkanCommandRecorder::endRecord()
 
 void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
 {
-    m_resourceSyncronizer.beginComputePass(command);
+    m_commandResourceSyncronizer.beginComputePass(command);
 }
 
 void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* command)
@@ -189,7 +189,7 @@ void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
     if (!m_computePipeline)
         throw std::runtime_error("The pipeline is null");
 
-    m_resourceSyncronizer.setComputeBindingGroup(command);
+    m_commandResourceSyncronizer.setComputeBindingGroup(command);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
@@ -212,7 +212,7 @@ void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
 
 void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 {
-    m_resourceSyncronizer.dispatch(command);
+    m_commandResourceSyncronizer.dispatch(command);
 
     auto x = command->x;
     auto y = command->y;
@@ -237,7 +237,7 @@ void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 
 void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 {
-    m_resourceSyncronizer.beginRenderPass(command);
+    m_commandResourceSyncronizer.beginRenderPass(command);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
@@ -282,7 +282,7 @@ void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
     if (!m_renderPipeline)
         throw std::runtime_error("The pipeline is null");
 
-    m_resourceSyncronizer.setRenderBindingGroup(command);
+    m_commandResourceSyncronizer.setRenderBindingGroup(command);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();

@@ -21,7 +21,7 @@ namespace jipu
 struct CommandEncodingContext
 {
     std::queue<std::unique_ptr<Command>> commands;
-    VulkanCommandResourceTracker resourceTracker{};
+    VulkanCommandResourceTracker commandResourceTracker{};
 };
 
 class VulkanDevice;

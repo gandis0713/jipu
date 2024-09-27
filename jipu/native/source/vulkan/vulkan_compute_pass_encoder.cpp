@@ -20,7 +20,7 @@ VulkanComputePassEncoder::VulkanComputePassEncoder(VulkanCommandEncoder* command
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.beginComputePass(&command);
+    commandEncodingContext.commandResourceTracker.beginComputePass(&command);
     commandEncodingContext.commands.push(std::make_unique<BeginComputePassCommand>(std::move(command)));
 }
 
@@ -48,7 +48,7 @@ void VulkanComputePassEncoder::setBindingGroup(uint32_t index, BindingGroup& bin
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.setComputeBindingGroup(&command);
+    commandEncodingContext.commandResourceTracker.setComputeBindingGroup(&command);
     commandEncodingContext.commands.push(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
@@ -75,7 +75,7 @@ void VulkanComputePassEncoder::end()
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.endComputePass(&command);
+    commandEncodingContext.commandResourceTracker.endComputePass(&command);
     commandEncodingContext.commands.push(std::make_unique<EndComputePassCommand>(std::move(command)));
 }
 

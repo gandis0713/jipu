@@ -266,7 +266,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.beginRenderPass(&command);
+    commandEncodingContext.commandResourceTracker.beginRenderPass(&command);
     commandEncodingContext.commands.push(std::make_unique<BeginRenderPassCommand>(std::move(command)));
 
     resetQuery();
@@ -292,7 +292,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.setRenderBindingGroup(&command);
+    commandEncodingContext.commandResourceTracker.setRenderBindingGroup(&command);
     commandEncodingContext.commands.push(std::make_unique<SetBindGroupCommand>(std::move(command)));
 }
 
@@ -304,7 +304,7 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.setVertexBuffer(&command);
+    commandEncodingContext.commandResourceTracker.setVertexBuffer(&command);
     commandEncodingContext.commands.push(std::make_unique<SetVertexBufferCommand>(std::move(command)));
 }
 
@@ -316,7 +316,7 @@ void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.setIndexBuffer(&command);
+    commandEncodingContext.commandResourceTracker.setIndexBuffer(&command);
     commandEncodingContext.commands.push(std::make_unique<SetIndexBufferCommand>(std::move(command)));
 }
 
@@ -442,7 +442,7 @@ void VulkanRenderPassEncoder::end()
 
     auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
 
-    commandEncodingContext.resourceTracker.endRenderPass(&command);
+    commandEncodingContext.commandResourceTracker.endRenderPass(&command);
     commandEncodingContext.commands.push(std::make_unique<EndRenderPassCommand>(std::move(command)));
 
     // endRenderPass();

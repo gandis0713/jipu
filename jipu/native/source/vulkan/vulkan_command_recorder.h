@@ -73,7 +73,7 @@ private:
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanCommandRecorderDescriptor m_descriptor{};
-    VulkanCommandResourceSynchronizer m_resourceSyncronizer{};
+    VulkanCommandResourceSynchronizer m_commandResourceSyncronizer{};
 
 private:
     VulkanRenderPipeline* m_renderPipeline = nullptr;
