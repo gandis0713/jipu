@@ -24,6 +24,7 @@ namespace jipu
 VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(std::move(descriptor))
+    , m_resourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingContext.resourceTracker.extractPassResourceInfos() })
 {
 }
 
@@ -167,7 +168,7 @@ void VulkanCommandRecorder::endRecord()
 
 void VulkanCommandRecorder::beginComputePass(BeginComputePassCommand* command)
 {
-    // do nothing.
+    m_resourceSyncronizer.beginComputePass(command);
 }
 
 void VulkanCommandRecorder::setComputePipeline(SetComputePipelineCommand* command)
@@ -187,6 +188,8 @@ void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
 {
     if (!m_computePipeline)
         throw std::runtime_error("The pipeline is null");
+
+    m_resourceSyncronizer.setComputeBindingGroup(command);
 
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
@@ -209,7 +212,7 @@ void VulkanCommandRecorder::setComputeBindingGroup(SetBindGroupCommand* command)
 
 void VulkanCommandRecorder::dispatch(DispatchCommand* command)
 {
-    // TODO: set pipeline barrier
+    m_resourceSyncronizer.dispatch(command);
 
     auto x = command->x;
     auto y = command->y;
@@ -234,6 +237,8 @@ void VulkanCommandRecorder::endComputePass(EndComputePassCommand* command)
 
 void VulkanCommandRecorder::beginRenderPass(BeginRenderPassCommand* command)
 {
+    m_resourceSyncronizer.beginRenderPass(command);
+
     auto vulkanCommandBuffer = downcast(m_commandBuffer);
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
 
@@ -270,6 +275,32 @@ void VulkanCommandRecorder::setRenderPipeline(SetRenderPipelineCommand* command)
     auto vulkanDevice = vulkanCommandBuffer->getDevice();
 
     vulkanDevice->vkAPI.CmdBindPipeline(vulkanCommandBuffer->getVkCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_renderPipeline->getVkPipeline());
+}
+
+void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
+{
+    if (!m_renderPipeline)
+        throw std::runtime_error("The pipeline is null");
+
+    m_resourceSyncronizer.setRenderBindingGroup(command);
+
+    auto vulkanCommandBuffer = downcast(m_commandBuffer);
+    auto vulkanDevice = vulkanCommandBuffer->getDevice();
+    auto vulkanBindingGroup = downcast(command->bindingGroup);
+    auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
+
+    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
+
+    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
+
+    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
+                                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                vulkanPipelineLayout->getVkPipelineLayout(),
+                                command->index,
+                                1,
+                                &descriptorSet,
+                                static_cast<uint32_t>(command->dynamicOffset.size()),
+                                command->dynamicOffset.data());
 }
 
 void VulkanCommandRecorder::setVertexBuffer(SetVertexBufferCommand* command)
@@ -427,30 +458,6 @@ void VulkanCommandRecorder::endRenderPass(EndRenderPassCommand* command)
     //                             vulkanQuerySet->getVkQueryPool(),
     //                             m_descriptor.timestampWrites.endQueryIndex);
     // }
-}
-
-void VulkanCommandRecorder::setRenderBindingGroup(SetBindGroupCommand* command)
-{
-    if (!m_renderPipeline)
-        throw std::runtime_error("The pipeline is null");
-
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = vulkanCommandBuffer->getDevice();
-    auto vulkanBindingGroup = downcast(command->bindingGroup);
-    auto vulkanPipelineLayout = downcast(m_renderPipeline->getPipelineLayout());
-
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    VkDescriptorSet descriptorSet = vulkanBindingGroup->getVkDescriptorSet();
-
-    vkAPI.CmdBindDescriptorSets(vulkanCommandBuffer->getVkCommandBuffer(),
-                                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                vulkanPipelineLayout->getVkPipelineLayout(),
-                                command->index,
-                                1,
-                                &descriptorSet,
-                                static_cast<uint32_t>(command->dynamicOffset.size()),
-                                command->dynamicOffset.data());
 }
 
 void VulkanCommandRecorder::copyBufferToBuffer(CopyBufferToBufferCommand* command)
