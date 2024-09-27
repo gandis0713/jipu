@@ -33,13 +33,13 @@ void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* com
     auto bufferBindings = command->bindingGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
     {
-        m_activeResource.buffers.insert(bufferBinding.buffer);
+        m_activatedDstResource.buffers.insert(bufferBinding.buffer);
     }
 
     auto textureBindings = command->bindingGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
-        m_activeResource.textures.insert(textureBinding.textureView->getTexture());
+        m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());
     }
 }
 
@@ -65,13 +65,13 @@ void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command
     // all dst buffer resources in a render pass are active
     for (auto& [buffer, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.buffers)
     {
-        m_activeResource.buffers.insert(buffer);
+        m_activatedDstResource.buffers.insert(buffer);
     }
 
     // all dst texture resources in a render pass are active
     for (auto& [texture, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.textures)
     {
-        m_activeResource.textures.insert(texture);
+        m_activatedDstResource.textures.insert(texture);
     }
 
     // all resources in a render pass should be synchronized before the render pass
@@ -138,13 +138,13 @@ void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* comm
     auto bufferBindings = command->bindingGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
     {
-        m_activeResource.buffers.insert(bufferBinding.buffer);
+        m_activatedDstResource.buffers.insert(bufferBinding.buffer);
     }
 
     auto textureBindings = command->bindingGroup->getTextureBindings();
     for (auto& textureBinding : textureBindings)
     {
-        m_activeResource.textures.insert(textureBinding.textureView->getTexture());
+        m_activatedDstResource.textures.insert(textureBinding.textureView->getTexture());
     }
 }
 
@@ -288,7 +288,7 @@ void VulkanResourceSynchronizer::sync()
         auto& buffer = it->first;
         auto& dstBufferUsageInfo = it->second;
 
-        if (!m_activeResource.buffers.contains(buffer))
+        if (!m_activatedDstResource.buffers.contains(buffer))
         {
             ++it;
             continue;
@@ -323,7 +323,7 @@ void VulkanResourceSynchronizer::sync()
         auto& texture = it->first;
         auto& dstTextureUsageInfo = it->second;
 
-        if (!m_activeResource.textures.contains(texture))
+        if (!m_activatedDstResource.textures.contains(texture))
         {
             ++it;
             continue;
@@ -365,7 +365,7 @@ void VulkanResourceSynchronizer::sync()
     }
 
     // clear active resource
-    m_activeResource.clear();
+    m_activatedDstResource.clear();
 }
 
 } // namespace jipu

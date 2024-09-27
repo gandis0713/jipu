@@ -102,7 +102,7 @@ private:
             buffers.clear();
             textures.clear();
         }
-    } m_activeResource;
+    } m_activatedDstResource;
 };
 
 } // namespace jipu
