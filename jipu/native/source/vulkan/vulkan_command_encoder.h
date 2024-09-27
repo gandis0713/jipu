@@ -9,9 +9,9 @@
 
 #include "vulkan_api.h"
 #include "vulkan_command.h"
+#include "vulkan_command_resource_tracker.h"
 #include "vulkan_export.h"
 #include "vulkan_render_pass_encoder.h"
-#include "vulkan_resource_tracker.h"
 
 #include <queue>
 
@@ -21,7 +21,7 @@ namespace jipu
 struct CommandEncodingContext
 {
     std::queue<std::unique_ptr<Command>> commands;
-    VulkanResourceTracker resourceTracker{};
+    VulkanCommandResourceTracker resourceTracker{};
 };
 
 class VulkanDevice;

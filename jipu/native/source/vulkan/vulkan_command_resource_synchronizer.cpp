@@ -1,4 +1,4 @@
-#include "vulkan_resource_synchronizer.h"
+#include "vulkan_command_resource_synchronizer.h"
 
 #include "vulkan_binding_group.h"
 #include "vulkan_binding_group_layout.h"
@@ -11,24 +11,24 @@
 
 namespace jipu
 {
-VulkanResourceSynchronizer::VulkanResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanResourceSynchronizerDescriptor& descriptor)
+VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(descriptor)
     , m_currentPassIndex(-1)
 {
 }
 
-void VulkanResourceSynchronizer::beginComputePass(BeginComputePassCommand* command)
+void VulkanCommandResourceSynchronizer::beginComputePass(BeginComputePassCommand* command)
 {
     increasePassIndex();
 }
 
-void VulkanResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* command)
+void VulkanCommandResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* command)
 {
     auto bufferBindings = command->bindingGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
@@ -43,22 +43,22 @@ void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* com
     }
 }
 
-void VulkanResourceSynchronizer::dispatch(DispatchCommand* command)
+void VulkanCommandResourceSynchronizer::dispatch(DispatchCommand* command)
 {
     sync();
 }
 
-void VulkanResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
+void VulkanCommandResourceSynchronizer::dispatchIndirect(DispatchIndirectCommand* command)
 {
     // TODO
 }
 
-void VulkanResourceSynchronizer::endComputePass(EndComputePassCommand* command)
+void VulkanCommandResourceSynchronizer::endComputePass(EndComputePassCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
+void VulkanCommandResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command)
 {
     increasePassIndex();
 
@@ -78,62 +78,62 @@ void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command
     sync();
 }
 
-void VulkanResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
+void VulkanCommandResourceSynchronizer::setRenderPipeline(SetRenderPipelineCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setVertexBuffer(SetVertexBufferCommand* command)
+void VulkanCommandResourceSynchronizer::setVertexBuffer(SetVertexBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setIndexBuffer(SetIndexBufferCommand* command)
+void VulkanCommandResourceSynchronizer::setIndexBuffer(SetIndexBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setViewport(SetViewportCommand* command)
+void VulkanCommandResourceSynchronizer::setViewport(SetViewportCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setScissor(SetScissorCommand* command)
+void VulkanCommandResourceSynchronizer::setScissor(SetScissorCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setBlendConstant(SetBlendConstantCommand* command)
+void VulkanCommandResourceSynchronizer::setBlendConstant(SetBlendConstantCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::draw(DrawCommand* command)
+void VulkanCommandResourceSynchronizer::draw(DrawCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::drawIndexed(DrawIndexedCommand* command)
+void VulkanCommandResourceSynchronizer::drawIndexed(DrawIndexedCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
+void VulkanCommandResourceSynchronizer::beginOcclusionQuery(BeginOcclusionQueryCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::endOcclusionQuery(EndOcclusionQueryCommand* command)
+void VulkanCommandResourceSynchronizer::endOcclusionQuery(EndOcclusionQueryCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::endRenderPass(EndRenderPassCommand* command)
+void VulkanCommandResourceSynchronizer::endRenderPass(EndRenderPassCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
+void VulkanCommandResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
 {
     auto bufferBindings = command->bindingGroup->getBufferBindings();
     for (auto& bufferBinding : bufferBindings)
@@ -148,32 +148,32 @@ void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* comm
     }
 }
 
-void VulkanResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
+void VulkanCommandResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::copyBufferToTexture(CopyBufferToTextureCommand* command)
+void VulkanCommandResourceSynchronizer::copyBufferToTexture(CopyBufferToTextureCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::copyTextureToBuffer(CopyTextureToBufferCommand* command)
+void VulkanCommandResourceSynchronizer::copyTextureToBuffer(CopyTextureToBufferCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::copyTextureToTexture(CopyTextureToTextureCommand* command)
+void VulkanCommandResourceSynchronizer::copyTextureToTexture(CopyTextureToTextureCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* command)
+void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* command)
 {
     // do nothing.
 }
 
-void VulkanResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
+void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
 {
     auto& srcStageMask = barrier.srcStageMask;
     auto& dstStageMask = barrier.dstStageMask;
@@ -198,7 +198,7 @@ void VulkanResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barri
                              imageMemoryBarriers.data());
 }
 
-bool VulkanResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
+bool VulkanCommandResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
@@ -211,7 +211,7 @@ bool VulkanResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
     return it != end;
 }
 
-bool VulkanResourceSynchronizer::findSrcTexture(Texture* texture) const
+bool VulkanCommandResourceSynchronizer::findSrcTexture(Texture* texture) const
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
@@ -224,7 +224,7 @@ bool VulkanResourceSynchronizer::findSrcTexture(Texture* texture) const
     return it != end;
 }
 
-BufferUsageInfo VulkanResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
+BufferUsageInfo VulkanCommandResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
@@ -240,7 +240,7 @@ BufferUsageInfo VulkanResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* bu
     return bufferUsageInfo;
 }
 
-TextureUsageInfo VulkanResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
+TextureUsageInfo VulkanCommandResourceSynchronizer::extractSrcTextureUsageInfo(Texture* texture)
 {
     auto& passResourceInfos = m_descriptor.passResourceInfos;
 
@@ -256,22 +256,22 @@ TextureUsageInfo VulkanResourceSynchronizer::extractSrcTextureUsageInfo(Texture*
     return textureUsageInfo;
 }
 
-PassResourceInfo& VulkanResourceSynchronizer::getCurrentPassResourceInfo()
+PassResourceInfo& VulkanCommandResourceSynchronizer::getCurrentPassResourceInfo()
 {
     return m_descriptor.passResourceInfos[currentPassIndex()];
 }
 
-void VulkanResourceSynchronizer::increasePassIndex()
+void VulkanCommandResourceSynchronizer::increasePassIndex()
 {
     ++m_currentPassIndex;
 }
 
-int32_t VulkanResourceSynchronizer::currentPassIndex() const
+int32_t VulkanCommandResourceSynchronizer::currentPassIndex() const
 {
     return m_currentPassIndex;
 }
 
-void VulkanResourceSynchronizer::sync()
+void VulkanCommandResourceSynchronizer::sync()
 {
     PipelineBarrier pipelineBarrier{
         .srcStageMask = VK_PIPELINE_STAGE_NONE,

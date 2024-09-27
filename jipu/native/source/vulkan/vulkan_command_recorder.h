@@ -3,8 +3,8 @@
 #include "vulkan_api.h"
 #include "vulkan_command.h"
 #include "vulkan_command_encoder.h"
+#include "vulkan_command_resource_synchronizer.h"
 #include "vulkan_export.h"
-#include "vulkan_resource_synchronizer.h"
 
 namespace jipu
 {
@@ -73,7 +73,7 @@ private:
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanCommandRecorderDescriptor m_descriptor{};
-    VulkanResourceSynchronizer m_resourceSyncronizer{};
+    VulkanCommandResourceSynchronizer m_resourceSyncronizer{};
 
 private:
     VulkanRenderPipeline* m_renderPipeline = nullptr;

@@ -6,11 +6,11 @@
 namespace jipu
 {
 
-class VulkanCommandTracker final
+class VulkanCommandBufferTracker final
 {
 public:
-    VulkanCommandTracker() = default;
-    ~VulkanCommandTracker() = default;
+    VulkanCommandBufferTracker() = default;
+    ~VulkanCommandBufferTracker() = default;
 
 public:
     // compute pass

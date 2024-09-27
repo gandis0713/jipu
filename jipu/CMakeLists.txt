@@ -18,14 +18,14 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_tracker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_framebuffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_allocator.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_synchronizer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_tracker.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_resource_synchronizer.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_resource_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline_layout.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_physical_device.cpp
@@ -47,15 +47,15 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_tracker.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_framebuffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_allocator.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_synchronizer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_resource_tracker.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_resource_synchronizer.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_resource_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_pipeline_layout.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_physical_device.h
