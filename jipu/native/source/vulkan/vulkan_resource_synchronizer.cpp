@@ -30,7 +30,17 @@ void VulkanResourceSynchronizer::setComputePipeline(SetComputePipelineCommand* c
 
 void VulkanResourceSynchronizer::setComputeBindingGroup(SetBindGroupCommand* command)
 {
-    // do nothing.
+    auto bufferBindings = command->bindingGroup->getBufferBindings();
+    for (auto& bufferBinding : bufferBindings)
+    {
+        m_activeResource.buffers.insert(bufferBinding.buffer);
+    }
+
+    auto textureBindings = command->bindingGroup->getTextureBindings();
+    for (auto& textureBinding : textureBindings)
+    {
+        m_activeResource.textures.insert(textureBinding.textureView->getTexture());
+    }
 }
 
 void VulkanResourceSynchronizer::dispatch(DispatchCommand* command)
@@ -52,6 +62,19 @@ void VulkanResourceSynchronizer::beginRenderPass(BeginRenderPassCommand* command
 {
     increasePassIndex();
 
+    // all dst buffer resources in a render pass are active
+    for (auto& [buffer, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.buffers)
+    {
+        m_activeResource.buffers.insert(buffer);
+    }
+
+    // all dst texture resources in a render pass are active
+    for (auto& [texture, _] : m_descriptor.passResourceInfos[currentPassIndex()].dst.textures)
+    {
+        m_activeResource.textures.insert(texture);
+    }
+
+    // all resources in a render pass should be synchronized before the render pass
     sync();
 }
 
@@ -112,7 +135,17 @@ void VulkanResourceSynchronizer::endRenderPass(EndRenderPassCommand* command)
 
 void VulkanResourceSynchronizer::setRenderBindingGroup(SetBindGroupCommand* command)
 {
-    // do nothing.
+    auto bufferBindings = command->bindingGroup->getBufferBindings();
+    for (auto& bufferBinding : bufferBindings)
+    {
+        m_activeResource.buffers.insert(bufferBinding.buffer);
+    }
+
+    auto textureBindings = command->bindingGroup->getTextureBindings();
+    for (auto& textureBinding : textureBindings)
+    {
+        m_activeResource.textures.insert(textureBinding.textureView->getTexture());
+    }
 }
 
 void VulkanResourceSynchronizer::copyBufferToBuffer(CopyBufferToBufferCommand* command)
@@ -172,10 +205,10 @@ bool VulkanResourceSynchronizer::findSrcBuffer(Buffer* buffer) const
     auto begin = passResourceInfos.begin();
     auto end = passResourceInfos.begin() + currentPassIndex();
     auto it = std::find_if(begin, end, [buffer](const PassResourceInfo& passResourceInfo) {
-        return passResourceInfo.src.buffers.find(buffer) != passResourceInfo.src.buffers.end();
+        return passResourceInfo.src.buffers.contains(buffer);
     });
 
-    return it != passResourceInfos.end();
+    return it != end;
 }
 
 bool VulkanResourceSynchronizer::findSrcTexture(Texture* texture) const
@@ -188,7 +221,7 @@ bool VulkanResourceSynchronizer::findSrcTexture(Texture* texture) const
         return passResourceInfo.src.textures.find(texture) != passResourceInfo.src.textures.end();
     });
 
-    return it != passResourceInfos.end();
+    return it != end;
 }
 
 BufferUsageInfo VulkanResourceSynchronizer::extractSrcBufferUsageInfo(Buffer* buffer)
@@ -223,7 +256,7 @@ TextureUsageInfo VulkanResourceSynchronizer::extractSrcTextureUsageInfo(Texture*
     return textureUsageInfo;
 }
 
-const PassResourceInfo& VulkanResourceSynchronizer::getCurrentPassResourceInfo() const
+PassResourceInfo& VulkanResourceSynchronizer::getCurrentPassResourceInfo()
 {
     return m_descriptor.passResourceInfos[currentPassIndex()];
 }
@@ -246,9 +279,21 @@ void VulkanResourceSynchronizer::sync()
         .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT,
     };
 
-    const auto& currentPassResourceInfo = getCurrentPassResourceInfo();
-    for (const auto& [buffer, dstBufferUsageInfo] : currentPassResourceInfo.src.buffers)
+    auto& currentPassResourceInfo = getCurrentPassResourceInfo();
+
+    // buffers
+    auto& currentDstPassBuffers = currentPassResourceInfo.dst.buffers;
+    for (auto it = currentDstPassBuffers.begin(); it != currentDstPassBuffers.end();)
     {
+        auto& buffer = it->first;
+        auto& dstBufferUsageInfo = it->second;
+
+        if (!m_activeResource.buffers.contains(buffer))
+        {
+            ++it;
+            continue;
+        }
+
         if (findSrcBuffer(buffer))
         {
             auto srcBufferUsageInfo = extractSrcBufferUsageInfo(buffer);
@@ -267,10 +312,23 @@ void VulkanResourceSynchronizer::sync()
                 .size = downcast(buffer)->getSize(),
             });
         }
+
+        it = currentDstPassBuffers.erase(it);
     }
 
-    for (const auto& [texture, dstTextureUsageInfo] : currentPassResourceInfo.src.textures)
+    // textures
+    auto& currentDstPassTextures = currentPassResourceInfo.dst.textures;
+    for (auto it = currentDstPassTextures.begin(); it != currentDstPassTextures.end();)
     {
+        auto& texture = it->first;
+        auto& dstTextureUsageInfo = it->second;
+
+        if (!m_activeResource.textures.contains(texture))
+        {
+            ++it;
+            continue;
+        }
+
         if (findSrcTexture(texture))
         {
             auto srcTextureUsageInfo = extractSrcTextureUsageInfo(texture);
@@ -296,12 +354,18 @@ void VulkanResourceSynchronizer::sync()
                 },
             });
         }
+
+        it = currentDstPassTextures.erase(it);
     }
 
+    // cmd pipeline barrier
     if (!pipelineBarrier.bufferMemoryBarriers.empty() || !pipelineBarrier.imageMemoryBarriers.empty())
     {
         cmdPipelineBarrier(pipelineBarrier);
     }
+
+    // clear active resource
+    m_activeResource.clear();
 }
 
 } // namespace jipu

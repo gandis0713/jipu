@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "vulkan_api.h"
@@ -27,6 +28,7 @@ public:
     VulkanResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanResourceSynchronizerDescriptor& descriptor);
     ~VulkanResourceSynchronizer() = default;
 
+public:
 public:
     // compute pass
     void beginComputePass(BeginComputePassCommand* command);
@@ -68,7 +70,7 @@ private:
 
     void increasePassIndex();
     int32_t currentPassIndex() const;
-    const PassResourceInfo& getCurrentPassResourceInfo() const;
+    PassResourceInfo& getCurrentPassResourceInfo();
 
 private:
     void sync();
@@ -90,6 +92,17 @@ private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanResourceSynchronizerDescriptor m_descriptor{};
     int32_t m_currentPassIndex = -1;
+
+    struct
+    {
+        std::unordered_set<Buffer*> buffers{};
+        std::unordered_set<Texture*> textures{};
+        void clear()
+        {
+            buffers.clear();
+            textures.clear();
+        }
+    } m_activeResource;
 };
 
 } // namespace jipu
