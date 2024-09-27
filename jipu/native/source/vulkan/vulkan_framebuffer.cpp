@@ -16,12 +16,25 @@ VulkanFramebuffer::VulkanFramebuffer(VulkanDevice& device, const VulkanFramebuff
     : m_device(device)
     , m_descriptor(descriptor)
 {
+    std::vector<VkImageView> attachments{};
+    for (const auto attachment : descriptor.colorAttachments)
+    {
+        attachments.push_back(attachment.renderView->getVkImageView());
+        if (attachment.resolveView)
+            attachments.push_back(attachment.resolveView->getVkImageView());
+    }
+
+    if (descriptor.depthStencilAttachment)
+    {
+        attachments.push_back(descriptor.depthStencilAttachment->getVkImageView());
+    }
+
     VkFramebufferCreateInfo framebufferCreateInfo{ .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                                                    .pNext = descriptor.next,
                                                    .flags = descriptor.flags,
-                                                   .renderPass = descriptor.renderPass,
-                                                   .attachmentCount = static_cast<uint32_t>(descriptor.attachments.size()),
-                                                   .pAttachments = descriptor.attachments.data(),
+                                                   .renderPass = descriptor.renderPass->getVkRenderPass(),
+                                                   .attachmentCount = static_cast<uint32_t>(attachments.size()),
+                                                   .pAttachments = attachments.data(),
                                                    .width = descriptor.width,
                                                    .height = descriptor.height,
                                                    .layers = descriptor.layers };
@@ -37,11 +50,6 @@ VulkanFramebuffer::~VulkanFramebuffer()
     m_device.vkAPI.DestroyFramebuffer(m_device.getVkDevice(), m_framebuffer, nullptr);
 }
 
-VkFramebuffer VulkanFramebuffer::getVkFrameBuffer() const
-{
-    return m_framebuffer;
-}
-
 uint32_t VulkanFramebuffer::getWidth() const
 {
     return m_descriptor.width;
@@ -50,6 +58,11 @@ uint32_t VulkanFramebuffer::getWidth() const
 uint32_t VulkanFramebuffer::getHeight() const
 {
     return m_descriptor.height;
+}
+
+VkFramebuffer VulkanFramebuffer::getVkFrameBuffer() const
+{
+    return m_framebuffer;
 }
 
 size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescriptor& descriptor) const
@@ -61,9 +74,10 @@ size_t VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescri
     combineHash(hash, descriptor.height);
     combineHash(hash, descriptor.layers);
 
-    for (const auto& attachment : descriptor.attachments)
+    for (const auto& attachment : descriptor.colorAttachments)
     {
-        combineHash(hash, reinterpret_cast<uint64_t>(attachment));
+        combineHash(hash, reinterpret_cast<uint64_t>(attachment.renderView));
+        combineHash(hash, reinterpret_cast<uint64_t>(attachment.resolveView));
     }
 
     return hash;
@@ -77,11 +91,15 @@ bool VulkanFramebufferCache::Functor::operator()(const VulkanFramebufferDescript
         lhs.height == rhs.height &&
         lhs.layers == rhs.layers &&
         lhs.renderPass == rhs.renderPass &&
-        lhs.attachments.size() == rhs.attachments.size())
+        lhs.colorAttachments.size() == rhs.colorAttachments.size() &&
+        lhs.depthStencilAttachment == rhs.depthStencilAttachment)
     {
-        for (auto i = 0; i < lhs.attachments.size(); ++i)
+        for (auto i = 0; i < lhs.colorAttachments.size(); ++i)
         {
-            if (lhs.attachments[i] != rhs.attachments[i])
+            if (lhs.colorAttachments[i].renderView != rhs.colorAttachments[i].renderView)
+                return false;
+
+            if (lhs.colorAttachments[i].resolveView != rhs.colorAttachments[i].resolveView)
                 return false;
         }
 

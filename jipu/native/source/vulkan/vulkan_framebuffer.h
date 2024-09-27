@@ -6,17 +6,25 @@
 
 #include "vulkan_api.h"
 #include "vulkan_export.h"
-#include "vulkan_render_pass.h"
 
 namespace jipu
 {
+
+class VulkanRenderPass;
+class VulkanTextureView;
+struct FramebufferColorAttachment
+{
+    VulkanTextureView* renderView = nullptr;
+    VulkanTextureView* resolveView = nullptr;
+};
 
 struct VulkanFramebufferDescriptor
 {
     const void* next = nullptr;
     VkFramebufferCreateFlags flags = 0u;
-    VkRenderPass renderPass = VK_NULL_HANDLE;
-    std::vector<VkImageView> attachments{};
+    VulkanRenderPass* renderPass = nullptr;
+    std::vector<FramebufferColorAttachment> colorAttachments{};
+    VulkanTextureView* depthStencilAttachment = nullptr;
     uint32_t width = 0;
     uint32_t height = 0;
     uint32_t layers = 0;
@@ -29,11 +37,11 @@ public:
     VulkanFramebuffer() = delete;
     VulkanFramebuffer(VulkanDevice& device, const VulkanFramebufferDescriptor& descriptor);
     ~VulkanFramebuffer();
-
-    VkFramebuffer getVkFrameBuffer() const;
-
     uint32_t getWidth() const;
     uint32_t getHeight() const;
+
+public:
+    VkFramebuffer getVkFrameBuffer() const;
 
 private:
     VulkanDevice& m_device;
