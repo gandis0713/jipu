@@ -65,6 +65,11 @@ VulkanRenderPass::~VulkanRenderPass()
     vulkanDevice.vkAPI.DestroyRenderPass(vulkanDevice.getVkDevice(), m_renderPass, nullptr);
 }
 
+const std::vector<RenderPassColorAttachment>& VulkanRenderPass::getColorAttachments() const
+{
+    return m_descriptor.colorAttachmentDescriptions;
+}
+
 VkRenderPass VulkanRenderPass::getVkRenderPass() const
 {
     return m_renderPass;

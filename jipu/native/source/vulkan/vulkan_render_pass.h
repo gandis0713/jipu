@@ -49,6 +49,9 @@ public:
     ~VulkanRenderPass();
 
 public:
+    const std::vector<RenderPassColorAttachment>& getColorAttachments() const;
+
+public:
     VkRenderPass getVkRenderPass() const;
 
 private:
