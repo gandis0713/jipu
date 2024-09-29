@@ -8,6 +8,7 @@
 #include "vulkan_api.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_command_recorder.h"
+#include "vulkan_command_resource_synchronizer.h"
 #include "vulkan_export.h"
 
 #include <vector>
@@ -29,6 +30,7 @@ public:
 
 public:
     VulkanDevice* getDevice() const;
+    VulkanCommandEncoder* getCommandEncoder() const;
 
 public:
     VkCommandBuffer getVkCommandBuffer() const;
