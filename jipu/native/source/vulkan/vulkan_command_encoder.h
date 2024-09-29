@@ -60,7 +60,7 @@ public:
 
 public:
     VulkanDevice* getDevice() const;
-    CommandEncodingContext& contextReference();
+    CommandEncodingContext& context();
     CommandEncodingContext extractContext();
 
 private:

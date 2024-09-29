@@ -105,7 +105,7 @@ VulkanDevice* VulkanCommandEncoder::getDevice() const
     return m_device;
 }
 
-CommandEncodingContext& VulkanCommandEncoder::contextReference()
+CommandEncodingContext& VulkanCommandEncoder::context()
 {
     return m_commandEncodingContext;
 }

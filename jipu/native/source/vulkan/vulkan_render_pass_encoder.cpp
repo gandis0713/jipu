@@ -264,7 +264,7 @@ VulkanRenderPassEncoder::VulkanRenderPassEncoder(VulkanCommandEncoder* commandEn
         .timestampWrites = descriptor.timestampWrites
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     commandEncodingContext.commandResourceTracker.beginRenderPass(&command);
     commandEncodingContext.commands.push(std::make_unique<BeginRenderPassCommand>(std::move(command)));
@@ -277,7 +277,7 @@ void VulkanRenderPassEncoder::setPipeline(RenderPipeline* pipeline)
     SetRenderPipelineCommand command{ { .type = CommandType::kSetRenderPipeline },
                                       .pipeline = pipeline };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     // commandEncodingContext.resourceTracker.setRenderPipeline(&command);
     commandEncodingContext.commands.push(std::make_unique<SetRenderPipelineCommand>(std::move(command)));
@@ -290,7 +290,7 @@ void VulkanRenderPassEncoder::setBindingGroup(uint32_t index, BindingGroup& bind
                                  .bindingGroup = &bindingGroup,
                                  .dynamicOffset = dynamicOffset };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     commandEncodingContext.commandResourceTracker.setRenderBindingGroup(&command);
     commandEncodingContext.commands.push(std::make_unique<SetBindGroupCommand>(std::move(command)));
@@ -302,7 +302,7 @@ void VulkanRenderPassEncoder::setVertexBuffer(uint32_t slot, Buffer& buffer)
                                     .slot = slot,
                                     .buffer = &buffer };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     commandEncodingContext.commandResourceTracker.setVertexBuffer(&command);
     commandEncodingContext.commands.push(std::make_unique<SetVertexBufferCommand>(std::move(command)));
@@ -314,7 +314,7 @@ void VulkanRenderPassEncoder::setIndexBuffer(Buffer& buffer, IndexFormat format)
                                    .buffer = &buffer,
                                    .format = format };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     commandEncodingContext.commandResourceTracker.setIndexBuffer(&command);
     commandEncodingContext.commands.push(std::make_unique<SetIndexBufferCommand>(std::move(command)));
@@ -338,7 +338,7 @@ void VulkanRenderPassEncoder::setViewport(float x,
         .maxDepth = maxDepth,
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<SetViewportCommand>(std::move(command)));
 }
 
@@ -354,7 +354,7 @@ void VulkanRenderPassEncoder::setScissor(float x,
         .width = width,
         .height = height
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<SetScissorCommand>(std::move(command)));
 }
 
@@ -365,7 +365,7 @@ void VulkanRenderPassEncoder::setBlendConstant(const Color& color)
         { .type = CommandType::kSetBlendConstant },
         .color = color
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<SetBlendConstantCommand>(std::move(command)));
 }
 
@@ -381,7 +381,7 @@ void VulkanRenderPassEncoder::draw(uint32_t vertexCount,
         .firstVertex = firstVertex,
         .firstInstance = firstInstance,
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<DrawCommand>(std::move(command)));
 }
 
@@ -399,7 +399,7 @@ void VulkanRenderPassEncoder::drawIndexed(uint32_t indexCount,
         .vertexOffset = vertexOffset,
         .firstInstance = firstInstance,
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<DrawIndexedCommand>(std::move(command)));
 }
 
@@ -415,7 +415,7 @@ void VulkanRenderPassEncoder::beginOcclusionQuery(uint32_t queryIndex)
         .querySet = m_descriptor.occlusionQuerySet,
         .queryIndex = queryIndex
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<BeginOcclusionQueryCommand>(std::move(command)));
 }
 
@@ -430,7 +430,7 @@ void VulkanRenderPassEncoder::endOcclusionQuery()
         { .type = CommandType::kEndOcclusionQuery },
         .querySet = m_descriptor.occlusionQuerySet
     };
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
     commandEncodingContext.commands.push(std::make_unique<EndOcclusionQueryCommand>(std::move(command)));
 }
 
@@ -440,7 +440,7 @@ void VulkanRenderPassEncoder::end()
         { .type = CommandType::kEndRenderPass }
     };
 
-    auto& commandEncodingContext = downcast(m_commandEncoder)->contextReference();
+    auto& commandEncodingContext = downcast(m_commandEncoder)->context();
 
     commandEncodingContext.commandResourceTracker.endRenderPass(&command);
     commandEncodingContext.commands.push(std::make_unique<EndRenderPassCommand>(std::move(command)));
