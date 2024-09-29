@@ -173,9 +173,9 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
     // do nothing.
 }
 
-std::vector<PassResourceInfo> VulkanCommandResourceSynchronizer::getNotSynchronizedPassResourceInfos()
+CommandResourceSynchronizationResult VulkanCommandResourceSynchronizer::result()
 {
-    return m_descriptor.passResourceInfos;
+    return CommandResourceSynchronizationResult{ .notSynchronizedPassResourceInfos = m_descriptor.passResourceInfos };
 }
 
 void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier& barrier)
