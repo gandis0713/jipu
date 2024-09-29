@@ -16,7 +16,7 @@ class VulkanComputePipeline;
 
 struct VulkanCommandRecorderDescriptor
 {
-    CommandEncodingContext commandEncodingContext{};
+    CommandEncodingResult commandEncodingResult{};
 };
 
 class VULKAN_EXPORT VulkanCommandRecorder

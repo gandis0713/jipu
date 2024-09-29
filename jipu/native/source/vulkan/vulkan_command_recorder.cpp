@@ -24,7 +24,7 @@ namespace jipu
 VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
     : m_commandBuffer(commandBuffer)
     , m_descriptor(std::move(descriptor))
-    , m_commandResourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingContext.commandResourceTracker.extractPassResourceInfos() })
+    , m_commandResourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingResult.passResourceInfos })
 {
 }
 
@@ -37,7 +37,7 @@ void VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    auto& commands = m_descriptor.commandEncodingContext.commands;
+    auto& commands = m_descriptor.commandEncodingResult.commands;
 
     while (!commands.empty())
     {
