@@ -33,7 +33,7 @@ VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
     return m_commandBuffer;
 }
 
-void VulkanCommandRecorder::record()
+VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
@@ -720,6 +720,20 @@ void VulkanCommandRecorder::resolveQuerySet(ResolveQuerySetCommand* command)
                                   offset,
                                   sizeof(uint64_t),
                                   VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+}
+
+VulkanCommandRecordResult VulkanCommandRecorder::result()
+{
+    VulkanCommandRecordResult result{};
+
+    auto syncronizationResult = m_commandResourceSyncronizer.result();
+    for (auto& info : syncronizationResult.notSynchronizedPassResourceInfos)
+    {
+        result.resourceInfo.src.buffers.insert(info.src.buffers.begin(), info.src.buffers.end());
+        result.resourceInfo.src.textures.insert(info.src.textures.begin(), info.src.textures.end());
+    }
+
+    return result;
 }
 
 // Generator

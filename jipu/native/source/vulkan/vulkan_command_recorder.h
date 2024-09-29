@@ -19,6 +19,35 @@ struct VulkanCommandRecorderDescriptor
     CommandEncodingResult commandEncodingResult{};
 };
 
+struct CommandResourceInfo
+{
+    struct Source // consumer
+    {
+        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+        std::unordered_map<Texture*, TextureUsageInfo> textures;
+    } dst;
+
+    struct Destination // producer
+    {
+        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+        std::unordered_map<Texture*, TextureUsageInfo> textures;
+    } src;
+
+    void clear()
+    {
+        dst.buffers.clear();
+        dst.textures.clear();
+
+        src.buffers.clear();
+        src.textures.clear();
+    }
+};
+
+struct VulkanCommandRecordResult
+{
+    CommandResourceInfo resourceInfo{};
+};
+
 class VULKAN_EXPORT VulkanCommandRecorder
 {
 public:
@@ -29,7 +58,7 @@ public:
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
     VulkanCommandRecorder& operator=(const VulkanCommandRecorder&) = delete;
 
-    void record();
+    VulkanCommandRecordResult record();
 
 public:
     VulkanCommandBuffer* getCommandBuffer() const;
@@ -69,6 +98,9 @@ private:
 
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
+
+private:
+    VulkanCommandRecordResult result();
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
