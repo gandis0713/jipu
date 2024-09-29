@@ -110,9 +110,13 @@ CommandEncodingContext& VulkanCommandEncoder::context()
     return m_commandEncodingContext;
 }
 
-CommandEncodingContext VulkanCommandEncoder::extractContext()
+CommandEncodingResult VulkanCommandEncoder::result()
 {
-    return std::move(m_commandEncodingContext);
+    CommandEncodingResult result{};
+    result.commands = std::move(m_commandEncodingContext.commands);
+    result.passResourceInfos = m_commandEncodingContext.commandResourceTracker.result();
+
+    return result;
 }
 
 } // namespace jipu

@@ -20,8 +20,14 @@ namespace jipu
 
 struct CommandEncodingContext
 {
-    std::queue<std::unique_ptr<Command>> commands;
+    std::queue<std::unique_ptr<Command>> commands{};
     VulkanCommandResourceTracker commandResourceTracker{};
+};
+
+struct CommandEncodingResult
+{
+    std::queue<std::unique_ptr<Command>> commands{};
+    std::vector<PassResourceInfo> passResourceInfos{};
 };
 
 class VulkanDevice;
@@ -61,7 +67,7 @@ public:
 public:
     VulkanDevice* getDevice() const;
     CommandEncodingContext& context();
-    CommandEncodingContext extractContext();
+    CommandEncodingResult result();
 
 private:
     VulkanDevice* m_device = nullptr;
