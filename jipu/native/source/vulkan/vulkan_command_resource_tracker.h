@@ -91,7 +91,7 @@ public:
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
 public:
-    std::vector<PassResourceInfo> extractPassResourceInfos();
+    std::vector<PassResourceInfo> result();
 
 private:
     std::vector<PassResourceInfo> m_passResourceInfos;

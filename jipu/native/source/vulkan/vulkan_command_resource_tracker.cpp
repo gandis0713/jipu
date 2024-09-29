@@ -294,12 +294,9 @@ void VulkanCommandResourceTracker::resolveQuerySet(ResolveQuerySetCommand* comma
     // do nothing.
 }
 
-std::vector<PassResourceInfo> VulkanCommandResourceTracker::extractPassResourceInfos()
+std::vector<PassResourceInfo> VulkanCommandResourceTracker::result()
 {
-    auto movedPassResourceInfos = std::move(m_passResourceInfos);
-    m_passResourceInfos.clear();
-
-    return movedPassResourceInfos;
+    return m_passResourceInfos;
 }
 
 } // namespace jipu
