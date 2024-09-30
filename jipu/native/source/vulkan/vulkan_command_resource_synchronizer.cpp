@@ -9,6 +9,8 @@
 #include "vulkan_device.h"
 #include "vulkan_texture.h"
 
+#include <spdlog/spdlog.h>
+
 namespace jipu
 {
 VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
@@ -286,6 +288,12 @@ void VulkanCommandResourceSynchronizer::sync()
 
     auto& currentPassResourceInfo = getCurrentPassResourceInfo();
 
+    spdlog::trace("current pass buffers src: {}", currentPassResourceInfo.src.buffers.size());
+    spdlog::trace("current pass textures src: {}", currentPassResourceInfo.src.textures.size());
+
+    spdlog::trace("current pass buffers dst: {}", currentPassResourceInfo.dst.buffers.size());
+    spdlog::trace("current pass textures dst: {}", currentPassResourceInfo.dst.textures.size());
+
     // buffers
     auto& currentDstPassBuffers = currentPassResourceInfo.dst.buffers;
     for (auto it = currentDstPassBuffers.begin(); it != currentDstPassBuffers.end();)
@@ -314,6 +322,7 @@ void VulkanCommandResourceSynchronizer::sync()
                 });
 
                 it = currentDstPassBuffers.erase(it); // extract dst resource
+                continue;
             }
         }
 
@@ -355,6 +364,7 @@ void VulkanCommandResourceSynchronizer::sync()
                 });
 
                 it = currentDstPassTextures.erase(it); // extract dst resource
+                continue;
             }
         }
 
