@@ -75,14 +75,18 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
-    std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
+    std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> commandRecordResults = recordCommands(commandBuffers);
+
+    std::vector<SubmitInfo> submits = generateSubmitInfo(commandRecordResults);
 
     submit(submits);
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain)
 {
-    std::vector<SubmitInfo> submits = gatherSubmitInfo(commandBuffers);
+    std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> commandRecordResults = recordCommands(commandBuffers);
+
+    std::vector<SubmitInfo> submits = generateSubmitInfo(commandRecordResults);
 
     auto& vulkanDevice = downcast(m_device);
     auto& vulkanSwapchain = downcast(swapchain);
@@ -117,50 +121,67 @@ std::vector<VkSemaphore> VulkanQueue::getSemaphores() const
     return { m_semaphore };
 }
 
-std::vector<VulkanQueue::SubmitInfo> VulkanQueue::gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers)
+std::vector<VulkanQueue::SubmitInfo> VulkanQueue::generateSubmitInfo(std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> recordResults)
 {
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     std::vector<SubmitInfo> submitInfo{};
+    submitInfo.resize(recordResults.size());
 
-    auto commandBufferSize = commandBuffers.size();
-    submitInfo.resize(commandBufferSize);
-
-    for (auto i = 0; i < commandBufferSize; ++i)
+    int32_t i = 0;
+    auto commandBufferSize = recordResults.size();
+    for (auto [commandBuffer, commandRecordResult] : recordResults)
     {
-        auto commandBufferRecorder = downcast(commandBuffers[i])->createCommandRecorder();
-        commandBufferRecorder->record();
-    }
+        submitInfo[i].cmdBuf = downcast(commandBuffer)->getVkCommandBuffer();
 
-    for (auto i = 0; i < commandBufferSize; ++i)
-    {
-        submitInfo[i].cmdBuf = downcast(commandBuffers[i])->getVkCommandBuffer();
-
-        auto nextIndex = i + 1;
+        int32_t nextIndex = i + 1;
         if (nextIndex < commandBufferSize)
         {
-            std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffers[i])->getSignalSemaphore();
+            std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffer)->getSignalSemaphore();
             submitInfo[i].signal.first.push_back(signalSemaphore.first);
             submitInfo[i].signal.second.push_back(signalSemaphore.second);
         }
 
-        auto preIndex = i - 1;
+        int32_t preIndex = i - 1;
         if (preIndex >= 0)
         {
             submitInfo[i].wait.first.push_back(submitInfo[preIndex].signal.first[0]);
             submitInfo[i].wait.second.push_back(submitInfo[preIndex].signal.second[0]);
         }
 
-        auto waitSems = downcast(commandBuffers[i])->ejectWaitSemaphores();
+        auto waitSems = downcast(commandBuffer)->ejectWaitSemaphores();
         for (auto sem : waitSems)
         {
             submitInfo[i].wait.first.push_back(sem.first);
             submitInfo[i].wait.second.push_back(sem.second);
         }
+
+        ++i;
     }
 
     return submitInfo;
+}
+
+std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
+{
+    std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> result{};
+
+    for (auto& commandBuffer : commandBuffers)
+    {
+        auto commandBufferRecorder = downcast(commandBuffer)->createCommandRecorder();
+        result.insert(std::make_pair(commandBuffer, commandBufferRecorder->record()));
+    }
+
+    for (const auto& [_, result] : result)
+    {
+        auto& resourceInfo = result.resourceInfo;
+
+        spdlog::info("buffers: {}", resourceInfo.src.buffers.size());
+        spdlog::info("textures: {}", resourceInfo.src.textures.size());
+    }
+
+    return result;
 }
 
 void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)

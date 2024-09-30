@@ -3,6 +3,7 @@
 #include "common/cast.h"
 #include "jipu/queue.h"
 #include "vulkan_api.h"
+#include "vulkan_command_recorder.h"
 #include "vulkan_export.h"
 
 namespace jipu
@@ -44,7 +45,8 @@ private:
 
     } m_submitInfo;
 
-    std::vector<SubmitInfo> gatherSubmitInfo(std::vector<CommandBuffer*> commandBuffers);
+    std::vector<SubmitInfo> generateSubmitInfo(std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> recordResults);
+    std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
     void submit(const std::vector<SubmitInfo>& submitInfos);
 };
 
