@@ -16,7 +16,7 @@ VulkanSemaphorePool::~VulkanSemaphorePool()
 {
     for (auto& semaphore : m_semaphores)
     {
-        if (!semaphore.second)
+        if (semaphore.second)
         {
             spdlog::warn("Semaphore is not released in this semaphore pool.");
         }

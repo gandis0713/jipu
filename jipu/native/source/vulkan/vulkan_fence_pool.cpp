@@ -16,7 +16,7 @@ VulkanFencePool::~VulkanFencePool()
 {
     for (auto& fence : m_fences)
     {
-        if (!fence.second)
+        if (fence.second)
         {
             spdlog::warn("Fence is not released in this fence pool.");
         }
@@ -37,9 +37,10 @@ VkFence VulkanFencePool::acquire()
     }
 
     VkFenceCreateInfo fenceCreateInfo{};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.pNext = nullptr;
     fenceCreateInfo.flags = 0;
+    // fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     VkFence fence = VK_NULL_HANDLE;
     if (m_device->vkAPI.CreateFence(m_device->getVkDevice(), &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)

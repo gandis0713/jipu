@@ -68,6 +68,7 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
     m_semaphorePool.reset();
+    m_fencePool.reset();
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
