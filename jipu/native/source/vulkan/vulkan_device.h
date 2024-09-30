@@ -13,6 +13,7 @@
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
 #include "vulkan_resource_allocator.h"
+#include "vulkan_semaphore_pool.h"
 #include "vulkan_swapchain.h"
 #include "vulkan_texture.h"
 
@@ -62,6 +63,7 @@ public:
 
 public:
     VulkanPhysicalDevice& getPhysicalDevice() const;
+    VulkanSemaphorePool* getSemaphorePool();
 
 public:
     VkDevice getVkDevice() const;
@@ -86,6 +88,7 @@ private:
     VkDevice m_device = VK_NULL_HANDLE;
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
+    std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
 
     std::vector<VkQueue> m_queues{};
 

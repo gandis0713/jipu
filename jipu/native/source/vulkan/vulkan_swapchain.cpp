@@ -195,15 +195,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDesc
     }
 
     // create semaphore
-    VkSemaphoreCreateInfo semaphoreCreateInfo{};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = nullptr;
-    semaphoreCreateInfo.flags = 0;
-
-    if (vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_presentSemaphore) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create semephore for present.");
-    }
+    m_presentSemaphore = m_device.getSemaphorePool()->acquire();
 }
 
 VulkanSwapchain::~VulkanSwapchain()
@@ -211,7 +203,7 @@ VulkanSwapchain::~VulkanSwapchain()
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_presentSemaphore, nullptr);
+    m_device.getSemaphorePool()->release(m_presentSemaphore);
 
     /* do not delete VkImages from swapchain. */
 

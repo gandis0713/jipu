@@ -20,6 +20,7 @@ namespace jipu
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
     : vkAPI(downcast(physicalDevice.getInstance())->vkAPI)
     , m_physicalDevice(physicalDevice)
+    , m_semaphorePool(std::make_unique<VulkanSemaphorePool>(this))
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)
 {
@@ -65,6 +66,7 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
+    m_semaphorePool.reset();
     m_frameBufferCache.clear();
     m_renderPassCache.clear();
 
@@ -176,6 +178,11 @@ VulkanResourceAllocator& VulkanDevice::getResourceAllocator()
 VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
 {
     return m_physicalDevice;
+}
+
+VulkanSemaphorePool* VulkanDevice::getSemaphorePool()
+{
+    return m_semaphorePool.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const

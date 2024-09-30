@@ -33,8 +33,9 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_queue.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_render_pass.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_render_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_shader_module.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_sampler.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_shader_module.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_semaphore_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture.cpp
@@ -65,6 +66,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_render_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_shader_module.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_semaphore_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_surface.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture.h
