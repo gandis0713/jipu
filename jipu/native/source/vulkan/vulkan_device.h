@@ -8,6 +8,7 @@
 #include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_export.h"
+#include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
@@ -64,6 +65,7 @@ public:
 public:
     VulkanPhysicalDevice& getPhysicalDevice() const;
     VulkanSemaphorePool* getSemaphorePool();
+    VulkanFencePool* getFencePool();
 
 public:
     VkDevice getVkDevice() const;
@@ -89,6 +91,7 @@ private:
     VkCommandPool m_commandPool = VK_NULL_HANDLE;
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
     std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
+    std::unique_ptr<VulkanFencePool> m_fencePool = nullptr;
 
     std::vector<VkQueue> m_queues{};
 

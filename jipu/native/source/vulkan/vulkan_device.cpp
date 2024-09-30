@@ -21,6 +21,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
     : vkAPI(downcast(physicalDevice.getInstance())->vkAPI)
     , m_physicalDevice(physicalDevice)
     , m_semaphorePool(std::make_unique<VulkanSemaphorePool>(this))
+    , m_fencePool(std::make_unique<VulkanFencePool>(this))
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)
 {
@@ -183,6 +184,11 @@ VulkanPhysicalDevice& VulkanDevice::getPhysicalDevice() const
 VulkanSemaphorePool* VulkanDevice::getSemaphorePool()
 {
     return m_semaphorePool.get();
+}
+
+VulkanFencePool* VulkanDevice::getFencePool()
+{
+    return m_fencePool.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
