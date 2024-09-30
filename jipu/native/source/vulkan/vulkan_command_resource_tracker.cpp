@@ -102,6 +102,12 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
 
             if (framebufferColorAttachment.resolveView)
             {
+                m_ongoingPassResourceInfo.dst.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
+                    .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    .accessFlags = VK_ACCESS_NONE,
+                    .layout = renderPassColorAttachment.resolveAttachment.value().initialLayout,
+                };
+
                 m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.resolveView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
@@ -110,6 +116,12 @@ void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* comma
             }
             else
             {
+                m_ongoingPassResourceInfo.dst.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
+                    .stageFlags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                    .accessFlags = VK_ACCESS_NONE,
+                    .layout = renderPassColorAttachment.renderAttachment.initialLayout,
+                };
+
                 m_ongoingPassResourceInfo.src.textures[framebufferColorAttachment.renderView->getTexture()] = TextureUsageInfo{
                     .stageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                     .accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
