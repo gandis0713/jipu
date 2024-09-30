@@ -24,7 +24,7 @@ struct VulkanCommandResourceSynchronizerDescriptor
 struct CommandResourceSynchronizationResult
 {
     std::vector<PassResourceInfo> notSynchronizedPassResourceInfos{};
-}
+};
 
 class VulkanCommandResourceSynchronizer final
 {
