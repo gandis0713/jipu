@@ -733,6 +733,9 @@ VulkanCommandRecordResult VulkanCommandRecorder::result()
     {
         result.resourceInfo.src.buffers.insert(info.src.buffers.begin(), info.src.buffers.end());
         result.resourceInfo.src.textures.insert(info.src.textures.begin(), info.src.textures.end());
+
+        result.resourceInfo.dst.buffers.insert(info.dst.buffers.begin(), info.dst.buffers.end());
+        result.resourceInfo.dst.textures.insert(info.dst.textures.begin(), info.dst.textures.end());
     }
 
     return result;
