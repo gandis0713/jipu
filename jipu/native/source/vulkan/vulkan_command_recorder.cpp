@@ -137,6 +137,8 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
     }
 
     endRecord();
+
+    return result();
 }
 
 void VulkanCommandRecorder::beginRecord()
