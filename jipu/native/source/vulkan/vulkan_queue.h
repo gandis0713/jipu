@@ -45,8 +45,8 @@ private:
 
     } m_submitInfo;
 
-    std::vector<SubmitInfo> generateSubmitInfo(std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> recordResults);
-    std::unordered_map<CommandBuffer*, VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
+    std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> recordCommands(std::vector<CommandBuffer*> commandBuffers);
+    std::vector<SubmitInfo> generateSubmitInfo(std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> recordResults);
     void submit(const std::vector<SubmitInfo>& submitInfos);
 };
 
