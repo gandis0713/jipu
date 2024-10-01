@@ -20,13 +20,13 @@ namespace jipu
 
 struct CommandEncodingContext
 {
-    std::queue<std::unique_ptr<Command>> commands{};
+    std::vector<std::unique_ptr<Command>> commands{};
     VulkanCommandResourceTracker commandResourceTracker{};
 };
 
 struct CommandEncodingResult
 {
-    std::queue<std::unique_ptr<Command>> commands{};
+    std::vector<std::unique_ptr<Command>> commands{};
     std::vector<PassResourceInfo> passResourceInfos{};
 };
 

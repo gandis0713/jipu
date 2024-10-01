@@ -31,6 +31,7 @@ public:
 public:
     VulkanDevice* getDevice() const;
     VulkanCommandEncoder* getCommandEncoder() const;
+    const CommandEncodingResult& getCommandEncodingResult() const;
 
 public:
     VkCommandBuffer getVkCommandBuffer() const;

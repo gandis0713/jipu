@@ -14,11 +14,6 @@ class VulkanCommandBuffer;
 class VulkanRenderPipeline;
 class VulkanComputePipeline;
 
-struct VulkanCommandRecorderDescriptor
-{
-    CommandEncodingResult commandEncodingResult{};
-};
-
 struct CommandResourceInfo
 {
     struct Source // consumer
@@ -52,7 +47,7 @@ class VULKAN_EXPORT VulkanCommandRecorder
 {
 public:
     VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor);
+    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
     ~VulkanCommandRecorder() = default;
 
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
@@ -104,7 +99,6 @@ private:
 
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
-    VulkanCommandRecorderDescriptor m_descriptor{};
     VulkanCommandResourceSynchronizer m_commandResourceSyncronizer{};
 
 private:

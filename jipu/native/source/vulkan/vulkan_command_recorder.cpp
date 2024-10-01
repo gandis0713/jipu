@@ -21,10 +21,9 @@
 namespace jipu
 {
 
-VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer, VulkanCommandRecorderDescriptor descriptor)
+VulkanCommandRecorder::VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer)
     : m_commandBuffer(commandBuffer)
-    , m_descriptor(std::move(descriptor))
-    , m_commandResourceSyncronizer(commandBuffer, { m_descriptor.commandEncodingResult.passResourceInfos })
+    , m_commandResourceSyncronizer(commandBuffer, { m_commandBuffer->getCommandEncodingResult().passResourceInfos })
 {
 }
 
@@ -37,54 +36,53 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 {
     beginRecord();
 
-    auto& commands = m_descriptor.commandEncodingResult.commands;
+    auto& commands = m_commandBuffer->getCommandEncodingResult().commands;
 
-    while (!commands.empty())
+    for (const auto& command : commands)
     {
-        const auto command = commands.front().get();
         switch (command->type)
         {
         case CommandType::kBeginComputePass:
-            beginComputePass(reinterpret_cast<BeginComputePassCommand*>(command));
+            beginComputePass(reinterpret_cast<BeginComputePassCommand*>(command.get()));
             break;
         case CommandType::kEndComputePass:
-            endComputePass(reinterpret_cast<EndComputePassCommand*>(command));
+            endComputePass(reinterpret_cast<EndComputePassCommand*>(command.get()));
             break;
         case CommandType::kSetComputePipeline:
-            setComputePipeline(reinterpret_cast<SetComputePipelineCommand*>(command));
+            setComputePipeline(reinterpret_cast<SetComputePipelineCommand*>(command.get()));
             break;
         case CommandType::kDispatch:
-            dispatch(reinterpret_cast<DispatchCommand*>(command));
+            dispatch(reinterpret_cast<DispatchCommand*>(command.get()));
             break;
         case CommandType::kDispatchIndirect:
-            dispatchIndirect(reinterpret_cast<DispatchIndirectCommand*>(command));
+            dispatchIndirect(reinterpret_cast<DispatchIndirectCommand*>(command.get()));
             break;
         case CommandType::kBeginRenderPass:
-            beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command));
+            beginRenderPass(reinterpret_cast<BeginRenderPassCommand*>(command.get()));
             break;
         case CommandType::kSetRenderPipeline:
-            setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command));
+            setRenderPipeline(reinterpret_cast<SetRenderPipelineCommand*>(command.get()));
             break;
         case CommandType::kSetVertexBuffer:
-            setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command));
+            setVertexBuffer(reinterpret_cast<SetVertexBufferCommand*>(command.get()));
             break;
         case CommandType::kSetIndexBuffer:
-            setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command));
+            setIndexBuffer(reinterpret_cast<SetIndexBufferCommand*>(command.get()));
             break;
         case CommandType::kSetViewport:
-            setViewport(reinterpret_cast<SetViewportCommand*>(command));
+            setViewport(reinterpret_cast<SetViewportCommand*>(command.get()));
             break;
         case CommandType::kSetScissor:
-            setScissor(reinterpret_cast<SetScissorCommand*>(command));
+            setScissor(reinterpret_cast<SetScissorCommand*>(command.get()));
             break;
         case CommandType::kSetBlendConstant:
-            setBlendConstant(reinterpret_cast<SetBlendConstantCommand*>(command));
+            setBlendConstant(reinterpret_cast<SetBlendConstantCommand*>(command.get()));
             break;
         case CommandType::kDraw:
-            draw(reinterpret_cast<DrawCommand*>(command));
+            draw(reinterpret_cast<DrawCommand*>(command.get()));
             break;
         case CommandType::kDrawIndexed:
-            drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command));
+            drawIndexed(reinterpret_cast<DrawIndexedCommand*>(command.get()));
             break;
         case CommandType::kDrawIndirect:
             // TODO: draw indirect
@@ -93,37 +91,37 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
             // TODO: draw indexed indirect
             break;
         case CommandType::kBeginOcclusionQuery:
-            beginOcclusionQuery(reinterpret_cast<BeginOcclusionQueryCommand*>(command));
+            beginOcclusionQuery(reinterpret_cast<BeginOcclusionQueryCommand*>(command.get()));
             break;
         case CommandType::kEndOcclusionQuery:
-            endOcclusionQuery(reinterpret_cast<EndOcclusionQueryCommand*>(command));
+            endOcclusionQuery(reinterpret_cast<EndOcclusionQueryCommand*>(command.get()));
             break;
         case CommandType::kEndRenderPass:
-            endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command));
+            endRenderPass(reinterpret_cast<EndRenderPassCommand*>(command.get()));
             break;
         case CommandType::kSetComputeBindGroup:
-            setComputeBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command));
+            setComputeBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
             break;
         case CommandType::kSetRenderBindGroup:
-            setRenderBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command));
+            setRenderBindingGroup(reinterpret_cast<SetBindGroupCommand*>(command.get()));
             break;
         case CommandType::kClearBuffer:
             // TODO: clear buffer
             break;
         case CommandType::kCopyBufferToBuffer:
-            copyBufferToBuffer(reinterpret_cast<CopyBufferToBufferCommand*>(command));
+            copyBufferToBuffer(reinterpret_cast<CopyBufferToBufferCommand*>(command.get()));
             break;
         case CommandType::kCopyBufferToTexture:
-            copyBufferToTexture(reinterpret_cast<CopyBufferToTextureCommand*>(command));
+            copyBufferToTexture(reinterpret_cast<CopyBufferToTextureCommand*>(command.get()));
             break;
         case CommandType::kCopyTextureToBuffer:
-            copyTextureToBuffer(reinterpret_cast<CopyTextureToBufferCommand*>(command));
+            copyTextureToBuffer(reinterpret_cast<CopyTextureToBufferCommand*>(command.get()));
             break;
         case CommandType::kCopyTextureToTexture:
-            copyTextureToTexture(reinterpret_cast<CopyTextureToTextureCommand*>(command));
+            copyTextureToTexture(reinterpret_cast<CopyTextureToTextureCommand*>(command.get()));
             break;
         case CommandType::kResolveQuerySet:
-            resolveQuerySet(reinterpret_cast<ResolveQuerySetCommand*>(command));
+            resolveQuerySet(reinterpret_cast<ResolveQuerySetCommand*>(command.get()));
             break;
         case CommandType::kWriteTimestamp:
             // TODO: write timestamp
@@ -132,8 +130,6 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
             throw std::runtime_error("Unknown command type.");
             break;
         }
-
-        commands.pop();
     }
 
     endRecord();
