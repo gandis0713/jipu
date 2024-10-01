@@ -25,7 +25,7 @@ VulkanSemaphorePool::~VulkanSemaphorePool()
     }
 }
 
-VkSemaphore VulkanSemaphorePool::acquire()
+VkSemaphore VulkanSemaphorePool::create()
 {
     for (auto& semaphore : m_semaphores)
     {

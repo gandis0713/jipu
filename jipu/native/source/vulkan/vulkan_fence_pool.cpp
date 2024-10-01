@@ -25,13 +25,19 @@ VulkanFencePool::~VulkanFencePool()
     }
 }
 
-VkFence VulkanFencePool::acquire()
+VkFence VulkanFencePool::create()
 {
     for (auto& fence : m_fences)
     {
         if (fence.second == false)
         {
             fence.second = true;
+
+            if (m_device->vkAPI.ResetFences(m_device->getVkDevice(), 1, &fence.first) != VK_SUCCESS)
+            {
+                throw std::runtime_error("Failed to reset fence.");
+            }
+
             return fence.first;
         }
     }
@@ -40,12 +46,12 @@ VkFence VulkanFencePool::acquire()
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.pNext = nullptr;
     fenceCreateInfo.flags = 0;
-    // fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     VkFence fence = VK_NULL_HANDLE;
     if (m_device->vkAPI.CreateFence(m_device->getVkDevice(), &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create fence in queue.");
+        throw std::runtime_error("Failed to create fence.");
     }
 
     m_fences.insert(std::make_pair(fence, true));

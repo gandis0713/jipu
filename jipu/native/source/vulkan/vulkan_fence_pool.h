@@ -16,7 +16,7 @@ public:
     ~VulkanFencePool();
 
 public:
-    VkFence acquire();
+    VkFence create();
     void release(VkFence fence);
 
 private:

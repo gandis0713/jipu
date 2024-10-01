@@ -195,7 +195,7 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDesc
     }
 
     // create semaphore
-    m_presentSemaphore = m_device.getSemaphorePool()->acquire();
+    m_presentSemaphore = m_device.getSemaphorePool()->create();
 }
 
 VulkanSwapchain::~VulkanSwapchain()

@@ -16,7 +16,7 @@ public:
     ~VulkanSemaphorePool();
 
 public:
-    VkSemaphore acquire();
+    VkSemaphore create();
     void release(VkSemaphore semaphore);
 
 private:
