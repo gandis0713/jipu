@@ -43,6 +43,7 @@ public:
 
 private:
     VulkanCommandEncoder* m_commandEncoder = nullptr;
+    CommandEncodingResult m_commandEncodingResult{};
 
 private:
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;

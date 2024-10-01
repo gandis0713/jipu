@@ -46,7 +46,7 @@ VkFence VulkanFencePool::create()
     fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceCreateInfo.pNext = nullptr;
     fenceCreateInfo.flags = 0;
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    // fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     VkFence fence = VK_NULL_HANDLE;
     if (m_device->vkAPI.CreateFence(m_device->getVkDevice(), &fenceCreateInfo, nullptr, &fence) != VK_SUCCESS)

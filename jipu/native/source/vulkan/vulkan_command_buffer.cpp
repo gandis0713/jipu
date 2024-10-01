@@ -9,6 +9,7 @@ namespace jipu
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
+    , m_commandEncodingResult(m_commandEncoder->result())
     , m_commandPool(m_commandEncoder->getDevice()->getVkCommandPool())
 {
     VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -34,7 +35,7 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
 std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
 {
     VulkanCommandRecorderDescriptor descriptor{
-        .commandEncodingResult = m_commandEncoder->result()
+        .commandEncodingResult = std::move(m_commandEncodingResult)
     };
 
     return std::make_unique<VulkanCommandRecorder>(this, std::move(descriptor));
