@@ -31,8 +31,6 @@ public:
     const CommandEncodingResult& getCommandEncodingResult() const;
 
 public:
-    VkCommandBuffer getVkCommandBuffer() const;
-
     void setSignalSemaphoreStage(VkPipelineStageFlags stage);
     std::pair<VkSemaphore, VkPipelineStageFlags> getSignalSemaphore();
 
@@ -44,9 +42,6 @@ private:
     CommandEncodingResult m_commandEncodingResult{};
 
 private:
-    VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
-    VkCommandPool m_commandPool = VK_NULL_HANDLE;
-
     VkSemaphore m_signalSemaphore = VK_NULL_HANDLE;
     VkPipelineStageFlags m_signalStage = VK_PIPELINE_STAGE_NONE;
 

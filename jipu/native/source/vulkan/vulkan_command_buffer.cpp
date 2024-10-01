@@ -10,24 +10,11 @@ namespace jipu
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, const CommandBufferDescriptor& descriptor)
     : m_commandEncoder(commandEncoder)
     , m_commandEncodingResult(m_commandEncoder->result())
-    , m_commandPool(m_commandEncoder->getDevice()->getVkCommandPool())
 {
-    VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
-    commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    commandBufferAllocateInfo.commandPool = m_commandPool;
-    commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    commandBufferAllocateInfo.commandBufferCount = 1; // create command buffer only one.
-
-    const VulkanAPI& vkAPI = getDevice()->vkAPI;
-    if (vkAPI.AllocateCommandBuffers(getDevice()->getVkDevice(), &commandBufferAllocateInfo, &m_commandBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate command buffers.");
-    }
 }
 
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
-    getDevice()->vkAPI.FreeCommandBuffers(getDevice()->getVkDevice(), m_commandPool, 1, &m_commandBuffer);
     if (m_signalSemaphore)
         getDevice()->vkAPI.DestroySemaphore(getDevice()->getVkDevice(), m_signalSemaphore, nullptr);
 }
@@ -45,11 +32,6 @@ VulkanCommandEncoder* VulkanCommandBuffer::getCommandEncoder() const
 const CommandEncodingResult& VulkanCommandBuffer::getCommandEncodingResult() const
 {
     return m_commandEncodingResult;
-}
-
-VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer() const
-{
-    return m_commandBuffer;
 }
 
 void VulkanCommandBuffer::setSignalSemaphoreStage(VkPipelineStageFlags stage)
