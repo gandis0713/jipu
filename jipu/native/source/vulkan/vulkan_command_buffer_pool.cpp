@@ -32,6 +32,8 @@ VulkanCommandBufferPool::~VulkanCommandBufferPool()
 
         m_device->vkAPI.FreeCommandBuffers(m_device->getVkDevice(), m_commandPool, 1, &commandBuffer.first);
     }
+
+    m_device->vkAPI.DestroyCommandPool(m_device->getVkDevice(), m_commandPool, nullptr);
 }
 
 VkCommandBuffer VulkanCommandBufferPool::create(/* TODO */)
@@ -61,6 +63,17 @@ VkCommandBuffer VulkanCommandBufferPool::create(/* TODO */)
     m_commandBuffers.insert(std::make_pair(commandBuffer, true));
 
     return commandBuffer;
+}
+
+void VulkanCommandBufferPool::release(VkCommandBuffer commandBuffer)
+{
+    if (!m_commandBuffers.contains(commandBuffer))
+    {
+        spdlog::error("The command buffer was not created in this command buffer pool.");
+        return;
+    }
+
+    m_commandBuffers[commandBuffer] = false;
 }
 
 } // namespace jipu

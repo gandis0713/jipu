@@ -32,11 +32,6 @@ VulkanCommandBuffer::~VulkanCommandBuffer()
         getDevice()->vkAPI.DestroySemaphore(getDevice()->getVkDevice(), m_signalSemaphore, nullptr);
 }
 
-std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
-{
-    return std::make_unique<VulkanCommandRecorder>(this);
-}
-
 VulkanDevice* VulkanCommandBuffer::getDevice() const
 {
     return m_commandEncoder->getDevice();

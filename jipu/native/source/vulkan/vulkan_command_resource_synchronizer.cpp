@@ -4,8 +4,8 @@
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
-#include "vulkan_command_buffer.h"
 #include "vulkan_command_encoder.h"
+#include "vulkan_command_recorder.h"
 #include "vulkan_device.h"
 #include "vulkan_texture.h"
 
@@ -13,8 +13,8 @@
 
 namespace jipu
 {
-VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
-    : m_commandBuffer(commandBuffer)
+VulkanCommandResourceSynchronizer::VulkanCommandResourceSynchronizer(VulkanCommandRecorder* commandRecorder, const VulkanCommandResourceSynchronizerDescriptor& descriptor)
+    : m_commandRecorder(commandRecorder)
     , m_descriptor(descriptor)
     , m_currentPassIndex(-1)
 {
@@ -189,11 +189,10 @@ void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier
     auto& bufferMemoryBarriers = barrier.bufferMemoryBarriers;
     auto& imageMemoryBarriers = barrier.imageMemoryBarriers;
 
-    auto vulkanCommandBuffer = downcast(m_commandBuffer);
-    auto vulkanDevice = vulkanCommandBuffer->getDevice();
+    auto vulkanDevice = m_commandRecorder->getDevice();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer->getVkCommandBuffer(),
+    vkAPI.CmdPipelineBarrier(m_commandRecorder->getVkCommandBuffer(),
                              srcStageMask,
                              dstStageMask,
                              dependencyFlags,

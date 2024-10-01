@@ -6,6 +6,7 @@
 #include "vulkan_api.h"
 #include "vulkan_binding_group_layout.h"
 #include "vulkan_command_buffer.h"
+#include "vulkan_command_buffer_pool.h"
 #include "vulkan_command_encoder.h"
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
@@ -52,6 +53,9 @@ public:
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
 
 public:
+    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder(const VulkanCommandRecorderDecsriptor& descriptor);
+
+public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
     std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
@@ -66,6 +70,7 @@ public:
     VulkanPhysicalDevice& getPhysicalDevice() const;
     VulkanSemaphorePool* getSemaphorePool();
     VulkanFencePool* getFencePool();
+    VulkanCommandBufferPool* getCommandBufferPool();
 
 public:
     VkDevice getVkDevice() const;
@@ -92,6 +97,7 @@ private:
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
     std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
     std::unique_ptr<VulkanFencePool> m_fencePool = nullptr;
+    std::unique_ptr<VulkanCommandBufferPool> m_commandBufferPool = nullptr;
 
     std::vector<VkQueue> m_queues{};
 

@@ -14,7 +14,7 @@ namespace jipu
 class Buffer;
 class Texture;
 class BindingGroup;
-class VulkanCommandBuffer;
+class VulkanCommandRecorder;
 
 struct VulkanCommandResourceSynchronizerDescriptor
 {
@@ -30,7 +30,7 @@ class VulkanCommandResourceSynchronizer final
 {
 public:
     VulkanCommandResourceSynchronizer() = default;
-    VulkanCommandResourceSynchronizer(VulkanCommandBuffer* commandBuffer, const VulkanCommandResourceSynchronizerDescriptor& descriptor);
+    VulkanCommandResourceSynchronizer(VulkanCommandRecorder* commandRecorder, const VulkanCommandResourceSynchronizerDescriptor& descriptor);
     ~VulkanCommandResourceSynchronizer() = default;
 
 public:
@@ -97,7 +97,7 @@ private:
     void cmdPipelineBarrier(const PipelineBarrier& barrier);
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanCommandRecorder* m_commandRecorder = nullptr;
     VulkanCommandResourceSynchronizerDescriptor m_descriptor{};
     int32_t m_currentPassIndex = -1;
 

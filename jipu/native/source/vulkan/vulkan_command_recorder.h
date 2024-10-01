@@ -40,15 +40,21 @@ struct CommandResourceInfo
 
 struct VulkanCommandRecordResult
 {
+    VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
     CommandResourceInfo resourceInfo{};
 };
 
-class VULKAN_EXPORT VulkanCommandRecorder
+struct VulkanCommandRecorderDecsriptor
+{
+    VulkanCommandBuffer* commandBuffer = nullptr;
+};
+
+class VULKAN_EXPORT VulkanCommandRecorder final
 {
 public:
     VulkanCommandRecorder() = delete;
-    VulkanCommandRecorder(VulkanCommandBuffer* commandBuffer);
-    ~VulkanCommandRecorder() = default;
+    VulkanCommandRecorder(VulkanDevice* device, const VulkanCommandRecorderDecsriptor& descriptor);
+    ~VulkanCommandRecorder();
 
     VulkanCommandRecorder(const VulkanCommandRecorder&) = delete;
     VulkanCommandRecorder& operator=(const VulkanCommandRecorder&) = delete;
@@ -94,16 +100,26 @@ private:
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
+public:
+    VulkanDevice* getDevice() const;
+
+public:
+    VkCommandBuffer getVkCommandBuffer() const;
+
 private:
     VulkanCommandRecordResult result();
 
 private:
-    VulkanCommandBuffer* m_commandBuffer = nullptr;
+    VulkanDevice* m_device = nullptr;
+    VulkanCommandRecorderDecsriptor m_descriptor{};
     VulkanCommandResourceSynchronizer m_commandResourceSyncronizer{};
 
 private:
     VulkanRenderPipeline* m_renderPipeline = nullptr;
     VulkanComputePipeline* m_computePipeline = nullptr;
+
+private:
+    VkCommandBuffer m_vkcommandBuffer = VK_NULL_HANDLE;
 };
 
 // Generator

@@ -26,9 +26,6 @@ public:
     ~VulkanCommandBuffer() override;
 
 public:
-    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
-
-public:
     VulkanDevice* getDevice() const;
     VulkanCommandEncoder* getCommandEncoder() const;
     const CommandEncodingResult& getCommandEncodingResult() const;

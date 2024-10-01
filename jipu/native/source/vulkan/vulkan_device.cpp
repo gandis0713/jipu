@@ -20,8 +20,6 @@ namespace jipu
 VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDescriptor& descriptor)
     : vkAPI(downcast(physicalDevice.getInstance())->vkAPI)
     , m_physicalDevice(physicalDevice)
-    , m_semaphorePool(std::make_unique<VulkanSemaphorePool>(this))
-    , m_fencePool(std::make_unique<VulkanFencePool>(this))
     , m_renderPassCache(*this)
     , m_frameBufferCache(*this)
 {
@@ -58,6 +56,10 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(*this, allocatorDescriptor);
+
+    m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
+    m_fencePool = std::make_unique<VulkanFencePool>(this);
+    m_commandBufferPool = std::make_unique<VulkanCommandBufferPool>(this);
 }
 
 VulkanDevice::~VulkanDevice()
@@ -67,6 +69,7 @@ VulkanDevice::~VulkanDevice()
     vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
+    m_commandBufferPool.reset();
     m_semaphorePool.reset();
     m_fencePool.reset();
     m_frameBufferCache.clear();
@@ -162,6 +165,11 @@ std::unique_ptr<CommandEncoder> VulkanDevice::createCommandEncoder(const Command
     return std::make_unique<VulkanCommandEncoder>(this, descriptor);
 }
 
+std::unique_ptr<VulkanCommandRecorder> VulkanDevice::createCommandRecorder(const VulkanCommandRecorderDecsriptor& descriptor)
+{
+    return std::make_unique<VulkanCommandRecorder>(this, descriptor);
+}
+
 VulkanRenderPass* VulkanDevice::getRenderPass(const VulkanRenderPassDescriptor& descriptor)
 {
     return m_renderPassCache.getRenderPass(descriptor);
@@ -190,6 +198,11 @@ VulkanSemaphorePool* VulkanDevice::getSemaphorePool()
 VulkanFencePool* VulkanDevice::getFencePool()
 {
     return m_fencePool.get();
+}
+
+VulkanCommandBufferPool* VulkanDevice::getCommandBufferPool()
+{
+    return m_commandBufferPool.get();
 }
 
 VkDevice VulkanDevice::getVkDevice() const
