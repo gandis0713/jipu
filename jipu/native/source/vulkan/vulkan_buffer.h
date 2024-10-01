@@ -29,7 +29,7 @@ public:
     uint64_t getSize() const override;
 
 public:
-    void setTransition(CommandBuffer& commandBuffer, VkPipelineStageFlags flags);
+    void setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags);
 
     VkBuffer getVkBuffer() const;
 

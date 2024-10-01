@@ -74,10 +74,9 @@ uint64_t VulkanBuffer::getSize() const
     return m_descriptor.size;
 }
 
-void VulkanBuffer::setTransition(CommandBuffer& commandBuffer, VkPipelineStageFlags flags)
+void VulkanBuffer::setTransition(VkCommandBuffer commandBuffer, VkPipelineStageFlags flags)
 {
     auto& vulkanDevice = downcast(m_device);
-    auto& vulkanCommandBuffer = downcast(commandBuffer);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     VkBufferMemoryBarrier barrier{};
@@ -91,7 +90,7 @@ void VulkanBuffer::setTransition(CommandBuffer& commandBuffer, VkPipelineStageFl
     barrier.size = getSize();
     barrier.offset = 0;
 
-    vkAPI.CmdPipelineBarrier(vulkanCommandBuffer.getVkCommandBuffer(), m_stageFlags, flags, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+    vkAPI.CmdPipelineBarrier(commandBuffer, m_stageFlags, flags, 0, 0, nullptr, 1, &barrier, 0, nullptr);
 
     m_stageFlags = flags;
 }
