@@ -66,7 +66,6 @@ VulkanDevice::~VulkanDevice()
 {
     vkAPI.DeviceWaitIdle(m_device);
 
-    vkAPI.DestroyCommandPool(m_device, m_commandPool, nullptr);
     vkAPI.DestroyDescriptorPool(m_device, m_descriptorPool, nullptr);
 
     m_commandBufferPool.reset();
@@ -223,26 +222,6 @@ VkQueue VulkanDevice::getVkQueue(uint32_t index) const
 
     // TODO: return suit queue
     return m_queues[index];
-}
-
-VkCommandPool VulkanDevice::getVkCommandPool()
-{
-    // TODO: get or create by command pool create information (not VkCommandPoolCreateInfo).
-    // for instance, use queue index.
-    if (m_commandPool == VK_NULL_HANDLE)
-    {
-        VkCommandPoolCreateInfo commandPoolCreateInfo{};
-        commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        commandPoolCreateInfo.queueFamilyIndex = 0;                                    // TODO: get queue index by create information.
-        commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
-
-        if (vkAPI.CreateCommandPool(m_device, &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)
-        {
-            throw std::runtime_error("Failed to create command pool.");
-        }
-    }
-
-    return m_commandPool;
 }
 
 VkDescriptorPool VulkanDevice::getVkDescriptorPool()

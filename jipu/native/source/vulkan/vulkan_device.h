@@ -78,7 +78,6 @@ public:
 
     VkQueue getVkQueue(uint32_t index = 0) const;
 
-    VkCommandPool getVkCommandPool();
     VkDescriptorPool getVkDescriptorPool();
 
 public:
@@ -93,8 +92,8 @@ private:
 
 private:
     VkDevice m_device = VK_NULL_HANDLE;
-    VkCommandPool m_commandPool = VK_NULL_HANDLE;
     VkDescriptorPool m_descriptorPool = VK_NULL_HANDLE;
+
     std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
     std::unique_ptr<VulkanFencePool> m_fencePool = nullptr;
     std::unique_ptr<VulkanCommandBufferPool> m_commandBufferPool = nullptr;
