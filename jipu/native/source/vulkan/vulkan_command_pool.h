@@ -8,12 +8,12 @@ namespace jipu
 {
 
 class VulkanDevice;
-class VulkanCommandBufferPool final
+class VulkanCommandPool final
 {
 public:
-    VulkanCommandBufferPool() = delete;
-    explicit VulkanCommandBufferPool(VulkanDevice* device);
-    ~VulkanCommandBufferPool();
+    VulkanCommandPool() = delete;
+    explicit VulkanCommandPool(VulkanDevice* device);
+    ~VulkanCommandPool();
 
 public:
     VkCommandBuffer create(/* TODO */);

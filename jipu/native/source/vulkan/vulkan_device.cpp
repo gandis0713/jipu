@@ -59,7 +59,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
     m_fencePool = std::make_unique<VulkanFencePool>(this);
-    m_commandBufferPool = std::make_unique<VulkanCommandBufferPool>(this);
+    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this);
 }
 
 VulkanDevice::~VulkanDevice()
@@ -199,7 +199,7 @@ VulkanFencePool* VulkanDevice::getFencePool()
     return m_fencePool.get();
 }
 
-VulkanCommandBufferPool* VulkanDevice::getCommandBufferPool()
+VulkanCommandPool* VulkanDevice::getCommandPool()
 {
     return m_commandBufferPool.get();
 }

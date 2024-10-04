@@ -16,12 +16,13 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_buffer.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_pool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_resources.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_fence_pool.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_framebuffer.cpp
@@ -48,12 +49,13 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_binding_group.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_buffer.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_pool.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_resources.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_fence_pool.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_framebuffer.h

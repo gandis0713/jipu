@@ -1,4 +1,4 @@
-#include "vulkan_command_buffer_pool.h"
+#include "vulkan_command_pool.h"
 
 #include "vulkan_device.h"
 
@@ -7,7 +7,7 @@
 namespace jipu
 {
 
-VulkanCommandBufferPool::VulkanCommandBufferPool(VulkanDevice* device)
+VulkanCommandPool::VulkanCommandPool(VulkanDevice* device)
     : m_device(device)
 {
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
@@ -21,7 +21,7 @@ VulkanCommandBufferPool::VulkanCommandBufferPool(VulkanDevice* device)
     }
 }
 
-VulkanCommandBufferPool::~VulkanCommandBufferPool()
+VulkanCommandPool::~VulkanCommandPool()
 {
     for (auto& commandBuffer : m_commandBuffers)
     {
@@ -36,7 +36,7 @@ VulkanCommandBufferPool::~VulkanCommandBufferPool()
     m_device->vkAPI.DestroyCommandPool(m_device->getVkDevice(), m_commandPool, nullptr);
 }
 
-VkCommandBuffer VulkanCommandBufferPool::create(/* TODO */)
+VkCommandBuffer VulkanCommandPool::create(/* TODO */)
 {
     for (auto& commandBuffer : m_commandBuffers)
     {
@@ -65,7 +65,7 @@ VkCommandBuffer VulkanCommandBufferPool::create(/* TODO */)
     return commandBuffer;
 }
 
-void VulkanCommandBufferPool::release(VkCommandBuffer commandBuffer)
+void VulkanCommandPool::release(VkCommandBuffer commandBuffer)
 {
     if (!m_commandBuffers.contains(commandBuffer))
     {

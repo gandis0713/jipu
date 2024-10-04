@@ -4,7 +4,7 @@
 #include "vulkan_buffer.h"
 #include "vulkan_command.h"
 #include "vulkan_command_buffer.h"
-#include "vulkan_command_buffer_pool.h"
+#include "vulkan_command_pool.h"
 #include "vulkan_compute_pass_encoder.h"
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
@@ -141,7 +141,7 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
 
 void VulkanCommandRecorder::beginRecord()
 {
-    m_vkcommandBuffer = m_device->getCommandBufferPool()->create();
+    m_vkcommandBuffer = m_device->getCommandPool()->create();
 
     VkCommandBufferBeginInfo commandBufferBeginInfo{};
     commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
