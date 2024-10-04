@@ -416,8 +416,6 @@ void Im_Gui::build()
         // Vertex buffer
         if ((m_vertexBuffer == nullptr) || (m_vertexBuffer->getSize() != vertexBufferSize))
         {
-            m_vertexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = vertexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kVertex;
@@ -429,8 +427,6 @@ void Im_Gui::build()
         // Index buffer
         if ((m_indexBuffer == nullptr) || (m_indexBuffer->getSize() < indexBufferSize))
         {
-            m_indexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = indexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kIndex;
