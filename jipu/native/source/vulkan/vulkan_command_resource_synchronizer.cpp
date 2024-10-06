@@ -189,10 +189,10 @@ void VulkanCommandResourceSynchronizer::cmdPipelineBarrier(const PipelineBarrier
     auto& bufferMemoryBarriers = barrier.bufferMemoryBarriers;
     auto& imageMemoryBarriers = barrier.imageMemoryBarriers;
 
-    auto vulkanDevice = m_commandRecorder->getDevice();
+    auto vulkanDevice = m_commandRecorder->getCommandBuffer()->getDevice();
     const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
 
-    vkAPI.CmdPipelineBarrier(m_commandRecorder->getVkCommandBuffer(),
+    vkAPI.CmdPipelineBarrier(m_commandRecorder->getCommandBuffer()->getVkCommandBuffer(),
                              srcStageMask,
                              dstStageMask,
                              dependencyFlags,

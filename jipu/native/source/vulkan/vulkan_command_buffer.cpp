@@ -15,8 +15,11 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, c
 
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
+    releaseVkCommandBuffer();
+
+    auto device = getDevice();
     if (m_signalSemaphore)
-        getDevice()->vkAPI.DestroySemaphore(getDevice()->getVkDevice(), m_signalSemaphore, nullptr);
+        device->vkAPI.DestroySemaphore(device->getVkDevice(), m_signalSemaphore, nullptr);
 }
 
 VulkanDevice* VulkanCommandBuffer::getDevice() const
@@ -32,6 +35,21 @@ VulkanCommandEncoder* VulkanCommandBuffer::getCommandEncoder() const
 const CommandEncodingResult& VulkanCommandBuffer::getCommandEncodingResult() const
 {
     return m_commandEncodingResult;
+}
+
+VulkanCommandRecordResult VulkanCommandBuffer::recordToVkCommandBuffer()
+{
+    releaseVkCommandBuffer();
+    createVkCommandBuffer();
+
+    auto commandRecorder = createCommandRecorder();
+
+    return commandRecorder->record();
+}
+
+VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
+{
+    return m_commandBuffer;
 }
 
 void VulkanCommandBuffer::setSignalSemaphoreStage(VkPipelineStageFlags stage)
@@ -70,6 +88,27 @@ std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> VulkanCommandBuffer::e
     m_waitSemaphores.clear();
 
     return waitSemaphores;
+}
+
+std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
+{
+    return std::make_unique<VulkanCommandRecorder>(this);
+}
+
+void VulkanCommandBuffer::createVkCommandBuffer()
+{
+    releaseVkCommandBuffer();
+
+    m_commandBuffer = getDevice()->getCommandPool()->create();
+}
+
+void VulkanCommandBuffer::releaseVkCommandBuffer()
+{
+    if (m_commandBuffer)
+    {
+        getDevice()->getCommandPool()->release(m_commandBuffer);
+        m_commandBuffer = VK_NULL_HANDLE;
+    }
 }
 
 } // namespace jipu

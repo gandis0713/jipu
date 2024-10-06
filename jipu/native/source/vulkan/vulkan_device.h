@@ -53,9 +53,6 @@ public:
     std::unique_ptr<CommandEncoder> createCommandEncoder(const CommandEncoderDescriptor& descriptor) override;
 
 public:
-    std::unique_ptr<VulkanCommandRecorder> createCommandRecorder(const VulkanCommandRecorderDecsriptor& descriptor);
-
-public:
     std::unique_ptr<RenderPipeline> createRenderPipeline(const VulkanRenderPipelineDescriptor& descriptor);
     std::unique_ptr<BindingGroupLayout> createBindingGroupLayout(const VulkanBindingGroupLayoutDescriptor& descriptor);
     std::unique_ptr<Texture> createTexture(const VulkanTextureDescriptor& descriptor);
