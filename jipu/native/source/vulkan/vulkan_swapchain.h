@@ -16,6 +16,7 @@ namespace jipu
 {
 
 class VulkanDevice;
+class VulkanQueue;
 class VulkanTexture;
 class VulkanSurface;
 class VulkanTextureView;
@@ -38,6 +39,7 @@ struct VulkanSwapchainDescriptor
     VkPresentModeKHR presentMode;
     VkBool32 clipped;
     VkSwapchainKHR oldSwapchain;
+    VulkanQueue* queue = nullptr;
 };
 
 class VULKAN_EXPORT VulkanSwapchain : public Swapchain
@@ -55,7 +57,7 @@ public:
     uint32_t getWidth() const override;
     uint32_t getHeight() const override;
 
-    void present(Queue* queue) override;
+    void present() override;
     TextureView* acquireNextTextureView() override;
 
 public:

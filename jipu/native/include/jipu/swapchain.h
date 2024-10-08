@@ -11,6 +11,8 @@
 namespace jipu
 {
 
+class Queue;
+class Surface;
 struct SwapchainDescriptor
 {
     Surface* surface = nullptr;
@@ -19,9 +21,11 @@ struct SwapchainDescriptor
     ColorSpace colorSpace = ColorSpace::kUndefined;
     uint32_t width = 0;
     uint32_t height = 0;
+
+    // for Vulkan and D3D12
+    Queue* queue = nullptr;
 };
 
-class Queue;
 class JIPU_EXPORT Swapchain
 {
 public:
@@ -38,7 +42,7 @@ public:
     virtual uint32_t getWidth() const = 0;
     virtual uint32_t getHeight() const = 0;
 
-    virtual void present(Queue* queue) = 0;
+    virtual void present() = 0;
     virtual TextureView* acquireNextTextureView() = 0;
 };
 

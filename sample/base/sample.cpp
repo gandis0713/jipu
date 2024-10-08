@@ -28,8 +28,8 @@ Sample::~Sample()
     if (m_imgui.has_value())
         m_imgui.value().clear();
 
-    m_queue.reset();
     m_swapchain.reset();
+    m_queue.reset();
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
@@ -71,7 +71,8 @@ void Sample::createSwapchain()
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
         .width = m_width,
-        .height = m_height
+        .height = m_height,
+        .queue = m_queue.get()
     };
 
     m_swapchain = m_device->createSwapchain(descriptor);
@@ -100,8 +101,8 @@ void Sample::init()
     getPhysicalDevices();
     createSurface();
     createDevice();
-    createSwapchain();
     createQueue();
+    createSwapchain();
 
     if (m_imgui.has_value())
     {

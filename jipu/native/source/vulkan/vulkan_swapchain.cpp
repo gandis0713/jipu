@@ -118,6 +118,7 @@ VulkanSwapchainDescriptor generateVulkanSwapchainDescriptor(VulkanDevice& device
     vkdescriptor.presentMode = presentMode;
     vkdescriptor.clipped = VK_TRUE;
     vkdescriptor.oldSwapchain = VK_NULL_HANDLE;
+    vkdescriptor.queue = downcast(descriptor.queue);
 
     return vkdescriptor;
 }
@@ -225,11 +226,17 @@ uint32_t VulkanSwapchain::getHeight() const
     return m_descriptor.imageExtent.height;
 }
 
-void VulkanSwapchain::present(Queue* queue)
+void VulkanSwapchain::present()
 {
     VulkanDevice& vulkanDevice = downcast(m_device);
-    auto vulkanQueue = downcast(queue);
+    auto vulkanQueue = downcast(m_descriptor.queue);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
+
+    // auto presentSubmitInfos = vulkanQueue->getPresentSubmitContext();
+    // for (auto& presentSubmitInfo : presentSubmitInfos)
+    // {
+    //     // presentSubmitInfo.signal = m_presentSemaphore;
+    // }
 
     // present
     VkPresentInfoKHR presentInfo{};

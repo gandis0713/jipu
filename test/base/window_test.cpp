@@ -22,6 +22,8 @@ void WindowTest::SetUp()
     m_surface = m_instance->createSurface(surfaceDescriptor);
     EXPECT_NE(nullptr, m_surface);
 
+    m_queue = m_device->createQueue(QueueDescriptor{ .flags = QueueFlagBits::kGraphics });
+
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;
 #else
@@ -33,7 +35,8 @@ void WindowTest::SetUp()
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
         .width = m_width,
-        .height = m_height
+        .height = m_height,
+        .queue = m_queue.get()
     };
 
     m_swapchain = m_device->createSwapchain(descriptor);

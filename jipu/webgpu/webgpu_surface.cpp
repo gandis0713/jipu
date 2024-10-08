@@ -125,6 +125,9 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
 {
     if (m_swapchain == nullptr)
     {
+        WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(config->device);
+        WebGPUQueue* webgpuQueue = webgpuDevice->getQueue();
+
         SwapchainDescriptor descriptor{};
         descriptor.width = config->width;
         descriptor.height = config->height;
@@ -132,10 +135,9 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
         descriptor.presentMode = ToPresentMode(config->presentMode);
         descriptor.colorSpace = ColorSpace::kSRGBNonLinear;
         descriptor.surface = m_surface.get();
+        descriptor.queue = webgpuQueue->getQueue();
 
-        WebGPUDevice* webgpuDevice = reinterpret_cast<WebGPUDevice*>(config->device);
         auto device = webgpuDevice->getDevice();
-
         m_swapchain = device->createSwapchain(descriptor);
     }
 
@@ -167,10 +169,7 @@ void WebGPUSurface::present()
         return;
     }
 
-    auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
-    auto wgpuQueue = wgpuDevice->getQueue();
-
-    m_swapchain->present(wgpuQueue->getQueue());
+    m_swapchain->present();
 }
 
 // Convert from WebGPU to JIPU
