@@ -244,7 +244,7 @@ void VulkanSubpassesSample::draw()
     auto vulkanDevice = downcast(m_device.get());
     auto vulkanCommandEncoder = downcast(commandEncoder.get());
 
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
 
     // render passes
     if (!m_useSubpasses)

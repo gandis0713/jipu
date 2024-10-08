@@ -248,7 +248,7 @@ void VulkanSwapchain::present(Queue* queue)
     vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
 }
 
-TextureView* VulkanSwapchain::acquireNextTexture()
+TextureView* VulkanSwapchain::acquireNextTextureView()
 {
     VulkanDevice& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;

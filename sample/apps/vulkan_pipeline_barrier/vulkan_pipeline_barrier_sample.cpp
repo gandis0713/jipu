@@ -369,7 +369,7 @@ void VulkanPipelineBarrierSample::update()
 
 void VulkanPipelineBarrierSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
 
     // offscreen pass
     {

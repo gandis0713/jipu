@@ -237,7 +237,7 @@ void InstancingSample::update()
 
 void InstancingSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
         auto commandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
 

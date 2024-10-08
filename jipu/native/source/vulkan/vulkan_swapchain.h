@@ -56,7 +56,7 @@ public:
     uint32_t getHeight() const override;
 
     void present(Queue* queue) override;
-    TextureView* acquireNextTexture() override;
+    TextureView* acquireNextTextureView() override;
 
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;

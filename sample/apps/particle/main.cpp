@@ -180,7 +180,7 @@ void ParticleSample::draw()
     std::unique_ptr<CommandBuffer> renderCommandBuffer = nullptr;
     // encode render command
     {
-        auto renderView = m_swapchain->acquireNextTexture();
+        auto renderView = m_swapchain->acquireNextTextureView();
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
         std::unique_ptr<CommandEncoder> renderCommandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);

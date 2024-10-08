@@ -342,7 +342,7 @@ void DeferredSample::draw()
     CommandEncoderDescriptor commandEncoderDescriptor{};
     auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
 
     {
         ColorAttachment positionColorAttachment{

@@ -97,7 +97,7 @@ void OffscreenSample::update()
 
 void OffscreenSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
 
     // offscreen pass
     {

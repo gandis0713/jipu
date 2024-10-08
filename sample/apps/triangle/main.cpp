@@ -158,7 +158,7 @@ void TriangleSample::update()
 
 void TriangleSample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
         ColorAttachment attachment{
             .renderView = renderView

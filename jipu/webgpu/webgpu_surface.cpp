@@ -150,13 +150,13 @@ void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)
         return;
     }
 
-    auto currentTextureView = m_swapchain->acquireNextTexture();
+    auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
+    auto wgpuQueue = wgpuDevice->getQueue();
+
+    auto currentTextureView = m_swapchain->acquireNextTextureView();
     auto currentTexture = currentTextureView->getTexture();
 
-    auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
-    auto wgpuTexture = wgpuDevice->createTexture(currentTexture);
-
-    surfaceTexture->texture = reinterpret_cast<WGPUTexture>(wgpuTexture);
+    surfaceTexture->texture = reinterpret_cast<WGPUTexture>(currentTexture);
     surfaceTexture->status = WGPUSurfaceGetCurrentTextureStatus_Success;
 }
 
@@ -166,6 +166,7 @@ void WebGPUSurface::present()
     {
         return;
     }
+
     auto wgpuDevice = reinterpret_cast<WebGPUDevice*>(m_configuration.device);
     auto wgpuQueue = wgpuDevice->getQueue();
 

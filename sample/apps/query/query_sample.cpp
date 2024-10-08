@@ -78,7 +78,7 @@ void QuerySample::update()
 
 void QuerySample::draw()
 {
-    auto renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
         ColorAttachment attachment{
             .renderView = renderView
