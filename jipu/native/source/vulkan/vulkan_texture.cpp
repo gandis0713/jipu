@@ -76,18 +76,18 @@ VulkanTexture::VulkanTexture(VulkanDevice& device, const VulkanTextureDescriptor
         auto& vulkanResourceAllocator = device.getResourceAllocator();
         m_resource = vulkanResourceAllocator.createTexture(createInfo);
 
-        m_owner = VulkanTextureOwner::User;
+        m_owner = Owner::User;
     }
     else
     {
         m_resource.image = m_descriptor.image;
-        m_owner = VulkanTextureOwner::Swapchain;
+        m_owner = Owner::Swapchain;
     }
 }
 
 VulkanTexture::~VulkanTexture()
 {
-    if (m_owner == VulkanTextureOwner::User)
+    if (m_owner == Owner::User)
     {
         auto& vulkanResourceAllocator = downcast(m_device).getResourceAllocator();
         vulkanResourceAllocator.destroyTexture(m_resource);
@@ -149,6 +149,18 @@ VkImage VulkanTexture::getVkImage() const
     return m_resource.image;
 }
 
+VkImageLayout VulkanTexture::getFinalLayout() const
+{
+    switch (m_owner)
+    {
+    case Owner::Swapchain:
+        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    default:
+    case Owner::User:
+        return GenerateFinalImageLayout(m_descriptor.usage);
+    }
+}
+
 void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range)
 {
     if (commandBuffer == VK_NULL_HANDLE)
@@ -190,16 +202,9 @@ void VulkanTexture::setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipeline
     vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-VkImageLayout VulkanTexture::getFinalLayout() const
+VulkanTexture::Owner VulkanTexture::getOwner() const
 {
-    switch (m_owner)
-    {
-    case VulkanTextureOwner::Swapchain:
-        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    default:
-    case VulkanTextureOwner::User:
-        return GenerateFinalImageLayout(m_descriptor.usage);
-    }
+    return m_owner;
 }
 
 // Convert Helper

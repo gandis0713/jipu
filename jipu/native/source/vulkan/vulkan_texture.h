@@ -61,28 +61,29 @@ public:
 public:
     VkImage getVkImage() const;
 
+    /// @brief generate final layout by usage.
+    /// @return VKImageLayout
+    VkImageLayout getFinalLayout() const;
+
     /// @brief record pipeline barrier command, but not submitted.
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageSubresourceRange range);
     void setPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
-    /// @brief generate final layout by usage.
-    /// @return VKImageLayout
-    VkImageLayout getFinalLayout() const;
+    enum class Owner
+    {
+        User,
+        Swapchain
+    };
+
+    Owner getOwner() const;
 
 private:
     VulkanDevice& m_device;
     const VulkanTextureDescriptor m_descriptor{};
 
 private:
-    enum class VulkanTextureOwner
-    {
-        User,
-        Swapchain
-    };
-
-private:
     VulkanTextureResource m_resource;
-    VulkanTextureOwner m_owner;
+    Owner m_owner;
 };
 
 DOWN_CAST(VulkanTexture, Texture);
