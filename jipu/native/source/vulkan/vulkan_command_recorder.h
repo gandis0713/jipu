@@ -16,30 +16,32 @@ class VulkanComputePipeline;
 
 struct CommandResourceInfo
 {
-    struct Source // consumer
-    {
-        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-        std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } dst;
-
-    struct Destination // producer
+    struct Source // producer
     {
         std::unordered_map<Buffer*, BufferUsageInfo> buffers;
         std::unordered_map<Texture*, TextureUsageInfo> textures;
     } src;
 
+    struct Destination // consumer
+    {
+        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+        std::unordered_map<Texture*, TextureUsageInfo> textures;
+    } dst;
+
     void clear()
     {
-        dst.buffers.clear();
-        dst.textures.clear();
-
         src.buffers.clear();
         src.textures.clear();
+
+        dst.buffers.clear();
+        dst.textures.clear();
     }
 };
 
 struct VulkanCommandRecordResult
 {
+    CommandBuffer* commandBuffer = nullptr;
+    // resources info that not syncronized in command buffer.
     CommandResourceInfo resourceInfo{};
 };
 

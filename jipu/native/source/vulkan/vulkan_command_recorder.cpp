@@ -674,6 +674,7 @@ VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 VulkanCommandRecordResult VulkanCommandRecorder::result()
 {
     VulkanCommandRecordResult result{};
+    result.commandBuffer = m_commandBuffer;
 
     auto syncronizationResult = m_commandResourceSyncronizer.result();
     for (auto& info : syncronizationResult.notSynchronizedPassResourceInfos)
