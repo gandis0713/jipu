@@ -21,6 +21,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_deleter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_resource.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.cpp
@@ -39,6 +40,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_sampler.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_shader_module.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_semaphore_pool.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_submit_context.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_surface.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_swapchain.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture.cpp
@@ -54,6 +56,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_deleter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_resource.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.h
@@ -73,6 +76,7 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_sampler.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_shader_module.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_semaphore_pool.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_submit_context.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_surface.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_swapchain.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_texture.h
