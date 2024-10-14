@@ -21,7 +21,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_deleter.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_context.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.cpp
@@ -56,7 +55,6 @@ set(SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_recorder.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_command_buffer_tracker.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_compute_pass_encoder.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_deleter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_device.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_inflight_context.h
   ${CMAKE_CURRENT_SOURCE_DIR}/native/source/vulkan/vulkan_instance.h
