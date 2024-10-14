@@ -11,7 +11,7 @@
 #include "vulkan_export.h"
 #include "vulkan_fence_pool.h"
 #include "vulkan_framebuffer.h"
-#include "vulkan_inflight_resource.h"
+#include "vulkan_inflight_context.h"
 #include "vulkan_pipeline.h"
 #include "vulkan_pipeline_layout.h"
 #include "vulkan_render_pass.h"
@@ -69,6 +69,7 @@ public:
     VulkanSemaphorePool* getSemaphorePool();
     VulkanFencePool* getFencePool();
     VulkanCommandPool* getCommandPool();
+    VulkanInflightContext* getInflightContext();
 
 public:
     VkDevice getVkDevice() const;
@@ -101,7 +102,7 @@ private:
     VulkanRenderPassCache m_renderPassCache;
     VulkanFramebufferCache m_frameBufferCache;
     std::unique_ptr<VulkanResourceAllocator> m_resourceAllocator = nullptr;
-    std::unique_ptr<VulkanInflightResource> m_inflightResource = nullptr;
+    std::unique_ptr<VulkanInflightContext> m_inflightContext = nullptr;
 };
 
 DOWN_CAST(VulkanDevice, Device);
