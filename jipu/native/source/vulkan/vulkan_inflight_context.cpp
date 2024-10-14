@@ -1,4 +1,4 @@
-#include "vulkan_inflight_resource.h"
+#include "vulkan_inflight_context.h"
 
 #include "vulkan_binding_group.h"
 #include "vulkan_binding_group_layout.h"
@@ -15,7 +15,7 @@
 namespace jipu
 {
 
-InflightResource VulkanInflightResource::generate(std::vector<CommandBuffer*> commandBuffers)
+InflightResource VulkanInflightContext::generate(std::vector<CommandBuffer*> commandBuffers)
 {
     InflightResource inflightResource{};
     for (auto& commandBuffer : commandBuffers)
@@ -112,8 +112,25 @@ InflightResource VulkanInflightResource::generate(std::vector<CommandBuffer*> co
     return inflightResource;
 }
 
-VulkanInflightResource::VulkanInflightResource(VulkanDevice* device)
+VulkanInflightContext::VulkanInflightContext(VulkanDevice* device)
     : m_device(device)
+{
+}
+
+VulkanInflightContext::~VulkanInflightContext()
+{
+}
+
+VkFence VulkanInflightContext::add(VkQueue queue, InflightResource resource)
+{
+    return VK_NULL_HANDLE;
+}
+
+void VulkanInflightContext::clear(VkQueue queue)
+{
+}
+
+void VulkanInflightContext::clearAll()
 {
 }
 
