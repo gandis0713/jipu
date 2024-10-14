@@ -18,16 +18,52 @@ enum class SubmitType
     kPresent,
 };
 
-struct VulkanSubmitInfo
+struct VulkanSubmit
 {
-    SubmitType type = SubmitType::kNone;
+    struct Info
+    {
+        SubmitType type = SubmitType::kNone;
 
-    std::vector<VkCommandBuffer> commandBuffers{};
-    std::vector<VkSemaphore> signalSemaphores{};
-    std::vector<VkSemaphore> waitSemaphores{};
-    std::vector<VkPipelineStageFlags> waitStages{};
+        std::vector<VkCommandBuffer> commandBuffers{};
+        std::vector<VkSemaphore> signalSemaphores{};
+        std::vector<VkSemaphore> waitSemaphores{};
+        std::vector<VkPipelineStageFlags> waitStages{};
+    } info{};
+
+    struct Object
+    {
+        std::unordered_set<VkCommandBuffer> commandBuffers{};
+        std::unordered_set<VkBuffer> buffers{};
+        std::unordered_set<VkImage> images{};
+        std::unordered_set<VkImageView> imageViews{};
+        std::unordered_set<VkSemaphore> signalSemaphores{};
+        // std::unordered_set<VkSemaphore> waitSemaphores{}; // not used.
+        std::unordered_set<VkSampler> samplers{};
+        std::unordered_set<VkPipeline> pipelines{};
+        std::unordered_set<VkPipelineLayout> pipelineLayouts{};
+        std::unordered_set<VkDescriptorSet> descriptorSet{};
+        std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
+        std::unordered_set<VkFramebuffer> framebuffers{};
+        std::unordered_set<VkRenderPass> renderPasses{};
+    } object{};
+
+    void add(VkCommandBuffer commandBuffer);
+    void add(VkBuffer buffer);
+    void add(VkImage image);
+    void add(VkImageView imageView);
+    void add(VkSampler sampler);
+    void add(VkPipeline pipeline);
+    void add(VkPipelineLayout pipelineLayout);
+    void add(VkDescriptorSet descriptorSet);
+    void add(VkDescriptorSetLayout descriptorSetLayout);
+    void add(VkFramebuffer framebuffer);
+    void add(VkRenderPass renderPass);
+
+    void addSignalSemaphore(const std::vector<VkSemaphore>& semaphores);
+    void addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stages);
 };
 
+class VulkanDevice;
 class VulkanSubmitContext final
 {
 public:
@@ -35,13 +71,15 @@ public:
     ~VulkanSubmitContext() = default;
 
 public:
-    static VulkanSubmitContext create(const std::vector<VulkanCommandRecordResult>& results);
+    static VulkanSubmitContext create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results);
 
 public:
-    std::vector<VulkanSubmitInfo> getSubmitInfos() const;
+    std::vector<VulkanSubmit> getSubmits() const;
+    std::vector<VulkanSubmit::Info> getSubmitInfos() const;
+    std::vector<VulkanSubmit::Object> getSubmitObjects() const;
 
 private:
-    std::vector<VulkanSubmitInfo> m_submitInfos{};
+    std::vector<VulkanSubmit> m_submits{};
 };
 
 } // namespace jipu
