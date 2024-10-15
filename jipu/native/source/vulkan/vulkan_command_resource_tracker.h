@@ -26,28 +26,16 @@ struct TextureUsageInfo
     VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
 };
 
+struct ResourceInfo
+{
+    std::unordered_map<Buffer*, BufferUsageInfo> buffers;
+    std::unordered_map<Texture*, TextureUsageInfo> textures;
+};
+
 struct PassResourceInfo
 {
-    struct Source // consumer
-    {
-        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-        std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } dst;
-
-    struct Destination // producer
-    {
-        std::unordered_map<Buffer*, BufferUsageInfo> buffers;
-        std::unordered_map<Texture*, TextureUsageInfo> textures;
-    } src;
-
-    void clear()
-    {
-        dst.buffers.clear();
-        dst.textures.clear();
-
-        src.buffers.clear();
-        src.textures.clear();
-    }
+    ResourceInfo dst{};
+    ResourceInfo src{};
 };
 
 class VulkanCommandEncoder;

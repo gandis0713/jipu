@@ -82,7 +82,7 @@ void VulkanCommandResourceTracker::dispatchIndirect(DispatchIndirectCommand* com
 void VulkanCommandResourceTracker::endComputePass(EndComputePassCommand* command)
 {
     m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
-    m_ongoingPassResourceInfo.clear();
+    m_ongoingPassResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::beginRenderPass(BeginRenderPassCommand* command)
@@ -197,7 +197,7 @@ void VulkanCommandResourceTracker::endOcclusionQuery(EndOcclusionQueryCommand* c
 void VulkanCommandResourceTracker::endRenderPass(EndRenderPassCommand* command)
 {
     m_passResourceInfos.push_back(std::move(m_ongoingPassResourceInfo));
-    m_ongoingPassResourceInfo.clear();
+    m_ongoingPassResourceInfo = {};
 }
 
 void VulkanCommandResourceTracker::setRenderBindingGroup(SetBindGroupCommand* command)
