@@ -674,17 +674,9 @@ VulkanCommandBuffer* VulkanCommandRecorder::getCommandBuffer() const
 VulkanCommandRecordResult VulkanCommandRecorder::result()
 {
     VulkanCommandRecordResult result{};
+
     result.commandBuffer = m_commandBuffer;
-
-    auto syncronizationResult = m_commandResourceSyncronizer.result();
-    for (auto& info : syncronizationResult.notSynchronizedPassResourceInfos)
-    {
-        result.resourceInfo.src.buffers.insert(info.src.buffers.begin(), info.src.buffers.end());
-        result.resourceInfo.src.textures.insert(info.src.textures.begin(), info.src.textures.end());
-
-        result.resourceInfo.dst.buffers.insert(info.dst.buffers.begin(), info.dst.buffers.end());
-        result.resourceInfo.dst.textures.insert(info.dst.textures.begin(), info.dst.textures.end());
-    }
+    result.commandResourceSynchronizationResult = m_commandResourceSyncronizer.result();
 
     return result;
 }
