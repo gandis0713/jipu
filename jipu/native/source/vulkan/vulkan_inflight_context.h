@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vulkan_api.h"
+#include "vulkan_submit_context.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -9,34 +10,31 @@
 namespace jipu
 {
 
-struct VulkanInflight
+struct VulkanInflightObject
 {
-    struct Object
-    {
-        std::unordered_set<VkCommandBuffer> commandBuffers{};
-        std::unordered_set<VkBuffer> buffers{};
-        std::unordered_set<VkImage> images{};
-        std::unordered_set<VkImageView> imageViews{};
-        std::unordered_set<VkSemaphore> signalSemaphores{};
-        // std::unordered_set<VkSemaphore> waitSemaphores{}; // not used.
-        std::unordered_set<VkSampler> samplers{};
-        std::unordered_set<VkPipeline> pipelines{};
-        std::unordered_set<VkPipelineLayout> pipelineLayouts{};
-        std::unordered_set<VkDescriptorSet> descriptorSet{};
-        std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
-        std::unordered_set<VkFramebuffer> framebuffers{};
-        std::unordered_set<VkRenderPass> renderPasses{};
-    } object;
+    std::unordered_set<VkCommandBuffer> commandBuffers{};
+    std::unordered_set<VkBuffer> buffers{};
+    std::unordered_set<VkImage> images{};
+    std::unordered_set<VkImageView> imageViews{};
+    std::unordered_set<VkSemaphore> signalSemaphores{};
+    // std::unordered_set<VkSemaphore> waitSemaphores{}; // not used.
+    std::unordered_set<VkSampler> samplers{};
+    std::unordered_set<VkPipeline> pipelines{};
+    std::unordered_set<VkPipelineLayout> pipelineLayouts{};
+    std::unordered_set<VkDescriptorSet> descriptorSet{};
+    std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
+    std::unordered_set<VkFramebuffer> framebuffers{};
+    std::unordered_set<VkRenderPass> renderPasses{};
 };
 
-using VulkanInflightObjects = std::unordered_map<VkFence, VulkanInflight::Object>;
+using VulkanInflightObjects = std::unordered_map<VkFence, VulkanInflightObject>;
 
 class VulkanDevice;
 class CommandBuffer;
 class VulkanInflightContext final
 {
 public:
-    static VulkanInflight::Object generate(std::vector<CommandBuffer*> commandBuffers);
+    static VulkanInflightObject generate(std::vector<CommandBuffer*> commandBuffers);
 
 public:
     VulkanInflightContext() = delete;
@@ -44,15 +42,16 @@ public:
     ~VulkanInflightContext();
 
 public:
-    VkFence add(VkQueue queue, VulkanInflight::Object object);
-    void clear(VkQueue queue);
+    void add(VkQueue queue, const VulkanSubmit& submit, VkFence fence);
+    bool clear(VkFence fence);
+    bool clear(VkQueue queue);
     void clearAll();
 
 private:
     [[maybe_unused]] VulkanDevice* m_device = nullptr;
 
 private:
-    std::unordered_map<VkQueue, InflightResources> m_resources{};
+    std::unordered_map<VkQueue, VulkanInflightObjects> m_inflights{};
 };
 
 } // namespace jipu

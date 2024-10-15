@@ -15,9 +15,9 @@
 namespace jipu
 {
 
-InflightResource VulkanInflightContext::generate(std::vector<CommandBuffer*> commandBuffers)
+VulkanInflightObject VulkanInflightContext::generate(std::vector<CommandBuffer*> commandBuffers)
 {
-    InflightResource inflightResource{};
+    VulkanInflightObject inflightObject{};
     for (auto& commandBuffer : commandBuffers)
     {
         auto vulkanCommandBuffer = downcast(commandBuffer);
@@ -34,25 +34,25 @@ InflightResource VulkanInflightContext::generate(std::vector<CommandBuffer*> com
                 break;
             case CommandType::kSetComputePipeline: {
                 auto cmd = reinterpret_cast<SetComputePipelineCommand*>(command.get());
-                inflightResource.pipelines.insert(downcast(cmd->pipeline)->getVkPipeline());
-                inflightResource.pipelineLayouts.insert(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                inflightObject.pipelines.insert(downcast(cmd->pipeline)->getVkPipeline());
+                inflightObject.pipelineLayouts.insert(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
             }
             break;
             case CommandType::kSetComputeBindGroup: {
                 auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                inflightResource.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
+                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
                 for (auto& binding : cmd->bindingGroup->getBufferBindings())
                 {
-                    inflightResource.buffers.insert(downcast(binding.buffer)->getVkBuffer());
+                    inflightObject.buffers.insert(downcast(binding.buffer)->getVkBuffer());
                 }
                 for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
                 {
-                    inflightResource.samplers.insert(downcast(binding.sampler)->getVkSampler());
+                    inflightObject.samplers.insert(downcast(binding.sampler)->getVkSampler());
                 }
                 for (auto& binding : cmd->bindingGroup->getTextureBindings())
                 {
-                    inflightResource.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
-                    inflightResource.imageViews.insert(downcast(binding.textureView)->getVkImageView());
+                    inflightObject.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
+                    inflightObject.imageViews.insert(downcast(binding.textureView)->getVkImageView());
                 }
             }
             break;
@@ -60,56 +60,56 @@ InflightResource VulkanInflightContext::generate(std::vector<CommandBuffer*> com
                 auto cmd = reinterpret_cast<BeginRenderPassCommand*>(command.get());
                 for (auto& colorAttachment : cmd->framebuffer->getColorAttachments())
                 {
-                    inflightResource.images.insert(downcast(colorAttachment.renderView->getTexture())->getVkImage());
-                    inflightResource.imageViews.insert(downcast(colorAttachment.renderView)->getVkImageView());
+                    inflightObject.images.insert(downcast(colorAttachment.renderView->getTexture())->getVkImage());
+                    inflightObject.imageViews.insert(downcast(colorAttachment.renderView)->getVkImageView());
                     if (colorAttachment.resolveView)
                     {
-                        inflightResource.images.insert(downcast(colorAttachment.resolveView->getTexture())->getVkImage());
-                        inflightResource.imageViews.insert(downcast(colorAttachment.resolveView)->getVkImageView());
+                        inflightObject.images.insert(downcast(colorAttachment.resolveView->getTexture())->getVkImage());
+                        inflightObject.imageViews.insert(downcast(colorAttachment.resolveView)->getVkImageView());
                     }
                 }
-                inflightResource.renderPasses.insert(cmd->renderPass->getVkRenderPass());
+                inflightObject.renderPasses.insert(cmd->renderPass->getVkRenderPass());
             }
             break;
             case CommandType::kSetRenderPipeline: {
                 auto cmd = reinterpret_cast<SetRenderPipelineCommand*>(command.get());
-                inflightResource.pipelines.insert(downcast(cmd->pipeline)->getVkPipeline());
-                inflightResource.pipelineLayouts.insert(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                inflightObject.pipelines.insert(downcast(cmd->pipeline)->getVkPipeline());
+                inflightObject.pipelineLayouts.insert(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
             }
             break;
             case CommandType::kSetRenderBindGroup: {
                 auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
-                inflightResource.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
+                inflightObject.descriptorSetLayouts.insert(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
                 for (auto& binding : cmd->bindingGroup->getBufferBindings())
                 {
-                    inflightResource.buffers.insert(downcast(binding.buffer)->getVkBuffer());
+                    inflightObject.buffers.insert(downcast(binding.buffer)->getVkBuffer());
                 }
                 for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
                 {
-                    inflightResource.samplers.insert(downcast(binding.sampler)->getVkSampler());
+                    inflightObject.samplers.insert(downcast(binding.sampler)->getVkSampler());
                 }
                 for (auto& binding : cmd->bindingGroup->getTextureBindings())
                 {
-                    inflightResource.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
-                    inflightResource.imageViews.insert(downcast(binding.textureView)->getVkImageView());
+                    inflightObject.images.insert(downcast(binding.textureView->getTexture())->getVkImage());
+                    inflightObject.imageViews.insert(downcast(binding.textureView)->getVkImageView());
                 }
             }
             break;
             case CommandType::kSetIndexBuffer: {
                 auto cmd = reinterpret_cast<SetIndexBufferCommand*>(command.get());
-                inflightResource.buffers.insert(downcast(cmd->buffer)->getVkBuffer());
+                inflightObject.buffers.insert(downcast(cmd->buffer)->getVkBuffer());
             }
             break;
             case CommandType::kSetVertexBuffer: {
                 auto cmd = reinterpret_cast<SetVertexBufferCommand*>(command.get());
-                inflightResource.buffers.insert(downcast(cmd->buffer)->getVkBuffer());
+                inflightObject.buffers.insert(downcast(cmd->buffer)->getVkBuffer());
             }
             break;
             }
         }
     }
 
-    return inflightResource;
+    return inflightObject;
 }
 
 VulkanInflightContext::VulkanInflightContext(VulkanDevice* device)
@@ -119,15 +119,57 @@ VulkanInflightContext::VulkanInflightContext(VulkanDevice* device)
 
 VulkanInflightContext::~VulkanInflightContext()
 {
+    m_inflights.clear();
 }
 
-VkFence VulkanInflightContext::add(VkQueue queue, InflightResource resource)
+void VulkanInflightContext::add(VkQueue queue, const VulkanSubmit& submit, VkFence fence)
 {
-    return VK_NULL_HANDLE;
+    auto& inflight = m_inflights[queue];
+    auto& inflightObject = inflight[fence];
+
+    inflightObject.commandBuffers.insert(submit.info.commandBuffers.begin(), submit.info.commandBuffers.end());
+    inflightObject.signalSemaphores.insert(submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
+    // do not need to wait for semaphores.
+
+    inflightObject.imageViews.insert(submit.object.imageViews.begin(), submit.object.imageViews.end());
+    inflightObject.samplers.insert(submit.object.samplers.begin(), submit.object.samplers.end());
+    inflightObject.pipelines.insert(submit.object.pipelines.begin(), submit.object.pipelines.end());
+    inflightObject.pipelineLayouts.insert(submit.object.pipelineLayouts.begin(), submit.object.pipelineLayouts.end());
+    inflightObject.descriptorSet.insert(submit.object.descriptorSet.begin(), submit.object.descriptorSet.end());
+    inflightObject.descriptorSetLayouts.insert(submit.object.descriptorSetLayouts.begin(), submit.object.descriptorSetLayouts.end());
+    inflightObject.framebuffers.insert(submit.object.framebuffers.begin(), submit.object.framebuffers.end());
+    inflightObject.renderPasses.insert(submit.object.renderPasses.begin(), submit.object.renderPasses.end());
+
+    inflightObject.buffers.insert(submit.object.srcResource.buffers.begin(), submit.object.srcResource.buffers.end());
+    inflightObject.buffers.insert(submit.object.dstResource.buffers.begin(), submit.object.dstResource.buffers.end());
+
+    inflightObject.images.insert(submit.object.srcResource.images.begin(), submit.object.srcResource.images.end());
+    inflightObject.images.insert(submit.object.dstResource.images.begin(), submit.object.dstResource.images.end());
 }
 
-void VulkanInflightContext::clear(VkQueue queue)
+bool VulkanInflightContext::clear(VkFence fence)
 {
+    for (auto& [_, inflight] : m_inflights)
+    {
+        if (inflight.contains(fence))
+        {
+            inflight.erase(fence);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool VulkanInflightContext::clear(VkQueue queue)
+{
+    if (m_inflights.contains(queue))
+    {
+        m_inflights.erase(queue);
+        return true;
+    }
+
+    return false;
 }
 
 void VulkanInflightContext::clearAll()
