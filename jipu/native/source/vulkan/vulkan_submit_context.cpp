@@ -229,14 +229,14 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
             if (notSyncedInfos.empty())
             {
-                spdlog::error("There is no output resource.");
+                spdlog::error("There is no not synchronized resource.");
                 return SubmitType::kNone;
             }
             const auto& info = notSyncedInfos[notSyncedInfos.size() - 1]; // only last pass resource info
 
             const auto& src = info.src;
 
-            if (!src.buffers.empty() || !src.textures.empty())
+            if (src.buffers.empty() && src.textures.empty())
             {
                 spdlog::error("There is no output resource.");
                 return SubmitType::kNone;
