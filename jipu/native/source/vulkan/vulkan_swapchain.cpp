@@ -196,7 +196,8 @@ VulkanSwapchain::VulkanSwapchain(VulkanDevice& device, const VulkanSwapchainDesc
     }
 
     // create semaphore
-    m_presentSemaphore = m_device.getSemaphorePool()->create();
+    auto swapchainImageSize = m_textures.size();
+    m_acquireImageSemaphores.resize(swapchainImageSize); // only resize. do not create semaphore here.
 }
 
 VulkanSwapchain::~VulkanSwapchain()
@@ -204,7 +205,11 @@ VulkanSwapchain::~VulkanSwapchain()
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    m_device.getSemaphorePool()->release(m_presentSemaphore);
+    for (auto& semaphore : m_acquireImageSemaphores)
+    {
+        if (semaphore != VK_NULL_HANDLE)
+            m_device.getSemaphorePool()->release(semaphore);
+    }
 
     /* do not delete VkImages from swapchain. */
 
@@ -232,27 +237,12 @@ void VulkanSwapchain::present()
     auto vulkanQueue = downcast(m_descriptor.queue);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    // auto presentSubmitInfos = vulkanQueue->getPresentSubmitContext();
-    // for (auto& presentSubmitInfo : presentSubmitInfos)
-    // {
-    //     // presentSubmitInfo.signal = m_presentSemaphore;
-    // }
+    VulknaPresentInfo presentInfo{};
+    presentInfo.signalSemaphore.push_back(m_acquireImageSemaphores[m_acquiredImageIndex]);
+    presentInfo.swapchains = { m_swapchain };
+    presentInfo.imageIndices = { m_acquiredImageIndex };
 
-    // present
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    auto waitSemaphores = vulkanQueue->getSemaphores();
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-    presentInfo.pWaitSemaphores = waitSemaphores.data();
-
-    VkSwapchainKHR swapChains[] = { m_swapchain };
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &m_acquiredImageIndex;
-    presentInfo.pResults = nullptr; // Optional
-
-    vkAPI.QueuePresentKHR(vulkanQueue->getVkQueue(), &presentInfo);
+    vulkanQueue->present(presentInfo);
 }
 
 TextureView* VulkanSwapchain::acquireNextTextureView()
@@ -260,23 +250,47 @@ TextureView* VulkanSwapchain::acquireNextTextureView()
     VulkanDevice& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice.getVkDevice(), m_swapchain, UINT64_MAX, m_presentSemaphore, VK_NULL_HANDLE, &m_acquiredImageIndex);
+    auto semaphore = m_device.getSemaphorePool()->create();
+    uint32_t acquireImageIndex = 0;
+    VkResult result = vkAPI.AcquireNextImageKHR(vulkanDevice.getVkDevice(), m_swapchain, UINT64_MAX, semaphore, VK_NULL_HANDLE, &acquireImageIndex);
     if (result != VK_SUCCESS)
     {
         spdlog::error("Failed to acquire next image index. error: {}", static_cast<int32_t>(result));
     }
 
-    return m_textureViews[m_acquiredImageIndex].get();
+    setAcquireImageSemaphore(semaphore, acquireImageIndex);
+    setAcquireImageIndex(acquireImageIndex);
+
+    return m_textureViews[acquireImageIndex].get();
+}
+
+void VulkanSwapchain::setAcquireImageIndex(const uint32_t imageIndex)
+{
+    m_acquiredImageIndex = imageIndex;
+}
+
+uint32_t VulkanSwapchain::getAcquireImageIndex() const
+{
+    return m_acquiredImageIndex;
+}
+
+void VulkanSwapchain::setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex)
+{
+    if (m_acquireImageSemaphores.size() <= imageIndex)
+    {
+        throw std::runtime_error("Failed to set acquire image semaphore. Invalid image index.");
+    }
+
+    if (m_acquireImageSemaphores[imageIndex] != VK_NULL_HANDLE)
+    {
+        m_device.getSemaphorePool()->release(m_acquireImageSemaphores[imageIndex]);
+    }
+    m_acquireImageSemaphores[imageIndex] = semaphore;
 }
 
 VkSwapchainKHR VulkanSwapchain::getVkSwapchainKHR() const
 {
     return m_swapchain;
-}
-
-std::pair<VkSemaphore, VkPipelineStageFlags> VulkanSwapchain::getPresentSemaphore() const
-{
-    return { m_presentSemaphore, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 }
 
 } // namespace jipu

@@ -42,6 +42,14 @@ struct VulkanSwapchainDescriptor
     VulkanQueue* queue = nullptr;
 };
 
+struct VulknaPresentInfo
+{
+    std::vector<VkSemaphore> signalSemaphore{};
+    // waitSemaphores are filled in the present function in the queue.
+    std::vector<VkSwapchainKHR> swapchains{};
+    std::vector<uint32_t> imageIndices{};
+};
+
 class VULKAN_EXPORT VulkanSwapchain : public Swapchain
 {
 public:
@@ -63,7 +71,10 @@ public:
 public:
     VkSwapchainKHR getVkSwapchainKHR() const;
 
-    std::pair<VkSemaphore, VkPipelineStageFlags> getPresentSemaphore() const;
+private:
+    void setAcquireImageIndex(const uint32_t imageIndex);
+    uint32_t getAcquireImageIndex() const;
+    void setAcquireImageSemaphore(VkSemaphore semaphore, const uint32_t imageIndex);
 
 private:
     VulkanDevice& m_device;
@@ -74,7 +85,7 @@ private:
 
 private:
     VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-    VkSemaphore m_presentSemaphore = VK_NULL_HANDLE;
+    std::vector<VkSemaphore> m_acquireImageSemaphores{};
     uint32_t m_acquiredImageIndex = 0u;
 };
 
