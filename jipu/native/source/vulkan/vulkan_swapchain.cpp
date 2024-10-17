@@ -237,7 +237,7 @@ void VulkanSwapchain::present()
     auto vulkanQueue = downcast(m_descriptor.queue);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    VulknaPresentInfo presentInfo{};
+    VulkanPresentInfo presentInfo{};
     presentInfo.signalSemaphore.push_back(m_acquireImageSemaphores[m_acquiredImageIndex]);
     presentInfo.swapchains = { m_swapchain };
     presentInfo.imageIndices = { m_acquiredImageIndex };

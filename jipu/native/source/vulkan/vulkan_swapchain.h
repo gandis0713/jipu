@@ -42,10 +42,10 @@ struct VulkanSwapchainDescriptor
     VulkanQueue* queue = nullptr;
 };
 
-struct VulknaPresentInfo
+struct VulkanPresentInfo
 {
     std::vector<VkSemaphore> signalSemaphore{};
-    // waitSemaphores are filled in the present function in the queue.
+    std::vector<VkSemaphore> waitSemaphores{};
     std::vector<VkSwapchainKHR> swapchains{};
     std::vector<uint32_t> imageIndices{};
 };
