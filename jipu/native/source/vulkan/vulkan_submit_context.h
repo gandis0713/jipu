@@ -32,12 +32,13 @@ struct VulkanSubmit
 
     struct Object
     {
-        std::unordered_set<VkCommandBuffer> commandBuffers{};
-        std::unordered_set<VkBuffer> buffers{};
-        std::unordered_set<VkImage> images{};
+        struct Resource
+        {
+            std::unordered_set<VkBuffer> buffers{};
+            std::unordered_set<VkImage> images{};
+        };
+
         std::unordered_set<VkImageView> imageViews{};
-        std::unordered_set<VkSemaphore> signalSemaphores{};
-        // std::unordered_set<VkSemaphore> waitSemaphores{}; // not used.
         std::unordered_set<VkSampler> samplers{};
         std::unordered_set<VkPipeline> pipelines{};
         std::unordered_set<VkPipelineLayout> pipelineLayouts{};
@@ -45,11 +46,14 @@ struct VulkanSubmit
         std::unordered_set<VkDescriptorSetLayout> descriptorSetLayouts{};
         std::unordered_set<VkFramebuffer> framebuffers{};
         std::unordered_set<VkRenderPass> renderPasses{};
+        Resource srcResource{};
+        Resource dstResource{};
     } object{};
 
     void add(VkCommandBuffer commandBuffer);
-    void add(VkBuffer buffer);
-    void add(VkImage image);
+    void addSignalSemaphore(const std::vector<VkSemaphore>& semaphores);
+    void addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage);
+
     void add(VkImageView imageView);
     void add(VkSampler sampler);
     void add(VkPipeline pipeline);
@@ -59,8 +63,10 @@ struct VulkanSubmit
     void add(VkFramebuffer framebuffer);
     void add(VkRenderPass renderPass);
 
-    void addSignalSemaphore(const std::vector<VkSemaphore>& semaphores);
-    void addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stages);
+    void addSrcBuffer(VkBuffer buffer);
+    void addSrcImage(VkImage image);
+    void addDstBuffer(VkBuffer buffer);
+    void addDstImage(VkImage image);
 };
 
 class VulkanDevice;
@@ -74,9 +80,8 @@ public:
     static VulkanSubmitContext create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results);
 
 public:
-    std::vector<VulkanSubmit> getSubmits() const;
+    const std::vector<VulkanSubmit>& getSubmits() const;
     std::vector<VulkanSubmit::Info> getSubmitInfos() const;
-    std::vector<VulkanSubmit::Object> getSubmitObjects() const;
 
 private:
     std::vector<VulkanSubmit> m_submits{};

@@ -3,7 +3,9 @@
 #include "vulkan_buffer.h"
 #include "vulkan_command_buffer.h"
 #include "vulkan_device.h"
+#include "vulkan_sampler.h"
 #include "vulkan_texture.h"
+#include "vulkan_texture_view.h"
 
 #include <spdlog/spdlog.h>
 
@@ -13,17 +15,16 @@ namespace jipu
 void VulkanSubmit::add(VkCommandBuffer commandBuffer)
 {
     info.commandBuffers.push_back(commandBuffer);
-    object.commandBuffers.insert(commandBuffer);
 }
 
-void VulkanSubmit::add(VkBuffer buffer)
+void VulkanSubmit::addSignalSemaphore(const std::vector<VkSemaphore>& semaphores)
 {
-    object.buffers.insert(buffer);
+    info.signalSemaphores.insert(info.signalSemaphores.end(), semaphores.begin(), semaphores.end());
 }
-
-void VulkanSubmit::add(VkImage image)
+void VulkanSubmit::addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage)
 {
-    object.images.insert(image);
+    info.waitSemaphores.insert(info.waitSemaphores.end(), semaphores.begin(), semaphores.end());
+    info.waitStages.insert(info.waitStages.end(), stage.begin(), stage.end());
 }
 
 void VulkanSubmit::add(VkImageView imageView)
@@ -66,114 +67,143 @@ void VulkanSubmit::add(VkRenderPass renderPass)
     object.renderPasses.insert(renderPass);
 }
 
-void VulkanSubmit::addSignalSemaphore(const std::vector<VkSemaphore>& semaphores)
+void VulkanSubmit::addSrcBuffer(VkBuffer buffer)
 {
-    info.signalSemaphores.insert(info.signalSemaphores.end(), semaphores.begin(), semaphores.end());
-    object.signalSemaphores.insert(semaphores.begin(), semaphores.end());
+    object.srcResource.buffers.insert(buffer);
 }
-void VulkanSubmit::addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage)
-{
-    info.waitSemaphores.insert(info.waitSemaphores.end(), semaphores.begin(), semaphores.end());
-    info.waitStages.insert(info.waitStages.end(), stage.begin(), stage.end());
 
-    // do not insert wait semaphores to resource. because it is not used.
+void VulkanSubmit::addSrcImage(VkImage image)
+{
+    object.srcResource.images.insert(image);
+}
+
+void VulkanSubmit::addDstBuffer(VkBuffer buffer)
+{
+    object.dstResource.buffers.insert(buffer);
+}
+
+void VulkanSubmit::addDstImage(VkImage image)
+{
+    object.dstResource.images.insert(image);
 }
 
 VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std::vector<VulkanCommandRecordResult>& results)
 {
     VulkanSubmitContext context{};
-
     {
-        auto findSrcBuffer = [](const std::vector<VulkanCommandRecordResult>& results, Buffer* buffer) -> bool {
-            auto it = std::find_if(results.begin(), results.end(), [buffer](const auto& result) {
-                return result.resourceInfo.src.buffers.contains(buffer);
+        auto findSrcBuffer = [](const std::vector<VulkanCommandRecordResult>& submittedResults, Buffer* buffer) -> bool {
+            auto it = std::find_if(submittedResults.begin(), submittedResults.end(), [buffer](const VulkanCommandRecordResult& result) {
+                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [buffer](const PassResourceInfo& info) {
+                           return info.src.buffers.contains(buffer);
+                       }) != notSyncedInfos.end();
             });
 
-            return it != results.end();
+            return it != submittedResults.end();
         };
 
-        auto findSrcTexture = [&](const std::vector<VulkanCommandRecordResult>& results, Texture* texture) -> bool {
-            auto it = std::find_if(results.begin(), results.end(), [texture](const auto& result) {
-                return result.resourceInfo.src.textures.contains(texture);
+        auto findSrcTexture = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, Texture* texture) -> bool {
+            auto it = std::find_if(submittedResults.begin(), submittedResults.end(), [texture](const VulkanCommandRecordResult& result) {
+                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                return std::find_if(notSyncedInfos.begin(), notSyncedInfos.end(), [texture](const PassResourceInfo& info) {
+                           return info.src.textures.contains(texture);
+                       }) != notSyncedInfos.end();
             });
 
-            return it != results.end();
+            return it != submittedResults.end();
         };
 
-        auto findSrcResource = [&](const std::vector<VulkanCommandRecordResult>& results, const CommandResourceInfo::Destination& dst) -> bool {
-            for (const auto& [buffer, _] : dst.buffers)
+        auto findSrcResource = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, const std::vector<PassResourceInfo>& notSyncedInfos) -> bool {
+            for (const auto& info : notSyncedInfos)
             {
-                if (findSrcBuffer(results, buffer))
+                for (const auto& [buffer, _] : info.dst.buffers)
                 {
-                    return true;
+                    if (findSrcBuffer(submittedResults, buffer))
+                    {
+                        return true;
+                    }
                 }
-            }
 
-            for (const auto& [texture, _] : dst.textures)
-            {
-                if (findSrcTexture(results, texture))
+                for (const auto& [texture, _] : info.src.textures)
                 {
-                    return true;
+                    if (findSrcTexture(submittedResults, texture))
+                    {
+                        return true;
+                    }
                 }
             }
 
             return false;
         };
 
-        auto getSrcBufferUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& results, Buffer* buffer) -> BufferUsageInfo {
-            auto it = std::find_if(results.rbegin(), results.rend(), [buffer](const auto& result) {
-                return result.resourceInfo.src.buffers.contains(buffer);
-            });
-
-            if (it != results.rend())
+        auto getSrcBufferUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, Buffer* buffer) -> BufferUsageInfo {
+            for (auto resultIter = submittedResults.rbegin(); resultIter != submittedResults.rend(); ++resultIter)
             {
-                return it->resourceInfo.src.buffers.at(buffer);
+                const auto& result = *resultIter;
+                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
+                {
+                    const auto& info = *infoIter;
+                    if (info.src.buffers.contains(buffer))
+                    {
+                        return info.src.buffers.at(buffer);
+                    }
+                }
             }
 
             spdlog::error("Failed to find source buffer usage info.");
             return {};
         };
 
-        auto getSrcTextureUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& results, Texture* texture) -> TextureUsageInfo {
-            auto it = std::find_if(results.rbegin(), results.rend(), [texture](const auto& result) {
-                return result.resourceInfo.src.textures.contains(texture);
-            });
-
-            if (it != results.rend())
+        auto getSrcTextureUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, Texture* texture) -> TextureUsageInfo {
+            for (auto resultIter = submittedResults.rbegin(); resultIter != submittedResults.rend(); ++resultIter)
             {
-                return it->resourceInfo.src.textures.at(texture);
+                const auto& result = *resultIter;
+                const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+                for (auto infoIter = notSyncedInfos.rbegin(); infoIter != notSyncedInfos.rend(); ++infoIter)
+                {
+                    const auto& info = *infoIter;
+                    if (info.src.textures.contains(texture))
+                    {
+                        return info.src.textures.at(texture);
+                    }
+                }
             }
 
             spdlog::error("Failed to find source texture usage info.");
             return {};
         };
 
-        auto getSrcResourceUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& results, const CommandResourceInfo::Destination& dst) -> CommandResourceInfo::Source {
-            CommandResourceInfo::Source src{};
-            for (const auto& [buffer, _] : dst.buffers)
+        auto getSrcResourceUsageInfo = [&](const std::vector<VulkanCommandRecordResult>& submittedResults, const std::vector<PassResourceInfo>& notSyncedInfos) -> ResourceInfo {
+            ResourceInfo srcResourceInfo{};
+
+            for (const auto& info : notSyncedInfos)
             {
-                if (findSrcBuffer(results, buffer))
+                for (const auto& [buffer, _] : info.dst.buffers)
                 {
-                    src.buffers[buffer] = getSrcBufferUsageInfo(results, buffer);
+                    if (findSrcBuffer(submittedResults, buffer))
+                    {
+                        srcResourceInfo.buffers[buffer] = getSrcBufferUsageInfo(results, buffer);
+                    }
+                }
+
+                for (const auto& [texture, _] : info.src.textures)
+                {
+                    if (findSrcTexture(submittedResults, texture))
+                    {
+                        srcResourceInfo.textures[texture] = getSrcTextureUsageInfo(results, texture);
+                    }
                 }
             }
 
-            for (const auto& [texture, _] : dst.textures)
-            {
-                if (findSrcTexture(results, texture))
-                {
-                    src.textures[texture] = getSrcTextureUsageInfo(results, texture);
-                }
-            }
-
-            return src;
+            return srcResourceInfo;
         };
 
         auto getSrcBufferSemaphores = [](std::vector<VulkanSubmit>& submits, Buffer* buffer) -> std::vector<VkSemaphore> {
             std::vector<VkSemaphore> semaphores{};
             for (const auto& submit : submits)
             {
-                if (submit.object.buffers.contains(downcast(buffer)->getVkBuffer()))
+                if (submit.object.srcResource.buffers.contains(downcast(buffer)->getVkBuffer()))
                 {
                     semaphores.insert(semaphores.end(), submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
                 }
@@ -186,7 +216,7 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             std::vector<VkSemaphore> semaphores{};
             for (const auto& submit : submits)
             {
-                if (submit.object.images.contains(downcast(texture)->getVkImage()))
+                if (submit.object.srcResource.images.contains(downcast(texture)->getVkImage()))
                 {
                     semaphores.insert(semaphores.end(), submit.info.signalSemaphores.begin(), submit.info.signalSemaphores.end());
                 }
@@ -195,7 +225,17 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
             return semaphores;
         };
 
-        auto getSubmitType = [](const CommandResourceInfo::Source& src) -> SubmitType {
+        auto getSubmitType = [](const VulkanCommandRecordResult& result) -> SubmitType {
+            const auto& notSyncedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+            if (notSyncedInfos.empty())
+            {
+                spdlog::error("There is no output resource.");
+                return SubmitType::kNone;
+            }
+            const auto& info = notSyncedInfos[notSyncedInfos.size() - 1]; // only last pass resource info
+
+            const auto& src = info.src;
+
             if (!src.buffers.empty() || !src.textures.empty())
             {
                 spdlog::error("There is no output resource.");
@@ -244,98 +284,197 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
         };
 
         VulkanSubmit currentSubmit{};
-        std::vector<VulkanCommandRecordResult> sumittedRecordResults{};
+        std::vector<VulkanCommandRecordResult> submittedRecordResults{};
         for (const auto& result : results)
         {
-            auto hasSrcDependency = findSrcResource(sumittedRecordResults, result.resourceInfo.dst);
-
-            if (hasSrcDependency) // prepare next submit info
+            // generate submit info
             {
-                context.m_submits.push_back(currentSubmit);
-                currentSubmit = {};
-            }
+                auto hasSrcDependency = findSrcResource(submittedRecordResults, result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos);
 
-            // set command buffer
-            {
-                auto commandBuffer = downcast(result.commandBuffer)->getVkCommandBuffer();
-                currentSubmit.add(commandBuffer);
-            }
-
-            // set wait semaphore
-            if (hasSrcDependency) // set wait semaphore and resource info
-            {
-                std::vector<VkPipelineStageFlags> waitStages{};
-                std::vector<VkSemaphore> waitSemaphores{};
-
-                auto srcResourceUsageInfo = getSrcResourceUsageInfo(sumittedRecordResults, result.resourceInfo.dst);
-                for (auto& [buffer, srcBufferUsageInfo] : srcResourceUsageInfo.buffers)
+                if (hasSrcDependency) // prepare next submit info
                 {
-                    auto bufferWaitSemaphores = getSrcBufferSemaphores(context.m_submits, buffer);
-                    waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
-
-                    auto dstBufferUsageInfo = result.resourceInfo.dst.buffers.at(buffer);
-                    waitStages.push_back(dstBufferUsageInfo.stageFlags);
+                    context.m_submits.push_back(currentSubmit);
+                    currentSubmit = {};
                 }
 
-                for (auto& [texture, srcTextureUsageInfo] : srcResourceUsageInfo.textures)
+                // set command buffer
                 {
-                    auto textureWaitSemaphores = getSrcTextureSemaphores(context.m_submits, texture);
-                    waitSemaphores.insert(waitSemaphores.end(), textureWaitSemaphores.begin(), textureWaitSemaphores.end());
-
-                    auto dstTextureUsageInfo = result.resourceInfo.dst.textures.at(texture);
-                    waitStages.push_back(dstTextureUsageInfo.stageFlags);
+                    auto commandBuffer = downcast(result.commandBuffer)->getVkCommandBuffer();
+                    currentSubmit.add(commandBuffer);
                 }
 
-                currentSubmit.addWaitSemaphore(waitSemaphores, waitStages);
+                // set wait semaphore
+                if (hasSrcDependency) // set wait semaphore and resource info
+                {
+                    std::vector<VkPipelineStageFlags> waitStages{};
+                    std::vector<VkSemaphore> waitSemaphores{};
+
+                    auto& notSynedInfos = result.commandResourceSynchronizationResult.notSynchronizedPassResourceInfos;
+
+                    for (const auto& info : notSynedInfos)
+                    {
+                        for (const auto& [dstBuffer, dstBufferUsageInfo] : info.dst.buffers)
+                        {
+                            if (findSrcBuffer(submittedRecordResults, dstBuffer))
+                            {
+                                auto bufferWaitSemaphores = getSrcBufferSemaphores(context.m_submits, dstBuffer);
+                                waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+
+                                waitStages.push_back(dstBufferUsageInfo.stageFlags);
+                            }
+                        }
+
+                        for (const auto& [dstTexture, dstTextureUsageInfo] : info.dst.textures)
+                        {
+                            if (findSrcTexture(submittedRecordResults, dstTexture))
+                            {
+                                auto bufferWaitSemaphores = getSrcTextureSemaphores(context.m_submits, dstTexture);
+                                waitSemaphores.insert(waitSemaphores.end(), bufferWaitSemaphores.begin(), bufferWaitSemaphores.end());
+
+                                waitStages.push_back(dstTextureUsageInfo.stageFlags);
+                            }
+                        }
+                    }
+
+                    currentSubmit.addWaitSemaphore(waitSemaphores, waitStages);
+                }
+
+                // set signal semaphore
+                {
+                    // TODO: check src resource
+                    // TODO: multiple signal semaphore for external resource
+                    std::vector<VkSemaphore> signalSemaphores{};
+                    auto semaphore = device->getSemaphorePool()->create();
+                    signalSemaphores.push_back(semaphore);
+                    currentSubmit.addSignalSemaphore(signalSemaphores);
+                }
+
+                // set submit type
+                {
+                    currentSubmit.info.type = getSubmitType(result);
+                }
             }
 
-            // set signal semaphore
-            if (!result.resourceInfo.src.buffers.empty() ||
-                !result.resourceInfo.src.textures.empty())
+            // generate submit objects
             {
-                // TODO: multiple signal semaphore for external resource
-                std::vector<VkSemaphore> signalSemaphores{};
-                auto semaphore = device->getSemaphorePool()->create();
-                signalSemaphores.push_back(semaphore);
-                currentSubmit.addSignalSemaphore(signalSemaphores);
+                auto vulkanCommandBuffer = downcast(result.commandBuffer);
+                auto& commands = vulkanCommandBuffer->getCommandEncodingResult().commands;
+                for (auto& command : commands)
+                {
+                    switch (command->type)
+                    {
+                    case CommandType::kBeginComputePass:
+                    case CommandType::kEndComputePass:
+                    case CommandType::kDispatch:
+                    case CommandType::kDispatchIndirect:
+                    default:
+                        break;
+                    case CommandType::kSetComputePipeline: {
+                        auto cmd = reinterpret_cast<SetComputePipelineCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
+                        currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                    }
+                    break;
+                    case CommandType::kSetComputeBindGroup: {
+                        auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
+                        for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                        {
+                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
+                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
+                        }
+                        for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                        {
+                            currentSubmit.add(downcast(binding.sampler)->getVkSampler());
+                        }
+                        for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                        {
+                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
+                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());
+
+                            currentSubmit.add(downcast(binding.textureView)->getVkImageView());
+                        }
+                    }
+                    break;
+                    case CommandType::kBeginRenderPass: {
+                        auto cmd = reinterpret_cast<BeginRenderPassCommand*>(command.get());
+                        for (auto& colorAttachment : cmd->framebuffer->getColorAttachments())
+                        {
+                            currentSubmit.addSrcImage(downcast(colorAttachment.renderView->getTexture())->getVkImage());
+                            currentSubmit.add(downcast(colorAttachment.renderView)->getVkImageView());
+                            if (colorAttachment.resolveView)
+                            {
+                                currentSubmit.addSrcImage(downcast(colorAttachment.resolveView->getTexture())->getVkImage());
+                                currentSubmit.add(downcast(colorAttachment.resolveView)->getVkImageView());
+                            }
+                        }
+                        currentSubmit.add(cmd->renderPass->getVkRenderPass());
+                    }
+                    break;
+                    case CommandType::kSetRenderPipeline: {
+                        auto cmd = reinterpret_cast<SetRenderPipelineCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->pipeline)->getVkPipeline());
+                        currentSubmit.add(downcast(cmd->pipeline->getPipelineLayout())->getVkPipelineLayout());
+                    }
+                    break;
+                    case CommandType::kSetRenderBindGroup: {
+                        auto cmd = reinterpret_cast<SetBindGroupCommand*>(command.get());
+                        currentSubmit.add(downcast(cmd->bindingGroup->getLayout())->getVkDescriptorSetLayout());
+                        for (auto& binding : cmd->bindingGroup->getBufferBindings())
+                        {
+                            currentSubmit.addSrcBuffer(downcast(binding.buffer)->getVkBuffer());
+                            currentSubmit.addDstBuffer(downcast(binding.buffer)->getVkBuffer());
+                        }
+                        for (auto& binding : cmd->bindingGroup->getSmaplerBindings())
+                        {
+                            currentSubmit.add(downcast(binding.sampler)->getVkSampler());
+                        }
+                        for (auto& binding : cmd->bindingGroup->getTextureBindings())
+                        {
+                            currentSubmit.addSrcImage(downcast(binding.textureView->getTexture())->getVkImage());
+                            currentSubmit.addDstImage(downcast(binding.textureView->getTexture())->getVkImage());
+
+                            currentSubmit.add(downcast(binding.textureView)->getVkImageView());
+                        }
+                    }
+                    break;
+                    case CommandType::kSetIndexBuffer: {
+                        auto cmd = reinterpret_cast<SetIndexBufferCommand*>(command.get());
+                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVkBuffer());
+                    }
+                    break;
+                    case CommandType::kSetVertexBuffer: {
+                        auto cmd = reinterpret_cast<SetVertexBufferCommand*>(command.get());
+                        currentSubmit.addDstBuffer(downcast(cmd->buffer)->getVkBuffer());
+                    }
+                    break;
+                    }
+                }
             }
 
-            // set submit type
-            {
-                currentSubmit.info.type = getSubmitType(result.resourceInfo.src);
-            }
-
-            sumittedRecordResults.push_back(result);
+            submittedRecordResults.push_back(result);
         }
+
+        context.m_submits.push_back(currentSubmit);
     }
 
     return context;
 }
 
-std::vector<VulkanSubmit> VulkanSubmitContext::getSubmits() const
+const std::vector<VulkanSubmit>& VulkanSubmitContext::getSubmits() const
 {
     return m_submits;
 }
 
 std::vector<VulkanSubmit::Info> VulkanSubmitContext::getSubmitInfos() const
 {
-    std::vector<VulkanSubmit::Info> m_infos{};
+    std::vector<VulkanSubmit::Info> submitInfos{};
     for (const auto& submit : m_submits)
     {
-        m_infos.push_back(submit.info);
-    }
-    return m_infos;
-}
-
-std::vector<VulkanSubmit::Object> VulkanSubmitContext::getSubmitObjects() const
-{
-    std::vector<VulkanSubmit::Object> m_objects{};
-    for (const auto& submit : m_submits)
-    {
-        m_objects.push_back(submit.object);
+        submitInfos.push_back(submit.info);
     }
 
-    return m_objects;
+    return submitInfos;
 }
 
 } // namespace jipu
