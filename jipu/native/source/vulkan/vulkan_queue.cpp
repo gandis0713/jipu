@@ -2,6 +2,7 @@
 
 #include "vulkan_device.h"
 #include "vulkan_physical_device.h"
+#include "vulkan_submit_context.h"
 #include "vulkan_swapchain.h"
 
 #include <fmt/format.h>
@@ -67,40 +68,86 @@ VulkanQueue::~VulkanQueue()
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
 {
-    std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> commandRecordResults = recordCommands(commandBuffers);
+    // record VulkanCommandBuffer to VkCommandBuffer.
+    std::vector<VulkanCommandRecordResult> commandRecordResults = recordCommands(commandBuffers);
 
-    std::vector<SubmitInfo> submits = generateSubmitInfo(commandRecordResults);
+    // generate SubmitInfo.
+    VulkanSubmitContext submitContext = VulkanSubmitContext::create(&m_device, commandRecordResults);
+    auto submitInfos = submitContext.getSubmitInfos();
 
-    submit(submits);
+    auto isPresentSubmit = [&](const auto& submitInfos) -> bool {
+        for (const auto& submitInfo : submitInfos)
+        {
+            if (submitInfo.type == SubmitType::kPresent)
+                return true;
+        }
+        return false;
+    }(submitInfos);
+
+    if (isPresentSubmit)
+    {
+        m_presentSubmitInfos = submitInfos;
+    }
+    else
+    {
+        submit(submitInfos);
+    }
 }
 
 void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain)
 {
-    std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> commandRecordResults = recordCommands(commandBuffers);
+    submit(commandBuffers);
+    swapchain.present();
+}
 
-    std::vector<SubmitInfo> submits = generateSubmitInfo(commandRecordResults);
-
+void VulkanQueue::present(VulkanPresentInfo presentInfo)
+{
     auto& vulkanDevice = downcast(m_device);
-    auto& vulkanSwapchain = downcast(swapchain);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
-    auto commandBufferCount = commandBuffers.size();
-    // we assume the last command buffer is for rendering.
-    auto renderCommandBufferIndex = commandBufferCount - 1;
+    // prepare submit and present infos
+    {
+        // add acquire image semaphore to submit infos.
+        for (auto& submitInfo : m_presentSubmitInfos)
+        {
+            if (submitInfo.type == SubmitType::kPresent)
+            {
+                submitInfo.waitSemaphores.insert(submitInfo.waitSemaphores.end(),
+                                                 presentInfo.signalSemaphore.begin(),
+                                                 presentInfo.signalSemaphore.end());
+                submitInfo.waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            }
+        }
 
-    auto renderCommandBuffer = downcast(commandBuffers[renderCommandBufferIndex]);
-    auto acquireImageSemaphore = vulkanSwapchain.getPresentSemaphore();
+        // add render semaphore to present infos.
+        for (const auto& submitInfo : m_presentSubmitInfos)
+        {
+            if (submitInfo.type == SubmitType::kPresent)
+            {
+                presentInfo.waitSemaphores.insert(presentInfo.waitSemaphores.end(), submitInfo.signalSemaphores.begin(), submitInfo.signalSemaphores.end());
+            }
+        }
+    }
 
-    // add signal semaphore to signal that render command buffer is finished.
-    submits[renderCommandBufferIndex].signal.first.push_back(m_semaphore);
+    // submit
+    {
+        submit(m_presentSubmitInfos);
+        m_presentSubmitInfos = {};
+    }
 
-    // add wait semaphore to wait next swapchain image.
-    submits[renderCommandBufferIndex].wait.first.push_back(acquireImageSemaphore.first);
-    submits[renderCommandBufferIndex].wait.second.push_back(acquireImageSemaphore.second);
+    // present
+    {
+        VkPresentInfoKHR info{};
+        info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        info.waitSemaphoreCount = static_cast<uint32_t>(presentInfo.waitSemaphores.size());
+        info.pWaitSemaphores = presentInfo.waitSemaphores.data();
+        info.swapchainCount = static_cast<uint32_t>(presentInfo.swapchains.size());
+        info.pSwapchains = presentInfo.swapchains.data();
+        info.pImageIndices = presentInfo.imageIndices.data();
+        info.pResults = nullptr; // Optional
 
-    submit(submits);
-
-    swapchain.present(this);
+        vkAPI.QueuePresentKHR(m_queue, &info);
+    }
 }
 
 VkQueue VulkanQueue::getVkQueue() const
@@ -113,172 +160,20 @@ std::vector<VkSemaphore> VulkanQueue::getSemaphores() const
     return { m_semaphore };
 }
 
-std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
+std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
 {
-    std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> commandRecordResult{};
+    std::vector<VulkanCommandRecordResult> commandRecordResult{};
 
     for (auto& commandBuffer : commandBuffers)
     {
         auto vulkanCommandBuffer = downcast(commandBuffer);
-        auto vulkanDevice = vulkanCommandBuffer->getDevice();
-
-        VulkanCommandRecorderDecsriptor descriptor{};
-        descriptor.commandBuffer = vulkanCommandBuffer;
-
-        auto commandBufferRecorder = vulkanDevice->createCommandRecorder(descriptor);
-        commandRecordResult.push_back(std::make_pair(commandBuffer, commandBufferRecorder->record()));
-    }
-
-    for (const auto& [_, result] : commandRecordResult)
-    {
-        auto& resourceInfo = result.resourceInfo;
-
-        spdlog::trace("current command buffer buffers src: {}", resourceInfo.src.buffers.size());
-        spdlog::trace("current command buffer textures src: {}", resourceInfo.src.textures.size());
-
-        spdlog::trace("current command buffer buffers dst: {}", resourceInfo.dst.buffers.size());
-        spdlog::trace("current command buffer textures dst: {}", resourceInfo.dst.textures.size());
+        commandRecordResult.push_back(vulkanCommandBuffer->recordToVkCommandBuffer());
     }
 
     return commandRecordResult;
 }
 
-std::vector<VulkanQueue::SubmitInfo> VulkanQueue::generateSubmitInfo(std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> recordResults)
-{
-    auto& vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
-
-    std::vector<SubmitInfo> submitInfo{};
-
-    // newer version
-    // if (false)
-    {
-        auto currentCommandBufferIndex = 0;
-        auto findSrcBuffer = [&](Buffer* buffer) -> bool {
-            auto begin = recordResults.begin();
-            auto end = recordResults.begin() + currentCommandBufferIndex;
-            auto it = std::find_if(begin, end, [buffer](const auto& result) {
-                return result.second.resourceInfo.src.buffers.contains(buffer);
-            });
-
-            return it != end;
-        };
-
-        auto findSrcTexture = [&](Texture* texture) -> bool {
-            auto begin = recordResults.begin();
-            auto end = recordResults.begin() + currentCommandBufferIndex;
-            auto it = std::find_if(begin, end, [texture](const auto& result) {
-                return result.second.resourceInfo.src.textures.contains(texture);
-            });
-
-            return it != end;
-        };
-
-        auto getSrcBufferUsageInfo = [&](Buffer* buffer) -> BufferUsageInfo {
-            auto begin = recordResults.rbegin() + recordResults.size() - currentCommandBufferIndex;
-            auto end = recordResults.rbegin() + 1;
-            auto it = std::find_if(begin, end, [buffer](const auto& result) {
-                return result.second.resourceInfo.src.buffers.contains(buffer);
-            });
-
-            if (it != end)
-            {
-                return it->second.resourceInfo.src.buffers.at(buffer);
-            }
-
-            spdlog::error("Failed to find src buffer usage info.");
-            return {};
-        };
-
-        auto getSrcTextureUsageInfo = [&](Texture* texture) -> TextureUsageInfo {
-            auto begin = recordResults.rbegin() + recordResults.size() - currentCommandBufferIndex;
-            auto end = recordResults.rbegin() + 1;
-            auto it = std::find_if(begin, end, [texture](const auto& result) {
-                return result.second.resourceInfo.src.textures.contains(texture);
-            });
-
-            if (it != end)
-            {
-                return it->second.resourceInfo.src.textures.at(texture);
-            }
-
-            spdlog::error("Failed to find src texture usage info.");
-            return {};
-        };
-
-        for (const auto& [commandBuffer, recordResult] : recordResults)
-        {
-            SubmitInfo submitInfo{};
-            submitInfo.cmdBuf = recordResult.commandBuffer;
-
-            for (const auto& [buffer, dstBufferUsageInfo] : recordResult.resourceInfo.dst.buffers)
-            {
-                if (findSrcBuffer(buffer))
-                {
-                    auto srcBufferUsageInfo = getSrcBufferUsageInfo(buffer);
-                    // TODO
-                }
-            }
-
-            for (const auto& [texture, dstTextureUsageInfo] : recordResult.resourceInfo.dst.textures)
-            {
-                if (findSrcTexture(texture))
-                {
-                    auto srcTextureUsageInfo = getSrcTextureUsageInfo(texture);
-                    // TODO
-                }
-
-                if (dstTextureUsageInfo.stageFlags & VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                {
-                    // submitInfo.push_back({commandBuffer, buffer});
-                }
-            }
-
-            currentCommandBufferIndex++;
-        }
-    }
-
-    // older version
-    if (true)
-    {
-        submitInfo.resize(recordResults.size());
-
-        int32_t i = 0;
-        auto commandBufferSize = recordResults.size();
-        for (auto [commandBuffer, commandRecordResult] : recordResults)
-        {
-            submitInfo[i].cmdBuf = commandRecordResult.commandBuffer;
-
-            int32_t nextIndex = i + 1;
-            if (nextIndex < commandBufferSize)
-            {
-                std::pair<VkSemaphore, VkPipelineStageFlags> signalSemaphore = downcast(commandBuffer)->getSignalSemaphore();
-                submitInfo[i].signal.first.push_back(signalSemaphore.first);
-                submitInfo[i].signal.second.push_back(signalSemaphore.second);
-            }
-
-            int32_t preIndex = i - 1;
-            if (preIndex >= 0)
-            {
-                submitInfo[i].wait.first.push_back(submitInfo[preIndex].signal.first[0]);
-                submitInfo[i].wait.second.push_back(submitInfo[preIndex].signal.second[0]);
-            }
-
-            auto waitSems = downcast(commandBuffer)->ejectWaitSemaphores();
-            for (auto sem : waitSems)
-            {
-                submitInfo[i].wait.first.push_back(sem.first);
-                submitInfo[i].wait.second.push_back(sem.second);
-            }
-
-            ++i;
-        }
-    }
-
-    return submitInfo;
-}
-
-void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)
+void VulkanQueue::submit(const std::vector<VulkanSubmit::Info>& submits)
 {
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
@@ -292,35 +187,30 @@ void VulkanQueue::submit(const std::vector<SubmitInfo>& submits)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &submits[i].cmdBuf;
-
-        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].signal.first.size());
-        submitInfo.pSignalSemaphores = submits[i].signal.first.data();
-
-        submitInfo.pWaitSemaphores = submits[i].wait.first.data();
-        submitInfo.pWaitDstStageMask = submits[i].wait.second.data();
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].wait.first.size());
+        submitInfo.commandBufferCount = static_cast<uint32_t>(submits[i].commandBuffers.size());
+        submitInfo.pCommandBuffers = submits[i].commandBuffers.data();
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].signalSemaphores.size());
+        submitInfo.pSignalSemaphores = submits[i].signalSemaphores.data();
+        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].waitSemaphores.size());
+        submitInfo.pWaitSemaphores = submits[i].waitSemaphores.data();
+        submitInfo.pWaitDstStageMask = submits[i].waitStages.data();
 
         submitInfos[i] = submitInfo;
     }
 
-    auto fence = m_device.getFencePool()->create();
-    // m_fencesInFlight.push(std::make_pair(fence, submitInfos));
-
-    VkResult result = vkAPI.QueueSubmit(m_queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), fence);
+    VkResult result = vkAPI.QueueSubmit(m_queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.WaitForFences(vulkanDevice.getVkDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+    result = vkAPI.WaitForFences(vulkanDevice.getVkDevice(), 1, &m_fence, VK_TRUE, UINT64_MAX);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to wait for fences {}", static_cast<uint32_t>(result)));
     }
 
-    result = vkAPI.ResetFences(vulkanDevice.getVkDevice(), 1, &fence);
+    result = vkAPI.ResetFences(vulkanDevice.getVkDevice(), 1, &m_fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to reset for fences {}", static_cast<uint32_t>(result)));

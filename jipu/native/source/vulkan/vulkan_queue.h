@@ -5,6 +5,8 @@
 #include "vulkan_api.h"
 #include "vulkan_command_recorder.h"
 #include "vulkan_export.h"
+#include "vulkan_inflight_context.h"
+#include "vulkan_swapchain.h"
 
 namespace jipu
 {
@@ -19,6 +21,9 @@ public:
 
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
     void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain) override;
+
+public:
+    void present(VulkanPresentInfo presentInfo);
 
 public:
     VkQueue getVkQueue() const;
@@ -37,17 +42,10 @@ private:
     VkQueueFamilyProperties m_properties{};
 
 private:
-    struct SubmitInfo
-    {
-        VkCommandBuffer cmdBuf = VK_NULL_HANDLE;
-        std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>> signal{};
-        std::pair<std::vector<VkSemaphore>, std::vector<VkPipelineStageFlags>> wait{};
+    std::vector<VulkanSubmit::Info> m_presentSubmitInfos{};
 
-    } m_submitInfo;
-
-    std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> recordCommands(std::vector<CommandBuffer*> commandBuffers);
-    std::vector<SubmitInfo> generateSubmitInfo(std::vector<std::pair<CommandBuffer*, VulkanCommandRecordResult>> recordResults);
-    void submit(const std::vector<SubmitInfo>& submitInfos);
+    std::vector<VulkanCommandRecordResult> recordCommands(std::vector<CommandBuffer*> commandBuffers);
+    void submit(const std::vector<VulkanSubmit::Info>& submitInfos);
 };
 
 DOWN_CAST(VulkanQueue, Queue);
