@@ -7,16 +7,12 @@
 namespace jipu
 {
 
-struct VulkanCommandPoolDescriptor
-{
-};
-
 class VulkanDevice;
 class VulkanCommandPool final
 {
 public:
     VulkanCommandPool() = delete;
-    explicit VulkanCommandPool(VulkanDevice* device, const VulkanCommandPoolDescriptor& descriptor);
+    explicit VulkanCommandPool(VulkanDevice* device);
     ~VulkanCommandPool();
 
 public:

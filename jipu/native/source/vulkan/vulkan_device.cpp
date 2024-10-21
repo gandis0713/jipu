@@ -52,7 +52,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
     m_fencePool = std::make_unique<VulkanFencePool>(this);
-    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this, VulkanCommandPoolDescriptor{ .queueFamilyIndex = 0 });
+    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this);
 }
 
 VulkanDevice::~VulkanDevice()

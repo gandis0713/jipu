@@ -7,7 +7,7 @@
 namespace jipu
 {
 
-VulkanCommandPool::VulkanCommandPool(VulkanDevice* device, const VulkanCommandPoolDescriptor& descriptor)
+VulkanCommandPool::VulkanCommandPool(VulkanDevice* device)
     : m_device(device)
 {
     VkCommandPoolCreateInfo commandPoolCreateInfo{};
