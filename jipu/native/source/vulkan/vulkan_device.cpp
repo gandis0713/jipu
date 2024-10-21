@@ -45,15 +45,6 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
         throw std::runtime_error("Failed to load device procs.");
     }
 
-    // get queues.
-    m_queues.resize(queueFamilies.size());
-    for (const auto& [index, _] : queueFamilies)
-    {
-        VkQueue queue{};
-        vkAPI.GetDeviceQueue(m_device, index, 0, &queue);
-        m_queues[index] = queue;
-    }
-
     VulkanResourceAllocatorDescriptor allocatorDescriptor{};
     m_resourceAllocator = std::make_unique<VulkanResourceAllocator>(*this, allocatorDescriptor);
 
@@ -61,7 +52,7 @@ VulkanDevice::VulkanDevice(VulkanPhysicalDevice& physicalDevice, const DeviceDes
 
     m_semaphorePool = std::make_unique<VulkanSemaphorePool>(this);
     m_fencePool = std::make_unique<VulkanFencePool>(this);
-    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this);
+    m_commandBufferPool = std::make_unique<VulkanCommandPool>(this, VulkanCommandPoolDescriptor{ .queueFamilyIndex = 0 });
 }
 
 VulkanDevice::~VulkanDevice()
@@ -216,14 +207,6 @@ VkPhysicalDevice VulkanDevice::getVkPhysicalDevice() const
     VulkanPhysicalDevice& vulkanPhysicalDevice = downcast(m_physicalDevice);
 
     return vulkanPhysicalDevice.getVkPhysicalDevice();
-}
-
-VkQueue VulkanDevice::getVkQueue(uint32_t index) const
-{
-    assert(m_queues.size() > index);
-
-    // TODO: return suit queue
-    return m_queues[index];
 }
 
 VkDescriptorPool VulkanDevice::getVkDescriptorPool()

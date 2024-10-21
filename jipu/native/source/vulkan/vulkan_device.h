@@ -75,8 +75,6 @@ public:
     VkDevice getVkDevice() const;
     VkPhysicalDevice getVkPhysicalDevice() const;
 
-    VkQueue getVkQueue(uint32_t index = 0) const;
-
     VkDescriptorPool getVkDescriptorPool();
 
 public:
@@ -96,8 +94,6 @@ private:
     std::unique_ptr<VulkanSemaphorePool> m_semaphorePool = nullptr;
     std::unique_ptr<VulkanFencePool> m_fencePool = nullptr;
     std::unique_ptr<VulkanCommandPool> m_commandBufferPool = nullptr;
-
-    std::vector<VkQueue> m_queues{};
 
     VulkanRenderPassCache m_renderPassCache;
     VulkanFramebufferCache m_frameBufferCache;
