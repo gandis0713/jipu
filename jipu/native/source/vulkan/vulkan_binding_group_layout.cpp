@@ -204,8 +204,10 @@ BufferBindingType ToBufferBindingType(VkDescriptorType type)
     switch (type)
     {
     case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+    case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
         return BufferBindingType::kUniform;
     case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+    case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
         return BufferBindingType::kStorage;
     default:
         throw std::runtime_error(fmt::format("Failed to support type [{}] for BufferBindingType.", static_cast<int32_t>(type)));
