@@ -158,62 +158,54 @@ void ParticleSample::updateImGui()
 
 void ParticleSample::draw()
 {
-    std::unique_ptr<CommandBuffer> computeCommandBuffer = nullptr;
     // encoder compute command
-    {
-        CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> computeCommandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> computeCommandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
 
-        ComputePassEncoderDescriptor computePassDescriptor{};
-        std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
-        computePassEncoder->setPipeline(*m_computePipeline);
-        computePassEncoder->setBindingGroup(0, *m_computeBindingGroups[(m_vertexIndex + 1) % 2]);
-        computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
-        computePassEncoder->end();
+    ComputePassEncoderDescriptor computePassDescriptor{};
+    std::unique_ptr<ComputePassEncoder> computePassEncoder = computeCommandEncoder->beginComputePass(computePassDescriptor);
+    computePassEncoder->setPipeline(*m_computePipeline);
+    computePassEncoder->setBindingGroup(0, *m_computeBindingGroups[(m_vertexIndex + 1) % 2]);
+    computePassEncoder->dispatch(m_particleCount / 256, 1, 1);
+    computePassEncoder->end();
 
-        computeCommandBuffer = computeCommandEncoder->finish(CommandBufferDescriptor{});
+    std::unique_ptr<CommandBuffer> computeCommandBuffer = computeCommandEncoder->finish(CommandBufferDescriptor{});
 
-        if (separateCmdBuffer)
-            m_queue->submit({ computeCommandBuffer.get() });
-    }
-
-    std::unique_ptr<CommandBuffer> renderCommandBuffer = nullptr;
     // encode render command
+    auto renderView = m_swapchain->acquireNextTextureView();
+
+    std::unique_ptr<CommandEncoder> renderCommandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
+
+    ColorAttachment colorAttachment{
+        .renderView = renderView
+    };
+    colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
+    colorAttachment.loadOp = LoadOp::kClear;
+    colorAttachment.storeOp = StoreOp::kStore;
+
+    RenderPassEncoderDescriptor renderPassDescriptor{
+        .colorAttachments = { colorAttachment }
+    };
+
+    std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
+    renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
+    renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
+    renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
+    renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
+    renderPassEncoder->end();
+
+    drawImGui(renderCommandEncoder.get(), *renderView);
+    std::unique_ptr<CommandBuffer> renderCommandBuffer = renderCommandEncoder->finish(CommandBufferDescriptor{});
+
+    if (separateCmdBuffer)
     {
-        auto renderView = m_swapchain->acquireNextTextureView();
-
-        CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> renderCommandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
-
-        ColorAttachment colorAttachment{
-            .renderView = renderView
-        };
-        colorAttachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
-        colorAttachment.loadOp = LoadOp::kClear;
-        colorAttachment.storeOp = StoreOp::kStore;
-
-        RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { colorAttachment }
-        };
-
-        std::unique_ptr<RenderPassEncoder> renderPassEncoder = renderCommandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(m_renderPipeline.get());
-        renderPassEncoder->setVertexBuffer(0, *m_vertexBuffers[m_vertexIndex]);
-        renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1); // set viewport state.
-        renderPassEncoder->setScissor(0, 0, m_width, m_height);        // set scissor state.
-        renderPassEncoder->draw(static_cast<uint32_t>(m_vertices.size()), 1, 0, 0);
-        renderPassEncoder->end();
-
-        drawImGui(renderCommandEncoder.get(), *renderView);
-
-        renderCommandBuffer = renderCommandEncoder->finish(CommandBufferDescriptor{});
-
-        if (separateCmdBuffer)
-            m_queue->submit({ renderCommandBuffer.get() }, *m_swapchain);
+        m_queue->submit({ computeCommandBuffer.get() });
+        m_queue->submit({ renderCommandBuffer.get() }, *m_swapchain);
     }
-
-    if (!separateCmdBuffer)
+    else
+    {
         m_queue->submit({ computeCommandBuffer.get(), renderCommandBuffer.get() }, *m_swapchain);
+    }
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;
 }
