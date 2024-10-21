@@ -22,7 +22,7 @@ void WindowTest::SetUp()
     m_surface = m_instance->createSurface(surfaceDescriptor);
     EXPECT_NE(nullptr, m_surface);
 
-    m_queue = m_device->createQueue(QueueDescriptor{ .flags = QueueFlagBits::kGraphics });
+    m_queue = m_device->createQueue(QueueDescriptor{});
 
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;
@@ -46,6 +46,7 @@ void WindowTest::SetUp()
 void WindowTest::TearDown()
 {
     m_swapchain.reset();
+    m_queue.reset();
     m_surface.reset();
 
     SDL_DestroyWindow(m_window);
