@@ -90,7 +90,6 @@ void Sample::createDevice()
 void Sample::createQueue()
 {
     QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
 
     m_queue = m_device->createQueue(descriptor);
 }
