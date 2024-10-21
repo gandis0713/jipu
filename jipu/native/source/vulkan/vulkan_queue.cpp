@@ -139,7 +139,7 @@ VkQueue VulkanQueue::getVkQueue(uint32_t index) const
     return m_queues[index].first;
 }
 
-VkQueue VulkanQueue::getVkQueue(QueueFlags flags) const
+VkQueue VulkanQueue::getVkQueue(VulkanQueueFlags flags) const
 {
     for (const auto& [queue, queueFlags] : m_queues)
     {
@@ -212,19 +212,19 @@ void VulkanQueue::submit(const std::vector<VulkanSubmit::Info>& submits)
 }
 
 // Convert Helper
-VkQueueFlags ToVkQueueFlags(QueueFlags flags)
+VkQueueFlags ToVkQueueFlags(VulkanQueueFlags flags)
 {
     VkQueueFlags vkflags = 0u;
 
-    if (flags & QueueFlagBits::kGraphics)
+    if (flags & VulkanQueueFlagBits::kGraphics)
     {
         vkflags |= VK_QUEUE_GRAPHICS_BIT;
     }
-    if (flags & QueueFlagBits::kCompute)
+    if (flags & VulkanQueueFlagBits::kCompute)
     {
         vkflags |= VK_QUEUE_COMPUTE_BIT;
     }
-    if (flags & QueueFlagBits::kTransfer)
+    if (flags & VulkanQueueFlagBits::kTransfer)
     {
         vkflags |= VK_QUEUE_TRANSFER_BIT;
     }
@@ -232,21 +232,21 @@ VkQueueFlags ToVkQueueFlags(QueueFlags flags)
     return vkflags;
 }
 
-QueueFlags ToQueueFlags(VkQueueFlags vkflags)
+VulkanQueueFlags ToQueueFlags(VkQueueFlags vkflags)
 {
-    QueueFlags flags = 0u;
+    VulkanQueueFlags flags = 0u;
 
     if (vkflags & VK_QUEUE_GRAPHICS_BIT)
     {
-        flags |= QueueFlagBits::kGraphics;
+        flags |= VulkanQueueFlagBits::kGraphics;
     }
     if (vkflags & VK_QUEUE_COMPUTE_BIT)
     {
-        flags |= QueueFlagBits::kCompute;
+        flags |= VulkanQueueFlagBits::kCompute;
     }
     if (vkflags & VK_QUEUE_TRANSFER_BIT)
     {
-        flags |= QueueFlagBits::kTransfer;
+        flags |= VulkanQueueFlagBits::kTransfer;
     }
 
     return flags;

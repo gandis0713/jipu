@@ -13,6 +13,16 @@
 namespace jipu
 {
 
+struct VulkanQueueFlagBits
+{
+    static constexpr uint8_t kUndefined = 1 << 0; // 0x00000000
+    static constexpr uint8_t kGraphics = 1 << 1;  // 0x00000001
+    static constexpr uint8_t kCompute = 1 << 2;   // 0x00000002
+    static constexpr uint8_t kTransfer = 1 << 3;  // 0x00000004
+    static constexpr uint8_t kAll = kGraphics | kCompute | kTransfer;
+};
+using VulkanQueueFlags = uint8_t;
+
 class VulkanDevice;
 class VULKAN_EXPORT VulkanQueue : public Queue
 {
@@ -28,7 +38,7 @@ public:
 
 private:
     VkQueue getVkQueue(uint32_t index = 0) const;
-    VkQueue getVkQueue(QueueFlags flags = QueueFlagBits::kAll) const;
+    VkQueue getVkQueue(VulkanQueueFlags flags = VulkanQueueFlagBits::kAll) const;
 
 private:
     VulkanDevice& m_device;
@@ -36,7 +46,7 @@ private:
 private:
     VkFence m_fence = VK_NULL_HANDLE;
 
-    std::vector<std::pair<VkQueue, QueueFlags>> m_queues{};
+    std::vector<std::pair<VkQueue, VulkanQueueFlags>> m_queues{};
 
 private:
     std::vector<VulkanSubmit::Info> m_presentSubmitInfos{};
@@ -48,7 +58,7 @@ private:
 DOWN_CAST(VulkanQueue, Queue);
 
 // Convert Helper
-VkQueueFlags ToVkQueueFlags(QueueFlags flags);
-QueueFlags ToQueueFlags(VkQueueFlags vkflags);
+VkQueueFlags ToVkQueueFlags(VulkanQueueFlags flags);
+VulkanQueueFlags ToQueueFlags(VkQueueFlags vkflags);
 
 } // namespace jipu
