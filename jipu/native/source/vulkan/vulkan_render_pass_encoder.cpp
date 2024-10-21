@@ -444,13 +444,6 @@ void VulkanRenderPassEncoder::end()
 
     commandEncodingContext.commandResourceTracker.endRenderPass(&command);
     commandEncodingContext.commands.push_back(std::make_unique<EndRenderPassCommand>(std::move(command)));
-
-    // endRenderPass();
-
-    // // TODO: generate stage from binding group.
-    // VkPipelineStageFlags flags = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    // auto vulkanCommandBuffer = downcast(m_commandEncoder)->getCommandBuffer();
-    // vulkanCommandBuffer->setSignalSemaphoreStage(flags);
 }
 
 void VulkanRenderPassEncoder::nextPass()
