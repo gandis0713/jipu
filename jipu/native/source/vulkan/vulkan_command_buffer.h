@@ -36,12 +36,6 @@ public:
 public:
     VkCommandBuffer getVkCommandBuffer();
 
-    void setSignalSemaphoreStage(VkPipelineStageFlags stage);
-    std::pair<VkSemaphore, VkPipelineStageFlags> getSignalSemaphore();
-
-    void injectWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags stage);
-    std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> ejectWaitSemaphores();
-
 private:
     std::unique_ptr<VulkanCommandRecorder> createCommandRecorder();
 
@@ -56,11 +50,6 @@ private:
 private:
     // store VkCommandBuffer to reuse it as secondary command buffer if need.
     VkCommandBuffer m_commandBuffer = VK_NULL_HANDLE;
-
-    VkSemaphore m_signalSemaphore = VK_NULL_HANDLE;
-    VkPipelineStageFlags m_signalStage = VK_PIPELINE_STAGE_NONE;
-
-    std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> m_waitSemaphores{};
 };
 
 DOWN_CAST(VulkanCommandBuffer, CommandBuffer);

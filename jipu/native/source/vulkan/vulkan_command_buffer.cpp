@@ -16,10 +16,6 @@ VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandEncoder* commandEncoder, c
 VulkanCommandBuffer::~VulkanCommandBuffer()
 {
     releaseVkCommandBuffer();
-
-    auto device = getDevice();
-    if (m_signalSemaphore)
-        device->vkAPI.DestroySemaphore(device->getVkDevice(), m_signalSemaphore, nullptr);
 }
 
 VulkanDevice* VulkanCommandBuffer::getDevice() const
@@ -50,44 +46,6 @@ VulkanCommandRecordResult VulkanCommandBuffer::recordToVkCommandBuffer()
 VkCommandBuffer VulkanCommandBuffer::getVkCommandBuffer()
 {
     return m_commandBuffer;
-}
-
-void VulkanCommandBuffer::setSignalSemaphoreStage(VkPipelineStageFlags stage)
-{
-    m_signalStage = stage;
-}
-
-std::pair<VkSemaphore, VkPipelineStageFlags> VulkanCommandBuffer::getSignalSemaphore()
-{
-    if (m_signalSemaphore == VK_NULL_HANDLE)
-    {
-        // create semaphore
-        VkSemaphoreCreateInfo semaphoreCreateInfo{};
-        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        semaphoreCreateInfo.pNext = nullptr;
-        semaphoreCreateInfo.flags = 0;
-
-        if (getDevice()->vkAPI.CreateSemaphore(getDevice()->getVkDevice(), &semaphoreCreateInfo, nullptr, &m_signalSemaphore) != VK_SUCCESS)
-        {
-            throw std::runtime_error("Failed to create render queue semephore.");
-        }
-    }
-
-    return { m_signalSemaphore, m_signalStage };
-}
-
-void VulkanCommandBuffer::injectWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags stage)
-{
-    m_waitSemaphores.emplace_back(semaphore, stage);
-}
-
-std::vector<std::pair<VkSemaphore, VkPipelineStageFlags>> VulkanCommandBuffer::ejectWaitSemaphores()
-{
-    auto waitSemaphores = m_waitSemaphores;
-
-    m_waitSemaphores.clear();
-
-    return waitSemaphores;
 }
 
 std::unique_ptr<VulkanCommandRecorder> VulkanCommandBuffer::createCommandRecorder()
