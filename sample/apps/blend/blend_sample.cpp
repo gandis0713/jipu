@@ -24,7 +24,6 @@ BlendSample::~BlendSample()
     m_bindingGroupLayout.reset();
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void BlendSample::init()
@@ -32,8 +31,6 @@ void BlendSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createVertexBuffer();
     createIndexBuffer();
@@ -59,7 +56,7 @@ void BlendSample::update()
 
 void BlendSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
         ColorAttachment attachment{
             .renderView = renderView
@@ -71,37 +68,38 @@ void BlendSample::draw()
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
             .occlusionQuerySet = nullptr,
-            .timestampWrites = {},
-            .sampleCount = m_sampleCount
+            .timestampWrites = {}
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_renderPipeline1);
+        renderPassEncoder->setPipeline(m_renderPipeline1.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup1);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
         renderPassEncoder->setScissor(0, 0, m_width, m_height);
         renderPassEncoder->setViewport(0, 0, m_width, m_height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
-        renderPassEncoder->setPipeline(*m_renderPipeline2);
+        renderPassEncoder->setPipeline(m_renderPipeline2.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup2);
         renderPassEncoder->setBlendConstant({ 0.5, 0.5, 0.5, 0.0 });
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+        m_swapchain->present();
     }
 }
 
 void BlendSample::updateImGui()
 {
     static const std::vector<std::string> opItems = { "kAdd", "kSubtract", "kReversSubtract", "kMin", "kMax" };
-    static const std::vector<std::string> factorItems = { "kZero", "kOne", "kSrcColor", "kSrcAlpha", "kSrcAlphaSarurated",
+    static const std::vector<std::string> factorItems = { "kZero", "kOne", "kSrcColor", "kSrcAlpha", "kSrcAlphaSaturated",
                                                           "kOneMinusSrcColor", "kOneMinusSrcAlpha", "kDstColor", "kDstAlpha", "kOneMinusDstColor",
                                                           "kOneMinusDstAlpha", "kConstantColor", "kOneMinusConstantColor",
                                                           "kSrc1Color", "kOneMinusSrc1Color", "kSrc1Alpha", "kOneMinusSrc1Alpha" };
@@ -149,12 +147,6 @@ void BlendSample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void BlendSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void BlendSample::createVertexBuffer()
@@ -218,7 +210,7 @@ std::unique_ptr<Texture> BlendSample::createTexture(const char* name)
 
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
-                                         .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .format = TextureFormat::kRGBA8UnormSrgb,
                                          .usage = TextureUsageFlagBits::kCopySrc |
                                                   TextureUsageFlagBits::kCopyDst |
                                                   TextureUsageFlagBits::kTextureBinding,
@@ -238,7 +230,7 @@ std::unique_ptr<Texture> BlendSample::createTexture(const char* name)
 std::unique_ptr<TextureView> BlendSample::createTextureView(Texture* texture)
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     return texture->createTextureView(descriptor);
@@ -265,15 +257,15 @@ std::unique_ptr<BindingGroup> BlendSample::createBindingGroup(TextureView* textu
 {
     SamplerBinding imageSamplerBinding{
         .index = 0,
-        .sampler = *m_sampler,
+        .sampler = m_sampler.get(),
     };
 
     TextureBinding imageTextureBinding{
         .index = 1,
-        .textureView = *textureView,
+        .textureView = textureView,
     };
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_bindingGroupLayout,
+        .layout = m_bindingGroupLayout.get(),
         .samplers = { imageSamplerBinding },
         .textures = { imageTextureBinding },
     };
@@ -286,7 +278,7 @@ void BlendSample::createRenderPipelineLayout()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_bindingGroupLayout };
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -314,12 +306,12 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx2;
+    positionAttribute.format = VertexFormat::kFloat32x2;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute texCoordAttribute{};
-    texCoordAttribute.format = VertexFormat::kSFLOATx2;
+    texCoordAttribute.format = VertexFormat::kFloat32x2;
     texCoordAttribute.offset = offsetof(Vertex, texCoord);
     texCoordAttribute.location = 1;
 
@@ -329,7 +321,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -358,7 +350,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
     target.blend = blendState;
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -366,7 +358,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_renderPipelineLayout },
+        m_renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
@@ -379,7 +371,7 @@ std::unique_ptr<RenderPipeline> BlendSample::createRenderPipeline(const BlendSta
 void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = imageTextureStagingBuffer,
+        .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
         .rowsPerTexture = 0
@@ -390,20 +382,18 @@ void BlendSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture
     blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
     blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-    m_queue->submit({ commandEndoer->finish() });
+    auto commandBuffer = commandEndoer->finish(CommandBufferDescriptor{});
+    m_queue->submit({ commandBuffer.get() });
 }
 
 } // namespace jipu

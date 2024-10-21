@@ -82,9 +82,6 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     m_device = device;
     m_queue = queue;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    m_commandBuffer = device->createCommandBuffer(commandBufferDescriptor);
-
 #if defined(__ANDROID__)
     m_padding.top = 80.0f;
     m_padding.bottom = 170.0f;
@@ -129,7 +126,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureDescriptor fontTextureDescriptor{};
         fontTextureDescriptor.type = TextureType::k2D;
-        fontTextureDescriptor.format = TextureFormat::kRGBA_8888_UInt_Norm;
+        fontTextureDescriptor.format = TextureFormat::kRGBA8Unorm;
         fontTextureDescriptor.width = fontTexWidth;
         fontTextureDescriptor.height = fontTexHeight;
         fontTextureDescriptor.depth = 1;
@@ -145,7 +142,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     {
         TextureViewDescriptor fontTextureViewDescriptor{};
         fontTextureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
-        fontTextureViewDescriptor.type = TextureViewType::k2D;
+        fontTextureViewDescriptor.dimension = TextureViewDimension::k2D;
 
         m_fontTextureView = m_fontTexture->createTextureView(fontTextureViewDescriptor);
     }
@@ -166,7 +163,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     // copy buffer to texture
     {
         BlitTextureBuffer blitTextureBuffer{
-            .buffer = *m_fontBuffer,
+            .buffer = m_fontBuffer.get(),
             .offset = 0,
             .bytesPerRow = 0,
             .rowsPerTexture = 0,
@@ -178,7 +175,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         blitTextureBuffer.rowsPerTexture = m_fontTexture->getHeight();
 
         BlitTexture blitTexture{
-            .texture = *m_fontTexture,
+            .texture = m_fontTexture.get(),
             .aspect = TextureAspectFlagBits::kColor
         };
         Extent3D extent{};
@@ -187,10 +184,11 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         extent.depth = 1;
 
         CommandEncoderDescriptor commandEncoderDescriptor{};
-        std::unique_ptr<CommandEncoder> commandEncoder = m_commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+        std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
         commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-        queue->submit({ commandEncoder->finish() });
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        queue->submit({ commandBuffer.get() });
     }
 
     // create uniform buffer
@@ -256,11 +254,11 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
                 .index = 0,
                 .offset = 0,
                 .size = m_uniformBuffer->getSize(),
-                .buffer = *m_uniformBuffer,
+                .buffer = m_uniformBuffer.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[0],
+                .layout = m_bindingGroupLayouts[0].get(),
                 .buffers = { uiTransformBinding },
             };
 
@@ -270,16 +268,16 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         {
             SamplerBinding fontSamplerBinding{
                 .index = 0,
-                .sampler = *m_fontSampler,
+                .sampler = m_fontSampler.get(),
             };
 
             TextureBinding fontTextureBinding{
                 .index = 1,
-                .textureView = *m_fontTextureView,
+                .textureView = m_fontTextureView.get(),
             };
 
             BindingGroupDescriptor bindingGroupDescriptor{
-                .layout = *m_bindingGroupLayouts[1],
+                .layout = m_bindingGroupLayouts[1].get(),
                 .samplers = { fontSamplerBinding },
                 .textures = { fontTextureBinding },
             };
@@ -291,7 +289,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
     // create pipeline layout
     {
         PipelineLayoutDescriptor pipelineLayoutDescriptor{};
-        pipelineLayoutDescriptor.layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] };
+        pipelineLayoutDescriptor.layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() };
 
         m_pipelineLayout = device->createPipelineLayout(pipelineLayoutDescriptor);
     }
@@ -308,17 +306,17 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         VertexInputLayout vertexInputLayout{};
         {
             VertexAttribute positionAttribute{};
-            positionAttribute.format = VertexFormat::kSFLOATx2;
+            positionAttribute.format = VertexFormat::kFloat32x2;
             positionAttribute.offset = offsetof(ImDrawVert, pos);
             positionAttribute.location = 0;
 
             VertexAttribute uiAttribute{};
-            uiAttribute.format = VertexFormat::kSFLOATx2;
+            uiAttribute.format = VertexFormat::kFloat32x2;
             uiAttribute.offset = offsetof(ImDrawVert, uv);
             uiAttribute.location = 1;
 
             VertexAttribute colorAttribute{};
-            colorAttribute.format = VertexFormat::kUNORM8x4;
+            colorAttribute.format = VertexFormat::kUnorm8x4;
             colorAttribute.offset = offsetof(ImDrawVert, col);
             colorAttribute.location = 2;
 
@@ -336,7 +334,7 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         VertexStage vertexStage{
-            { *vertexShaderModule, "main" },
+            { vertexShaderModule.get(), "main" },
             { vertexInputLayout },
         };
 
@@ -374,12 +372,12 @@ void Im_Gui::init(Device* device, Queue* queue, Swapchain& swapchain)
         }
 
         FragmentStage fragmentStage{
-            { *fragmentShaderModule, "main" }, // ProgramableStage
+            { fragmentShaderModule.get(), "main" }, // ProgramableStage
             { target }
         };
 
         RenderPipelineDescriptor renderPipelineDescriptor{
-            { *m_pipelineLayout }, // PipelineDescriptor
+            m_pipelineLayout.get(), // PipelineDescriptor
             inputAssemblyStage,
             vertexStage,
             rasterizationStage,
@@ -418,8 +416,6 @@ void Im_Gui::build()
         // Vertex buffer
         if ((m_vertexBuffer == nullptr) || (m_vertexBuffer->getSize() != vertexBufferSize))
         {
-            m_vertexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = vertexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kVertex;
@@ -431,8 +427,6 @@ void Im_Gui::build()
         // Index buffer
         if ((m_indexBuffer == nullptr) || (m_indexBuffer->getSize() < indexBufferSize))
         {
-            m_indexBuffer.reset();
-
             BufferDescriptor descriptor{};
             descriptor.size = indexBufferSize;
             descriptor.usage = BufferUsageFlagBits::kIndex;
@@ -467,18 +461,17 @@ void Im_Gui::draw(CommandEncoder* commandEncoder, TextureView& renderView)
         ImGuiIO& io = ImGui::GetIO();
 
         ColorAttachment colorAttachment{
-            .renderView = renderView
+            .renderView = &renderView
         };
         colorAttachment.loadOp = LoadOp::kLoad;
         colorAttachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { colorAttachment },
-            .sampleCount = 1
+            .colorAttachments = { colorAttachment }
         };
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-        renderPassEncoder->setPipeline(*m_pipeline);
+        renderPassEncoder->setPipeline(m_pipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
         renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
         renderPassEncoder->setViewport(0, 0, io.DisplaySize.x, io.DisplaySize.y, 0, 1);
@@ -524,8 +517,6 @@ void Im_Gui::clear()
     m_pipelineLayout.reset();
     m_bindingGroups.clear();
     m_bindingGroupLayouts.clear();
-
-    m_commandBuffer.reset();
 }
 
 } // namespace jipu

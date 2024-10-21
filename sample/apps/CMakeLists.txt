@@ -33,7 +33,6 @@ function(configure_sample target)
 
     target_link_libraries(${target}
         PRIVATE
-        jipu::jipu
         jipu::sample_base
     )
 
@@ -52,6 +51,13 @@ function(configure_sample target)
 
             PRIVATE
             -fno-rtti # -fno-exceptions
+        )
+    endif()
+
+    if(USE_DAWN_WEBGPU)
+        target_compile_definitions(${target}
+            PRIVATE
+            "USE_DAWN_HEADER"
         )
     endif()
 
@@ -104,19 +110,25 @@ function(configure_sample target)
     endforeach(resource)
 endfunction()
 
-add_subdirectory(triangle)
-add_subdirectory(query)
-add_subdirectory(blend)
-add_subdirectory(obj_model)
-add_subdirectory(particle)
-add_subdirectory(deferred)
-add_subdirectory(imgui)
-add_subdirectory(instancing)
-add_subdirectory(offscreen)
+add_subdirectory(wgpu_triangle)
+add_subdirectory(wgpu_triangle2)
 
 # experimental
-if(ENABLE_VULKAN_EXPERIMENTAL)
-    add_subdirectory(vulkan_subpasses)
-    add_subdirectory(vulkan_n_buffering)
-    add_subdirectory(vulkan_pipeline_barrier)
+if(EXPORT_JIPU_NATIVE)
+    add_subdirectory(triangle)
+    add_subdirectory(query)
+    add_subdirectory(blend)
+    add_subdirectory(obj_model)
+    add_subdirectory(particle)
+    add_subdirectory(deferred)
+    add_subdirectory(imgui)
+    add_subdirectory(instancing)
+    add_subdirectory(offscreen)
+endif()
+
+# experimental
+if(EXPORT_JIPU_VULKAN)
+    # add_subdirectory(vulkan_subpasses)
+    # add_subdirectory(vulkan_n_buffering)
+    # add_subdirectory(vulkan_pipeline_barrier)
 endif()

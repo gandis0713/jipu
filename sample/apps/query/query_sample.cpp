@@ -22,7 +22,6 @@ QuerySample::~QuerySample()
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
     m_uniformBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void QuerySample::init()
@@ -30,8 +29,6 @@ void QuerySample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
 
@@ -81,7 +78,7 @@ void QuerySample::update()
 
 void QuerySample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
         ColorAttachment attachment{
             .renderView = renderView
@@ -108,19 +105,18 @@ void QuerySample::draw()
         RenderPassEncoderDescriptor renderPassDescriptor{
             .colorAttachments = { attachment },
             .occlusionQuerySet = occlusionQuerySet,
-            .timestampWrites = timestampWrites,
-            .sampleCount = m_sampleCount
+            .timestampWrites = timestampWrites
         };
 
         CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
 
         auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
         if (m_useOcclusion)
         {
             renderPassEncoder->beginOcclusionQuery(0);
         }
-        renderPassEncoder->setPipeline(*m_renderPipeline);
+        renderPassEncoder->setPipeline(m_renderPipeline.get());
         renderPassEncoder->setBindingGroup(0, *m_bindingGroup);
         renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
         renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
@@ -133,7 +129,7 @@ void QuerySample::draw()
         }
         renderPassEncoder->end();
 
-        drawImGui(commandEncoder.get(), renderView);
+        drawImGui(commandEncoder.get(), *renderView);
 
         if (m_useTimestamp)
         {
@@ -153,7 +149,9 @@ void QuerySample::draw()
                                             0);
         }
 
-        m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+        m_swapchain->present();
 
         if (m_useTimestamp)
         {
@@ -185,12 +183,6 @@ void QuerySample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void QuerySample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void QuerySample::createVertexBuffer()
@@ -251,11 +243,11 @@ void QuerySample::createBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_uniformBuffer->getSize(),
-        .buffer = *m_uniformBuffer,
+        .buffer = m_uniformBuffer.get(),
     };
 
     BindingGroupDescriptor descriptor{
-        .layout = *m_bindingGroupLayout,
+        .layout = m_bindingGroupLayout.get(),
         .buffers = { bufferBinding },
     };
 
@@ -267,7 +259,7 @@ void QuerySample::createRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_bindingGroupLayout };
+        descriptor.layouts = { m_bindingGroupLayout.get() };
 
         m_renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -292,12 +284,12 @@ void QuerySample::createRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
 
@@ -307,7 +299,7 @@ void QuerySample::createRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -335,7 +327,7 @@ void QuerySample::createRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -343,7 +335,7 @@ void QuerySample::createRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_renderPipelineLayout },
+        m_renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

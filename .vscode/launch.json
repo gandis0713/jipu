@@ -15,6 +15,15 @@
             "environment": [],
         },
         {
+            "name": "[windows x64] WGPU Triangle",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/wgpu_triangle/wgpu_triangle.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "[windows x64] Query",
             "type": "cppvsdbg",
             "request": "launch",
@@ -91,6 +100,23 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/triangle/triangle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
+        {
+            "name": "[arm64 osx] WGPU Triangle",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/wgpu_triangle/wgpu_triangle",
             "args": [],
             "stopAtEntry": false,
             "environment": [

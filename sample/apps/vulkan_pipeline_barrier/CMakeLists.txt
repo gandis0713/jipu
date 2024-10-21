@@ -1,1 +1,3 @@
 configure_sample(vulkan_pipeline_barrier)
+
+target_link_libraries(vulkan_pipeline_barrier PRIVATE jipu::native)

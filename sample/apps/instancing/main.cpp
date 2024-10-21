@@ -45,7 +45,6 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
 
@@ -106,7 +105,6 @@ private:
     };
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
 
@@ -149,7 +147,7 @@ private:
     std::vector<Transform> m_transforms{};
 
     std::unique_ptr<Camera> m_camera = nullptr;
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
 
     struct
     {
@@ -182,7 +180,6 @@ InstancingSample::~InstancingSample()
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-    m_commandBuffer.reset();
 }
 
 void InstancingSample::init()
@@ -190,8 +187,6 @@ void InstancingSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     createCamera(); // need size and aspect ratio from swapchain.
     createTransforms();
@@ -242,10 +237,9 @@ void InstancingSample::update()
 
 void InstancingSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
     {
-        CommandEncoderDescriptor commandDescriptor{};
-        auto commadEncoder = m_commandBuffer->createCommandEncoder(commandDescriptor);
+        auto commandEncoder = m_device->createCommandEncoder(CommandEncoderDescriptor{});
 
         ColorAttachment attachment{
             .renderView = renderView
@@ -255,14 +249,13 @@ void InstancingSample::draw()
         attachment.storeOp = StoreOp::kStore;
 
         RenderPassEncoderDescriptor renderPassDescriptor{
-            .colorAttachments = { attachment },
-            .sampleCount = m_sampleCount
+            .colorAttachments = { attachment }
         };
 
         if (m_imguiSettings.useInstancing)
         {
-            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(*m_instancing.renderPipeline);
+            auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+            renderPassEncoder->setPipeline(m_instancing.renderPipeline.get());
             renderPassEncoder->setBindingGroup(0, *m_instancing.bindingGroup);
             renderPassEncoder->setVertexBuffer(VERTEX_SLOT, *m_vertexBuffer);
             renderPassEncoder->setVertexBuffer(INSTANCING_SLOT, *m_instancing.transformBuffer);
@@ -272,14 +265,16 @@ void InstancingSample::draw()
             renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_indices.size()), static_cast<uint32_t>(m_imguiSettings.objectCount), 0, 0, 0);
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            drawImGui(commandEncoder.get(), *renderView);
+            auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
 
-            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+            m_queue->submit({ commandBuffer.get() });
+            m_swapchain->present();
         }
         else
         {
-            auto renderPassEncoder = commadEncoder->beginRenderPass(renderPassDescriptor);
-            renderPassEncoder->setPipeline(*m_nonInstancing.renderPipeline);
+            auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+            renderPassEncoder->setPipeline(m_nonInstancing.renderPipeline.get());
             renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
             renderPassEncoder->setIndexBuffer(*m_indexBuffer, IndexFormat::kUint16);
             renderPassEncoder->setScissor(0, 0, m_width, m_height);
@@ -292,9 +287,11 @@ void InstancingSample::draw()
             }
             renderPassEncoder->end();
 
-            drawImGui(commadEncoder.get(), renderView);
+            drawImGui(commandEncoder.get(), *renderView);
 
-            m_queue->submit({ commadEncoder->finish() }, *m_swapchain);
+            auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+            m_queue->submit({ commandBuffer.get() });
+            m_swapchain->present();
         }
     }
 }
@@ -308,12 +305,6 @@ void InstancingSample::updateImGui()
                     } });
         profilingWindow();
     } });
-}
-
-void InstancingSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_commandBuffer = m_device->createCommandBuffer(descriptor);
 }
 
 void InstancingSample::createVertexBuffer()
@@ -401,11 +392,11 @@ void InstancingSample::createInstancingBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_instancing.uniformBuffer->getSize(),
-        .buffer = *m_instancing.uniformBuffer,
+        .buffer = m_instancing.uniformBuffer.get(),
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_instancing.bindingGroupLayout,
+        .layout = m_instancing.bindingGroupLayout.get(),
         .buffers = { mvpBufferBinding }
     };
 
@@ -417,7 +408,7 @@ void InstancingSample::createInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_instancing.bindingGroupLayout };
+        descriptor.layouts = { m_instancing.bindingGroupLayout.get() };
 
         m_instancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -442,13 +433,13 @@ void InstancingSample::createInstancingRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
     positionAttribute.slot = VERTEX_SLOT;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
     colorAttribute.slot = VERTEX_SLOT;
@@ -459,7 +450,7 @@ void InstancingSample::createInstancingRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexAttribute shiftAttribute{};
-    shiftAttribute.format = VertexFormat::kSFLOATx3;
+    shiftAttribute.format = VertexFormat::kFloat32x3;
     shiftAttribute.offset = offsetof(Transform, translation);
     shiftAttribute.location = 2;
     shiftAttribute.slot = INSTANCING_SLOT;
@@ -470,7 +461,7 @@ void InstancingSample::createInstancingRenderPipeline()
     instancingInputLayout.attributes = { shiftAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout, instancingInputLayout }
     };
 
@@ -499,7 +490,7 @@ void InstancingSample::createInstancingRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -507,7 +498,7 @@ void InstancingSample::createInstancingRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_instancing.renderPipelineLayout },
+        m_instancing.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
@@ -574,18 +565,18 @@ void InstancingSample::createNonInstancingBindingGroup()
         .index = 0,
         .offset = 0,
         .size = m_nonInstancing.uniformBuffer->getSize(),
-        .buffer = *m_nonInstancing.uniformBuffer,
+        .buffer = m_nonInstancing.uniformBuffer.get(),
     };
 
     BufferBinding instancingBufferBinding{
         .index = 1,
         .offset = 0,
         .size = m_nonInstancing.transformBuffer->getSize() / m_transforms.size(),
-        .buffer = *m_nonInstancing.transformBuffer,
+        .buffer = m_nonInstancing.transformBuffer.get(),
     };
 
     BindingGroupDescriptor bindingGroupDescriptor{
-        .layout = *m_nonInstancing.bindingGroupLayout,
+        .layout = m_nonInstancing.bindingGroupLayout.get(),
         .buffers = { bufferBinding, instancingBufferBinding }
     };
 
@@ -597,7 +588,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { *m_nonInstancing.bindingGroupLayout };
+        descriptor.layouts = { m_nonInstancing.bindingGroupLayout.get() };
 
         m_nonInstancing.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
@@ -622,13 +613,13 @@ void InstancingSample::createNonInstancingRenderPipeline()
     // vertex stage
 
     VertexAttribute positionAttribute{};
-    positionAttribute.format = VertexFormat::kSFLOATx3;
+    positionAttribute.format = VertexFormat::kFloat32x3;
     positionAttribute.offset = offsetof(Vertex, pos);
     positionAttribute.location = 0;
     positionAttribute.slot = 0;
 
     VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kSFLOATx3;
+    colorAttribute.format = VertexFormat::kFloat32x3;
     colorAttribute.offset = offsetof(Vertex, color);
     colorAttribute.location = 1;
     colorAttribute.slot = 0;
@@ -639,7 +630,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     vertexInputLayout.attributes = { positionAttribute, colorAttribute };
 
     VertexStage vertexStage{
-        { *vertexShaderModule, "main" },
+        { vertexShaderModule.get(), "main" },
         { vertexInputLayout }
     };
 
@@ -668,7 +659,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
     target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { *fragmentShaderModule, "main" },
+        { fragmentShaderModule.get(), "main" },
         { target }
     };
 
@@ -676,7 +667,7 @@ void InstancingSample::createNonInstancingRenderPipeline()
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        { *m_nonInstancing.renderPipelineLayout },
+        m_nonInstancing.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,

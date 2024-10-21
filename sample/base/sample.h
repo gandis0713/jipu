@@ -2,6 +2,7 @@
 
 #include "fps.h"
 #include "hpc_watcher.h"
+#include "im_gui.h"
 #include "window.h"
 
 #include <deque>
@@ -61,9 +62,9 @@ protected:
     std::unique_ptr<Instance> m_instance = nullptr;
     std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
     std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<Surface> m_surface = nullptr;
     std::unique_ptr<Queue> m_queue = nullptr;
+    std::unique_ptr<Swapchain> m_swapchain = nullptr;
     std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
     TextureView* m_renderView = nullptr;
 

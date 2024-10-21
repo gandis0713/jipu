@@ -42,7 +42,6 @@ private:
     void updateUniformBuffer();
 
 private:
-    void createCommandBuffer();
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
@@ -52,7 +51,6 @@ private:
     void createQuerySet();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
     std::unique_ptr<Buffer> m_vertexBuffer = nullptr;
     std::unique_ptr<Buffer> m_indexBuffer = nullptr;
     std::unique_ptr<Buffer> m_uniformBuffer = nullptr;
@@ -91,7 +89,7 @@ private:
             { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
         };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
     bool m_useTimestamp = false;
     bool m_useOcclusion = false;

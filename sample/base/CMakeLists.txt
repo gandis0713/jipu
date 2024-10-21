@@ -28,6 +28,8 @@ list(APPEND SRC_FILES
     camera.h
     sample.cpp
     sample.h
+    wgpu_sample.cpp
+    wgpu_sample.h
     fps.cpp
     fps.h
     window.cpp
@@ -87,7 +89,7 @@ target_link_libraries(jipu_sample_base
     tinyobjloader::tinyobjloader
     spdlog::spdlog_header_only
     KTX::ktx
-    jipu::jipu
+    jipu::native
     hpc::hpc
     imgui::imgui
 )

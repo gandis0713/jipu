@@ -28,8 +28,8 @@ Sample::~Sample()
     if (m_imgui.has_value())
         m_imgui.value().clear();
 
-    m_queue.reset();
     m_swapchain.reset();
+    m_queue.reset();
     m_surface.reset();
     m_device.reset();
     m_physicalDevices.clear();
@@ -61,17 +61,18 @@ void Sample::createSwapchain()
         throw std::runtime_error("Surface is null pointer.");
 
 #if defined(__ANDROID__) || defined(ANDROID)
-    TextureFormat textureFormat = TextureFormat::kRGBA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;
 #else
-    TextureFormat textureFormat = TextureFormat::kBGRA_8888_UInt_Norm_SRGB;
+    TextureFormat textureFormat = TextureFormat::kBGRA8UnormSrgb;
 #endif
     SwapchainDescriptor descriptor{
-        .surface = *m_surface,
+        .surface = m_surface.get(),
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
         .width = m_width,
-        .height = m_height
+        .height = m_height,
+        .queue = m_queue.get()
     };
 
     m_swapchain = m_device->createSwapchain(descriptor);
@@ -89,7 +90,6 @@ void Sample::createDevice()
 void Sample::createQueue()
 {
     QueueDescriptor descriptor{};
-    descriptor.flags = QueueFlagBits::kGraphics;
 
     m_queue = m_device->createQueue(descriptor);
 }
@@ -100,8 +100,8 @@ void Sample::init()
     getPhysicalDevices();
     createSurface();
     createDevice();
-    createSwapchain();
     createQueue();
+    createSwapchain();
 
     if (m_imgui.has_value())
     {

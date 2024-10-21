@@ -37,8 +37,6 @@ private:
     void updateOffscreenUniformBuffer();
 
 private:
-    void createCommandBuffer();
-
     void createOffscreenTexture();
     void createOffscreenTextureView();
     void createOffscreenVertexBuffer();
@@ -58,8 +56,6 @@ private:
     void createCamera();
 
 private:
-    std::unique_ptr<CommandBuffer> m_commandBuffer = nullptr;
-
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;
@@ -122,7 +118,7 @@ private:
     };
     std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
 };
 } // namespace jipu

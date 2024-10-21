@@ -47,8 +47,6 @@ private:
     void updateImGui();
 
 private:
-    void createCommandBuffer();
-
     void createVertexBuffer();
     void createIndexBuffer();
     void createUniformBuffer();
@@ -109,9 +107,7 @@ private:
     std::unique_ptr<ShaderModule> m_vertexShaderModule = nullptr;
     std::unique_ptr<ShaderModule> m_fragmentShaderModule = nullptr;
 
-    std::unique_ptr<CommandBuffer> m_renderCommandBuffer = nullptr;
-
-    uint32_t m_sampleCount = 1;
+    uint32_t m_sampleCount = 4;
 };
 
 OBJModelSample::OBJModelSample(const SampleDescriptor& descriptor)
@@ -144,9 +140,6 @@ OBJModelSample::~OBJModelSample()
 
     m_indexBuffer.reset();
     m_vertexBuffer.reset();
-
-    // release command buffer after finising queue.
-    m_renderCommandBuffer.reset();
 }
 
 void OBJModelSample::init()
@@ -154,8 +147,6 @@ void OBJModelSample::init()
     Sample::init();
 
     createHPCWatcher();
-
-    createCommandBuffer();
 
     // create buffer
     createVertexBuffer();
@@ -195,18 +186,18 @@ void OBJModelSample::updateImGui()
 
 void OBJModelSample::draw()
 {
-    auto& renderView = m_swapchain->acquireNextTexture();
+    auto renderView = m_swapchain->acquireNextTextureView();
 
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEncoder = m_renderCommandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
     std::vector<ColorAttachment> colorAttachments{}; // in currently. use only one.
-    colorAttachments.push_back({ .renderView = m_sampleCount > 1 ? *m_colorAttachmentTextureView : renderView,
-                                 .resolveView = m_sampleCount > 1 ? std::make_optional<TextureView::Ref>(renderView) : std::nullopt,
+    colorAttachments.push_back({ .renderView = m_sampleCount > 1 ? m_colorAttachmentTextureView.get() : renderView,
+                                 .resolveView = m_sampleCount > 1 ? renderView : nullptr,
                                  .loadOp = LoadOp::kClear,
                                  .storeOp = StoreOp::kStore,
                                  .clearValue = { 0.0, 0.0, 0.0, 0.0 } });
-    DepthStencilAttachment depthStencilAttachment{ .textureView = *m_depthStencilTextureView,
+    DepthStencilAttachment depthStencilAttachment{ .textureView = m_depthStencilTextureView.get(),
                                                    .depthLoadOp = LoadOp::kClear,
                                                    .depthStoreOp = StoreOp::kStore,
                                                    .stencilLoadOp = LoadOp::kDontCare,
@@ -214,11 +205,10 @@ void OBJModelSample::draw()
                                                    .clearValue = { .depth = 1.0f, .stencil = 0 } };
 
     RenderPassEncoderDescriptor renderPassDescriptor{ .colorAttachments = colorAttachments,
-                                                      .depthStencilAttachment = depthStencilAttachment,
-                                                      .sampleCount = m_sampleCount };
+                                                      .depthStencilAttachment = depthStencilAttachment };
 
     std::unique_ptr<RenderPassEncoder> renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
-    renderPassEncoder->setPipeline(*m_renderPipeline);
+    renderPassEncoder->setPipeline(m_renderPipeline.get());
     renderPassEncoder->setBindingGroup(0, *m_bindingGroups[0]);
     renderPassEncoder->setBindingGroup(1, *m_bindingGroups[1]);
     renderPassEncoder->setVertexBuffer(0, *m_vertexBuffer);
@@ -228,9 +218,12 @@ void OBJModelSample::draw()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_polygon.indices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    drawImGui(commandEncoder.get(), renderView);
+    drawImGui(commandEncoder.get(), *renderView);
 
-    m_queue->submit({ commandEncoder->finish() }, *m_swapchain);
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+
+    m_queue->submit({ commandBuffer.get() });
+    m_swapchain->present();
 }
 
 void OBJModelSample::createVertexBuffer()
@@ -302,7 +295,7 @@ void OBJModelSample::createImageTexture()
 
     // create texture.
     TextureDescriptor textureDescriptor{ .type = TextureType::k2D,
-                                         .format = TextureFormat::kRGBA_8888_UInt_Norm_SRGB,
+                                         .format = TextureFormat::kRGBA8UnormSrgb,
                                          .usage = TextureUsageFlagBits::kCopySrc |
                                                   TextureUsageFlagBits::kCopyDst |
                                                   TextureUsageFlagBits::kTextureBinding,
@@ -323,7 +316,7 @@ void OBJModelSample::createImageTexture()
 void OBJModelSample::createImageTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_imageTextureView = m_imageTexture->createTextureView(descriptor);
@@ -346,7 +339,7 @@ void OBJModelSample::createColorAttachmentTexture()
 void OBJModelSample::createColorAttachmentTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kColor;
 
     m_colorAttachmentTextureView = m_colorAttachmentTexture->createTextureView(descriptor);
@@ -356,7 +349,7 @@ void OBJModelSample::createDepthStencilTexture()
 {
     TextureDescriptor descriptor{};
     descriptor.type = TextureType::k2D;
-    descriptor.format = TextureFormat::kD_32_SFloat;
+    descriptor.format = TextureFormat::kDepth32Float;
     descriptor.usage = TextureUsageFlagBits::kDepthStencil;
     descriptor.mipLevels = 1;
     descriptor.width = m_swapchain->getWidth();
@@ -370,7 +363,7 @@ void OBJModelSample::createDepthStencilTexture()
 void OBJModelSample::createDepthStencilTextureView()
 {
     TextureViewDescriptor descriptor{};
-    descriptor.type = TextureViewType::k2D;
+    descriptor.dimension = TextureViewDimension::k2D;
     descriptor.aspect = TextureAspectFlagBits::kDepth;
 
     m_depthStencilTextureView = m_depthStencilTexture->createTextureView(descriptor);
@@ -438,11 +431,11 @@ void OBJModelSample::createBindingGroup()
             .index = 0,
             .offset = 0,
             .size = sizeof(UniformBufferObject),
-            .buffer = *m_uniformBuffer,
+            .buffer = m_uniformBuffer.get(),
         };
 
         BindingGroupDescriptor descriptor{
-            .layout = *m_bindingGroupLayouts[0],
+            .layout = m_bindingGroupLayouts[0].get(),
             .buffers = { bufferBinding },
         };
 
@@ -452,16 +445,16 @@ void OBJModelSample::createBindingGroup()
     {
         SamplerBinding samplerBinding{
             .index = 0,
-            .sampler = *m_imageSampler,
+            .sampler = m_imageSampler.get(),
         };
 
         TextureBinding textureBinding{
             .index = 1,
-            .textureView = *m_imageTextureView,
+            .textureView = m_imageTextureView.get(),
         };
 
         BindingGroupDescriptor descriptor{
-            .layout = *m_bindingGroupLayouts[1],
+            .layout = m_bindingGroupLayouts[1].get(),
             .samplers = { samplerBinding },
             .textures = { textureBinding },
         };
@@ -472,7 +465,7 @@ void OBJModelSample::createBindingGroup()
 
 void OBJModelSample::createPipelineLayout()
 {
-    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { *m_bindingGroupLayouts[0], *m_bindingGroupLayouts[1] } };
+    PipelineLayoutDescriptor pipelineLayoutDescriptor{ .layouts = { m_bindingGroupLayouts[0].get(), m_bindingGroupLayouts[1].get() } };
     m_pipelineLayout = m_device->createPipelineLayout(pipelineLayoutDescriptor);
 }
 
@@ -503,12 +496,12 @@ void OBJModelSample::createRenderPipeline()
         vertexAttributes.resize(2);
         {
             // position
-            vertexAttributes[0] = { .format = VertexFormat::kSFLOATx3,
+            vertexAttributes[0] = { .format = VertexFormat::kFloat32x3,
                                     .offset = offsetof(Vertex, pos),
                                     .location = 0 };
 
             // texture coodinate
-            vertexAttributes[1] = { .format = VertexFormat::kSFLOATx2,
+            vertexAttributes[1] = { .format = VertexFormat::kFloat32x2,
                                     .offset = offsetof(Vertex, texCoord),
                                     .location = 1 };
         }
@@ -520,7 +513,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     VertexStage vertexStage{
-        { *m_vertexShaderModule, "main" },
+        { m_vertexShaderModule.get(), "main" },
         layouts
     };
 
@@ -542,7 +535,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     FragmentStage fragmentStage{
-        { *m_fragmentShaderModule, "main" },
+        { m_fragmentShaderModule.get(), "main" },
         { { .format = m_swapchain->getTextureFormat() } }
     };
 
@@ -553,7 +546,7 @@ void OBJModelSample::createRenderPipeline()
     }
 
     RenderPipelineDescriptor descriptor{
-        { *m_pipelineLayout },
+        m_pipelineLayout.get(),
         inputAssembly,
         vertexStage,
         rasterization,
@@ -564,39 +557,32 @@ void OBJModelSample::createRenderPipeline()
     m_renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
-void OBJModelSample::createCommandBuffer()
-{
-    CommandBufferDescriptor descriptor{};
-    m_renderCommandBuffer = m_device->createCommandBuffer(descriptor);
-}
-
 void OBJModelSample::copyBufferToBuffer(Buffer& src, Buffer& dst)
 {
     BlitBuffer srcBuffer{
-        .buffer = src,
+        .buffer = &src,
         .offset = 0,
     };
 
     BlitBuffer dstBuffer{
-        .buffer = dst,
+        .buffer = &dst,
         .offset = 0,
     };
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    auto commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    auto commandEncoder = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    auto commandEncoder = m_device->createCommandEncoder(commandEncoderDescriptor);
 
     commandEncoder->copyBufferToBuffer(srcBuffer, dstBuffer, src.getSize());
 
-    m_queue->submit({ commandEncoder->finish() });
+    CommandBufferDescriptor commandBufferDescriptor{};
+    auto commandBuffer = commandEncoder->finish(commandBufferDescriptor);
+    m_queue->submit({ commandBuffer.get() });
 }
 
 void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Texture& imageTexture)
 {
     BlitTextureBuffer blitTextureBuffer{
-        .buffer = imageTextureStagingBuffer,
+        .buffer = &imageTextureStagingBuffer,
         .offset = 0,
         .bytesPerRow = 0,
         .rowsPerTexture = 0
@@ -607,20 +593,20 @@ void OBJModelSample::copyBufferToTexture(Buffer& imageTextureStagingBuffer, Text
     blitTextureBuffer.bytesPerRow = bytesPerData * imageTexture.getWidth() * channel;
     blitTextureBuffer.rowsPerTexture = imageTexture.getHeight();
 
-    BlitTexture blitTexture{ .texture = imageTexture, .aspect = TextureAspectFlagBits::kColor };
+    BlitTexture blitTexture{ .texture = &imageTexture, .aspect = TextureAspectFlagBits::kColor };
     Extent3D extent{};
     extent.width = imageTexture.getWidth();
     extent.height = imageTexture.getHeight();
     extent.depth = 1;
 
-    CommandBufferDescriptor commandBufferDescriptor{};
-    std::unique_ptr<CommandBuffer> commandBuffer = m_device->createCommandBuffer(commandBufferDescriptor);
-
     CommandEncoderDescriptor commandEncoderDescriptor{};
-    std::unique_ptr<CommandEncoder> commandEndoer = commandBuffer->createCommandEncoder(commandEncoderDescriptor);
+    std::unique_ptr<CommandEncoder> commandEndoer = m_device->createCommandEncoder(commandEncoderDescriptor);
+
     commandEndoer->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
-    m_queue->submit({ commandEndoer->finish() });
+    CommandBufferDescriptor commandBufferDescriptor{};
+    auto commandBuffer = commandEndoer->finish(commandBufferDescriptor);
+    m_queue->submit({ commandBuffer.get() });
 }
 
 void OBJModelSample::updateUniformBuffer()
