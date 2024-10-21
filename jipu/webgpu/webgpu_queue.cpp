@@ -12,10 +12,7 @@ WebGPUQueue* WebGPUQueue::create(WebGPUDevice* wgpuDevice, WGPUQueueDescriptor c
 {
     auto device = wgpuDevice->getDevice();
 
-    // TODO: create queue by descriptor here
-    auto queue = device->createQueue(QueueDescriptor{ .flags = QueueFlagBits::kGraphics |
-                                                               QueueFlagBits::kCompute |
-                                                               QueueFlagBits::kTransfer });
+    auto queue = device->createQueue(QueueDescriptor{});
     return new WebGPUQueue(wgpuDevice, std::move(queue), descriptor);
 }
 
