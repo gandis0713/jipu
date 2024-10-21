@@ -66,7 +66,6 @@ void CopyTest::SetUp()
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
     QueueDescriptor queueDescriptor{};
-    queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
@@ -117,7 +116,6 @@ void CopyTest::copyTextureToBuffer(Texture* srcTexture)
     commandEncoder->copyTextureToBuffer(srcBlitTexture, dstBlitBuffer, extent);
 
     QueueDescriptor queueDescriptor{};
-    queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
@@ -157,7 +155,6 @@ TEST_F(CopyTest, test_BufferToBuffer)
     commandEncoder->copyBufferToBuffer(srcBlitBuffer, dstBlitBuffer, m_srcBuffer->getSize());
 
     QueueDescriptor queueDescriptor{};
-    queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
@@ -213,7 +210,6 @@ TEST_F(CopyTest, test_BufferToTexture)
     commandEncoder->copyBufferToTexture(blitTextureBuffer, blitTexture, extent);
 
     QueueDescriptor queueDescriptor{};
-    queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
@@ -267,7 +263,6 @@ TEST_F(CopyTest, test_TextureToTexture)
     commandEncoder->copyTextureToTexture(srcBlitTexture, dstBlitTexture, extent);
 
     QueueDescriptor queueDescriptor{};
-    queueDescriptor.flags = QueueFlagBits::kTransfer;
 
     auto queue = m_device->createQueue(queueDescriptor);
     EXPECT_NE(nullptr, queue);
