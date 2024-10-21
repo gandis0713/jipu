@@ -200,11 +200,13 @@ void ParticleSample::draw()
     if (separateCmdBuffer)
     {
         m_queue->submit({ computeCommandBuffer.get() });
-        m_queue->submit({ renderCommandBuffer.get() }, *m_swapchain);
+        m_queue->submit({ renderCommandBuffer.get() });
+        m_swapchain->present();
     }
     else
     {
-        m_queue->submit({ computeCommandBuffer.get(), renderCommandBuffer.get() }, *m_swapchain);
+        m_queue->submit({ computeCommandBuffer.get(), renderCommandBuffer.get() });
+        m_swapchain->present();
     }
 
     m_vertexIndex = (m_vertexIndex + 1) % 2;

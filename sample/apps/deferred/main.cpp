@@ -425,7 +425,8 @@ void DeferredSample::draw()
     CommandBufferDescriptor descriptor{};
     auto commandBuffer = commandEncoder->finish(descriptor);
 
-    m_queue->submit({ commandBuffer.get() }, *m_swapchain);
+    m_queue->submit({ commandBuffer.get() });
+    m_swapchain->present();
 }
 
 void DeferredSample::createOffscreenPositionColorAttachmentTexture()

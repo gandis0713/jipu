@@ -22,7 +22,6 @@ public:
     ~VulkanQueue() override;
 
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
-    void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain) override;
 
 public:
     void present(VulkanPresentInfo presentInfo);

@@ -37,7 +37,6 @@ protected:
 
 public:
     virtual void submit(std::vector<CommandBuffer*> commandBuffers) = 0;
-    virtual void submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain) = 0;
 };
 
 } // namespace jipu

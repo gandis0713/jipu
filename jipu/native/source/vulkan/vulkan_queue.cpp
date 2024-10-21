@@ -80,12 +80,6 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
     }
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers, Swapchain& swapchain)
-{
-    submit(commandBuffers);
-    swapchain.present();
-}
-
 void VulkanQueue::present(VulkanPresentInfo presentInfo)
 {
     auto& vulkanDevice = downcast(m_device);

@@ -222,7 +222,8 @@ void OBJModelSample::draw()
 
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
 
-    m_queue->submit({ commandBuffer.get() }, *m_swapchain);
+    m_queue->submit({ commandBuffer.get() });
+    m_swapchain->present();
 }
 
 void OBJModelSample::createVertexBuffer()

@@ -104,7 +104,8 @@ void ImGuiSample::draw()
         drawImGui(commandEncoder.get(), *renderView);
 
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
-        m_queue->submit({ commandBuffer.get() }, *m_swapchain);
+        m_queue->submit({ commandBuffer.get() });
+        m_swapchain->present();
     }
 }
 
