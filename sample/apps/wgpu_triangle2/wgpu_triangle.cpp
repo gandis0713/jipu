@@ -193,7 +193,7 @@ void WGPUTriangleSample::createShaderModule()
         WGPUShaderModuleDescriptor vertexShaderModuleDescriptor{};
         vertexShaderModuleDescriptor.nextInChain = &vertexShaderModuleSPIRVDescriptor.chain;
 
-        m_vertexSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
+        m_vertSPIRVShaderModule = wgpuDeviceCreateShaderModule(m_device, &vertexShaderModuleDescriptor);
 
         WGPUShaderModuleSPIRVDescriptor fragShaderModuleSPIRVDescriptor{};
         fragShaderModuleSPIRVDescriptor.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
@@ -262,7 +262,7 @@ void WGPUTriangleSample::createPipeline()
 
     WGPUVertexState vertexState{};
     vertexState.entryPoint = "main";
-    vertexState.module = m_vertexSPIRVShaderModule;
+    vertexState.module = m_vertSPIRVShaderModule;
 
     WGPUColorTargetState colorTargetState{};
     colorTargetState.format = m_surfaceCapabilities.formats[0];
