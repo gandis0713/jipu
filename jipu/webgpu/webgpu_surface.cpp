@@ -158,7 +158,7 @@ void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)
     auto currentTextureView = m_swapchain->acquireNextTextureView();
     auto currentTexture = currentTextureView->getTexture();
 
-    surfaceTexture->texture = reinterpret_cast<WGPUTexture>(currentTexture);
+    surfaceTexture->texture = reinterpret_cast<WGPUTexture>(WebGPUTexture::create(wgpuDevice, currentTexture));
     surfaceTexture->status = WGPUSurfaceGetCurrentTextureStatus_Success;
 }
 
