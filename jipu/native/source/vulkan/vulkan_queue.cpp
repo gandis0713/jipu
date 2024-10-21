@@ -25,27 +25,11 @@ VulkanQueue::VulkanQueue(VulkanDevice& device, const QueueDescriptor& descriptor
         throw std::runtime_error("There is no queue family properties.");
     }
 
-    for (uint64_t index = 0; index < queueFamilyPropertiesSize; ++index)
+    for (uint32_t index = 0; index < queueFamilyPropertiesSize; ++index)
     {
-        const auto& properties = deviceInfo.queueFamilyProperties[index];
-        if (properties.queueFlags & ToVkQueueFlags(descriptor.flags))
-        {
-            m_index = static_cast<uint32_t>(index);
-            m_properties = properties;
-            break;
-        }
-    }
-
-    device.vkAPI.GetDeviceQueue(device.getVkDevice(), m_index, 0, &m_queue);
-
-    // create semaphore
-    VkSemaphoreCreateInfo semaphoreCreateInfo{};
-    semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreCreateInfo.pNext = nullptr;
-    semaphoreCreateInfo.flags = 0;
-    if (device.vkAPI.CreateSemaphore(m_device.getVkDevice(), &semaphoreCreateInfo, nullptr, &m_semaphore) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Failed to create semaphore in queue.");
+        VkQueue queue{ VK_NULL_HANDLE };
+        device.vkAPI.GetDeviceQueue(device.getVkDevice(), index, 0, &queue);
+        m_queues.push_back({ queue, ToQueueFlags(deviceInfo.queueFamilyProperties[index].queueFlags) });
     }
 
     // create fence.
@@ -58,10 +42,12 @@ VulkanQueue::~VulkanQueue()
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
     // wait idle state before destroy semaphore.
-    vkAPI.QueueWaitIdle(m_queue);
+    for (auto& [queue, _] : m_queues)
+    {
+        vkAPI.QueueWaitIdle(queue);
+    }
 
     m_device.getFencePool()->release(m_fence);
-    vkAPI.DestroySemaphore(vulkanDevice.getVkDevice(), m_semaphore, nullptr);
 
     // Doesn't need to destroy VkQueue.
 }
@@ -105,6 +91,8 @@ void VulkanQueue::present(VulkanPresentInfo presentInfo)
     auto& vulkanDevice = downcast(m_device);
     const VulkanAPI& vkAPI = vulkanDevice.vkAPI;
 
+    auto queue = getVkQueue(0u); // TODO: get by queue flags
+
     // prepare submit and present infos
     {
         // add acquire image semaphore to submit infos.
@@ -146,18 +134,29 @@ void VulkanQueue::present(VulkanPresentInfo presentInfo)
         info.pImageIndices = presentInfo.imageIndices.data();
         info.pResults = nullptr; // Optional
 
-        vkAPI.QueuePresentKHR(m_queue, &info);
+        vkAPI.QueuePresentKHR(queue, &info);
     }
 }
 
-VkQueue VulkanQueue::getVkQueue() const
+VkQueue VulkanQueue::getVkQueue(uint32_t index) const
 {
-    return m_queue;
+    assert(m_queues.size() > index);
+
+    return m_queues[index].first;
 }
 
-std::vector<VkSemaphore> VulkanQueue::getSemaphores() const
+VkQueue VulkanQueue::getVkQueue(QueueFlags flags) const
 {
-    return { m_semaphore };
+    for (const auto& [queue, queueFlags] : m_queues)
+    {
+        if (queueFlags & flags)
+        {
+            return queue;
+        }
+    }
+
+    throw std::runtime_error("There is no queue family properties.");
+    return VK_NULL_HANDLE;
 }
 
 std::vector<VulkanCommandRecordResult> VulkanQueue::recordCommands(std::vector<CommandBuffer*> commandBuffers)
@@ -198,7 +197,8 @@ void VulkanQueue::submit(const std::vector<VulkanSubmit::Info>& submits)
         submitInfos[i] = submitInfo;
     }
 
-    VkResult result = vkAPI.QueueSubmit(m_queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
+    auto queue = getVkQueue(0u); // TODO: get by queue flags
+    VkResult result = vkAPI.QueueSubmit(queue, static_cast<uint32_t>(submitInfos.size()), submitInfos.data(), m_fence);
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error(fmt::format("failed to submit command buffer {}", static_cast<uint32_t>(result)));

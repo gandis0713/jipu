@@ -8,6 +8,8 @@
 #include "vulkan_inflight_context.h"
 #include "vulkan_swapchain.h"
 
+#include <unordered_map>
+
 namespace jipu
 {
 
@@ -25,21 +27,17 @@ public:
 public:
     void present(VulkanPresentInfo presentInfo);
 
-public:
-    VkQueue getVkQueue() const;
-    std::vector<VkSemaphore> getSemaphores() const;
+private:
+    VkQueue getVkQueue(uint32_t index = 0) const;
+    VkQueue getVkQueue(QueueFlags flags = QueueFlagBits::kAll) const;
 
-protected:
+private:
     VulkanDevice& m_device;
 
 private:
-    VkQueue m_queue = VK_NULL_HANDLE;
     VkFence m_fence = VK_NULL_HANDLE;
-    VkSemaphore m_semaphore = VK_NULL_HANDLE;
 
-    // TODO: use pair.
-    uint32_t m_index{ 0 }; // Index in VkQueueFamilyProperties in VkPhysicalDevice
-    VkQueueFamilyProperties m_properties{};
+    std::vector<std::pair<VkQueue, QueueFlags>> m_queues{};
 
 private:
     std::vector<VulkanSubmit::Info> m_presentSubmitInfos{};
