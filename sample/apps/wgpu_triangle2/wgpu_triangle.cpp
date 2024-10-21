@@ -49,12 +49,10 @@ void WGPUTriangleSample::update()
 void WGPUTriangleSample::draw()
 {
     WGPUSurfaceTexture surfaceTexture{};
-    if (false)
-        wgpuSurfaceGetCurrentTexture(m_surface, &surfaceTexture);
+    wgpuSurfaceGetCurrentTexture(m_surface, &surfaceTexture);
 
     WGPUTextureView surfaceTextureView{};
-    if (false)
-        surfaceTextureView = wgpuTextureCreateView(surfaceTexture.texture, NULL);
+    surfaceTextureView = wgpuTextureCreateView(surfaceTexture.texture, NULL);
 
     WGPUCommandEncoderDescriptor commandEncoderDescriptor{};
     WGPUCommandEncoder commandEncoder = wgpuDeviceCreateCommandEncoder(m_device, &commandEncoderDescriptor);
@@ -72,16 +70,16 @@ void WGPUTriangleSample::draw()
 
     WGPURenderPassEncoder renderPassEncoder = wgpuCommandEncoderBeginRenderPass(commandEncoder, &renderPassDescriptor);
 
-    // wgpuRenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
-    // wgpuRenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
-    // wgpuRenderPassEncoderEnd(renderPassEncoder);
+    wgpuRenderPassEncoderSetPipeline(renderPassEncoder, m_renderPipeline);
+    wgpuRenderPassEncoderDraw(renderPassEncoder, 3, 1, 0, 0);
+    wgpuRenderPassEncoderEnd(renderPassEncoder);
     // wgpuRenderPassEncoderRelease(renderPassEncoder);
 
-    // WGPUCommandBufferDescriptor commandBufferDescriptor{};
-    // WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
+    WGPUCommandBufferDescriptor commandBufferDescriptor{};
+    WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(commandEncoder, &commandBufferDescriptor);
 
-    // wgpuQueueSubmit(m_queue, 1, &commandBuffer);
-    // wgpuSurfacePresent(m_surface);
+    wgpuQueueSubmit(m_queue, 1, &commandBuffer);
+    wgpuSurfacePresent(m_surface);
 
     // wgpuCommandBufferRelease(commandBuffer);
     // wgpuCommandEncoderRelease(commandEncoder);
