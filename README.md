@@ -4,7 +4,7 @@
 [![Build Status](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)](https://github.com/gandis0713/jipu/workflows/macOS/badge.svg)
 [![Build Status](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)](https://github.com/gandis0713/jipu/workflows/Windows/badge.svg)
 
-JIPU to implement WebGPU headers (https://github.com/webgpu-native/webgpu-headers).
+The JIPU is to implement WebGPU headers (https://github.com/webgpu-native/webgpu-headers).
 
 ## Status
 |Graphics API| Support | Platform |
