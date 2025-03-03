@@ -193,7 +193,7 @@ bool WebGPUAPI::loadProcs(DyLib* webgpuLib)
     GET_PROC(SurfaceGetCurrentTexture);
     GET_PROC(SurfacePresent);
     // GET_PROC(SurfaceSetLabel);
-    // GET_PROC(SurfaceUnconfigure);
+    GET_PROC(SurfaceUnconfigure);
     // GET_PROC(SurfaceAddRef);
     GET_PROC(SurfaceRelease);
     // GET_PROC(SurfaceCapabilitiesFreeMembers);

@@ -141,11 +141,21 @@ void WebGPUSurface::configure(WGPUSurfaceConfiguration const* config)
     }
     else
     {
-        // TODO: recreate or resize swapchain
-        m_swapchain->resize(config->width, config->height);
+        if (m_configuration.width != config->width || m_configuration.height != config->height)
+            m_swapchain->resize(config->width, config->height);
     }
 
     m_configuration = *config;
+}
+
+void WebGPUSurface::unconfigure()
+{
+    if (m_swapchain != nullptr)
+    {
+        m_swapchain = nullptr;
+    }
+
+    m_configuration = WGPU_SURFACE_CONFIGURATION_INIT;
 }
 
 void WebGPUSurface::getCurrentTexture(WGPUSurfaceTexture* surfaceTexture)

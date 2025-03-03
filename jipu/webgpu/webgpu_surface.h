@@ -31,6 +31,7 @@ public:
 public: // WebGPU API
     WGPUStatus getCapabilities(WebGPUAdapter* adapter, WGPUSurfaceCapabilities* capabilities);
     void configure(WGPUSurfaceConfiguration const* config);
+    void unconfigure();
     void getCurrentTexture(WGPUSurfaceTexture* surfaceTexture);
     void present();
 

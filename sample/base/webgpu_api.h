@@ -179,7 +179,7 @@ struct WebGPUAPI
     WGPUProcSurfaceGetCurrentTexture SurfaceGetCurrentTexture = nullptr;
     WGPUProcSurfacePresent SurfacePresent = nullptr;
     // WGPUProcSurfaceSetLabel SurfaceSetLabel = nullptr;
-    // WGPUProcSurfaceUnconfigure SurfaceUnconfigure = nullptr;
+    WGPUProcSurfaceUnconfigure SurfaceUnconfigure = nullptr;
     // WGPUProcSurfaceAddRef SurfaceAddRef = nullptr;
     WGPUProcSurfaceRelease SurfaceRelease = nullptr;
     // WGPUProcSurfaceCapabilitiesFreeMembers SurfaceCapabilitiesFreeMembers = nullptr;
