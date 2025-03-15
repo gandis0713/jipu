@@ -145,3 +145,5 @@ add_subdirectory(deferred)
 add_subdirectory(imgui)
 add_subdirectory(instancing)
 add_subdirectory(offscreen)
+
+add_subdirectory(june_triangle)
