@@ -526,6 +526,12 @@ void procComputePipelineRelease(WGPUComputePipeline computePipeline)
     return webgpuComputePipeline->release();
 }
 
+void procSurfaceUnconfigure(WGPUSurface surface)
+{
+    WebGPUSurface* webgpuSurface = reinterpret_cast<WebGPUSurface*>(surface);
+    return webgpuSurface->unconfigure();
+}
+
 namespace
 {
 
@@ -611,6 +617,7 @@ std::unordered_map<std::string, WGPUProc> sProcMap{
     { "wgpuComputePassEncoderRelease", reinterpret_cast<WGPUProc>(procComputePassEncoderRelease) },
     { "wgpuDeviceCreateComputePipeline", reinterpret_cast<WGPUProc>(procDeviceCreateComputePipeline) },
     { "wgpuComputePipelineRelease", reinterpret_cast<WGPUProc>(procComputePipelineRelease) },
+    { "wgpuSurfaceUnconfigure", reinterpret_cast<WGPUProc>(procSurfaceUnconfigure) },
 };
 
 } // namespace

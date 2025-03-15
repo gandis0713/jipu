@@ -85,6 +85,7 @@ extern void procComputePassEncoderSetPipeline(WGPUComputePassEncoder computePass
 extern void procComputePassEncoderRelease(WGPUComputePassEncoder computePassEncoder);
 extern WGPUComputePipeline procDeviceCreateComputePipeline(WGPUDevice device, WGPUComputePipelineDescriptor const* descriptor);
 extern void procComputePipelineRelease(WGPUComputePipeline computePipeline);
+extern void procSurfaceUnconfigure(WGPUSurface surface);
 
 } // namespace jipu
 
@@ -500,5 +501,10 @@ extern "C"
     WGPU_EXPORT void wgpuComputePipelineRelease(WGPUComputePipeline computePipeline) WGPU_FUNCTION_ATTRIBUTE
     {
         return procComputePipelineRelease(computePipeline);
+    }
+
+    WGPU_EXPORT void wgpuSurfaceUnconfigure(WGPUSurface surface) WGPU_FUNCTION_ATTRIBUTE
+    {
+        return procSurfaceUnconfigure(surface);
     }
 }
