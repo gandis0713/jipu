@@ -54,6 +54,8 @@ list(APPEND SRC_FILES
     hpc_watcher.h
     webgpu_api.cpp
     webgpu_api.h
+    june_api.cpp
+    june_api.h
 )
 
 if(ANDROID)
@@ -92,6 +94,7 @@ target_link_libraries(jipu_sample_base
     jipu::common
     jipu::native
     jipu::jipu
+    june::june
     PRIVATE
     tinyobjloader::tinyobjloader
     KTX::ktx
