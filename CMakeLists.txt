@@ -41,6 +41,7 @@ elseif(APPLE)
 endif()
 
 add_subdirectory(jipu)
+add_subdirectory(third_party/june)
 
 if(JIPU_SAMPLE)
   add_subdirectory(sample)
