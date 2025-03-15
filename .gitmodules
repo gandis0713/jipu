@@ -1,0 +1,3 @@
+[submodule "third_party/june"]
+	path = third_party/june
+	url = https://github.com/gandis0713/june
