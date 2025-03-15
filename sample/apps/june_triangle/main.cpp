@@ -4,6 +4,10 @@
 #include "file.h"
 #include "native_sample.h"
 
+#include "jipu/common/dylib.h"
+#include "june/june.h"
+#include "june_api.h"
+
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
@@ -15,6 +19,8 @@
 #include "jipu/native/queue.h"
 #include "jipu/native/surface.h"
 #include "jipu/native/swapchain.h"
+#include "jipu/native/vulkan/vulkan_adapter.h"
+#include "jipu/native/vulkan/vulkan_device.h"
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -87,6 +93,14 @@ private:
 
     uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
+
+private:
+    VkInstance m_vkInstance = VK_NULL_HANDLE;
+    VkPhysicalDevice m_vkPhysicalDevice = VK_NULL_HANDLE;
+    VkDevice m_vkDevice = VK_NULL_HANDLE;
+
+    DyLib m_juneLib;
+    JuneAPI m_juneAPI;
 };
 
 JuneTriangleSample::JuneTriangleSample(const SampleDescriptor& descriptor)
@@ -119,6 +133,46 @@ void JuneTriangleSample::init()
     createBindGroupLayout();
     createBindGroup();
     createRenderPipeline();
+
+    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter.get());
+    m_vkInstance = vulkanAdapter->getVkInstance();
+    m_vkPhysicalDevice = vulkanAdapter->getVkPhysicalDevice(0);
+
+    auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    m_vkDevice = vulkanDevice->getVkDevice();
+
+    std::string juneLibName;
+#if defined(__ANDROID__) || defined(ANDROID)
+    juneLibName = "libjune.so";
+#elif defined(__linux__)
+    juneLibName = "libjune.so";
+#elif defined(__APPLE__)
+    juneLibName = "libjune.dylib";
+#elif defined(WIN32)
+    juneLibName = "june.dll";
+#endif
+    if (!m_juneLib.open(juneLibName.c_str()))
+    {
+        throw std::runtime_error("Failed to open library");
+    }
+    if (!m_juneAPI.loadProcs(&m_juneLib))
+    {
+        throw std::runtime_error("Failed to load procs");
+    }
+
+    JuneInstanceDescriptor juneInstanceDescriptor{};
+    JuneInstance juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
+
+    JuneVulkanApiContextDescriptor juneVulkanApiContextDescriptor{};
+    juneVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
+    juneVulkanApiContextDescriptor.vkInstance = m_vkInstance;
+    juneVulkanApiContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+    juneVulkanApiContextDescriptor.vkDevice = m_vkDevice;
+
+    JuneApiContextDescriptor juneApiContextDescriptor{
+        .nextInChain = &juneVulkanApiContextDescriptor.chain
+    };
+    JuneApiContext juneApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
 }
 
 void JuneTriangleSample::createCamera()
@@ -377,7 +431,7 @@ extern "C"
 void android_main(struct android_app* app)
 {
     jipu::SampleDescriptor descriptor{
-        { 1000, 2000, "Triangle", app },
+        { 1000, 2000, "June Triangle", app },
         ""
     };
 
@@ -393,7 +447,7 @@ int main(int argc, char** argv)
     spdlog::set_level(spdlog::level::trace);
 
     jipu::SampleDescriptor descriptor{
-        { 800, 600, "Triangle", nullptr },
+        { 800, 600, "June Triangle", nullptr },
         argv[0]
     };
 
