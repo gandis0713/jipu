@@ -150,6 +150,15 @@
             "environment": [],
         },
         {
+            "name": "[June] [windows x64] Triangle",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/x64-windows-ninja/debug/sample/apps/june_triangle/june_triangle.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [],
+        },
+        {
             "name": "[WGPU] [arm64 osx] Triangle",
             "type": "cppdbg",
             "request": "launch",
@@ -420,6 +429,23 @@
             "cwd": "${workspaceFolder}",
             "MIMode": "lldb",
             "targetArchitecture": "arm64",
-        }
+        },
+        {
+            "name": "[June] [arm64 osx] Triangle",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/arm64-osx-ninja/debug/sample/apps/june_triangle/june_triangle",
+            "args": [],
+            "stopAtEntry": false,
+            "environment": [
+                {
+                    "name": "DYLD_LIBRARY_PATH",
+                    "value": "${env:VULKAN_SDK}/lib:${workspaceFolder}/externals/arm64-osx/debug/lib:${workspaceFolder}/build/arm64-osx-ninja/debug/jipu"
+                }
+            ],
+            "cwd": "${workspaceFolder}",
+            "MIMode": "lldb",
+            "targetArchitecture": "arm64",
+        },
     ]
 }
