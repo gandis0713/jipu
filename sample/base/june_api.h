@@ -10,8 +10,15 @@ struct JuneAPI
 {
     bool loadProcs(DyLib* JuneLib);
 
-    JuneProcCreateInstance CreateInstance = nullptr;
     JuneProcGetProcAddress GetProcAddress = nullptr;
+    JuneProcCreateInstance CreateInstance = nullptr;
+    JuneProcDestroyInstance DestroyInstance = nullptr;
+    JuneProcCreateApiContext CreateApiContext = nullptr;
+    JuneProcDestroyApiContext DestroyApiContext = nullptr;
+    JuneProcCreateBuffer CreateBuffer = nullptr;
+    JuneProcDestroyBuffer DestroyBuffer = nullptr;
+    JuneProcCreateTexture CreateTexture = nullptr;
+    JuneProcDestroyTexture DestroyTexture = nullptr;
 };
 
 } // namespace jipu

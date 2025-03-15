@@ -24,6 +24,13 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
     }
 
     GET_PROC(CreateInstance);
+    GET_PROC(DestroyInstance);
+    GET_PROC(CreateApiContext);
+    GET_PROC(DestroyApiContext);
+    GET_PROC(CreateBuffer);
+    GET_PROC(DestroyBuffer);
+    GET_PROC(CreateTexture);
+    GET_PROC(DestroyTexture);
 
     return true;
 }
