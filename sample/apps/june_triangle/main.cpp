@@ -163,28 +163,55 @@ void JuneTriangleSample::init()
     JuneInstanceDescriptor juneInstanceDescriptor{};
     JuneInstance juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 
-    JuneVulkanApiContextDescriptor juneVulkanApiContextDescriptor{};
-    juneVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
-    juneVulkanApiContextDescriptor.vkInstance = m_vkInstance;
-    juneVulkanApiContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
-    juneVulkanApiContextDescriptor.vkDevice = m_vkDevice;
+    { // vulkan
+        JuneVulkanApiContextDescriptor juneVulkanApiContextDescriptor{};
+        juneVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
+        juneVulkanApiContextDescriptor.vkInstance = m_vkInstance;
+        juneVulkanApiContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+        juneVulkanApiContextDescriptor.vkDevice = m_vkDevice;
 
-    JuneApiContextDescriptor juneApiContextDescriptor{
-        .nextInChain = &juneVulkanApiContextDescriptor.chain
-    };
-    JuneApiContext juneApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
+        JuneApiContextDescriptor juneApiContextDescriptor{
+            .nextInChain = &juneVulkanApiContextDescriptor.chain
+        };
+        JuneApiContext juneVulkanApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
 
-    JuneTextureDescriptor juneTextureDescriptor{};
-    juneTextureDescriptor.dimension = JuneTextureDimension_2D;
-    juneTextureDescriptor.size.width = m_width;
-    juneTextureDescriptor.size.height = m_height;
-    juneTextureDescriptor.size.depthOrArrayLayers = 1;
-    juneTextureDescriptor.sampleCount = 1;
-    juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
-    juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
-    juneTextureDescriptor.mipLevelCount = 1;
+        JuneTextureDescriptor juneTextureDescriptor{};
+        juneTextureDescriptor.dimension = JuneTextureDimension_2D;
+        juneTextureDescriptor.size.width = m_width;
+        juneTextureDescriptor.size.height = m_height;
+        juneTextureDescriptor.size.depthOrArrayLayers = 1;
+        juneTextureDescriptor.sampleCount = 1;
+        juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
+        juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
+        juneTextureDescriptor.mipLevelCount = 1;
 
-    JuneTexture juneTexture = m_juneAPI.CreateTexture(juneApiContext, &juneTextureDescriptor);
+        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneVulkanApiContext, &juneTextureDescriptor);
+    }
+
+    {
+        // gles
+        JuneGLESApiContextDescriptor juneGLESApiContextDescriptor{};
+        juneGLESApiContextDescriptor.chain.sType = JuneSType_GLESApiContext;
+        juneGLESApiContextDescriptor.display = nullptr;
+        juneGLESApiContextDescriptor.context = nullptr;
+
+        JuneApiContextDescriptor juneApiContextDescriptor{
+            .nextInChain = &juneGLESApiContextDescriptor.chain
+        };
+        JuneApiContext juneGLESApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
+
+        JuneTextureDescriptor juneTextureDescriptor{};
+        juneTextureDescriptor.dimension = JuneTextureDimension_2D;
+        juneTextureDescriptor.size.width = m_width;
+        juneTextureDescriptor.size.height = m_height;
+        juneTextureDescriptor.size.depthOrArrayLayers = 1;
+        juneTextureDescriptor.sampleCount = 1;
+        juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
+        juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
+        juneTextureDescriptor.mipLevelCount = 1;
+
+        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneGLESApiContext, &juneTextureDescriptor);
+    }
 }
 
 void JuneTriangleSample::createCamera()
