@@ -173,6 +173,18 @@ void JuneTriangleSample::init()
         .nextInChain = &juneVulkanApiContextDescriptor.chain
     };
     JuneApiContext juneApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
+
+    JuneTextureDescriptor juneTextureDescriptor{};
+    juneTextureDescriptor.dimension = JuneTextureDimension_2D;
+    juneTextureDescriptor.size.width = m_width;
+    juneTextureDescriptor.size.height = m_height;
+    juneTextureDescriptor.size.depthOrArrayLayers = 1;
+    juneTextureDescriptor.sampleCount = 1;
+    juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
+    juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
+    juneTextureDescriptor.mipLevelCount = 1;
+
+    JuneTexture juneTexture = m_juneAPI.CreateTexture(juneApiContext, &juneTextureDescriptor);
 }
 
 void JuneTriangleSample::createCamera()
