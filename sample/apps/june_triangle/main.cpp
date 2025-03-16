@@ -175,6 +175,16 @@ void JuneTriangleSample::init()
         };
         JuneApiContext juneVulkanApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
 
+        JuneTextureMemoryAHardwareBufferDescriptor juneTextureMemoryAHardwareBufferDescriptor{};
+        juneTextureMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferTextureMemory;
+        juneTextureMemoryAHardwareBufferDescriptor.handle = nullptr;
+
+        JuneTextureMemoryDescriptor juneTextureMemoryDescriptor{
+            .nextInChain = &juneTextureMemoryAHardwareBufferDescriptor.chain
+        };
+
+        JuneTextureMemory juneTextureMemory = m_juneAPI.CreateTextureMemory(juneVulkanApiContext, &juneTextureMemoryDescriptor);
+
         JuneTextureDescriptor juneTextureDescriptor{};
         juneTextureDescriptor.dimension = JuneTextureDimension_2D;
         juneTextureDescriptor.size.width = m_width;
@@ -185,7 +195,7 @@ void JuneTriangleSample::init()
         juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
         juneTextureDescriptor.mipLevelCount = 1;
 
-        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneVulkanApiContext, &juneTextureDescriptor);
+        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneTextureMemory, &juneTextureDescriptor);
     }
 
     {
@@ -200,6 +210,16 @@ void JuneTriangleSample::init()
         };
         JuneApiContext juneGLESApiContext = m_juneAPI.CreateApiContext(juneInstance, &juneApiContextDescriptor);
 
+        JuneTextureMemoryAHardwareBufferDescriptor juneTextureMemoryAHardwareBufferDescriptor{};
+        juneTextureMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferTextureMemory;
+        juneTextureMemoryAHardwareBufferDescriptor.handle = nullptr;
+
+        JuneTextureMemoryDescriptor juneTextureMemoryDescriptor{
+            .nextInChain = &juneTextureMemoryAHardwareBufferDescriptor.chain
+        };
+
+        JuneTextureMemory juneTextureMemory = m_juneAPI.CreateTextureMemory(juneGLESApiContext, &juneTextureMemoryDescriptor);
+
         JuneTextureDescriptor juneTextureDescriptor{};
         juneTextureDescriptor.dimension = JuneTextureDimension_2D;
         juneTextureDescriptor.size.width = m_width;
@@ -210,7 +230,7 @@ void JuneTriangleSample::init()
         juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
         juneTextureDescriptor.mipLevelCount = 1;
 
-        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneGLESApiContext, &juneTextureDescriptor);
+        JuneTexture juneTexture = m_juneAPI.CreateTexture(juneTextureMemory, &juneTextureDescriptor);
     }
 }
 

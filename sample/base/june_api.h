@@ -15,6 +15,10 @@ struct JuneAPI
     JuneProcDestroyInstance DestroyInstance = nullptr;
     JuneProcCreateApiContext CreateApiContext = nullptr;
     JuneProcDestroyApiContext DestroyApiContext = nullptr;
+    JuneProcCreateBufferMemory CreateBufferMemory = nullptr;
+    JuneProcDestroyBufferMemory DestroyBufferMemory = nullptr;
+    JuneProcCreateTextureMemory CreateTextureMemory = nullptr;
+    JuneProcDestroyTextureMemory DestroyTextureMemory = nullptr;
     JuneProcCreateBuffer CreateBuffer = nullptr;
     JuneProcDestroyBuffer DestroyBuffer = nullptr;
     JuneProcCreateTexture CreateTexture = nullptr;
