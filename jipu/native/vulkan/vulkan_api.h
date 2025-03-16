@@ -35,6 +35,7 @@ struct VulkanAdapterKnobs
     bool macosSurface = false;
     bool metalSurface = false;
     bool win32Surface = false;
+    bool externalMemory = false;
 
     bool portabilityEnum = false;
 };
