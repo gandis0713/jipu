@@ -20,9 +20,6 @@ const char kExtensionNameKhrXcbSurface[] = "VK_KHR_xcb_surface";
 // swapchain
 const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
 
-// memory
-const char kExtensionNameKhrExternalMemory[] = "VK_KHR_external_memory";
-
 #ifndef NDEBUG
 // layer
 const char kLayerKhronosValidation[] = "VK_LAYER_KHRONOS_validation";
@@ -349,12 +346,6 @@ void VulkanAdapter::gatherInstanceInfo()
             {
                 m_vkInstanceInfo.win32Surface = true;
             }
-#if defined(__ANDROID__) || defined(ANDROID) || defined(__linux__) || defined(WIN32)
-            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrExternalMemory, VK_MAX_EXTENSION_NAME_SIZE) == 0)
-            {
-                m_vkInstanceInfo.externalMemory = true;
-            }
-#endif
 #ifndef NDEBUG
             if (strncmp(extensionProperty.extensionName, kExtensionNameExtDebugReport, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
@@ -417,10 +408,6 @@ const std::vector<const char*> VulkanAdapter::getRequiredInstanceExtensions()
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
     requiredInstanceExtensions.push_back(kExtensionNameExtMetalSurface);
 #endif
-#endif
-
-#if defined(__ANDROID__) || defined(ANDROID) || defined(__linux__) || defined(WIN32)
-    requiredInstanceExtensions.push_back(kExtensionNameKhrExternalMemory);
 #endif
 
 #ifndef NDEBUG

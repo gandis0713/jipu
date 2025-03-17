@@ -186,6 +186,11 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
             {
                 m_info.swapchain = true;
             }
+
+            if (strncmp(extensionProperty.extensionName, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_info.externalMemory = true;
+            }
         }
     }
 }

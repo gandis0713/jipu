@@ -35,7 +35,6 @@ struct VulkanAdapterKnobs
     bool macosSurface = false;
     bool metalSurface = false;
     bool win32Surface = false;
-    bool externalMemory = false;
 
     bool portabilityEnum = false;
 };
@@ -44,6 +43,7 @@ struct VulkanDeviceKnobs
 {
     bool swapchain = false;
     bool portabilitySubset = false;
+    bool externalMemory = false;
 };
 
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h
