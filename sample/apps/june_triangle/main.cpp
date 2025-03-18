@@ -187,51 +187,17 @@ void JuneTriangleSample::init()
         JuneSharedMemory juneSharedMemory = m_juneAPI.ApiContextCreateSharedMemory(juneVulkanApiContext, &juneSharedMemoryDescriptor);
 
         JuneTextureDescriptor juneTextureDescriptor{};
+        juneTextureDescriptor.memory = juneSharedMemory;
+        juneTextureDescriptor.usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer;
         juneTextureDescriptor.dimension = JuneTextureDimension_2D;
         juneTextureDescriptor.size.width = m_width;
         juneTextureDescriptor.size.height = m_height;
         juneTextureDescriptor.size.depthOrArrayLayers = 1;
         juneTextureDescriptor.sampleCount = 1;
         juneTextureDescriptor.format = JuneTextureFormat_RGBA8Unorm;
-        juneTextureDescriptor.usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer;
         juneTextureDescriptor.mipLevelCount = 1;
 
-        JuneTexture juneTexture = m_juneAPI.SharedMemoryCreateTexture(juneSharedMemory, &juneTextureDescriptor);
-    }
-
-    {
-        // gles
-        // JuneGLESApiContextDescriptor juneGLESApiContextDescriptor{};
-        // juneGLESApiContextDescriptor.chain.sType = JuneSType_GLESApiContext;
-        // juneGLESApiContextDescriptor.display = nullptr;
-        // juneGLESApiContextDescriptor.context = nullptr;
-
-        // JuneApiContextDescriptor juneApiContextDescriptor{
-        //     .nextInChain = &juneGLESApiContextDescriptor.chain
-        // };
-        // JuneApiContext juneGLESApiContext = m_juneAPI.InstanceCreateApiContext(juneInstance, &juneApiContextDescriptor);
-
-        // JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        // juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        // juneSharedMemoryAHardwareBufferDescriptor.handle = nullptr;
-
-        // JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
-        //     .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain
-        // };
-
-        // JuneSharedMemory juneSharedMemory = m_juneAPI.ApiContextCreateSharedMemory(juneGLESApiContext, &juneSharedMemoryDescriptor);
-
-        // JuneTextureDescriptor juneTextureDescriptor{};
-        // juneTextureDescriptor.dimension = JuneTextureDimension_2D;
-        // juneTextureDescriptor.size.width = m_width;
-        // juneTextureDescriptor.size.height = m_height;
-        // juneTextureDescriptor.size.depthOrArrayLayers = 1;
-        // juneTextureDescriptor.sampleCount = 1;
-        // juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
-        // juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
-        // juneTextureDescriptor.mipLevelCount = 1;
-
-        // JuneTexture juneTexture = m_juneAPI.SharedMemoryCreateTexture(juneSharedMemory, &juneTextureDescriptor);
+        JuneTexture juneTexture = m_juneAPI.ApiContextCreateTexture(juneVulkanApiContext, &juneTextureDescriptor);
     }
 }
 
