@@ -180,7 +180,9 @@ void JuneTriangleSample::init()
         juneSharedMemoryAHardwareBufferDescriptor.handle = nullptr;
 
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
-            .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain
+            .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
+            .format = JuneSharedMemoryFormat_RGBA8Unorm,
+            .usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer
         };
 
         JuneSharedMemory juneSharedMemory = m_juneAPI.ApiContextCreateSharedMemory(juneVulkanApiContext, &juneSharedMemoryDescriptor);
@@ -191,8 +193,8 @@ void JuneTriangleSample::init()
         juneTextureDescriptor.size.height = m_height;
         juneTextureDescriptor.size.depthOrArrayLayers = 1;
         juneTextureDescriptor.sampleCount = 1;
-        juneTextureDescriptor.format = JuneTextureFormat_BGRA8Unorm;
-        juneTextureDescriptor.usage = JuneTextureUsage_RenderAttachment;
+        juneTextureDescriptor.format = JuneSharedMemoryFormat_RGBA8Unorm;
+        juneTextureDescriptor.usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer;
         juneTextureDescriptor.mipLevelCount = 1;
 
         JuneTexture juneTexture = m_juneAPI.SharedMemoryCreateTexture(juneSharedMemory, &juneTextureDescriptor);
