@@ -181,7 +181,6 @@ void JuneTriangleSample::init()
 
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
             .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
-            .format = JuneSharedMemoryFormat_RGBA8Unorm,
             .usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer
         };
 
@@ -193,7 +192,7 @@ void JuneTriangleSample::init()
         juneTextureDescriptor.size.height = m_height;
         juneTextureDescriptor.size.depthOrArrayLayers = 1;
         juneTextureDescriptor.sampleCount = 1;
-        juneTextureDescriptor.format = JuneSharedMemoryFormat_RGBA8Unorm;
+        juneTextureDescriptor.format = JuneTextureFormat_RGBA8Unorm;
         juneTextureDescriptor.usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer;
         juneTextureDescriptor.mipLevelCount = 1;
 
