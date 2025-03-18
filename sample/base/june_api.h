@@ -12,17 +12,24 @@ struct JuneAPI
 
     JuneProcGetProcAddress GetProcAddress = nullptr;
     JuneProcCreateInstance CreateInstance = nullptr;
-    JuneProcDestroyInstance DestroyInstance = nullptr;
-    JuneProcCreateApiContext CreateApiContext = nullptr;
-    JuneProcDestroyApiContext DestroyApiContext = nullptr;
-    JuneProcCreateBufferMemory CreateBufferMemory = nullptr;
-    JuneProcDestroyBufferMemory DestroyBufferMemory = nullptr;
-    JuneProcCreateTextureMemory CreateTextureMemory = nullptr;
-    JuneProcDestroyTextureMemory DestroyTextureMemory = nullptr;
-    JuneProcCreateBuffer CreateBuffer = nullptr;
-    JuneProcDestroyBuffer DestroyBuffer = nullptr;
-    JuneProcCreateTexture CreateTexture = nullptr;
-    JuneProcDestroyTexture DestroyTexture = nullptr;
+    JuneProcInstanceCreateApiContext InstanceCreateApiContext = nullptr;
+    JuneProcInstanceDestroy InstanceDestroy = nullptr;
+    JuneProcApiContextCreateBufferMemory ApiContextCreateBufferMemory = nullptr;
+    JuneProcApiContextCreateTextureMemory ApiContextCreateTextureMemory = nullptr;
+    JuneProcApiContextDestroy ApiContextDestroy = nullptr;
+    JuneProcBufferMemoryCreateBuffer BufferMemoryCreateBuffer = nullptr;
+    JuneProcBufferMemoryBeginAccess BufferMemoryBeginAccess = nullptr;
+    JuneProcBufferMemoryEndAccess BufferMemoryEndAccess = nullptr;
+    JuneProcBufferMemoryDestroy BufferMemoryDestroy = nullptr;
+    JuneProcTextureMemoryCreateTexture TextureMemoryCreateTexture = nullptr;
+    JuneProcTextureMemoryBeginAccess TextureMemoryBeginAccess = nullptr;
+    JuneProcTextureMemoryEndAccess TextureMemoryEndAccess = nullptr;
+    JuneProcTextureMemoryDestroy TextureMemoryDestroy = nullptr;
+    JuneProcBufferDestroy BufferDestroy = nullptr;
+    JuneProcBufferCreateFence BufferCreateFence = nullptr;
+    JuneProcTextureCreateFence TextureCreateFence = nullptr;
+    JuneProcTextureDestroy TextureDestroy = nullptr;
+    JuneProcFenceDestroy FenceDestroy = nullptr;
 };
 
 } // namespace jipu
