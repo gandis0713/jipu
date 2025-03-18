@@ -177,7 +177,7 @@ void JuneTriangleSample::init()
 
         JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
         juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.handle = nullptr;
+        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
 
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
             .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
