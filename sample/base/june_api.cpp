@@ -35,9 +35,11 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
     GET_PROC(SharedMemoryBeginAccess);
     GET_PROC(SharedMemoryEndAccess);
     GET_PROC(SharedMemoryDestroy);
-    GET_PROC(BufferDestroy);
     GET_PROC(BufferCreateFence);
+    GET_PROC(BufferGetVkBuffer);
+    GET_PROC(BufferDestroy);
     GET_PROC(TextureCreateFence);
+    GET_PROC(TextureGetVkImage);
     GET_PROC(TextureDestroy);
     GET_PROC(FenceDestroy);
 

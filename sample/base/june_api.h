@@ -21,9 +21,11 @@ struct JuneAPI
     JuneProcSharedMemoryBeginAccess SharedMemoryBeginAccess = nullptr;
     JuneProcSharedMemoryEndAccess SharedMemoryEndAccess = nullptr;
     JuneProcSharedMemoryDestroy SharedMemoryDestroy = nullptr;
-    JuneProcBufferDestroy BufferDestroy = nullptr;
     JuneProcBufferCreateFence BufferCreateFence = nullptr;
+    JuneProcBufferGetVkBuffer BufferGetVkBuffer = nullptr;
+    JuneProcBufferDestroy BufferDestroy = nullptr;
     JuneProcTextureCreateFence TextureCreateFence = nullptr;
+    JuneProcTextureGetVkImage TextureGetVkImage = nullptr;
     JuneProcTextureDestroy TextureDestroy = nullptr;
     JuneProcFenceDestroy FenceDestroy = nullptr;
 };
