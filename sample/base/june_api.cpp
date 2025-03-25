@@ -26,21 +26,21 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
     }
 
     GET_PROC(CreateInstance);
+
     GET_PROC(InstanceCreateApiContext);
+    GET_PROC(InstanceCreateSharedMemory);
     GET_PROC(InstanceDestroy);
-    GET_PROC(ApiContextCreateSharedMemory);
-    GET_PROC(ApiContextCreateBuffer);
-    GET_PROC(ApiContextCreateTexture);
+
+    GET_PROC(ApiContextCreateApiMemory);
+    GET_PROC(ApiContextCreateFence);
     GET_PROC(ApiContextDestroy);
-    GET_PROC(SharedMemoryBeginAccess);
-    GET_PROC(SharedMemoryEndAccess);
-    GET_PROC(SharedMemoryDestroy);
-    GET_PROC(BufferCreateFence);
-    GET_PROC(BufferGetVkBuffer);
-    GET_PROC(BufferDestroy);
-    GET_PROC(TextureCreateFence);
-    GET_PROC(TextureGetVkImage);
-    GET_PROC(TextureDestroy);
+
+    GET_PROC(ApiMemoryBeginAccess);
+    GET_PROC(ApiMemoryEndAccess);
+    GET_PROC(ApiMemoryCreateBuffer);
+    GET_PROC(ApiMemoryCreateTexture);
+    GET_PROC(ApiMemoryDestroy);
+
     GET_PROC(FenceDestroy);
 
     return true;

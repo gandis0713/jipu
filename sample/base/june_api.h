@@ -12,21 +12,21 @@ struct JuneAPI
 
     JuneProcGetProcAddress GetProcAddress = nullptr;
     JuneProcCreateInstance CreateInstance = nullptr;
+
     JuneProcInstanceCreateApiContext InstanceCreateApiContext = nullptr;
+    JuneProcInstanceCreateSharedMemory InstanceCreateSharedMemory = nullptr;
     JuneProcInstanceDestroy InstanceDestroy = nullptr;
-    JuneProcApiContextCreateSharedMemory ApiContextCreateSharedMemory = nullptr;
-    JuneProcApiContextCreateBuffer ApiContextCreateBuffer = nullptr;
-    JuneProcApiContextCreateTexture ApiContextCreateTexture = nullptr;
+
+    JuneProcApiContextCreateApiMemory ApiContextCreateApiMemory = nullptr;
+    JuneProcApiContextCreateFence ApiContextCreateFence = nullptr;
     JuneProcApiContextDestroy ApiContextDestroy = nullptr;
-    JuneProcSharedMemoryBeginAccess SharedMemoryBeginAccess = nullptr;
-    JuneProcSharedMemoryEndAccess SharedMemoryEndAccess = nullptr;
-    JuneProcSharedMemoryDestroy SharedMemoryDestroy = nullptr;
-    JuneProcBufferCreateFence BufferCreateFence = nullptr;
-    JuneProcBufferGetVkBuffer BufferGetVkBuffer = nullptr;
-    JuneProcBufferDestroy BufferDestroy = nullptr;
-    JuneProcTextureCreateFence TextureCreateFence = nullptr;
-    JuneProcTextureGetVkImage TextureGetVkImage = nullptr;
-    JuneProcTextureDestroy TextureDestroy = nullptr;
+
+    JuneProcApiMemoryBeginAccess ApiMemoryBeginAccess = nullptr;
+    JuneProcApiMemoryEndAccess ApiMemoryEndAccess = nullptr;
+    JuneProcApiMemoryCreateBuffer ApiMemoryCreateBuffer = nullptr;
+    JuneProcApiMemoryCreateTexture ApiMemoryCreateTexture = nullptr;
+    JuneProcApiMemoryDestroy ApiMemoryDestroy = nullptr;
+
     JuneProcFenceDestroy FenceDestroy = nullptr;
 };
 

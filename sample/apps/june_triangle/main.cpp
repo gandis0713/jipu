@@ -163,6 +163,17 @@ void JuneTriangleSample::init()
     JuneInstanceDescriptor juneInstanceDescriptor{};
     JuneInstance juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 
+    JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
+    juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
+    juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
+
+    JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
+        .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
+        .usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer
+    };
+
+    JuneSharedMemory juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(juneInstance, &juneSharedMemoryDescriptor);
+
     { // vulkan
         JuneVulkanApiContextDescriptor juneVulkanApiContextDescriptor{};
         juneVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
@@ -174,30 +185,6 @@ void JuneTriangleSample::init()
             .nextInChain = &juneVulkanApiContextDescriptor.chain
         };
         JuneApiContext juneVulkanApiContext = m_juneAPI.InstanceCreateApiContext(juneInstance, &juneApiContextDescriptor);
-
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
-            .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
-            .usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer
-        };
-
-        JuneSharedMemory juneSharedMemory = m_juneAPI.ApiContextCreateSharedMemory(juneVulkanApiContext, &juneSharedMemoryDescriptor);
-
-        JuneTextureDescriptor juneTextureDescriptor{};
-        juneTextureDescriptor.memory = juneSharedMemory;
-        juneTextureDescriptor.usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer;
-        juneTextureDescriptor.dimension = JuneTextureDimension_2D;
-        juneTextureDescriptor.size.width = m_width;
-        juneTextureDescriptor.size.height = m_height;
-        juneTextureDescriptor.size.depthOrArrayLayers = 1;
-        juneTextureDescriptor.sampleCount = 1;
-        juneTextureDescriptor.format = JuneTextureFormat_RGBA8Unorm;
-        juneTextureDescriptor.mipLevelCount = 1;
-
-        JuneTexture juneTexture = m_juneAPI.ApiContextCreateTexture(juneVulkanApiContext, &juneTextureDescriptor);
     }
 }
 
