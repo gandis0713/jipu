@@ -84,6 +84,11 @@ VulkanAdapter::~VulkanAdapter()
     }
 #endif
     vkAPI.DestroyInstance(m_vkInstance, nullptr);
+
+    if (m_vulkanLib.isValid())
+    {
+        m_vulkanLib.close();
+    }
 }
 
 void VulkanAdapter::initialize() noexcept(false)
