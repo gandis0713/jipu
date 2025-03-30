@@ -117,11 +117,15 @@ if(NOT ANDROID)
 else()
     find_package(game-activity REQUIRED CONFIG)
     find_library(log-lib log)
+    find_library(egl-lib EGL)
+    find_library(glesv2-lib GLESv2)
     target_link_libraries(jipu_sample_base
         PUBLIC
         game-activity::game-activity # game-activity::game-activity_static
         android
         ${log-lib}
+        ${egl-lib}
+        ${glesv2-lib}
     )
 endif()
 

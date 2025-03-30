@@ -16,6 +16,10 @@
     "vulkan-headers",
     "vulkan-memory-allocator",
     {
+      "name": "angle",
+      "platform": "osx"
+    },
+    {
       "name": "hwcpipe",
       "platform": "android"
     },
