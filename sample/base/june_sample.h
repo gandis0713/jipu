@@ -24,7 +24,7 @@
 namespace jipu
 {
 
-struct SampleDescriptor
+struct JuneSampleDescriptor
 {
     WindowDescriptor windowDescriptor;
     std::filesystem::path path;
@@ -34,47 +34,12 @@ class JuneSample : public Window
 {
 public:
     JuneSample() = delete;
-    JuneSample(const SampleDescriptor& descriptor);
-    virtual ~JuneSample();
-
-public:
-    virtual void createInstance();
-    virtual void createAdapter();
-    virtual void getPhysicalDevices();
-    virtual void createSurface();
-    virtual void createDevice();
-    virtual void createSwapchain();
-    virtual void createQueue();
-
-public:
-    void init() override;
-    void onUpdate() override;
-    void onResize(uint32_t width, uint32_t height) override;
-
-public:
-    void recordImGui(std::vector<std::function<void()>> cmds);
-    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
-    void drawImGui(CommandEncoder* commandEncoder, TextureView* renderView);
+    JuneSample(const JuneSampleDescriptor& descriptor);
+    virtual ~JuneSample() = default;
 
 protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
-
-    std::unique_ptr<Instance> m_instance = nullptr;
-    std::unique_ptr<Adapter> m_adapter = nullptr;
-    std::vector<std::unique_ptr<PhysicalDevice>> m_physicalDevices{};
-    std::unique_ptr<Device> m_device = nullptr;
-    std::unique_ptr<Surface> m_surface = nullptr;
-    std::unique_ptr<Queue> m_queue = nullptr;
-    std::unique_ptr<Swapchain> m_swapchain = nullptr;
-    std::unique_ptr<CommandEncoder> m_commandEncoder = nullptr;
-    TextureView* m_renderView = nullptr;
-
-protected:
-    std::optional<NativeImGui> m_imgui = std::nullopt;
-
-private:
-    FPS m_fps{};
 
     std::vector<std::unique_ptr<JuneService>> m_services{};
 };

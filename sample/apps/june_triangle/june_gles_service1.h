@@ -1,8 +1,6 @@
 #pragma once
 
-#include "jipu/common/dylib.h"
 #include "june/june.h"
-#include "june_api.h"
 #include "june_gles_service.h"
 
 #include <GLES/gl.h>

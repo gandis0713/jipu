@@ -1,0 +1,130 @@
+#include "june_vulkan_service.h"
+
+#include <stdexcept>
+
+namespace jipu
+{
+
+JuneVulkanService::JuneVulkanService(const JuneServiceDescriptor& descriptor)
+    : JuneService(descriptor)
+{
+}
+
+JuneVulkanService::~JuneVulkanService()
+{
+}
+
+void JuneVulkanService::begin()
+{
+    // create vulkan instance by native
+    {
+        createInstance();
+        createAdapter();
+        getPhysicalDevices();
+        createSurface();
+        createDevice();
+        createQueue();
+        createSwapchain();
+    }
+
+    // initialize June
+    {
+        JuneInstanceDescriptor juneInstanceDescriptor{};
+        m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
+
+        JuneVulkanApiContextDescriptor juenVulkanApiContextDescriptor{};
+        juenVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
+        juenVulkanApiContextDescriptor.vkInstance = m_vkInstance;
+        juenVulkanApiContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+        juenVulkanApiContextDescriptor.vkDevice = m_vkDevice;
+
+        JuneApiContextDescriptor juneApiContextDescriptor{
+            .nextInChain = &juenVulkanApiContextDescriptor.chain
+        };
+        m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
+    }
+}
+
+void JuneVulkanService::beforeWork()
+{
+}
+
+void JuneVulkanService::end()
+{
+    // end vulkan instance
+    {
+        m_swapchain.reset();
+        m_queue.reset();
+        m_surface.reset();
+        m_device.reset();
+        m_physicalDevices.clear();
+        m_adapter.reset();
+        m_instance.reset();
+    }
+}
+
+void JuneVulkanService::createInstance()
+{
+    InstanceDescriptor descriptor;
+    m_instance = Instance::create(descriptor);
+}
+
+void JuneVulkanService::createAdapter()
+{
+    AdapterDescriptor descriptor;
+    descriptor.type = BackendAPI::kVulkan;
+    m_adapter = m_instance->createAdapter(descriptor);
+}
+
+void JuneVulkanService::getPhysicalDevices()
+{
+    m_physicalDevices = m_adapter->getPhysicalDevices();
+}
+
+void JuneVulkanService::createSurface()
+{
+    SurfaceDescriptor descriptor;
+    descriptor.windowHandle = m_descriptor.windowHandle;
+    m_surface = m_adapter->createSurface(descriptor);
+}
+
+void JuneVulkanService::createSwapchain()
+{
+    if (m_surface == nullptr)
+        throw std::runtime_error("Surface is null pointer.");
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;
+#else
+    TextureFormat textureFormat = TextureFormat::kBGRA8UnormSrgb;
+#endif
+    SwapchainDescriptor descriptor{
+        .surface = m_surface.get(),
+        .textureFormat = textureFormat,
+        .presentMode = PresentMode::kFifo,
+        .colorSpace = ColorSpace::kSRGBNonLinear,
+        .width = m_descriptor.width,
+        .height = m_descriptor.height,
+        .queue = m_queue.get()
+    };
+
+    m_swapchain = m_device->createSwapchain(descriptor);
+}
+
+void JuneVulkanService::createDevice()
+{
+    // TODO: select suit device.
+    PhysicalDevice* physicalDevice = m_physicalDevices[0].get();
+
+    DeviceDescriptor descriptor;
+    m_device = physicalDevice->createDevice(descriptor);
+}
+
+void JuneVulkanService::createQueue()
+{
+    QueueDescriptor descriptor{};
+
+    m_queue = m_device->createQueue(descriptor);
+}
+
+} // namespace jipu

@@ -27,7 +27,7 @@ public:
     void start();
     void stop();
 
-public:
+protected:
     virtual void begin();
     virtual void beforeWork();
     virtual void work();

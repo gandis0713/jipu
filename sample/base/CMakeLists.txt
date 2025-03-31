@@ -64,6 +64,8 @@ list(APPEND SRC_FILES
     june_service.h
     june_gles_service.cpp
     june_gles_service.h
+    june_vulkan_service.cpp
+    june_vulkan_service.h
 )
 
 if(ANDROID)

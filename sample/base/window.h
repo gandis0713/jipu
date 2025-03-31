@@ -34,12 +34,12 @@ public:
 
     virtual void init();
     virtual void onBeforeUpdate() {};
-    virtual void onUpdate() = 0;
+    virtual void onUpdate() {};
     virtual void onAfterUpdate() {};
     virtual void onBeforeDraw() {};
-    virtual void onDraw() = 0;
+    virtual void onDraw() {};
     virtual void onAfterDraw() {};
-    virtual void onResize(uint32_t width, uint32_t height) = 0;
+    virtual void onResize(uint32_t width, uint32_t height) {};
 
     int exec();
     void* getWindowHandle();

@@ -28,6 +28,7 @@ public:
     JuneGLESService(const JuneServiceDescriptor& descriptor);
     ~JuneGLESService();
 
+protected:
     void begin() override;
     void end() override;
 
