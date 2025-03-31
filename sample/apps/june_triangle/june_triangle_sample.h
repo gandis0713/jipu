@@ -1,5 +1,6 @@
 #pragma once
 
+#include "june/june.h"
 #include "june_sample.h"
 
 namespace jipu
@@ -13,6 +14,9 @@ public:
     ~JuneTriangleSample() override;
 
     void init() override;
+
+private:
+    JuneSharedMemory m_juneSharedMemory{ nullptr };
 };
 
 } // namespace jipu

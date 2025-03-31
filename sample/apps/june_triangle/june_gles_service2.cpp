@@ -1,4 +1,4 @@
-#include "june_gles_service1.h"
+#include "june_gles_service2.h"
 
 #include <spdlog/spdlog.h>
 
@@ -56,16 +56,16 @@ GLuint loadShader(GLenum type, const char* shaderSrc)
 
 } // namespace
 
-JuneGLESService1::JuneGLESService1(const JuneServiceDescriptor& descriptor)
+JuneGLESService2::JuneGLESService2(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
 }
 
-JuneGLESService1::~JuneGLESService1()
+JuneGLESService2::~JuneGLESService2()
 {
 }
 
-void JuneGLESService1::begin()
+void JuneGLESService2::begin()
 {
     JuneGLESService::begin();
 
@@ -111,7 +111,7 @@ void JuneGLESService1::begin()
     }
 }
 
-void JuneGLESService1::work()
+void JuneGLESService2::work()
 {
     PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
     if (!eglDestroyImageKHR)
@@ -184,11 +184,6 @@ void JuneGLESService1::work()
     }
 
     spdlog::debug("rendered.");
-}
-
-JuneSharedMemory JuneGLESService1::getJuneSharedMemory() const
-{
-    return m_juneSharedMemory;
 }
 
 } // namespace jipu

@@ -6,20 +6,24 @@ JuneService::JuneService(const JuneServiceDescriptor& descriptor)
     : m_descriptor(descriptor)
     , m_runner(m_descriptor.fps)
 {
+    loadJuneLibrary();
 }
 
 JuneService::~JuneService()
 {
-    end();
+    stop();
+
+    if (m_juneLib.isValid())
+        m_juneLib.close();
 }
 
-void JuneService::start()
+void JuneService::start(const JuneServiceStartDescriptor& descriptor)
 {
-    loadJuneLibrary();
-
+    m_startCallback = descriptor.callback;
     m_runner.run(
         [this]() {
             begin();
+            m_startCallback();
         },
         [this]() {
             beforeWork();
@@ -31,34 +35,51 @@ void JuneService::start()
         });
 }
 
-void JuneService::stop()
+void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
 {
-    end();
+    m_stopCallback = descriptor.callback;
+
+    if (m_runner.isRunning())
+        m_runner.stop();
+
+    m_stopCallback();
+}
+
+JuneSharedMemory JuneService::getJuneSharedMemory() const
+{
+    return nullptr;
 }
 
 void JuneService::begin()
 {
-    loadJuneLibrary();
 }
+
 void JuneService::beforeWork()
 {
     // Prepare for work, e.g., set up resources
 }
+
 void JuneService::work()
 {
     // Main work loop, e.g., rendering or processing
 }
+
 void JuneService::afterWork()
 {
     // Clean up after work, e.g., release resources
 }
+
 void JuneService::end()
 {
-    if (m_runner.isRunning())
-        m_runner.stop();
+}
 
-    if (m_juneLib.isValid())
-        m_juneLib.close();
+void JuneService::start()
+{
+}
+
+void JuneService::stop()
+{
+    // Start the service, e.g., initialize resources
 }
 
 void JuneService::loadJuneLibrary()

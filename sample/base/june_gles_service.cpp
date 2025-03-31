@@ -64,12 +64,14 @@ void JuneGLESService::begin()
         }
         else
         {
+#if defined(__ANDROID__) || defined(ANDROID)
             ANativeWindow* window = static_cast<ANativeWindow*>(m_descriptor.windowHandle);
             m_eglSurface = eglCreateWindowSurface(m_eglDisplay, m_eglConfig, window, NULL);
             if (m_eglSurface == EGL_NO_SURFACE)
             {
                 throw std::runtime_error("Failed to create EGL surface for anative window");
             }
+#endif
         }
 
         EGLint contextAttribs[] = {

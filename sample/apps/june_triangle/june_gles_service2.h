@@ -19,17 +19,15 @@
 namespace jipu
 {
 
-class JuneGLESService1 : public JuneGLESService
+class JuneGLESService2 : public JuneGLESService
 {
 
 public:
-    JuneGLESService1(const JuneServiceDescriptor& descriptor);
-    ~JuneGLESService1();
+    JuneGLESService2(const JuneServiceDescriptor& descriptor);
+    ~JuneGLESService2();
 
     void begin() override;
     void work() override;
-
-    JuneSharedMemory getJuneSharedMemory() const override;
 
 private:
     JuneSharedMemory m_juneSharedMemory{ nullptr };
