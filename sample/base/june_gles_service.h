@@ -3,7 +3,7 @@
 #include "jipu/common/dylib.h"
 #include "june/june.h"
 #include "june_api.h"
-#include "runner.h"
+#include "june_service.h"
 
 #include <GLES/gl.h>
 #include <GLES/glext.h>
@@ -21,45 +21,24 @@
 namespace jipu
 {
 
-struct GLESSampleDescriptor
-{
-    uint32_t fps{ 0 };
-    uint32_t width{ 0 };
-    uint32_t height{ 0 };
-    void* windowHandle{ nullptr };
-};
-
-class GLESSample
+class JuneGLESService : public JuneService
 {
 
 public:
-    GLESSample(const GLESSampleDescriptor& descriptor);
-    ~GLESSample();
+    JuneGLESService(const JuneServiceDescriptor& descriptor);
+    ~JuneGLESService();
 
-    void run();
-    void pause();
-    void resume();
-    void stop();
-    bool isRunning() const;
+    void begin() override;
+    void end() override;
 
-private:
-    const GLESSampleDescriptor m_descriptor;
-    Runner m_runner;
-
+protected:
     EGLContext m_eglContext = EGL_NO_CONTEXT;
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     EGLConfig m_eglConfig = EGL_NO_CONFIG_KHR;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
 
-    DyLib m_juneLib;
-    JuneAPI m_juneAPI;
-
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
-    JuneSharedMemory m_juneSharedMemory{ nullptr };
-    JuneApiMemory m_juneApiMemory{ nullptr };
-
-    EGLImageKHR m_eglImage{ nullptr };
 };
 
 } // namespace jipu

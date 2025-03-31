@@ -8,7 +8,7 @@
 #include "june/june.h"
 #include "june_api.h"
 
-#include "gles_sample.h"
+#include "june_gles_service1.h"
 
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
@@ -104,7 +104,7 @@ private:
     DyLib m_juneLib;
     JuneAPI m_juneAPI;
 
-    std::unique_ptr<GLESSample> m_glesSample{ nullptr };
+    std::unique_ptr<JuneGLESService1> m_juneGLESService1{ nullptr };
 };
 
 JuneTriangleSample::JuneTriangleSample(const SampleDescriptor& descriptor)
@@ -200,14 +200,14 @@ void JuneTriangleSample::init()
         JuneApiContext juneVulkanApiContext = m_juneAPI.InstanceCreateApiContext(juneInstance, &juneApiContextDescriptor);
     }
     {
-        m_glesSample = std::make_unique<GLESSample>(GLESSampleDescriptor{
+        m_juneGLESService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{
             .fps = 30,
             .width = m_width,
             .height = m_height,
             .windowHandle = nullptr,
         });
 
-        m_glesSample->run();
+        m_juneGLESService1->start();
     }
 }
 

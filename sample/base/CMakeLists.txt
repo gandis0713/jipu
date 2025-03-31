@@ -54,10 +54,16 @@ list(APPEND SRC_FILES
     hpc_watcher.h
     webgpu_api.cpp
     webgpu_api.h
-    june_api.cpp
-    june_api.h
     runner.cpp
     runner.h
+    june_api.cpp
+    june_api.h
+    june_sample.cpp
+    june_sample.h
+    june_service.cpp
+    june_service.h
+    june_gles_service.cpp
+    june_gles_service.h
 )
 
 if(ANDROID)
