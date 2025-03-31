@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #if defined(__ANDROID__) || defined(ANDROID)
-
+#include "spdlog/sinks/android_sink.h"
 // GameActivity's C/C++ code
 #include <game-activity/GameActivity.cpp>
 #include <game-text-input/gametextinput.cpp>
@@ -18,6 +18,10 @@ extern "C"
 
 void android_main(struct android_app* app)
 {
+    static auto logger = spdlog::android_logger_mt("june_sample");
+    spdlog::set_default_logger(logger);
+    spdlog::set_level(spdlog::level::trace);
+
     jipu::JuneSampleDescriptor descriptor{
         { 1000, 2000, "June Triangle", app },
         ""

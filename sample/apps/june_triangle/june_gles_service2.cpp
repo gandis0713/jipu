@@ -8,34 +8,43 @@ namespace jipu
 namespace
 {
 
-const char* vertexShaderSource = R"(
-    attribute vec4 vPosition;
-    void main() {
-    gl_Position = vPosition;
+#define CHECK_GL_ERROR()                                                   \
+    {                                                                      \
+        GLenum err = glGetError();                                         \
+        if (err != GL_NO_ERROR)                                            \
+        {                                                                  \
+            spdlog::error("GL get error: {}", static_cast<uint32_t>(err)); \
+        }                                                                  \
     }
-)";
 
-const char* fragmentShaderSource = R"(
-    precision mediump float;
-    void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-)";
+// Vertex Shader 소스 (화면 전체를 덮기 위한 정점 데이터 사용)
+const char* vertexShaderSource =
+    "attribute vec2 aPosition;\n"
+    "attribute vec2 aTexCoord;\n"
+    "varying vec2 vTexCoord;\n"
+    "void main() {\n"
+    "    gl_Position = vec4(aPosition, 0.0, 1.0);\n"
+    "    vTexCoord = aTexCoord;\n"
+    "}\n";
 
-GLuint loadShader(GLenum type, const char* shaderSrc)
+// Fragment Shader 소스 (external texture 확장을 사용)
+const char* fragmentShaderSource =
+    "#extension GL_OES_EGL_image_external : require\n"
+    "precision mediump float;\n"
+    "varying vec2 vTexCoord;\n"
+    "uniform samplerExternalOES sTexture;\n"
+    "void main() {\n"
+    "    gl_FragColor = texture2D(sTexture, vTexCoord);\n"
+    "}\n";
+
+// 쉐이더 컴파일 함수
+GLuint compileShader(GLenum type, const char* source)
 {
     GLuint shader = glCreateShader(type);
-    if (shader == 0)
-    {
-        spdlog::debug("Error: 셰이더 생성 실패");
-        return 0;
-    }
-
-    glShaderSource(shader, 1, &shaderSrc, nullptr);
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
 
-    // 컴파일 결과 확인
-    GLint compiled = 0;
+    GLint compiled;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
@@ -43,15 +52,63 @@ GLuint loadShader(GLenum type, const char* shaderSrc)
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
         if (infoLen > 1)
         {
-            char* infoLog = new char[infoLen];
-            glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
-            spdlog::debug("셰이더 컴파일 에러: {}", infoLog);
-            delete[] infoLog;
+            char* infoLog = (char*)malloc(infoLen);
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+            // 로그 출력 (실제 환경에서는 로그 출력 함수 사용)
+            free(infoLog);
         }
         glDeleteShader(shader);
         return 0;
     }
     return shader;
+}
+
+// 쉐이더 프로그램 생성 함수
+GLuint createProgram(const char* vertexSource, const char* fragmentSource)
+{
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
+    if (!vertexShader)
+        return 0;
+
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+    if (!fragmentShader)
+        return 0;
+
+    GLuint program = glCreateProgram();
+    if (program == 0)
+        return 0;
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+
+    // 속성 위치 바인딩 (명시적으로 지정)
+    glBindAttribLocation(program, 0, "aPosition");
+    glBindAttribLocation(program, 1, "aTexCoord");
+
+    glLinkProgram(program);
+
+    GLint linked;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
+            spdlog::error("Failed to link program: {}", infoLog);
+            free(infoLog);
+        }
+        glDeleteProgram(program);
+        return 0;
+    }
+
+    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
 }
 
 } // namespace
@@ -65,37 +122,96 @@ JuneGLESService2::~JuneGLESService2()
 {
 }
 
-void JuneGLESService2::begin()
+void JuneGLESService2::work()
 {
-    JuneGLESService::begin();
+    if (!m_juneApiMemory)
+        return;
 
-    // Create Shared Memory
+    // 1. 쉐이더 프로그램 생성 및 사용
+    GLuint program = createProgram(vertexShaderSource, fragmentShaderSource);
+    if (program == 0)
     {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
-        };
-
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
-
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
-#endif
-        m_juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        spdlog::error("프로그램 생성 실패");
+        return;
     }
+    glUseProgram(program);
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
+
+    // 텍스처 파라미터 설정
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // 3. 정점 데이터 설정: 화면 전체를 덮는 quad (좌표: -1~1, 텍스처 좌표: 0~1)
+    // 데이터 구성: {x, y, u, v}
+    GLfloat vertices[] = {
+        -1.0f, 1.0f, 0.0f, 0.0f,  // 좌상단
+        -1.0f, -1.0f, 0.0f, 1.0f, // 좌하단
+        1.0f, 1.0f, 1.0f, 0.0f,   // 우상단
+        1.0f, -1.0f, 1.0f, 1.0f   // 우하단
+    };
+
+    // 4. 정점 속성 위치 가져오기
+    GLint posAttrib = glGetAttribLocation(program, "aPosition");
+    CHECK_GL_ERROR();
+    GLint texAttrib = glGetAttribLocation(program, "aTexCoord");
+    CHECK_GL_ERROR();
+
+    // 5. 정점 속성 활성화 및 포인터 설정
+    glEnableVertexAttribArray(posAttrib);
+    CHECK_GL_ERROR();
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), vertices);
+    CHECK_GL_ERROR();
+
+    glEnableVertexAttribArray(texAttrib);
+    CHECK_GL_ERROR();
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), vertices + 2);
+    CHECK_GL_ERROR();
+
+    // 6. 텍스처 유닛 설정: samplerExternalOES에 0번 텍스처 유닛 사용
+    GLint samplerLoc = glGetUniformLocation(program, "sTexture");
+    CHECK_GL_ERROR();
+    glUniform1i(samplerLoc, 0);
+
+    glViewport(0, 0, m_descriptor.width / 2, m_descriptor.height);
+    CHECK_GL_ERROR();
+
+    // 8. 화면 클리어
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_GL_ERROR();
+    glClear(GL_COLOR_BUFFER_BIT);
+    CHECK_GL_ERROR();
+
+    // 9. full-screen quad 렌더링 (Triangle Strip 사용)
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CHECK_GL_ERROR();
+
+    if (m_descriptor.windowHandle)
+    {
+        spdlog::debug("service2 is rendered in swapbuffer.");
+        eglSwapBuffers(m_eglDisplay, m_eglSurface);
+        CHECK_GL_ERROR();
+    }
+    else
+    {
+        spdlog::debug("service2 is rendered in pbuffer.");
+    }
+}
+
+void JuneGLESService2::shareMemory(JuneSharedMemory sharedMemory)
+{
+    setJuneSharedMemory("memory1", sharedMemory);
 
     // Create Api Memory
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_juneSharedMemory;
+        juneApiMemoryDescriptor.sharedMemory = sharedMemory;
 
         m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
     }
@@ -109,81 +225,6 @@ void JuneGLESService2::begin()
 
         m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(m_juneApiMemory, &juneResourceDescriptor));
     }
-}
-
-void JuneGLESService2::work()
-{
-    PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-    if (!eglDestroyImageKHR)
-    {
-        spdlog::debug("eglDestroyImageKHR 함수 포인터 획득 실패.");
-    }
-
-    // glEGLImageTargetTexture2DOES 함수 포인터 획득
-    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES =
-        (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
-    if (!glEGLImageTargetTexture2DOES)
-    {
-        spdlog::debug("glEGLImageTargetTexture2DOES 함수 포인터 획득 실패.");
-        eglDestroyImageKHR(m_eglDisplay, m_eglImage);
-    }
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
-
-    glViewport(0, 0, m_descriptor.width, m_descriptor.height);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    GLuint programObject = glCreateProgram();
-    if (programObject == 0)
-    {
-        spdlog::debug("프로그램 객체 생성 실패");
-    }
-    glAttachShader(programObject, vertexShader);
-    glAttachShader(programObject, fragmentShader);
-
-    glBindAttribLocation(programObject, 0, "vPosition");
-    glLinkProgram(programObject);
-
-    GLint linked;
-    glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = new char[infoLen];
-            glGetProgramInfoLog(programObject, infoLen, nullptr, infoLog);
-            spdlog::debug("프로그램 링크 에러: {}", infoLog);
-            delete[] infoLog;
-        }
-        glDeleteProgram(programObject);
-    }
-
-    glUseProgram(programObject);
-
-    GLfloat vertices[] = {
-        0.0f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
-    };
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-    glEnableVertexAttribArray(0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    if (m_descriptor.windowHandle)
-    {
-        eglSwapBuffers(m_eglDisplay, m_eglSurface);
-    }
-
-    spdlog::debug("rendered.");
 }
 
 } // namespace jipu

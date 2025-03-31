@@ -88,6 +88,18 @@ void JuneGLESService::begin()
         {
             throw std::runtime_error("Failed to make EGL context current");
         }
+
+        eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
+        if (!eglDestroyImageKHR)
+        {
+            throw std::runtime_error("eglDestroyImageKHR function pointer acquisition failed");
+        }
+
+        glEGLImageTargetTexture2DOES = (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
+        if (!glEGLImageTargetTexture2DOES)
+        {
+            throw std::runtime_error("glEGLImageTargetTexture2DOES function pointer acquisition failed");
+        }
     }
 
     // initialize June

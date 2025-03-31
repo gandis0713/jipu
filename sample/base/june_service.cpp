@@ -20,34 +20,38 @@ JuneService::~JuneService()
 void JuneService::start(const JuneServiceStartDescriptor& descriptor)
 {
     m_startCallback = descriptor.callback;
-    m_runner.run(
-        [this]() {
-            begin();
-            m_startCallback();
-        },
-        [this]() {
-            beforeWork();
-            work();
-            afterWork();
-        },
-        [this]() {
-            end();
-        });
+    start();
 }
 
 void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
 {
     m_stopCallback = descriptor.callback;
 
-    if (m_runner.isRunning())
-        m_runner.stop();
+    stop();
 
-    m_stopCallback();
+    if (m_stopCallback)
+        m_stopCallback();
 }
 
-JuneSharedMemory JuneService::getJuneSharedMemory() const
+JuneSharedMemory JuneService::getJuneSharedMemory(const std::string& key) const
 {
-    return nullptr;
+    return m_sharedMemories.contains(key) ? m_sharedMemories.at(key) : nullptr;
+}
+
+void JuneService::setJuneSharedMemory(const std::string& key, JuneSharedMemory juneSharedMemory)
+{
+    if (juneSharedMemory)
+    {
+        m_sharedMemories[key] = juneSharedMemory;
+    }
+    else
+    {
+        m_sharedMemories.erase(key);
+    }
+}
+
+void JuneService::shareMemory(JuneSharedMemory juneSharedMemory)
+{
 }
 
 void JuneService::begin()
@@ -75,11 +79,38 @@ void JuneService::end()
 
 void JuneService::start()
 {
+    m_runner.run(
+        [this]() {
+            begin();
+            if (m_startCallback)
+                m_startCallback();
+        },
+        [this]() {
+            beforeWork();
+            work();
+            afterWork();
+        },
+        [this]() {
+            end();
+        });
 }
 
 void JuneService::stop()
 {
-    // Start the service, e.g., initialize resources
+    if (m_runner.isRunning())
+        m_runner.stop();
+}
+
+void JuneService::addBeforeWork(const std::function<void()>& work)
+{
+    std::lock_guard<std::mutex> lock(m_beforeWorkMutex);
+    m_beforeWorks.push(work);
+}
+
+void JuneService::addAfterWork(const std::function<void()>& work)
+{
+    std::lock_guard<std::mutex> lock(m_afterWorkMutex);
+    m_afterWorks.push(work);
 }
 
 void JuneService::loadJuneLibrary()

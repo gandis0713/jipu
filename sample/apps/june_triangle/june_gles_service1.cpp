@@ -69,6 +69,39 @@ void JuneGLESService1::begin()
 {
     JuneGLESService::begin();
 
+    //
+    {
+
+        GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexShaderSource);
+        GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+        m_programObject = glCreateProgram();
+        if (m_programObject == 0)
+        {
+            spdlog::debug("프로그램 객체 생성 실패");
+        }
+        glAttachShader(m_programObject, vertexShader);
+        glAttachShader(m_programObject, fragmentShader);
+
+        glBindAttribLocation(m_programObject, 0, "vPosition");
+        glLinkProgram(m_programObject);
+
+        GLint linked;
+        glGetProgramiv(m_programObject, GL_LINK_STATUS, &linked);
+        if (!linked)
+        {
+            GLint infoLen = 0;
+            glGetProgramiv(m_programObject, GL_INFO_LOG_LENGTH, &infoLen);
+            if (infoLen > 1)
+            {
+                char* infoLog = new char[infoLen];
+                glGetProgramInfoLog(m_programObject, infoLen, nullptr, infoLog);
+                spdlog::debug("프로그램 링크 에러: {}", infoLog);
+                delete[] infoLog;
+            }
+            glDeleteProgram(m_programObject);
+        }
+    }
+
     // Create Shared Memory
     {
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
@@ -88,14 +121,15 @@ void JuneGLESService1::begin()
 
         juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
 #endif
-        m_juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        JuneSharedMemory juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        setJuneSharedMemory("memory1", juneSharedMemory);
     }
 
     // Create Api Memory
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_juneSharedMemory;
+        juneApiMemoryDescriptor.sharedMemory = getJuneSharedMemory("memory1");
 
         m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
     }
@@ -113,60 +147,28 @@ void JuneGLESService1::begin()
 
 void JuneGLESService1::work()
 {
-    PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
-    if (!eglDestroyImageKHR)
-    {
-        spdlog::debug("eglDestroyImageKHR 함수 포인터 획득 실패.");
-    }
-
-    // glEGLImageTargetTexture2DOES 함수 포인터 획득
-    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES =
-        (PFNGLEGLIMAGETARGETTEXTURE2DOESPROC)eglGetProcAddress("glEGLImageTargetTexture2DOES");
-    if (!glEGLImageTargetTexture2DOES)
-    {
-        spdlog::debug("glEGLImageTargetTexture2DOES 함수 포인터 획득 실패.");
-        eglDestroyImageKHR(m_eglDisplay, m_eglImage);
-    }
-
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
 
+    GLuint fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        spdlog::debug("프레임버퍼 상태가 완전하지 않음");
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &fbo);
+        eglDestroyImageKHR(m_eglDisplay, m_eglImage);
+    }
+
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-    GLuint programObject = glCreateProgram();
-    if (programObject == 0)
-    {
-        spdlog::debug("프로그램 객체 생성 실패");
-    }
-    glAttachShader(programObject, vertexShader);
-    glAttachShader(programObject, fragmentShader);
-
-    glBindAttribLocation(programObject, 0, "vPosition");
-    glLinkProgram(programObject);
-
-    GLint linked;
-    glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = new char[infoLen];
-            glGetProgramInfoLog(programObject, infoLen, nullptr, infoLog);
-            spdlog::debug("프로그램 링크 에러: {}", infoLog);
-            delete[] infoLog;
-        }
-        glDeleteProgram(programObject);
-    }
-
-    glUseProgram(programObject);
+    glUseProgram(m_programObject);
 
     GLfloat vertices[] = {
         0.0f, 0.5f, 0.0f,
@@ -180,15 +182,13 @@ void JuneGLESService1::work()
 
     if (m_descriptor.windowHandle)
     {
+        spdlog::debug("service1 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
     }
-
-    spdlog::debug("rendered.");
-}
-
-JuneSharedMemory JuneGLESService1::getJuneSharedMemory() const
-{
-    return m_juneSharedMemory;
+    else
+    {
+        spdlog::debug("service1 is rendered in pbuffer.");
+    }
 }
 
 } // namespace jipu

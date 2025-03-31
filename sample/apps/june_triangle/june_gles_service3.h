@@ -19,18 +19,19 @@
 namespace jipu
 {
 
-class JuneGLESService2 : public JuneGLESService
+class JuneGLESService3 : public JuneGLESService
 {
 
 public:
-    JuneGLESService2(const JuneServiceDescriptor& descriptor);
-    ~JuneGLESService2();
+    JuneGLESService3(const JuneServiceDescriptor& descriptor);
+    ~JuneGLESService3();
 
+    void begin() override;
     void work() override;
 
-    void shareMemory(JuneSharedMemory juneSharedMemory) override;
-
 private:
+    GLuint m_programObject1{ 0 };
+    GLuint m_programObject2{ 0 };
     JuneApiMemory m_juneApiMemory{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
 };

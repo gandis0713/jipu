@@ -16,7 +16,9 @@ public:
     void init() override;
 
 private:
-    JuneSharedMemory m_juneSharedMemory{ nullptr };
+    [[maybe_unused]] bool m_service1Ready{ false };
+    [[maybe_unused]] bool m_service2Ready{ false };
+    [[maybe_unused]] bool m_service3Ready{ false };
 };
 
 } // namespace jipu

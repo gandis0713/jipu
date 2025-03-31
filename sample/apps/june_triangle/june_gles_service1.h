@@ -29,12 +29,9 @@ public:
     void begin() override;
     void work() override;
 
-    JuneSharedMemory getJuneSharedMemory() const override;
-
 private:
-    JuneSharedMemory m_juneSharedMemory{ nullptr };
+    GLuint m_programObject;
     JuneApiMemory m_juneApiMemory{ nullptr };
-
     EGLImageKHR m_eglImage{ nullptr };
 };
 

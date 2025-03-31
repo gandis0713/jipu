@@ -40,6 +40,10 @@ protected:
 
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
+
+    PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR{nullptr};
+    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{nullptr};
+
 };
 
 } // namespace jipu

@@ -6,6 +6,9 @@
 #include "runner.h"
 
 #include <functional>
+#include <queue>
+#include <thread>
+#include <unordered_map>
 
 namespace jipu
 {
@@ -40,34 +43,49 @@ public:
     void stop(const JuneServiceStopDescriptor& descriptor);
 
 public:
-    virtual JuneSharedMemory getJuneSharedMemory() const;
+    JuneSharedMemory getJuneSharedMemory(const std::string& key) const;
+    void setJuneSharedMemory(const std::string& key, JuneSharedMemory juneSharedMemory);
+
+public:
+    virtual void shareMemory(JuneSharedMemory juneSharedMemory);
 
 protected:
     virtual void begin();
-    virtual void beforeWork();
     virtual void work();
-    virtual void afterWork();
     virtual void end();
+
+    void addBeforeWork(const std::function<void()>& work);
+    void addAfterWork(const std::function<void()>& work);
+
+private:
+    void loadJuneLibrary();
 
     void start();
     void stop();
 
-protected:
-    void loadJuneLibrary();
+    virtual void beforeWork();
+    virtual void afterWork();
 
 protected:
     const JuneServiceDescriptor m_descriptor;
-
-    Runner m_runner;
-
-    DyLib m_juneLib;
     JuneAPI m_juneAPI;
 
     JuneInstance m_juneInstance{ nullptr };
+    std::unordered_map<std::string, JuneSharedMemory> m_sharedMemories{};
 
 private:
+    Runner m_runner;
+
+    DyLib m_juneLib;
+
     std::function<void()> m_startCallback;
     std::function<void()> m_stopCallback;
+
+    std::queue<std::function<void()>> m_beforeWorks;
+    std::queue<std::function<void()>> m_afterWorks;
+
+    std::mutex m_beforeWorkMutex;
+    std::mutex m_afterWorkMutex;
 };
 
 } // namespace jipu
