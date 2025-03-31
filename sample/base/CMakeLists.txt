@@ -56,6 +56,8 @@ list(APPEND SRC_FILES
     webgpu_api.h
     june_api.cpp
     june_api.h
+    runner.cpp
+    runner.h
 )
 
 if(ANDROID)

@@ -8,6 +8,8 @@
 #include "june/june.h"
 #include "june_api.h"
 
+#include "gles_sample.h"
+
 #include "jipu/native/adapter.h"
 #include "jipu/native/buffer.h"
 #include "jipu/native/command_buffer.h"
@@ -101,6 +103,8 @@ private:
 
     DyLib m_juneLib;
     JuneAPI m_juneAPI;
+
+    std::unique_ptr<GLESSample> m_glesSample{ nullptr };
 };
 
 JuneTriangleSample::JuneTriangleSample(const SampleDescriptor& descriptor)
@@ -163,14 +167,23 @@ void JuneTriangleSample::init()
     JuneInstanceDescriptor juneInstanceDescriptor{};
     JuneInstance juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 
+    JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
+#if defined(__ANDROID__) || defined(ANDROID)
+    AHardwareBuffer_Desc ahbDesc = {
+        .width = m_width,
+        .height = m_height,
+        .layers = 1,
+        .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
+        .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
+    };
+
     JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
     juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
     juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
+    juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
 
-    JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{
-        .nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain,
-        .usage = JuneSharedMemoryUsage_GPUSampledImage | JuneSharedMemoryUsage_GPUFramebuffer
-    };
+    juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
+#endif
 
     JuneSharedMemory juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(juneInstance, &juneSharedMemoryDescriptor);
 
@@ -185,6 +198,16 @@ void JuneTriangleSample::init()
             .nextInChain = &juneVulkanApiContextDescriptor.chain
         };
         JuneApiContext juneVulkanApiContext = m_juneAPI.InstanceCreateApiContext(juneInstance, &juneApiContextDescriptor);
+    }
+    {
+        m_glesSample = std::make_unique<GLESSample>(GLESSampleDescriptor{
+            .fps = 30,
+            .width = m_width,
+            .height = m_height,
+            .windowHandle = nullptr,
+        });
+
+        m_glesSample->run();
     }
 }
 
