@@ -30,7 +30,7 @@ public:
     void work() override;
 
 private:
-    GLuint m_programObject;
+    GLuint m_programObject1{ 0 };
     JuneApiMemory m_juneApiMemory{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
 };

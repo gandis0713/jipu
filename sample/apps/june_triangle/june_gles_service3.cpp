@@ -1,5 +1,6 @@
 #include "june_gles_service3.h"
 
+#include <random>
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -24,8 +25,9 @@ const char* vertexShaderSource1 =
     "}                                    \n";
 const char* fragmentShaderSource1 =
     "precision mediump float;             \n"
+    "uniform vec4 uColor;                 \n"
     "void main() {                        \n"
-    "    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n"
+    "    gl_FragColor = uColor;           \n"
     "}                                    \n";
 
 const char* vertexShaderSource2 =
@@ -43,38 +45,6 @@ const char* fragmentShaderSource2 =
     "void main() {                        \n"
     "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
     "}                                    \n";
-
-GLuint loadShader(GLenum type, const char* shaderSrc)
-{
-    GLuint shader = glCreateShader(type);
-    if (shader == 0)
-    {
-        spdlog::debug("Error: 셰이더 생성 실패");
-        return 0;
-    }
-
-    glShaderSource(shader, 1, &shaderSrc, nullptr);
-    glCompileShader(shader);
-
-    // 컴파일 결과 확인
-    GLint compiled = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = new char[infoLen];
-            glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
-            spdlog::debug("셰이더 컴파일 에러: {}", infoLog);
-            delete[] infoLog;
-        }
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
 
 GLuint compileShader(GLenum type, const char* source)
 {
@@ -263,6 +233,18 @@ void JuneGLESService3::work()
         glUseProgram(m_programObject1);
         CHECK_GL_ERROR();
 
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+        float r = dis(gen);
+        float g = dis(gen);
+        float b = dis(gen);
+
+        GLint colorLoc = glGetUniformLocation(m_programObject1, "uColor");
+        glUniform4f(colorLoc, r, g, b, 1.0f);
+
+        spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+
         GLfloat vertices[] = {
             0.0f, 0.8f, 0.0f,
             -0.8f, -0.8f, 0.0f,
@@ -278,10 +260,10 @@ void JuneGLESService3::work()
         glDrawArrays(GL_TRIANGLES, 0, 3);
         CHECK_GL_ERROR();
 
-        glFlush();
-        CHECK_GL_ERROR();
-        glFinish();
-        CHECK_GL_ERROR();
+        //        glFlush();
+        //        CHECK_GL_ERROR();
+        //        glFinish();
+        //        CHECK_GL_ERROR();
 
         glDisableVertexAttribArray(posLoc);
         CHECK_GL_ERROR();
@@ -358,10 +340,10 @@ void JuneGLESService3::work()
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
         CHECK_GL_ERROR();
 
-        glFlush();
-        CHECK_GL_ERROR();
-        glFinish();
-        CHECK_GL_ERROR();
+        //        glFlush();
+        //        CHECK_GL_ERROR();
+        //        glFinish();
+        //        CHECK_GL_ERROR();
 
         if (m_descriptor.windowHandle)
         {

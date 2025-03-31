@@ -17,27 +17,22 @@ namespace
         }                                                                  \
     }
 
-// Vertex Shader 소스 (화면 전체를 덮기 위한 정점 데이터 사용)
-const char* vertexShaderSource =
-    "attribute vec2 aPosition;\n"
-    "attribute vec2 aTexCoord;\n"
-    "varying vec2 vTexCoord;\n"
-    "void main() {\n"
-    "    gl_Position = vec4(aPosition, 0.0, 1.0);\n"
-    "    vTexCoord = aTexCoord;\n"
-    "}\n";
+const char* vertexShaderSource2 =
+    "attribute vec4 aPosition;            \n"
+    "attribute vec2 aTexCoord;            \n"
+    "varying vec2 vTexCoord;              \n"
+    "void main() {                      \n"
+    "    gl_Position = aPosition;         \n"
+    "    vTexCoord = aTexCoord;           \n"
+    "}                                    \n";
+const char* fragmentShaderSource2 =
+    "precision mediump float;             \n"
+    "varying vec2 vTexCoord;              \n"
+    "uniform sampler2D uTexture;          \n"
+    "void main() {                        \n"
+    "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
+    "}                                    \n";
 
-// Fragment Shader 소스 (external texture 확장을 사용)
-const char* fragmentShaderSource =
-    "#extension GL_OES_EGL_image_external : require\n"
-    "precision mediump float;\n"
-    "varying vec2 vTexCoord;\n"
-    "uniform samplerExternalOES sTexture;\n"
-    "void main() {\n"
-    "    gl_FragColor = texture2D(sTexture, vTexCoord);\n"
-    "}\n";
-
-// 쉐이더 컴파일 함수
 GLuint compileShader(GLenum type, const char* source)
 {
     GLuint shader = glCreateShader(type);
@@ -63,7 +58,6 @@ GLuint compileShader(GLenum type, const char* source)
     return shader;
 }
 
-// 쉐이더 프로그램 생성 함수
 GLuint createProgram(const char* vertexSource, const char* fragmentSource)
 {
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
@@ -122,85 +116,112 @@ JuneGLESService2::~JuneGLESService2()
 {
 }
 
+void JuneGLESService2::begin()
+{
+    JuneGLESService::begin();
+
+    {
+        m_programObject2 = createProgram(vertexShaderSource2, fragmentShaderSource2);
+        if (m_programObject2 == 0)
+        {
+            spdlog::debug("프로그램2 객체 생성 실패");
+            return;
+        }
+    }
+}
+
 void JuneGLESService2::work()
 {
     if (!m_juneApiMemory)
         return;
 
-    // 1. 쉐이더 프로그램 생성 및 사용
-    GLuint program = createProgram(vertexShaderSource, fragmentShaderSource);
-    if (program == 0)
-    {
-        spdlog::error("프로그램 생성 실패");
-        return;
-    }
-    glUseProgram(program);
-
     GLuint texture;
+    CHECK_GL_ERROR();
     glGenTextures(1, &texture);
+    CHECK_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, texture);
+    CHECK_GL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    CHECK_GL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    CHECK_GL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    CHECK_GL_ERROR();
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
+    CHECK_GL_ERROR();
 
-    // 텍스처 파라미터 설정
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glUseProgram(m_programObject2);
+    CHECK_GL_ERROR();
 
-    // 3. 정점 데이터 설정: 화면 전체를 덮는 quad (좌표: -1~1, 텍스처 좌표: 0~1)
-    // 데이터 구성: {x, y, u, v}
+    // full-screen quad 정점 및 텍스처 좌표
     GLfloat vertices[] = {
-        -1.0f, 1.0f, 0.0f, 0.0f,  // 좌상단
-        -1.0f, -1.0f, 0.0f, 1.0f, // 좌하단
-        1.0f, 1.0f, 1.0f, 0.0f,   // 우상단
-        1.0f, -1.0f, 1.0f, 1.0f   // 우하단
+        -1.0f, 1.0f, 0.0f,  // 좌측 상단
+        -1.0f, -1.0f, 0.0f, // 좌측 하단
+        1.0f, -1.0f, 0.0f,  // 우측 하단
+        1.0f, 1.0f, 0.0f    // 우측 상단
     };
+    GLfloat texCoords[] = {
+        0.0f, 0.0f, // 좌측 상단
+        0.0f, 1.0f, // 좌측 하단
+        1.0f, 1.0f, // 우측 하단
+        1.0f, 0.0f  // 우측 상단
+    };
+    GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
-    // 4. 정점 속성 위치 가져오기
-    GLint posAttrib = glGetAttribLocation(program, "aPosition");
+    GLint posLoc = glGetAttribLocation(m_programObject2, "aPosition");
     CHECK_GL_ERROR();
-    GLint texAttrib = glGetAttribLocation(program, "aTexCoord");
+    GLint texLoc = glGetAttribLocation(m_programObject2, "aTexCoord");
     CHECK_GL_ERROR();
-
-    // 5. 정점 속성 활성화 및 포인터 설정
-    glEnableVertexAttribArray(posAttrib);
+    glEnableVertexAttribArray(posLoc);
     CHECK_GL_ERROR();
-    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), vertices);
+    glEnableVertexAttribArray(texLoc);
     CHECK_GL_ERROR();
-
-    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     CHECK_GL_ERROR();
-    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), vertices + 2);
-    CHECK_GL_ERROR();
-
-    // 6. 텍스처 유닛 설정: samplerExternalOES에 0번 텍스처 유닛 사용
-    GLint samplerLoc = glGetUniformLocation(program, "sTexture");
-    CHECK_GL_ERROR();
-    glUniform1i(samplerLoc, 0);
-
-    glViewport(0, 0, m_descriptor.width / 2, m_descriptor.height);
+    glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
     CHECK_GL_ERROR();
 
-    // 8. 화면 클리어
+    // 텍스처 유니폼 설정
+    GLint texUniform = glGetUniformLocation(m_programObject2, "uTexture");
+    CHECK_GL_ERROR();
+    glUniform1i(texUniform, 0);
+    CHECK_GL_ERROR();
+
+    glViewport(0, 0, m_descriptor.width, m_descriptor.height);
+    CHECK_GL_ERROR();
     glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
     CHECK_GL_ERROR();
     glClear(GL_COLOR_BUFFER_BIT);
     CHECK_GL_ERROR();
 
-    // 9. full-screen quad 렌더링 (Triangle Strip 사용)
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     CHECK_GL_ERROR();
+
+    //        glFlush();
+    //        CHECK_GL_ERROR();
+    //        glFinish();
+    //        CHECK_GL_ERROR();
 
     if (m_descriptor.windowHandle)
     {
-        spdlog::debug("service2 is rendered in swapbuffer.");
+        spdlog::debug("service3 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
         CHECK_GL_ERROR();
     }
     else
     {
-        spdlog::debug("service2 is rendered in pbuffer.");
+        spdlog::debug("service3 is rendered in pbuffer.");
     }
+
+    // 리소스 정리
+    glDisableVertexAttribArray(posLoc);
+    CHECK_GL_ERROR();
+    glDisableVertexAttribArray(texLoc);
+    CHECK_GL_ERROR();
+    glDeleteTextures(1, &texture);
+    CHECK_GL_ERROR();
 }
 
 void JuneGLESService2::shareMemory(JuneSharedMemory sharedMemory)

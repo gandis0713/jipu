@@ -26,44 +26,44 @@ void JuneTriangleSample::init()
     //                                                                                  .height = m_height,
     //                                                                                  .windowHandle = getWindowHandle() }));
 
-    // auto service1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 30,
-    //                                                                           .width = m_width,
-    //                                                                           .height = m_height,
-    //                                                                           .windowHandle = nullptr });
-    // service1->start(JuneServiceStartDescriptor{
-    //     .callback = [this]() {
-    //         m_service1Ready = true;
-    //     } });
-    // m_services.push_back(std::move(service1));
+    auto service1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 30,
+                                                                              .width = m_width,
+                                                                              .height = m_height,
+                                                                              .windowHandle = nullptr });
+    service1->start(JuneServiceStartDescriptor{
+        .callback = [this]() {
+            m_service1Ready = true;
+        } });
+    m_services.push_back(std::move(service1));
 
-    // auto service2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{ .fps = 30,
-    //                                                                           .width = m_width,
-    //                                                                           .height = m_height,
-    //                                                                           .windowHandle = nullptr });
-    // service2->start(JuneServiceStartDescriptor{
-    //     .callback = [this]() {
-    //         m_service2Ready = true;
-    //     } });
-    // m_services.push_back(std::move(service2));
-
-    auto service3 = std::make_unique<JuneGLESService3>(JuneServiceDescriptor{ .fps = 30,
+    auto service2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{ .fps = 30,
                                                                               .width = m_width,
                                                                               .height = m_height,
                                                                               .windowHandle = getWindowHandle() });
-
-    service3->start(JuneServiceStartDescriptor{
+    service2->start(JuneServiceStartDescriptor{
         .callback = [this]() {
-            m_service3Ready = true;
+            m_service2Ready = true;
         } });
+    m_services.push_back(std::move(service2));
 
-    m_services.push_back(std::move(service3));
+    //    auto service3 = std::make_unique<JuneGLESService3>(JuneServiceDescriptor{ .fps = 30,
+    //                                                                              .width = m_width,
+    //                                                                              .height = m_height,
+    //                                                                              .windowHandle = getWindowHandle() });
+    //
+    //    service3->start(JuneServiceStartDescriptor{
+    //        .callback = [this]() {
+    //            m_service3Ready = true;
+    //        } });
 
-    // while (!m_service1Ready || !m_service2Ready)
-    // {
-    //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // }
+    //    m_services.push_back(std::move(service3));
 
-    // m_services[1]->shareMemory(m_services[0]->getJuneSharedMemory("memory1"));
+    while (!m_service1Ready || !m_service2Ready)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    m_services[1]->shareMemory(m_services[0]->getJuneSharedMemory("memory1"));
 }
 
 } // namespace jipu

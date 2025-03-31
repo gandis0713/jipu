@@ -1,5 +1,6 @@
 #include "june_gles_service1.h"
 
+#include <random>
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -8,34 +9,34 @@ namespace jipu
 namespace
 {
 
-const char* vertexShaderSource = R"(
-    attribute vec4 vPosition;
-    void main() {
-    gl_Position = vPosition;
+#define CHECK_GL_ERROR()                                                   \
+    {                                                                      \
+        GLenum err = glGetError();                                         \
+        if (err != GL_NO_ERROR)                                            \
+        {                                                                  \
+            spdlog::error("GL get error: {}", static_cast<uint32_t>(err)); \
+        }                                                                  \
     }
-)";
 
-const char* fragmentShaderSource = R"(
-    precision mediump float;
-    void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-)";
+const char* vertexShaderSource1 =
+    "attribute vec4 aPosition;            \n"
+    "void main() {                        \n"
+    "    gl_Position = aPosition;         \n"
+    "}                                    \n";
+const char* fragmentShaderSource1 =
+    "precision mediump float;             \n"
+    "uniform vec4 uColor;                 \n"
+    "void main() {                        \n"
+    "    gl_FragColor = uColor;           \n"
+    "}                                    \n";
 
-GLuint loadShader(GLenum type, const char* shaderSrc)
+GLuint compileShader(GLenum type, const char* source)
 {
     GLuint shader = glCreateShader(type);
-    if (shader == 0)
-    {
-        spdlog::debug("Error: 셰이더 생성 실패");
-        return 0;
-    }
-
-    glShaderSource(shader, 1, &shaderSrc, nullptr);
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
 
-    // 컴파일 결과 확인
-    GLint compiled = 0;
+    GLint compiled;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (!compiled)
     {
@@ -43,15 +44,62 @@ GLuint loadShader(GLenum type, const char* shaderSrc)
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
         if (infoLen > 1)
         {
-            char* infoLog = new char[infoLen];
-            glGetShaderInfoLog(shader, infoLen, nullptr, infoLog);
-            spdlog::debug("셰이더 컴파일 에러: {}", infoLog);
-            delete[] infoLog;
+            char* infoLog = (char*)malloc(infoLen);
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+            // 로그 출력 (실제 환경에서는 로그 출력 함수 사용)
+            free(infoLog);
         }
         glDeleteShader(shader);
         return 0;
     }
     return shader;
+}
+
+GLuint createProgram(const char* vertexSource, const char* fragmentSource)
+{
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
+    if (!vertexShader)
+        return 0;
+
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+    if (!fragmentShader)
+        return 0;
+
+    GLuint program = glCreateProgram();
+    if (program == 0)
+        return 0;
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+
+    // 속성 위치 바인딩 (명시적으로 지정)
+    glBindAttribLocation(program, 0, "aPosition");
+    glBindAttribLocation(program, 1, "aTexCoord");
+
+    glLinkProgram(program);
+
+    GLint linked;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
+            spdlog::error("Failed to link program: {}", infoLog);
+            free(infoLog);
+        }
+        glDeleteProgram(program);
+        return 0;
+    }
+
+    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
 }
 
 } // namespace
@@ -71,34 +119,11 @@ void JuneGLESService1::begin()
 
     //
     {
-
-        GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexShaderSource);
-        GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-        m_programObject = glCreateProgram();
-        if (m_programObject == 0)
+        m_programObject1 = createProgram(vertexShaderSource1, fragmentShaderSource1);
+        if (m_programObject1 == 0)
         {
-            spdlog::debug("프로그램 객체 생성 실패");
-        }
-        glAttachShader(m_programObject, vertexShader);
-        glAttachShader(m_programObject, fragmentShader);
-
-        glBindAttribLocation(m_programObject, 0, "vPosition");
-        glLinkProgram(m_programObject);
-
-        GLint linked;
-        glGetProgramiv(m_programObject, GL_LINK_STATUS, &linked);
-        if (!linked)
-        {
-            GLint infoLen = 0;
-            glGetProgramiv(m_programObject, GL_INFO_LOG_LENGTH, &infoLen);
-            if (infoLen > 1)
-            {
-                char* infoLog = new char[infoLen];
-                glGetProgramInfoLog(m_programObject, infoLen, nullptr, infoLog);
-                spdlog::debug("프로그램 링크 에러: {}", infoLog);
-                delete[] infoLog;
-            }
-            glDeleteProgram(m_programObject);
+            spdlog::debug("프로그램1 객체 생성 실패");
+            return;
         }
     }
 
@@ -149,36 +174,69 @@ void JuneGLESService1::work()
 {
     GLuint texture;
     glGenTextures(1, &texture);
+    CHECK_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, texture);
+    CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
+    CHECK_GL_ERROR();
 
+    // 렌더링을 위해 FBO 생성 및 텍스처 부착
     GLuint fbo;
     glGenFramebuffers(1, &fbo);
+    CHECK_GL_ERROR();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    CHECK_GL_ERROR();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    CHECK_GL_ERROR();
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         spdlog::debug("프레임버퍼 상태가 완전하지 않음");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glDeleteFramebuffers(1, &fbo);
-        eglDestroyImageKHR(m_eglDisplay, m_eglImage);
+        return;
     }
 
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
+    CHECK_GL_ERROR();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_GL_ERROR();
     glClear(GL_COLOR_BUFFER_BIT);
+    CHECK_GL_ERROR();
 
-    glUseProgram(m_programObject);
+    glUseProgram(m_programObject1);
+    CHECK_GL_ERROR();
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    float r = dis(gen);
+    float g = dis(gen);
+    float b = dis(gen);
+
+    GLint colorLoc = glGetUniformLocation(m_programObject1, "uColor");
+    glUniform4f(colorLoc, r, g, b, 1.0f);
+
+    spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
 
     GLfloat vertices[] = {
-        0.0f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
+        0.0f, 0.8f, 0.0f,
+        -0.8f, -0.8f, 0.0f,
+        0.8f, -0.8f, 0.0f
     };
+    GLint posLoc = glGetAttribLocation(m_programObject1, "aPosition");
+    CHECK_GL_ERROR();
+    glEnableVertexAttribArray(posLoc);
+    CHECK_GL_ERROR();
+    glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
+    CHECK_GL_ERROR();
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-    glEnableVertexAttribArray(0);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    CHECK_GL_ERROR();
+
+    //        glFlush();
+    //        CHECK_GL_ERROR();
+    //        glFinish();
+    //        CHECK_GL_ERROR();
 
     if (m_descriptor.windowHandle)
     {
@@ -189,6 +247,15 @@ void JuneGLESService1::work()
     {
         spdlog::debug("service1 is rendered in pbuffer.");
     }
+
+    glDisableVertexAttribArray(posLoc);
+    CHECK_GL_ERROR();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    CHECK_GL_ERROR();
+    glDeleteFramebuffers(1, &fbo);
+    CHECK_GL_ERROR();
+    glDeleteTextures(1, &texture);
+    CHECK_GL_ERROR();
 }
 
 } // namespace jipu

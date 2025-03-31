@@ -26,11 +26,13 @@ public:
     JuneGLESService2(const JuneServiceDescriptor& descriptor);
     ~JuneGLESService2();
 
+    void begin() override;
     void work() override;
 
     void shareMemory(JuneSharedMemory juneSharedMemory) override;
 
 private:
+    GLuint m_programObject2{ 0 };
     JuneApiMemory m_juneApiMemory{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
 };
