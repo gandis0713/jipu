@@ -100,6 +100,18 @@ void JuneGLESService::begin()
         {
             throw std::runtime_error("glEGLImageTargetTexture2DOES function pointer acquisition failed");
         }
+
+        eglDupNativeFenceFDANDROID = (PFNEGLDUPNATIVEFENCEFDANDROIDPROC)eglGetProcAddress("eglDupNativeFenceFDANDROID");
+        if (!eglDupNativeFenceFDANDROID)
+        {
+            throw std::runtime_error("eglDupNativeFenceFDANDROID function pointer acquisition failed");
+        }
+
+        eglCreateSyncKHR = (PFNEGLCREATESYNCKHRPROC)eglGetProcAddress("eglCreateSyncKHR");
+        if (!eglCreateSyncKHR)
+        {
+            throw std::runtime_error("eglCreateSyncKHR function pointer acquisition failed");
+        }
     }
 
     // initialize June

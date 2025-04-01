@@ -41,9 +41,10 @@ protected:
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
 
-    PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR{nullptr};
-    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{nullptr};
-
+    PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR{ nullptr };
+    PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{ nullptr };
+    PFNEGLDUPNATIVEFENCEFDANDROIDPROC eglDupNativeFenceFDANDROID{ nullptr };
+    PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR{ nullptr };
 };
 
 } // namespace jipu
