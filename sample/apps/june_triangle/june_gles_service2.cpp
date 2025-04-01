@@ -26,12 +26,40 @@ const char* vertexShaderSource2 =
     "    vTexCoord = aTexCoord;           \n"
     "}                                    \n";
 const char* fragmentShaderSource2 =
-    "precision mediump float;             \n"
-    "varying vec2 vTexCoord;              \n"
-    "uniform sampler2D uTexture;          \n"
-    "void main() {                        \n"
-    "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
-    "}                                    \n";
+    // "precision mediump float;             \n"
+    // "varying vec2 vTexCoord;              \n"
+    // "uniform sampler2D uTexture;          \n"
+    // "void main() {                        \n"
+    // "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
+    // "}                                    \n";
+    "precision mediump float;                                        \n"
+    "varying vec2 vTexCoord;                                             \n"
+    "uniform sampler2D uTexture;                                         \n"
+    "const int texWidth = 270;                                             \n"
+    "const int texHeight = 585;                                            \n"
+    "void main() {                                                     \n"
+    "    // 기준 색상을 texture의 첫번째 texel에서 샘플링                         \n"
+    "    vec4 refColor = texture2D(uTexture, vec2(0.5/float(texWidth),      \n"
+    "                                           0.5/float(texHeight)));    \n"
+    "    bool isUniform = true;                                          \n"
+    "    for (int y = 0; y < texHeight; y++) {                           \n"
+    "        for (int x = 0; x < texWidth; x++) {                        \n"
+    "            vec2 coord = vec2((float(x) + 0.5) / float(texWidth),    \n"
+    "                                (float(y) + 0.5) / float(texHeight));   \n"
+    "            vec4 currentColor = texture2D(uTexture, coord);         \n"
+    "            // 기준 색상과의 차이가 아주 작으면 동일하다고 판단                     \n"
+    "            if (distance(currentColor, refColor) > 0.001) {         \n"
+    "                isUniform = false;                                \n"
+    "            }                                                     \n"
+    "        }                                                         \n"
+    "    }                                                             \n"
+    "    // texture의 모든 색상이 동일하면 기준 색상을, 그렇지 않으면 원래 texture 색상을 출력       \n"
+    "    if (isUniform) {                                              \n"
+    "         gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);                                 \n"
+    "    } else {                                                      \n"
+    "         gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);           \n"
+    "    }                                                             \n"
+    "}                                                                 \n";
 
 GLuint compileShader(GLenum type, const char* source)
 {
@@ -120,14 +148,14 @@ void JuneGLESService2::begin()
 {
     JuneGLESService::begin();
 
+    m_programObject2 = createProgram(vertexShaderSource2, fragmentShaderSource2);
+    if (m_programObject2 == 0)
     {
-        m_programObject2 = createProgram(vertexShaderSource2, fragmentShaderSource2);
-        if (m_programObject2 == 0)
-        {
-            spdlog::debug("프로그램2 객체 생성 실패");
-            return;
-        }
+        throw std::runtime_error("Failed to create program");
     }
+
+    glGenTextures(1, &m_texture);
+    CHECK_GL_ERROR();
 }
 
 void JuneGLESService2::work()
@@ -135,27 +163,30 @@ void JuneGLESService2::work()
     if (!m_juneApiMemory)
         return;
 
-    GLuint texture;
-    CHECK_GL_ERROR();
-    glGenTextures(1, &texture);
-    CHECK_GL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, texture);
+    int count = 0;
+
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
+    spdlog::debug("service2 count: {}", count++);
     CHECK_GL_ERROR();
 
     glUseProgram(m_programObject2);
     CHECK_GL_ERROR();
 
-    // full-screen quad 정점 및 텍스처 좌표
     GLfloat vertices[] = {
         -1.0f, 1.0f, 0.0f,  // 좌측 상단
         -1.0f, -1.0f, 0.0f, // 좌측 하단
@@ -183,7 +214,6 @@ void JuneGLESService2::work()
     glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
     CHECK_GL_ERROR();
 
-    // 텍스처 유니폼 설정
     GLint texUniform = glGetUniformLocation(m_programObject2, "uTexture");
     CHECK_GL_ERROR();
     glUniform1i(texUniform, 0);
@@ -199,42 +229,57 @@ void JuneGLESService2::work()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     CHECK_GL_ERROR();
 
-    //        glFlush();
-    //        CHECK_GL_ERROR();
-    //        glFinish();
-    //        CHECK_GL_ERROR();
+    // glFlush();
+    // CHECK_GL_ERROR();
+    // glFinish();
+    // CHECK_GL_ERROR();
 
     if (m_descriptor.windowHandle)
     {
-        spdlog::debug("service3 is rendered in swapbuffer.");
+        spdlog::debug("service2 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
         CHECK_GL_ERROR();
     }
     else
     {
-        spdlog::debug("service3 is rendered in pbuffer.");
+        spdlog::debug("service2 is rendered in pbuffer.");
     }
 
-    // 리소스 정리
     glDisableVertexAttribArray(posLoc);
     CHECK_GL_ERROR();
     glDisableVertexAttribArray(texLoc);
     CHECK_GL_ERROR();
-    glDeleteTextures(1, &texture);
-    CHECK_GL_ERROR();
 }
 
-void JuneGLESService2::shareMemory(JuneSharedMemory sharedMemory)
+void JuneGLESService2::end()
 {
-    setJuneSharedMemory("memory1", sharedMemory);
+    glDeleteTextures(1, &m_texture);
+    CHECK_GL_ERROR();
 
-    // Create Api Memory
+    JuneGLESService::end();
+}
+
+JuneServiceShareObjects JuneGLESService2::getSharingObject() const
+{
+    return {};
+}
+
+void JuneGLESService2::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+{
+    m_sharedObjects = sharedObjects;
+
+    // Create ApiMemory and connect
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = sharedMemory;
+        juneApiMemoryDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
 
         m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+
+        for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
+        {
+            m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
+        }
     }
 
     // Create Resource

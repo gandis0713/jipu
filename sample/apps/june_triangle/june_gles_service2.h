@@ -28,13 +28,18 @@ public:
 
     void begin() override;
     void work() override;
+    void end() override;
 
-    void shareMemory(JuneSharedMemory juneSharedMemory) override;
+    JuneServiceShareObjects getSharingObject() const override;
+    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
 
 private:
     GLuint m_programObject2{ 0 };
+    GLuint m_texture{ 0 };
     JuneApiMemory m_juneApiMemory{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
+
+    JuneServiceShareObjects m_sharedObjects{};
 };
 
 } // namespace jipu

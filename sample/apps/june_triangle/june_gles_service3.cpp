@@ -154,6 +154,7 @@ void JuneGLESService3::begin()
     }
 
     // Create Shared Memory
+    JuneSharedMemory sharedMemory{};
     {
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -172,17 +173,19 @@ void JuneGLESService3::begin()
 
         juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
 #endif
-        JuneSharedMemory juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        setJuneSharedMemory("memory1", juneSharedMemory);
+        sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        m_sharingObjects.sharedMemory = sharedMemory;
     }
 
     // Create Api Memory
+    JuneApiMemory apiMemory{};
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = getJuneSharedMemory("memory1");
+        juneApiMemoryDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
 
-        m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+        apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+        m_sharingObjects.apiMemories.push_back(apiMemory);
     }
 
     // Create Resource
@@ -192,7 +195,7 @@ void JuneGLESService3::begin()
         JuneResourceDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
 
-        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(m_juneApiMemory, &juneResourceDescriptor));
+        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
     }
 }
 
@@ -364,6 +367,15 @@ void JuneGLESService3::work()
         glDeleteTextures(1, &texture);
         CHECK_GL_ERROR();
     }
+}
+
+JuneServiceShareObjects JuneGLESService3::getSharingObject() const
+{
+    return {};
+}
+
+void JuneGLESService3::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+{
 }
 
 } // namespace jipu

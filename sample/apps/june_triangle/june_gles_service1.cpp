@@ -2,6 +2,7 @@
 
 #include <random>
 #include <spdlog/spdlog.h>
+#include <thread>
 
 namespace jipu
 {
@@ -128,6 +129,7 @@ void JuneGLESService1::begin()
     }
 
     // Create Shared Memory
+    JuneSharedMemory juneSharedMemory{};
     {
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -146,17 +148,19 @@ void JuneGLESService1::begin()
 
         juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
 #endif
-        JuneSharedMemory juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        setJuneSharedMemory("memory1", juneSharedMemory);
+        juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        m_sharingObjects.sharedMemory = juneSharedMemory;
     }
 
-    // Create Api Memory
+    // Create ApiMemory
+    JuneApiMemory apiMemory{};
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = getJuneSharedMemory("memory1");
+        juneApiMemoryDescriptor.sharedMemory = juneSharedMemory;
 
-        m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+        apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+        m_sharingObjects.apiMemories.push_back(apiMemory);
     }
 
     // Create Resource
@@ -166,27 +170,34 @@ void JuneGLESService1::begin()
         JuneResourceDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
 
-        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(m_juneApiMemory, &juneResourceDescriptor));
+        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
     }
 }
 
 void JuneGLESService1::work()
 {
+    int count = 0;
     GLuint texture;
     glGenTextures(1, &texture);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, texture);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
 
     // 렌더링을 위해 FBO 생성 및 텍스처 부착
     GLuint fbo;
     glGenFramebuffers(1, &fbo);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -219,10 +230,12 @@ void JuneGLESService1::work()
     spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
 
     GLfloat vertices[] = {
-        0.0f, 0.8f, 0.0f,
-        -0.8f, -0.8f, 0.0f,
-        0.8f, -0.8f, 0.0f
+        -1.0f, 1.0f, 0.0f,  // 좌측 상단
+        -1.0f, -1.0f, 0.0f, // 좌측 하단
+        1.0f, 1.0f, 0.0f,   // 우측 상단
+        1.0f, -1.0f, 0.0f   // 우측 하단
     };
+
     GLint posLoc = glGetAttribLocation(m_programObject1, "aPosition");
     CHECK_GL_ERROR();
     glEnableVertexAttribArray(posLoc);
@@ -230,7 +243,9 @@ void JuneGLESService1::work()
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     CHECK_GL_ERROR();
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    spdlog::debug("service1 count: {}", count++);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
 
     //        glFlush();
@@ -242,6 +257,7 @@ void JuneGLESService1::work()
     {
         spdlog::debug("service1 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
+        spdlog::debug("service1 count: {}", count++);
     }
     else
     {
@@ -256,6 +272,18 @@ void JuneGLESService1::work()
     CHECK_GL_ERROR();
     glDeleteTextures(1, &texture);
     CHECK_GL_ERROR();
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+JuneServiceShareObjects JuneGLESService1::getSharingObject() const
+{
+    return m_sharingObjects;
+}
+
+void JuneGLESService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+{
+    // nothing to do
 }
 
 } // namespace jipu

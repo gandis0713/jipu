@@ -37,6 +37,7 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
 
     GET_PROC(ApiMemoryBeginAccess);
     GET_PROC(ApiMemoryEndAccess);
+    GET_PROC(ApiMemoryConnect);
     GET_PROC(ApiMemoryCreateResource);
     GET_PROC(ApiMemoryDestroy);
 

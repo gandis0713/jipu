@@ -23,6 +23,7 @@ struct JuneAPI
 
     JuneProcApiMemoryBeginAccess ApiMemoryBeginAccess = nullptr;
     JuneProcApiMemoryEndAccess ApiMemoryEndAccess = nullptr;
+    JuneProcApiMemoryConnect ApiMemoryConnect = nullptr;
     JuneProcApiMemoryCreateResource ApiMemoryCreateResource = nullptr;
     JuneProcApiMemoryDestroy ApiMemoryDestroy = nullptr;
 

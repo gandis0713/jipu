@@ -29,10 +29,14 @@ public:
     void begin() override;
     void work() override;
 
+    JuneServiceShareObjects getSharingObject() const override;
+    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
+
 private:
     GLuint m_programObject1{ 0 };
-    JuneApiMemory m_juneApiMemory{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
+
+    JuneServiceShareObjects m_sharingObjects{};
 };
 
 } // namespace jipu

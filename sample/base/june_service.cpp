@@ -33,27 +33,6 @@ void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
         m_stopCallback();
 }
 
-JuneSharedMemory JuneService::getJuneSharedMemory(const std::string& key) const
-{
-    return m_sharedMemories.contains(key) ? m_sharedMemories.at(key) : nullptr;
-}
-
-void JuneService::setJuneSharedMemory(const std::string& key, JuneSharedMemory juneSharedMemory)
-{
-    if (juneSharedMemory)
-    {
-        m_sharedMemories[key] = juneSharedMemory;
-    }
-    else
-    {
-        m_sharedMemories.erase(key);
-    }
-}
-
-void JuneService::shareMemory(JuneSharedMemory juneSharedMemory)
-{
-}
-
 void JuneService::begin()
 {
 }

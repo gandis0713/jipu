@@ -31,6 +31,12 @@ struct JuneServiceStopDescriptor
     std::function<void()> callback;
 };
 
+struct JuneServiceShareObjects
+{
+    JuneSharedMemory sharedMemory;
+    std::vector<JuneApiMemory> apiMemories;
+};
+
 class JuneService
 {
 public:
@@ -43,11 +49,8 @@ public:
     void stop(const JuneServiceStopDescriptor& descriptor);
 
 public:
-    JuneSharedMemory getJuneSharedMemory(const std::string& key) const;
-    void setJuneSharedMemory(const std::string& key, JuneSharedMemory juneSharedMemory);
-
-public:
-    virtual void shareMemory(JuneSharedMemory juneSharedMemory);
+    virtual JuneServiceShareObjects getSharingObject() const = 0;
+    virtual void setSharedObjects(const JuneServiceShareObjects& sharedObjects) = 0;
 
 protected:
     virtual void begin();
@@ -71,7 +74,6 @@ protected:
     JuneAPI m_juneAPI;
 
     JuneInstance m_juneInstance{ nullptr };
-    std::unordered_map<std::string, JuneSharedMemory> m_sharedMemories{};
 
 private:
     Runner m_runner;
