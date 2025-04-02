@@ -246,7 +246,7 @@ void JuneGLESService3::work()
         GLint colorLoc = glGetUniformLocation(m_programObject1, "uColor");
         glUniform4f(colorLoc, r, g, b, 1.0f);
 
-        spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+//        spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
 
         GLfloat vertices[] = {
             0.0f, 0.8f, 0.0f,

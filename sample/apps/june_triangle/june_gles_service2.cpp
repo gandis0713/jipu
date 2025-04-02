@@ -26,17 +26,17 @@ const char* vertexShaderSource2 =
     "    vTexCoord = aTexCoord;           \n"
     "}                                    \n";
 const char* fragmentShaderSource2 =
-    // "precision mediump float;             \n"
-    // "varying vec2 vTexCoord;              \n"
-    // "uniform sampler2D uTexture;          \n"
-    // "void main() {                        \n"
-    // "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
-    // "}                                    \n";
+    //     "precision mediump float;             \n"
+    //     "varying vec2 vTexCoord;              \n"
+    //     "uniform sampler2D uTexture;          \n"
+    //     "void main() {                        \n"
+    //     "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
+    //     "}                                    \n";
     "precision mediump float;                                        \n"
     "varying vec2 vTexCoord;                                             \n"
     "uniform sampler2D uTexture;                                         \n"
-    "const int texWidth = 270;                                             \n"
-    "const int texHeight = 585;                                            \n"
+    "const int texWidth = 160;                                             \n"
+    "const int texHeight = 160;                                            \n"
     "void main() {                                                     \n"
     "    // 기준 색상을 texture의 첫번째 texel에서 샘플링                         \n"
     "    vec4 refColor = texture2D(uTexture, vec2(0.5/float(texWidth),      \n"
@@ -55,7 +55,7 @@ const char* fragmentShaderSource2 =
     "    }                                                             \n"
     "    // texture의 모든 색상이 동일하면 기준 색상을, 그렇지 않으면 원래 texture 색상을 출력       \n"
     "    if (isUniform) {                                              \n"
-    "         gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);                                 \n"
+    "         gl_FragColor = texture2D(uTexture, vTexCoord);                                 \n"
     "    } else {                                                      \n"
     "         gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);           \n"
     "    }                                                             \n"
@@ -163,25 +163,29 @@ void JuneGLESService2::work()
     if (!m_juneApiMemory)
         return;
 
+    JuneApiMemoryBeginAccessDescriptor descriptor{};
+    m_juneAPI.ApiMemoryBeginAccess(m_juneApiMemory, &descriptor);
+    spdlog::debug("service2 begin access");
+
     int count = 0;
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
-    spdlog::debug("service2 count: {}", count++);
+
     CHECK_GL_ERROR();
 
     glUseProgram(m_programObject2);
@@ -245,6 +249,10 @@ void JuneGLESService2::work()
         spdlog::debug("service2 is rendered in pbuffer.");
     }
 
+    spdlog::debug("service2 end access");
+    JuneApiMemoryEndAccessDescriptor endDescriptor{};
+    m_juneAPI.ApiMemoryEndAccess(m_juneApiMemory, &endDescriptor);
+
     glDisableVertexAttribArray(posLoc);
     CHECK_GL_ERROR();
     glDisableVertexAttribArray(texLoc);
@@ -279,6 +287,7 @@ void JuneGLESService2::setSharedObjects(const JuneServiceShareObjects& sharedObj
         for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
         {
             m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
+            m_juneAPI.ApiMemoryConnect(m_juneApiMemory, sharedApiMemory);
         }
     }
 

@@ -15,6 +15,7 @@
     "webgpu-headers",
     "vulkan-headers",
     "vulkan-memory-allocator",
+    "palsigslot",
     {
       "name": "angle",
       "platform": "osx"

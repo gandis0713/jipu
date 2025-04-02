@@ -176,28 +176,35 @@ void JuneGLESService1::begin()
 
 void JuneGLESService1::work()
 {
+    for (auto& apiMemory : m_sharingObjects.apiMemories)
+    {
+        JuneApiMemoryBeginAccessDescriptor descriptor{};
+        m_juneAPI.ApiMemoryBeginAccess(apiMemory, &descriptor);
+        spdlog::debug("service1 begin access");
+    }
+
     int count = 0;
     GLuint texture;
     glGenTextures(1, &texture);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, texture);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImage);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
 
     // 렌더링을 위해 FBO 생성 및 텍스처 부착
     GLuint fbo;
     glGenFramebuffers(1, &fbo);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
-    spdlog::debug("service1 count: {}", count++);
+
     CHECK_GL_ERROR();
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -227,7 +234,7 @@ void JuneGLESService1::work()
     GLint colorLoc = glGetUniformLocation(m_programObject1, "uColor");
     glUniform4f(colorLoc, r, g, b, 1.0f);
 
-    spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
+    //    spdlog::debug("r: {}, g: {}, b: {}", r, g, b);
 
     GLfloat vertices[] = {
         -1.0f, 1.0f, 0.0f,  // 좌측 상단
@@ -243,9 +250,7 @@ void JuneGLESService1::work()
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     CHECK_GL_ERROR();
 
-    spdlog::debug("service1 count: {}", count++);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    spdlog::debug("service1 count: {}", count++);
     CHECK_GL_ERROR();
 
     //        glFlush();
@@ -257,11 +262,17 @@ void JuneGLESService1::work()
     {
         spdlog::debug("service1 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
-        spdlog::debug("service1 count: {}", count++);
     }
     else
     {
         spdlog::debug("service1 is rendered in pbuffer.");
+    }
+
+    for (auto& apiMemory : m_sharingObjects.apiMemories)
+    {
+        spdlog::debug("service1 end access");
+        JuneApiMemoryEndAccessDescriptor descriptor{};
+        m_juneAPI.ApiMemoryEndAccess(apiMemory, &descriptor);
     }
 
     glDisableVertexAttribArray(posLoc);
