@@ -40,10 +40,6 @@ public:
 protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
-
-    std::unique_ptr<JuneService> m_service1{ nullptr };
-    std::unique_ptr<JuneService> m_service2{ nullptr };
-    std::unique_ptr<JuneService> m_service3{ nullptr };
 };
 
 } // namespace jipu

@@ -1,5 +1,6 @@
 #include "june_vulkan_service.h"
 
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace jipu
@@ -29,6 +30,11 @@ void JuneVulkanService::begin()
 
     // initialize June
     {
+        auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter.get());
+        m_vkInstance = vulkanAdapter->getVkInstance();
+        m_vkPhysicalDevice = vulkanAdapter->getVkPhysicalDevice(0);
+        m_vkDevice = static_cast<VulkanDevice*>(m_device.get())->getVkDevice();
+
         JuneInstanceDescriptor juneInstanceDescriptor{};
         m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 
@@ -83,6 +89,12 @@ void JuneVulkanService::getPhysicalDevices()
 
 void JuneVulkanService::createSurface()
 {
+    if (!m_descriptor.windowHandle)
+    {
+        spdlog::debug("Window handle is null.");
+        return;
+    }
+
     SurfaceDescriptor descriptor;
     descriptor.windowHandle = m_descriptor.windowHandle;
     m_surface = m_adapter->createSurface(descriptor);
@@ -90,8 +102,11 @@ void JuneVulkanService::createSurface()
 
 void JuneVulkanService::createSwapchain()
 {
-    if (m_surface == nullptr)
-        throw std::runtime_error("Surface is null pointer.");
+    if (!m_surface)
+    {
+        spdlog::debug("Surface is null.");
+        return;
+    }
 
 #if defined(__ANDROID__) || defined(ANDROID)
     TextureFormat textureFormat = TextureFormat::kRGBA8UnormSrgb;

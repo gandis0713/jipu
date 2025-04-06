@@ -15,9 +15,12 @@ public:
     void begin() override;
     void work() override;
 
+    JuneServiceShareObjects getSharingObject() const override;
+    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
+
 private:
-    // JuneSharedMemory m_juneSharedMemory{ nullptr };
-    // JuneApiMemory m_juneApiMemory{ nullptr };
+    JuneServiceShareObjects m_sharingObjects{};
+    JuneServiceShareObjects m_sharedObjects{};
 };
 
 } // namespace jipu

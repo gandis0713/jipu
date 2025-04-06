@@ -16,9 +16,15 @@ public:
     void init() override;
 
 private:
-    [[maybe_unused]] bool m_service1Ready{ false };
-    [[maybe_unused]] bool m_service2Ready{ false };
-    [[maybe_unused]] bool m_service3Ready{ false };
+    std::unique_ptr<JuneService> m_glesService1{ nullptr };
+    std::unique_ptr<JuneService> m_glesService2{ nullptr };
+    std::unique_ptr<JuneService> m_glesService3{ nullptr };
+    std::unique_ptr<JuneService> m_vulkanService1{ nullptr };
+
+    [[maybe_unused]] bool m_glesService1Ready{ false };
+    [[maybe_unused]] bool m_glesService2Ready{ false };
+    [[maybe_unused]] bool m_glesService3Ready{ false };
+    [[maybe_unused]] bool m_vulkanService1Ready{ false };
 };
 
 } // namespace jipu
