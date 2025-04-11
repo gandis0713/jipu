@@ -5,6 +5,7 @@
 #include "june_api.h"
 #include "runner.h"
 
+#include <filesystem>
 #include <functional>
 #include <queue>
 #include <thread>
@@ -19,6 +20,9 @@ struct JuneServiceDescriptor
     uint32_t width{ 0 };
     uint32_t height{ 0 };
     void* windowHandle{ nullptr };
+    std::filesystem::path appPath;
+    std::filesystem::path appDir;
+    void* appHandle{ nullptr };
 };
 
 struct JuneServiceStartDescriptor

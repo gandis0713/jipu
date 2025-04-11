@@ -9,11 +9,11 @@
 namespace jipu
 {
 
-class JuneVulkanService1 : public JuneVulkanService
+class JuneVulkanService2 : public JuneVulkanService
 {
 public:
-    JuneVulkanService1(const JuneServiceDescriptor& descriptor);
-    ~JuneVulkanService1();
+    JuneVulkanService2(const JuneServiceDescriptor& descriptor);
+    ~JuneVulkanService2();
 
     void begin() override;
     void work() override;
@@ -24,34 +24,36 @@ public:
 private:
     void createOffscreenTexture();
     void createOffscreenTextureView();
-    void createOffscreenVertexBuffer();
-    void createOffscreenIndexBuffer();
-    void createOffscreenUniformBuffer();
-    void createOffscreenBindGroupLayout();
-    void createOffscreenBindGroup();
-    void createOffscreenRenderPipeline();
-
-    void createCamera();
+    void createOnscreenVertexBuffer();
+    void createOnscreenIndexBuffer();
+    void createOnscreenSampler();
+    void createOnscreenBindGroupLayout();
+    void createOnscreenBindGroup();
+    void createOnscreenRenderPipeline();
 
 private:
     JuneServiceShareObjects m_sharingObjects{};
     JuneServiceShareObjects m_sharedObjects{};
 
     VkImage m_image{ VK_NULL_HANDLE };
+    bool m_isShared{ false };
 
 private:
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;
         std::unique_ptr<TextureView> renderTextureView = nullptr;
+    } m_offscreen;
+    struct
+    {
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
-        std::unique_ptr<Buffer> uniformBuffer = nullptr;
+        std::unique_ptr<Sampler> sampler = nullptr;
         std::unique_ptr<BindGroupLayout> bindGroupLayout = nullptr;
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-    } m_offscreen;
+    } m_onscreen;
 
     struct MVP
     {
@@ -65,18 +67,18 @@ private:
         MVP mvp;
     } m_ubo;
 
-    struct OffscreenVertex
+    struct OnscreenVertex
     {
         glm::vec3 pos;
-        glm::vec3 color;
+        glm::vec2 texCoord;
     };
-
-    std::vector<OffscreenVertex> m_offscreenVertices{
-        { { 0.0, -500, 0.0 }, { 1.0, 0.0, 0.0 } },
-        { { -500, 500, 0.0 }, { 0.0, 1.0, 0.0 } },
-        { { 500, 500, 0.0 }, { 0.0, 0.0, 1.0 } },
+    std::vector<OnscreenVertex> m_onscreenVertices{
+        { { -1.0, -1.0, 0.0 }, { 0.0, 0.0 } },
+        { { -1.0, 1.0, 0.0 }, { 0.0, 1.0 } },
+        { { 1.0, 1.0, 0.0 }, { 1.0, 1.0 } },
+        { { 1.0, -1.0, 0.0 }, { 1.0, 0.0 } },
     };
-    std::vector<uint16_t> m_offscreenIndices{ 0, 1, 2 };
+    std::vector<uint16_t> m_onscreenIndices{ 0, 1, 3, 1, 2, 3 };
 
     uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;

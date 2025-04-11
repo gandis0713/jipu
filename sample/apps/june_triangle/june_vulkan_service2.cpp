@@ -1,4 +1,4 @@
-#include "june_vulkan_service1.h"
+#include "june_vulkan_service2.h"
 
 #include <spdlog/spdlog.h>
 
@@ -11,49 +11,42 @@
 namespace jipu
 {
 
-JuneVulkanService1::JuneVulkanService1(const JuneServiceDescriptor& descriptor)
+JuneVulkanService2::JuneVulkanService2(const JuneServiceDescriptor& descriptor)
     : JuneVulkanService(descriptor)
 {
 }
 
-JuneVulkanService1::~JuneVulkanService1()
+JuneVulkanService2::~JuneVulkanService2()
 {
 }
 
-void JuneVulkanService1::begin()
+void JuneVulkanService2::begin()
 {
     JuneVulkanService::begin();
+}
 
-    // Create Shared Memory
-    JuneSharedMemory juneSharedMemory{};
-    {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
-        };
+void JuneVulkanService2::work()
+{
+    if (!m_isShared)
+        return;
+}
 
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
+JuneServiceShareObjects JuneVulkanService2::getSharingObject() const
+{
+    return m_sharingObjects;
+}
 
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
-#endif
-        juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingObjects.sharedMemory = juneSharedMemory;
-    }
+void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+{
+    m_sharedObjects = sharedObjects;
+    m_sharingObjects.sharedMemory = sharedObjects.sharedMemory;
 
     // Create ApiMemory and connect
     JuneApiMemory apiMemory{};
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+        juneApiMemoryDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
 
         apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
         m_sharingObjects.apiMemories.push_back(apiMemory);
@@ -70,11 +63,7 @@ void JuneVulkanService1::begin()
         VkImageCreateInfo imageInfo = {};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
         imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
         imageInfo.extent.width = m_descriptor.width;
         imageInfo.extent.height = m_descriptor.height;
         imageInfo.extent.depth = 1;
@@ -99,31 +88,18 @@ void JuneVulkanService1::begin()
 
     createOffscreenTexture();
     createOffscreenTextureView();
-    createOffscreenVertexBuffer();
-    createOffscreenIndexBuffer();
-    createOffscreenUniformBuffer();
-    createOffscreenBindGroupLayout();
-    createOffscreenBindGroup();
-    createOffscreenRenderPipeline();
 
-    createCamera();
+    createOnscreenVertexBuffer();
+    createOnscreenIndexBuffer();
+    createOnscreenSampler();
+    createOnscreenBindGroupLayout();
+    createOnscreenBindGroup();
+    createOnscreenRenderPipeline();
+
+    m_isShared = true;
 }
 
-void JuneVulkanService1::work()
-{
-}
-
-JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
-{
-    return m_sharingObjects;
-}
-
-void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
-    m_sharedObjects = sharedObjects;
-}
-
-void JuneVulkanService1::createOffscreenTexture()
+void JuneVulkanService2::createOffscreenTexture()
 {
     VulkanTextureDescriptor vulkanTextureDescriptor{};
     vulkanTextureDescriptor.imageType = VK_IMAGE_TYPE_2D;
@@ -149,7 +125,7 @@ void JuneVulkanService1::createOffscreenTexture()
     m_offscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);
 }
 
-void JuneVulkanService1::createOffscreenTextureView()
+void JuneVulkanService2::createOffscreenTextureView()
 {
     TextureViewDescriptor textureViewDescriptor;
     textureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
@@ -158,83 +134,93 @@ void JuneVulkanService1::createOffscreenTextureView()
     m_offscreen.renderTextureView = m_offscreen.renderTexture->createTextureView(textureViewDescriptor);
 }
 
-void JuneVulkanService1::createOffscreenVertexBuffer()
+void JuneVulkanService2::createOnscreenVertexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size = m_offscreenVertices.size() * sizeof(OffscreenVertex);
+    descriptor.size = m_onscreenVertices.size() * sizeof(OnscreenVertex);
     descriptor.usage = BufferUsageFlagBits::kVertex;
 
-    m_offscreen.vertexBuffer = m_device->createBuffer(descriptor);
+    m_onscreen.vertexBuffer = m_device->createBuffer(descriptor);
 
-    void* pointer = m_offscreen.vertexBuffer->map();
-    memcpy(pointer, m_offscreenVertices.data(), descriptor.size);
-    m_offscreen.vertexBuffer->unmap();
+    void* pointer = m_onscreen.vertexBuffer->map();
+    memcpy(pointer, m_onscreenVertices.data(), descriptor.size);
+    m_onscreen.vertexBuffer->unmap();
 }
 
-void JuneVulkanService1::createOffscreenIndexBuffer()
+void JuneVulkanService2::createOnscreenIndexBuffer()
 {
     BufferDescriptor descriptor{};
-    descriptor.size = m_offscreenIndices.size() * sizeof(uint16_t);
+    descriptor.size = m_onscreenIndices.size() * sizeof(uint16_t);
     descriptor.usage = BufferUsageFlagBits::kIndex;
 
-    m_offscreen.indexBuffer = m_device->createBuffer(descriptor);
+    m_onscreen.indexBuffer = m_device->createBuffer(descriptor);
 
-    void* pointer = m_offscreen.indexBuffer->map();
-    memcpy(pointer, m_offscreenIndices.data(), descriptor.size);
-    m_offscreen.indexBuffer->unmap();
+    void* pointer = m_onscreen.indexBuffer->map();
+    memcpy(pointer, m_onscreenIndices.data(), descriptor.size);
+    m_onscreen.indexBuffer->unmap();
 }
 
-void JuneVulkanService1::createOffscreenUniformBuffer()
+void JuneVulkanService2::createOnscreenSampler()
 {
-    BufferDescriptor descriptor{};
-    descriptor.size = sizeof(UBO);
-    descriptor.usage = BufferUsageFlagBits::kUniform;
+    SamplerDescriptor samplerDescriptor{};
+    samplerDescriptor.addressModeU = AddressMode::kClampToEdge;
+    samplerDescriptor.addressModeV = AddressMode::kClampToEdge;
+    samplerDescriptor.addressModeW = AddressMode::kClampToEdge;
+    samplerDescriptor.lodMin = 0.0f;
+    samplerDescriptor.lodMax = 1.0f;
+    samplerDescriptor.minFilter = FilterMode::kLinear;
+    samplerDescriptor.magFilter = FilterMode::kLinear;
+    samplerDescriptor.mipmapFilter = MipmapFilterMode::kLinear;
 
-    m_offscreen.uniformBuffer = m_device->createBuffer(descriptor);
-
-    void* pointer = m_offscreen.uniformBuffer->map();
-    // memcpy(pointer, &m_ubo, descriptor.size);
-    // m_offscreen.uniformBuffer->unmap();
+    m_onscreen.sampler = m_device->createSampler(samplerDescriptor);
 }
 
-void JuneVulkanService1::createOffscreenBindGroupLayout()
+void JuneVulkanService2::createOnscreenBindGroupLayout()
 {
-    BufferBindingLayout bufferLayout{};
-    bufferLayout.index = 0;
-    bufferLayout.stages = BindingStageFlagBits::kVertexStage;
-    bufferLayout.type = BufferBindingType::kUniform;
+    SamplerBindingLayout samplerLayout{};
+    samplerLayout.index = 0;
+    samplerLayout.stages = BindingStageFlagBits::kFragmentStage;
+
+    TextureBindingLayout textureLayout{};
+    textureLayout.index = 1;
+    textureLayout.stages = BindingStageFlagBits::kFragmentStage;
 
     BindGroupLayoutDescriptor descriptor{};
-    descriptor.buffers = { bufferLayout };
+    descriptor.samplers = { samplerLayout };
+    descriptor.textures = { textureLayout };
 
-    m_offscreen.bindGroupLayout = m_device->createBindGroupLayout(descriptor);
+    m_onscreen.bindGroupLayout = m_device->createBindGroupLayout(descriptor);
 }
 
-void JuneVulkanService1::createOffscreenBindGroup()
+void JuneVulkanService2::createOnscreenBindGroup()
 {
-    BufferBinding bufferBinding{
+    SamplerBinding samplerBinding{
         .index = 0,
-        .offset = 0,
-        .size = m_offscreen.uniformBuffer->getSize(),
-        .buffer = m_offscreen.uniformBuffer.get(),
+        .sampler = m_onscreen.sampler.get()
+    };
+
+    TextureBinding textureBinding{
+        .index = 1,
+        .textureView = m_offscreen.renderTextureView.get()
     };
 
     BindGroupDescriptor descriptor{
-        .layout = m_offscreen.bindGroupLayout.get(),
-        .buffers = { bufferBinding }
+        .layout = m_onscreen.bindGroupLayout.get(),
+        .samplers = { samplerBinding },
+        .textures = { textureBinding }
     };
 
-    m_offscreen.bindGroup = m_device->createBindGroup(descriptor);
+    m_onscreen.bindGroup = m_device->createBindGroup(descriptor);
 }
 
-void JuneVulkanService1::createOffscreenRenderPipeline()
+void JuneVulkanService2::createOnscreenRenderPipeline()
 {
     // render pipeline layout
     {
         PipelineLayoutDescriptor descriptor{};
-        descriptor.layouts = { m_offscreen.bindGroupLayout.get() };
+        descriptor.layouts = { m_onscreen.bindGroupLayout.get() };
 
-        m_offscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
+        m_onscreen.renderPipelineLayout = m_device->createPipelineLayout(descriptor);
     }
 
     // input assembly stage
@@ -246,7 +232,7 @@ void JuneVulkanService1::createOffscreenRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.appDir / "offscreen.vert.spv", m_descriptor.appHandle);
+        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.appDir / "onscreen.vert.spv", m_descriptor.appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
@@ -258,18 +244,18 @@ void JuneVulkanService1::createOffscreenRenderPipeline()
 
     VertexAttribute positionAttribute{};
     positionAttribute.format = VertexFormat::kFloat32x3;
-    positionAttribute.offset = offsetof(OffscreenVertex, pos);
+    positionAttribute.offset = offsetof(OnscreenVertex, pos);
     positionAttribute.location = 0;
 
-    VertexAttribute colorAttribute{};
-    colorAttribute.format = VertexFormat::kFloat32x3;
-    colorAttribute.offset = offsetof(OffscreenVertex, color);
-    colorAttribute.location = 1;
+    VertexAttribute texCoordAttribute{};
+    texCoordAttribute.format = VertexFormat::kFloat32x2;
+    texCoordAttribute.offset = offsetof(OnscreenVertex, texCoord);
+    texCoordAttribute.location = 1;
 
     VertexInputLayout vertexInputLayout{};
     vertexInputLayout.mode = VertexMode::kVertex;
-    vertexInputLayout.stride = sizeof(OffscreenVertex);
-    vertexInputLayout.attributes = { positionAttribute, colorAttribute };
+    vertexInputLayout.stride = sizeof(OnscreenVertex);
+    vertexInputLayout.attributes = { positionAttribute, texCoordAttribute };
 
     VertexStage vertexStage{
         { vertexShaderModule.get(), "main" },
@@ -287,7 +273,7 @@ void JuneVulkanService1::createOffscreenRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.appDir / "offscreen.frag.spv", m_descriptor.appHandle);
+        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.appDir / "onscreen.frag.spv", m_descriptor.appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
@@ -298,40 +284,25 @@ void JuneVulkanService1::createOffscreenRenderPipeline()
     // fragment
 
     FragmentStage::Target target{};
-    target.format = m_offscreen.renderTexture->getFormat();
+    target.format = m_swapchain->getTextureFormat();
 
     FragmentStage fragmentStage{
-        { fragmentShaderModule.get(), "main" }, { target }
+        { fragmentShaderModule.get(), "main" },
+        { target }
     };
 
     // depth/stencil
 
     // render pipeline
     RenderPipelineDescriptor descriptor{
-        m_offscreen.renderPipelineLayout.get(),
+        m_onscreen.renderPipelineLayout.get(),
         inputAssemblyStage,
         vertexStage,
         rasterizationStage,
         fragmentStage
     };
 
-    m_offscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
-}
-
-void JuneVulkanService1::createCamera()
-{
-    m_camera = std::make_unique<PerspectiveCamera>(45.0f,
-                                                   m_descriptor.width / static_cast<float>(m_descriptor.height),
-                                                   0.1f,
-                                                   1000.0f);
-
-    // auto halfWidth = m_width / 2.0f;
-    // auto halfHeight = m_height / 2.0f;
-    // m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
-    //                                                 -halfHeight, halfHeight,
-    //                                                 -1000, 1000);
-
-    m_camera->lookAt(glm::vec3(0.0f, 0.0f, 1000.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0));
+    m_onscreen.renderPipeline = m_device->createRenderPipeline(descriptor);
 }
 
 } // namespace jipu

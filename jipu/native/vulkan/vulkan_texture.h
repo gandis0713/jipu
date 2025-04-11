@@ -18,7 +18,8 @@ namespace jipu
 enum class VulkanTextureOwner
 {
     kSelf,
-    kSwapchain
+    kSwapchain,
+    kExternal
 };
 
 struct VulkanTextureDescriptor
