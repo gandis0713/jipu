@@ -75,8 +75,8 @@ void JuneVulkanService3::begin()
         imageInfo.mipLevels = 1;
         imageInfo.arrayLayers = 1;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -204,8 +204,8 @@ void JuneVulkanService3::createOffscreenTexture()
     vulkanTextureDescriptor.mipLevels = 1;
     vulkanTextureDescriptor.arrayLayers = 1;
     vulkanTextureDescriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-    vulkanTextureDescriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
-    vulkanTextureDescriptor.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    vulkanTextureDescriptor.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+    vulkanTextureDescriptor.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     vulkanTextureDescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
