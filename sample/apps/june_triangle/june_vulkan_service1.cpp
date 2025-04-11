@@ -23,40 +23,37 @@ JuneVulkanService1::~JuneVulkanService1()
 void JuneVulkanService1::begin()
 {
     JuneVulkanService::begin();
+}
 
-    // Create Shared Memory
-    JuneSharedMemory juneSharedMemory{};
-    {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
-        };
+void JuneVulkanService1::work()
+{
+}
 
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
+JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
+{
+    return m_sharingObjects;
+}
 
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
-#endif
-        juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingObjects.sharedMemory = juneSharedMemory;
-    }
+void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+{
+    m_sharedObjects = sharedObjects;
+    m_sharingObjects.sharedMemory = sharedObjects.sharedMemory;
 
-    // Create ApiMemory
+    // Create ApiMemory and connect
     JuneApiMemory apiMemory{};
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+        juneApiMemoryDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
 
         apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
         m_sharingObjects.apiMemories.push_back(apiMemory);
+
+        // for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
+        // {
+        //     m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
+        //     m_juneAPI.ApiMemoryConnect(m_juneApiMemory, sharedApiMemory);
+        // }
     }
 
     // Create Resource
@@ -86,19 +83,6 @@ void JuneVulkanService1::begin()
         VkImage image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
         assert(image);
     }
-}
-
-void JuneVulkanService1::work()
-{
-}
-
-JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
-{
-    return m_sharingObjects;
-}
-
-void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
 }
 
 } // namespace jipu
