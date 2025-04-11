@@ -4,6 +4,7 @@
 #include "june_gles_service2.h"
 #include "june_vulkan_service1.h"
 #include "june_vulkan_service2.h"
+#include "june_vulkan_service3.h"
 
 namespace jipu
 {
@@ -61,6 +62,7 @@ void JuneTriangleSample::init()
         m_glesService2->setSharedObjects(glesService1SharingObject);
     }
 
+    if (false)
     {
         {
             m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{ .fps = 30,
@@ -101,6 +103,28 @@ void JuneTriangleSample::init()
 
         auto vulkanService1SharingObject = m_vulkanService1->getSharingObject();
         m_vulkanService2->setSharedObjects(vulkanService1SharingObject);
+    }
+
+    {
+        {
+            m_vulkanService3 = std::make_unique<JuneVulkanService3>(JuneServiceDescriptor{ .fps = 30,
+                                                                                           .width = m_width,
+                                                                                           .height = m_height,
+                                                                                           .windowHandle = getWindowHandle(),
+                                                                                           .appPath = m_appPath,
+                                                                                           .appDir = m_appDir,
+                                                                                           .appHandle = m_handle });
+
+            m_vulkanService3->start(JuneServiceStartDescriptor{
+                .callback = [this]() {
+                    m_vulkanService3Ready = true;
+                } });
+        }
+
+        while (!m_vulkanService3Ready)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
     }
 }
 

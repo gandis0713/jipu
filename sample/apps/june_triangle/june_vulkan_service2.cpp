@@ -30,8 +30,6 @@ void JuneVulkanService2::work()
     if (!m_isShared)
         return;
 
-    return;
-
     auto renderView = m_swapchain->acquireNextTextureView();
 
     ColorAttachment attachment{

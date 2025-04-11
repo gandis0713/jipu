@@ -15,6 +15,8 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
+const char kExtensionNameAndroidAHardwareBuffer[] = "VK_ANDROID_external_memory_android_hardware_buffer";
+
 namespace jipu
 {
 
@@ -297,6 +299,11 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
     std::vector<const char*> requiredDeviceExtensions;
 
     requiredDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    requiredDeviceExtensions.push_back(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+    requiredDeviceExtensions.push_back(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+#endif
 
     // TODO: check extension supported.
     if (m_physicalDevice->getVulkanPhysicalDeviceInfo().portabilitySubset)
