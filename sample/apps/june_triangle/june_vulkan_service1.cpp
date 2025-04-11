@@ -111,6 +111,36 @@ void JuneVulkanService1::begin()
 
 void JuneVulkanService1::work()
 {
+    ColorAttachment attachment{
+        .renderView = m_offscreen.renderTextureView.get()
+    };
+    attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
+    attachment.loadOp = LoadOp::kClear;
+    attachment.storeOp = StoreOp::kStore;
+
+    RenderPassEncoderDescriptor renderPassDescriptor{
+        .colorAttachments = { attachment }
+    };
+
+    CommandEncoderDescriptor commandDescriptor{};
+    auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+
+    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+    renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
+    renderPassEncoder->setBindGroup(0, m_offscreen.bindGroup.get());
+    renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
+    renderPassEncoder->setScissor(0, 0, m_descriptor.width, m_descriptor.height);
+    renderPassEncoder->setViewport(0, 0, m_descriptor.width, m_descriptor.height, 0, 1);
+    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
+    renderPassEncoder->end();
+
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+
+    auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
+    vulkanQueue->submit({ commandBuffer.get() });
+
+    spdlog::debug("submit");
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
@@ -325,8 +355,8 @@ void JuneVulkanService1::createCamera()
                                                    0.1f,
                                                    1000.0f);
 
-    // auto halfWidth = m_width / 2.0f;
-    // auto halfHeight = m_height / 2.0f;
+    // auto halfWidth = m_descriptor.width / 2.0f;
+    // auto halfHeight = m_descriptor.height / 2.0f;
     // m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
     //                                                 -halfHeight, halfHeight,
     //                                                 -1000, 1000);

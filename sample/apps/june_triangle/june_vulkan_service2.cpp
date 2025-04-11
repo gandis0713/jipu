@@ -29,6 +29,42 @@ void JuneVulkanService2::work()
 {
     if (!m_isShared)
         return;
+
+    return;
+
+    auto renderView = m_swapchain->acquireNextTextureView();
+
+    ColorAttachment attachment{
+        .renderView = renderView
+    };
+    attachment.clearValue = { 0.0, 0.0, 0.0, 0.0 };
+    attachment.loadOp = LoadOp::kClear;
+    attachment.storeOp = StoreOp::kStore;
+
+    RenderPassEncoderDescriptor renderPassDescriptor{
+        .colorAttachments = { attachment }
+    };
+
+    CommandEncoderDescriptor commandDescriptor{};
+    auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+
+    auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
+    renderPassEncoder->setPipeline(m_onscreen.renderPipeline.get());
+    renderPassEncoder->setBindGroup(0, m_onscreen.bindGroup.get());
+    renderPassEncoder->setVertexBuffer(0, m_onscreen.vertexBuffer.get());
+    renderPassEncoder->setIndexBuffer(m_onscreen.indexBuffer.get(), IndexFormat::kUint16);
+    renderPassEncoder->setScissor(0, 0, m_descriptor.width, m_descriptor.height);
+    renderPassEncoder->setViewport(0, 0, m_descriptor.width, m_descriptor.height, 0, 1);
+    renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
+    renderPassEncoder->end();
+
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+
+    auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
+    vulkanQueue->submit({ commandBuffer.get() });
+    m_swapchain->present();
+
+    spdlog::debug("present");
 }
 
 JuneServiceShareObjects JuneVulkanService2::getSharingObject() const
@@ -51,11 +87,11 @@ void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedO
         apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
         m_sharingObjects.apiMemories.push_back(apiMemory);
 
-        // for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
-        // {
-        //     m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
-        //     m_juneAPI.ApiMemoryConnect(m_juneApiMemory, sharedApiMemory);
-        // }
+        for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
+        {
+            m_juneAPI.ApiMemoryConnect(sharedApiMemory, apiMemory);
+            m_juneAPI.ApiMemoryConnect(apiMemory, sharedApiMemory);
+        }
     }
 
     // Create Resource

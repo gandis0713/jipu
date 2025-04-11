@@ -23,6 +23,7 @@
 
 #include "jipu/native/vulkan/vulkan_adapter.h"
 #include "jipu/native/vulkan/vulkan_device.h"
+#include "jipu/native/vulkan/vulkan_queue.h"
 
 namespace jipu
 {
