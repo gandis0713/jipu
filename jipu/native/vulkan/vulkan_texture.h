@@ -72,6 +72,7 @@ public:
     VulkanMemory getVulkanMemory() const;
     VulkanTextureResource getVulkanTextureResource() const;
 
+    void setCurrentLayout(VkImageLayout layout, uint32_t mipLevel = 0);
     VkImageLayout getCurrentLayout(uint32_t mipLevel = 0) const;
     /// @brief generate final layout by usage.
     /// @return VKImageLayout
@@ -79,7 +80,6 @@ public:
 
     /// @brief record pipeline barrier command, but not submitted.
     void cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
-    void cmdPipelineBarrier2(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier);
 
     VulkanTextureOwner getOwner() const;
     bool isDepthStencil() const;

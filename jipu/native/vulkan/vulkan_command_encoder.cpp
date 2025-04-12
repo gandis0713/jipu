@@ -95,6 +95,22 @@ std::unique_ptr<CommandBuffer> VulkanCommandEncoder::finish(const CommandBufferD
     return std::make_unique<VulkanCommandBuffer>(this, descriptor);
 }
 
+void VulkanCommandEncoder::imageTransition(VulkanTexture* texture,
+                                           VkImageMemoryBarrier imageBarrier,
+                                           VkPipelineStageFlags srcStageMask,
+                                           VkPipelineStageFlags dstStageMask)
+{
+    VulkanImageTransitionCommand command{
+        { .type = CommandType::kImageTransition },
+        .texture = texture,
+        .barrier = imageBarrier,
+        .srcStage = srcStageMask,
+        .dstStage = dstStageMask
+    };
+
+    m_commands.push_back(std::make_unique<VulkanImageTransitionCommand>(std::move(command)));
+}
+
 void VulkanCommandEncoder::addCommand(std::unique_ptr<Command> command)
 {
     switch (command->type)

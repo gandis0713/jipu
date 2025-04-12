@@ -147,6 +147,11 @@ void VulkanCommandResourceSynchronizer::resolveQuerySet(ResolveQuerySetCommand* 
     // do nothing.
 }
 
+void VulkanCommandResourceSynchronizer::imageTransition(VulkanImageTransitionCommand* command)
+{
+    command->texture->setCurrentLayout(command->barrier.newLayout, command->barrier.subresourceRange.baseMipLevel);
+}
+
 ResourceSyncResult VulkanCommandResourceSynchronizer::finish()
 {
     return ResourceSyncResult{ .notSyncedOperationResourceInfos = m_operationResourceInfos };

@@ -149,6 +149,9 @@ VulkanCommandRecordResult VulkanCommandRecorder::record()
         case CommandType::kExecuteBundle:
             executeBundle(reinterpret_cast<ExecuteBundleCommand*>(command.get()));
             break;
+        case CommandType::kImageTransition:
+            imageTransition(reinterpret_cast<VulkanImageTransitionCommand*>(command.get()));
+            break;
         default:
             throw std::runtime_error("Unknown command type.");
             break;
@@ -432,6 +435,21 @@ void VulkanCommandRecorder::executeBundle(ExecuteBundleCommand* command)
         auto vkCommandBuffer = vulkanRenderBundle->getCommandBuffer(info);
         m_commandBuffer->getDevice()->vkAPI.CmdExecuteCommands(m_commandBuffer->getVkCommandBuffer(), 1, &vkCommandBuffer);
     }
+}
+
+void VulkanCommandRecorder::imageTransition(VulkanImageTransitionCommand* command)
+{
+    m_commandResourceSyncronizer.imageTransition(command);
+    m_commandBuffer->getDevice()->vkAPI.CmdPipelineBarrier(m_commandBuffer->getVkCommandBuffer(),
+                                                           command->srcStage,
+                                                           command->dstStage,
+                                                           VK_DEPENDENCY_BY_REGION_BIT,
+                                                           0,
+                                                           nullptr,
+                                                           0,
+                                                           nullptr,
+                                                           1,
+                                                           &command->barrier);
 }
 
 void VulkanCommandRecorder::draw(DrawCommand* command)

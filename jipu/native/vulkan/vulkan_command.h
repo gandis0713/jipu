@@ -13,6 +13,7 @@
 namespace jipu
 {
 
+class VulkanTexture;
 class VulkanRenderPass;
 class VulkanFramebuffer;
 
@@ -54,6 +55,9 @@ enum class CommandType
     kResolveQuerySet,
 
     kWriteTimestamp,
+
+    // for only vulkan
+    kImageTransition
 };
 
 struct Command
@@ -232,6 +236,15 @@ struct SetVertexBufferCommand : public Command
 
 struct WriteTimestampCommand : public Command
 {
+};
+
+// for vulkan only
+struct VulkanImageTransitionCommand : public Command
+{
+    VulkanTexture* texture{ nullptr };
+    VkImageMemoryBarrier barrier{};
+    VkPipelineStageFlags srcStage{ VK_PIPELINE_STAGE_NONE };
+    VkPipelineStageFlags dstStage{ VK_PIPELINE_STAGE_NONE };
 };
 
 } // namespace jipu

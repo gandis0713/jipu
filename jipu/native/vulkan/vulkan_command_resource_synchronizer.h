@@ -66,6 +66,9 @@ public:
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
+    // for vulkan only
+    void imageTransition(VulkanImageTransitionCommand* command);
+
 public:
     ResourceSyncResult finish();
 

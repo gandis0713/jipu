@@ -56,6 +56,12 @@ public:
     std::unique_ptr<CommandBuffer> finish(const CommandBufferDescriptor& descriptor) override;
 
 public:
+    void imageTransition(VulkanTexture* texture,
+                         VkImageMemoryBarrier imageBarrier,
+                         VkPipelineStageFlags srcStageMask,
+                         VkPipelineStageFlags dstStageMask);
+
+public:
     void addCommand(std::unique_ptr<Command> command);
     CommandEncodingResult extractResult();
 

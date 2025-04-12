@@ -185,6 +185,17 @@ VkImageLayout VulkanTexture::getFinalLayout() const
     }
 }
 
+void VulkanTexture::setCurrentLayout(VkImageLayout layout, uint32_t mipLevel)
+{
+    if (mipLevel >= m_layouts.size())
+    {
+        spdlog::error("Invalid mip level: {}, mipLevels: {}", mipLevel, m_layouts.size());
+        return;
+    }
+
+    m_layouts[mipLevel] = layout;
+}
+
 VkImageLayout VulkanTexture::getCurrentLayout(uint32_t mipLevel) const
 {
     if (mipLevel >= m_layouts.size())
@@ -213,32 +224,6 @@ void VulkanTexture::cmdPipelineBarrier(VkCommandBuffer commandBuffer, VkPipeline
     }
 
     vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
-}
-
-void VulkanTexture::cmdPipelineBarrier2(VkCommandBuffer commandBuffer, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkImageMemoryBarrier barrier)
-{
-    if (commandBuffer == VK_NULL_HANDLE)
-        throw std::runtime_error("Command buffer is null handle to set pipeline barrier in texture.");
-
-    auto vulkanDevice = downcast(m_device);
-    const VulkanAPI& vkAPI = vulkanDevice->vkAPI;
-
-    const auto& range = barrier.subresourceRange;
-    for (auto i = range.baseMipLevel; i < range.baseMipLevel + range.levelCount; ++i)
-    {
-        // TODO: check old layout is same.
-
-        m_layouts[i] = barrier.newLayout;
-    }
-
-    VkCommandBufferBeginInfo commandBufferBeginInfo{};
-    commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    commandBufferBeginInfo.pInheritanceInfo = nullptr; // Optional
-
-    vkAPI.BeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
-    vkAPI.CmdPipelineBarrier(commandBuffer, srcStage, dstStage, VK_DEPENDENCY_BY_REGION_BIT, 0, nullptr, 0, nullptr, 1, &barrier);
-    vkAPI.EndCommandBuffer(commandBuffer);
 }
 
 VulkanTextureOwner VulkanTexture::getOwner() const

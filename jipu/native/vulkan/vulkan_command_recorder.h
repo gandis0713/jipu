@@ -77,6 +77,9 @@ private:
     // query
     void resolveQuerySet(ResolveQuerySetCommand* command);
 
+    // for vulkan only
+    void imageTransition(VulkanImageTransitionCommand* command);
+
 private:
     VulkanCommandBuffer* m_commandBuffer = nullptr;
     VulkanCommandRecorderDescriptor m_descriptor{};
