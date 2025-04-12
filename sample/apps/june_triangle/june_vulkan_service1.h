@@ -3,8 +3,6 @@
 #include "june/june.h"
 #include "june_vulkan_service.h"
 
-#include "jipu/native/vulkan/vulkan_queue.h"
-
 #include "camera.h"
 #include "file.h"
 
