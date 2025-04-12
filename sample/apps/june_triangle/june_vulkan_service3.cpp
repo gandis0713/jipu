@@ -146,6 +146,51 @@ void JuneVulkanService3::work()
         m_queue->submit({ commandBuffer.get() });
     }
 
+    // image layout transition
+    {
+        auto renderTextureView = m_offscreen.renderTextureView.get();
+        auto vulkanRenderTexture = static_cast<VulkanTexture*>(renderTextureView->getTexture());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        auto vulkanCommandBuffer = static_cast<VulkanCommandBuffer*>(commandBuffer.get());
+
+        VkCommandBuffer vkCommandBuffer = vulkanCommandBuffer->getVkCommandBuffer();
+
+        {
+            VkImageSubresourceRange range;
+            range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            range.baseMipLevel = 0;
+            range.levelCount = 1;
+            range.baseArrayLayer = 0;
+            range.layerCount = 1;
+
+            // change layout
+            {
+                VkImageMemoryBarrier barrier{};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.pNext = VK_NULL_HANDLE;
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // or vulkanRenderTexture->getCurrentLayout(0);
+                barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.image = vulkanRenderTexture->getVkImage();
+                barrier.subresourceRange = range;
+
+                VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+                vulkanRenderTexture->cmdPipelineBarrier2(vkCommandBuffer, srcStage, dstStage, barrier);
+            }
+        }
+
+        m_queue->submit({ commandBuffer.get() });
+    }
+
     // onscreen pass
     {
         ColorAttachment attachment{

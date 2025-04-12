@@ -22,8 +22,10 @@
 #include "jipu/native/swapchain.h"
 
 #include "jipu/native/vulkan/vulkan_adapter.h"
+#include "jipu/native/vulkan/vulkan_command_buffer.h"
 #include "jipu/native/vulkan/vulkan_device.h"
 #include "jipu/native/vulkan/vulkan_queue.h"
+#include "jipu/native/vulkan/vulkan_surface.h"
 
 namespace jipu
 {
