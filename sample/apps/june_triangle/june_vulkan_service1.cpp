@@ -74,6 +74,41 @@ void JuneVulkanService1::begin()
 
 void JuneVulkanService1::work()
 {
+    {
+        auto offscreenRenderView = m_offscreen.renderTextureView.get();
+        auto offscreenVulkanRenderTexture = static_cast<VulkanTexture*>(offscreenRenderView->getTexture());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = VK_NULL_HANDLE;
+        barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL; // or offscreenVulkanRenderTexture->getCurrentLayout(0);
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = offscreenVulkanRenderTexture->getVkImage();
+        barrier.subresourceRange = range;
+
+        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+        vulkanCommandEncoder->imageTransition(offscreenVulkanRenderTexture, barrier, srcStage, dstStage);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
+
     ColorAttachment attachment{
         .renderView = m_offscreen.renderTextureView.get()
     };
@@ -103,7 +138,40 @@ void JuneVulkanService1::work()
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
     vulkanQueue->submit({ commandBuffer.get() });
 
-    // spdlog::debug("service1 work");
+    {
+        auto offscreenRenderView = m_offscreen.renderTextureView.get();
+        auto offscreenVulkanRenderTexture = static_cast<VulkanTexture*>(offscreenRenderView->getTexture());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = VK_NULL_HANDLE;
+        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_NONE;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // or offscreenVulkanRenderTexture->getCurrentLayout(0);
+        barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = offscreenVulkanRenderTexture->getVkImage();
+        barrier.subresourceRange = range;
+
+        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+        vulkanCommandEncoder->imageTransition(offscreenVulkanRenderTexture, barrier, srcStage, dstStage);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
@@ -165,8 +233,8 @@ void JuneVulkanService1::createOffscreenTexture()
     vulkanTextureDescriptor.mipLevels = 1;
     vulkanTextureDescriptor.arrayLayers = 1;
     vulkanTextureDescriptor.samples = VK_SAMPLE_COUNT_1_BIT;
-    vulkanTextureDescriptor.tiling = VK_IMAGE_TILING_OPTIMAL;
-    vulkanTextureDescriptor.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    vulkanTextureDescriptor.tiling = VK_IMAGE_TILING_LINEAR;
+    vulkanTextureDescriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     vulkanTextureDescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
@@ -174,6 +242,44 @@ void JuneVulkanService1::createOffscreenTexture()
 
     auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     m_offscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);
+
+    // image layout transition
+    {
+        auto vulkanRenderTexture = static_cast<VulkanTexture*>(m_offscreen.renderTexture.get());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        {
+            VkImageSubresourceRange range;
+            range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            range.baseMipLevel = 0;
+            range.levelCount = 1;
+            range.baseArrayLayer = 0;
+            range.layerCount = 1;
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.pNext = VK_NULL_HANDLE;
+            barrier.srcAccessMask = VK_ACCESS_NONE;
+            barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; // or vulkanRenderTexture->getCurrentLayout(0);
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = vulkanRenderTexture->getVkImage();
+            barrier.subresourceRange = range;
+
+            VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+            VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+            vulkanCommandEncoder->imageTransition(vulkanRenderTexture, barrier, srcStage, dstStage);
+        }
+
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
 }
 
 void JuneVulkanService1::createOffscreenTextureView()

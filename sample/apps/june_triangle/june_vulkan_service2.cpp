@@ -30,6 +30,41 @@ void JuneVulkanService2::work()
     if (!m_isShared)
         return;
 
+    {
+        auto onscreenReadTextureView = m_onscreen.renderTextureView.get();
+        auto onscreenReadVulkanRenderTexture = static_cast<VulkanTexture*>(onscreenReadTextureView->getTexture());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = VK_NULL_HANDLE;
+        barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL; // or onscreenReadVulkanRenderTexture->getCurrentLayout(0);
+        barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = onscreenReadVulkanRenderTexture->getVkImage();
+        barrier.subresourceRange = range;
+
+        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+        vulkanCommandEncoder->imageTransition(onscreenReadVulkanRenderTexture, barrier, srcStage, dstStage);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
+
     auto renderView = m_swapchain->acquireNextTextureView();
 
     ColorAttachment attachment{
@@ -62,7 +97,40 @@ void JuneVulkanService2::work()
     vulkanQueue->submit({ commandBuffer.get() });
     m_swapchain->present();
 
-    // spdlog::debug("service2 work");
+    {
+        auto onscreenReadTextureView = m_onscreen.renderTextureView.get();
+        auto onscreenReadVulkanRenderTexture = static_cast<VulkanTexture*>(onscreenReadTextureView->getTexture());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        VkImageSubresourceRange range;
+        range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        range.baseMipLevel = 0;
+        range.levelCount = 1;
+        range.baseArrayLayer = 0;
+        range.layerCount = 1;
+
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = VK_NULL_HANDLE;
+        barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_NONE;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // or onscreenReadVulkanRenderTexture->getCurrentLayout(0);
+        barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = onscreenReadVulkanRenderTexture->getVkImage();
+        barrier.subresourceRange = range;
+
+        VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+        vulkanCommandEncoder->imageTransition(onscreenReadVulkanRenderTexture, barrier, srcStage, dstStage);
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
 }
 
 JuneServiceShareObjects JuneVulkanService2::getSharingObject() const
@@ -184,13 +252,13 @@ void JuneVulkanService2::createOnscreenTexture()
             barrier.srcAccessMask = VK_ACCESS_NONE;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; // or vulkanRenderTexture->getCurrentLayout(0);
-            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = vulkanRenderTexture->getVkImage();
             barrier.subresourceRange = range;
 
-            VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
             VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
             vulkanCommandEncoder->imageTransition(vulkanRenderTexture, barrier, srcStage, dstStage);
