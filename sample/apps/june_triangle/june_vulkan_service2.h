@@ -22,8 +22,9 @@ public:
     void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
 
 private:
-    void createOffscreenTexture();
-    void createOffscreenTextureView();
+    void createOnscreenImage();
+    void createOnscreenTexture();
+    void createOnscreenTextureView();
     void createOnscreenVertexBuffer();
     void createOnscreenIndexBuffer();
     void createOnscreenSampler();
@@ -35,7 +36,6 @@ private:
     JuneServiceShareObjects m_sharingObjects{};
     JuneServiceShareObjects m_sharedObjects{};
 
-    VkImage m_image{ VK_NULL_HANDLE };
     bool m_isShared{ false };
 
 private:
@@ -43,9 +43,6 @@ private:
     {
         std::unique_ptr<Texture> renderTexture = nullptr;
         std::unique_ptr<TextureView> renderTextureView = nullptr;
-    } m_offscreen;
-    struct
-    {
         std::unique_ptr<Buffer> vertexBuffer = nullptr;
         std::unique_ptr<Buffer> indexBuffer = nullptr;
         std::unique_ptr<Sampler> sampler = nullptr;
@@ -53,6 +50,8 @@ private:
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
+        VkImage image{ VK_NULL_HANDLE };
+        JuneApiMemory apiMemory{ nullptr };
     } m_onscreen;
 
     struct MVP

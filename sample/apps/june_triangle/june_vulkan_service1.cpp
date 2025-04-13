@@ -55,48 +55,11 @@ void JuneVulkanService1::begin()
         juneApiMemoryDescriptor.nextInChain = nullptr;
         juneApiMemoryDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
 
-        apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+        m_offscreen.apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
         m_sharingObjects.apiMemories.push_back(apiMemory);
-
-        // for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
-        // {
-        //     m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
-        //     m_juneAPI.ApiMemoryConnect(m_juneApiMemory, sharedApiMemory);
-        // }
     }
 
-    // Create Resource
-    {
-        VkImageCreateInfo imageInfo = {};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
-        imageInfo.extent.width = m_descriptor.width;
-        imageInfo.extent.height = m_descriptor.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-        juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-        juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
-
-        JuneResourceDescriptor juneResourceDescriptor{};
-        juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-
-        m_image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
-        assert(m_image);
-    }
-
+    createOffscreenImage();
     createOffscreenTexture();
     createOffscreenTextureView();
     createOffscreenVertexBuffer();
@@ -140,7 +103,7 @@ void JuneVulkanService1::work()
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
     vulkanQueue->submit({ commandBuffer.get() });
 
-    spdlog::debug("submit");
+    // spdlog::debug("service1 work");
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
@@ -151,6 +114,40 @@ JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
 void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
 {
     m_sharedObjects = sharedObjects;
+}
+
+void JuneVulkanService1::createOffscreenImage()
+{
+
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+    imageInfo.extent.width = m_descriptor.width;
+    imageInfo.extent.height = m_descriptor.height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
+    juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+    juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+
+    JuneResourceDescriptor juneResourceDescriptor{};
+    juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+
+    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(m_offscreen.apiMemory,
+                                                                                    &juneResourceDescriptor));
+    assert(m_offscreen.image);
 }
 
 void JuneVulkanService1::createOffscreenTexture()
@@ -173,7 +170,7 @@ void JuneVulkanService1::createOffscreenTexture()
     vulkanTextureDescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
-    vulkanTextureDescriptor.image = m_image;
+    vulkanTextureDescriptor.image = m_offscreen.image;
 
     auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     m_offscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);

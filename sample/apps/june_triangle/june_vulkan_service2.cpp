@@ -62,7 +62,7 @@ void JuneVulkanService2::work()
     vulkanQueue->submit({ commandBuffer.get() });
     m_swapchain->present();
 
-    spdlog::debug("present");
+    // spdlog::debug("service2 work");
 }
 
 JuneServiceShareObjects JuneVulkanService2::getSharingObject() const
@@ -76,52 +76,23 @@ void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedO
     m_sharingObjects.sharedMemory = sharedObjects.sharedMemory;
 
     // Create ApiMemory and connect
-    JuneApiMemory apiMemory{};
     {
         JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
         juneApiMemoryDescriptor.nextInChain = nullptr;
         juneApiMemoryDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
 
-        apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
-        m_sharingObjects.apiMemories.push_back(apiMemory);
+        m_onscreen.apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
 
         for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
         {
-            m_juneAPI.ApiMemoryConnect(sharedApiMemory, apiMemory);
-            m_juneAPI.ApiMemoryConnect(apiMemory, sharedApiMemory);
+            m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_onscreen.apiMemory);
+            m_juneAPI.ApiMemoryConnect(m_onscreen.apiMemory, sharedApiMemory);
         }
     }
 
-    // Create Resource
-    {
-        VkImageCreateInfo imageInfo = {};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-        imageInfo.extent.width = m_descriptor.width;
-        imageInfo.extent.height = m_descriptor.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-        imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-        juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-        juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
-
-        JuneResourceDescriptor juneResourceDescriptor{};
-        juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-
-        m_image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
-        assert(m_image);
-    }
-
-    createOffscreenTexture();
-    createOffscreenTextureView();
+    createOnscreenImage();
+    createOnscreenTexture();
+    createOnscreenTextureView();
 
     createOnscreenVertexBuffer();
     createOnscreenIndexBuffer();
@@ -133,7 +104,40 @@ void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedO
     m_isShared = true;
 }
 
-void JuneVulkanService2::createOffscreenTexture()
+void JuneVulkanService2::createOnscreenImage()
+{
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+    imageInfo.extent.width = m_descriptor.width;
+    imageInfo.extent.height = m_descriptor.height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+    imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
+    juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+    juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+
+    JuneResourceDescriptor juneResourceDescriptor{};
+    juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+
+    m_onscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(m_onscreen.apiMemory,
+                                                                                   &juneResourceDescriptor));
+    assert(m_onscreen.image);
+}
+
+void JuneVulkanService2::createOnscreenTexture()
 {
     VulkanTextureDescriptor vulkanTextureDescriptor{};
     vulkanTextureDescriptor.imageType = VK_IMAGE_TYPE_2D;
@@ -153,19 +157,57 @@ void JuneVulkanService2::createOffscreenTexture()
     vulkanTextureDescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
-    vulkanTextureDescriptor.image = m_image;
+    vulkanTextureDescriptor.image = m_onscreen.image;
 
     auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
-    m_offscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);
+    m_onscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);
+
+    // image layout transition
+    {
+        auto vulkanRenderTexture = static_cast<VulkanTexture*>(m_onscreen.renderTexture.get());
+
+        CommandEncoderDescriptor commandDescriptor{};
+        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
+        {
+            VkImageSubresourceRange range;
+            range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            range.baseMipLevel = 0;
+            range.levelCount = 1;
+            range.baseArrayLayer = 0;
+            range.layerCount = 1;
+
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.pNext = VK_NULL_HANDLE;
+            barrier.srcAccessMask = VK_ACCESS_NONE;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED; // or vulkanRenderTexture->getCurrentLayout(0);
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = vulkanRenderTexture->getVkImage();
+            barrier.subresourceRange = range;
+
+            VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+
+            vulkanCommandEncoder->imageTransition(vulkanRenderTexture, barrier, srcStage, dstStage);
+        }
+
+        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+        m_queue->submit({ commandBuffer.get() });
+    }
 }
 
-void JuneVulkanService2::createOffscreenTextureView()
+void JuneVulkanService2::createOnscreenTextureView()
 {
     TextureViewDescriptor textureViewDescriptor;
     textureViewDescriptor.aspect = TextureAspectFlagBits::kColor;
     textureViewDescriptor.dimension = TextureViewDimension::k2D;
 
-    m_offscreen.renderTextureView = m_offscreen.renderTexture->createTextureView(textureViewDescriptor);
+    m_onscreen.renderTextureView = m_onscreen.renderTexture->createTextureView(textureViewDescriptor);
 }
 
 void JuneVulkanService2::createOnscreenVertexBuffer()
@@ -235,7 +277,7 @@ void JuneVulkanService2::createOnscreenBindGroup()
 
     TextureBinding textureBinding{
         .index = 1,
-        .textureView = m_offscreen.renderTextureView.get()
+        .textureView = m_onscreen.renderTextureView.get()
     };
 
     BindGroupDescriptor descriptor{

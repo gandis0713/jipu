@@ -22,7 +22,9 @@ void JuneTriangleSample::init()
 {
     JuneSample::init();
 
-    if (false)
+    uint32_t serviceCase = 2;
+
+    if (serviceCase == 0)
     {
         {
             m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 30,
@@ -62,7 +64,7 @@ void JuneTriangleSample::init()
         m_glesService2->setSharedObjects(glesService1SharingObject);
     }
 
-    if (false)
+    if (serviceCase == 1)
     {
         {
             m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{ .fps = 30,
@@ -105,6 +107,7 @@ void JuneTriangleSample::init()
         m_vulkanService2->setSharedObjects(vulkanService1SharingObject);
     }
 
+    if (serviceCase == 2)
     {
         {
             m_vulkanService3 = std::make_unique<JuneVulkanService3>(JuneServiceDescriptor{ .fps = 30,
