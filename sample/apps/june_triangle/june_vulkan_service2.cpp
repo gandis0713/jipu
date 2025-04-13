@@ -97,6 +97,8 @@ void JuneVulkanService2::work()
     vulkanQueue->submit({ commandBuffer.get() });
     m_swapchain->present();
 
+    spdlog::info("present onscreen");
+
     {
         auto onscreenReadTextureView = m_onscreen.renderTextureView.get();
         auto onscreenReadVulkanRenderTexture = static_cast<VulkanTexture*>(onscreenReadTextureView->getTexture());

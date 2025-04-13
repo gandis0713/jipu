@@ -331,7 +331,7 @@ void JuneVulkanService3::createOffscreenImage()
     imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
+    // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
     JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
     juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
@@ -366,7 +366,7 @@ void JuneVulkanService3::createOffscreenTexture()
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
     vulkanTextureDescriptor.image = m_offscreen.image;
-    vulkanTextureDescriptor.flags = VK_IMAGE_CREATE_ALIAS_BIT;
+    // vulkanTextureDescriptor.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
     auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     m_offscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);
@@ -599,7 +599,7 @@ void JuneVulkanService3::createOnscreenImage()
     imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
+    // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
     JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
     juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
@@ -634,7 +634,7 @@ void JuneVulkanService3::createOnscreenTexture()
     vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
     vulkanTextureDescriptor.image = m_onscreen.image;
-    vulkanTextureDescriptor.flags = VK_IMAGE_CREATE_ALIAS_BIT;
+    // vulkanTextureDescriptor.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
     auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
     m_onscreen.renderTexture = vulkanDevice->createTexture(vulkanTextureDescriptor);

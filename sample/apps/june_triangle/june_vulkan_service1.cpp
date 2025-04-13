@@ -172,6 +172,8 @@ void JuneVulkanService1::work()
         auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
         m_queue->submit({ commandBuffer.get() });
     }
+
+    spdlog::info("present offscreen");
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
