@@ -160,12 +160,12 @@ void JuneGLESService2::begin()
 
 void JuneGLESService2::work()
 {
-    if (!m_juneApiMemory)
+    if (!m_juneResource)
         return;
 
-    JuneApiMemoryBeginAccessDescriptor descriptor{};
-    m_juneAPI.ApiMemoryBeginAccess(m_juneApiMemory, &descriptor);
-    spdlog::debug("service2 begin access");
+    JuneResourceBeginAccessDescriptor descriptor{};
+    m_juneAPI.ResourceBeginAccess(m_juneResource, &descriptor);
+    spdlog::debug("gles service2 begin access");
 
     int count = 0;
 
@@ -249,9 +249,9 @@ void JuneGLESService2::work()
         spdlog::debug("service2 is rendered in pbuffer.");
     }
 
-    spdlog::debug("service2 end access");
-    JuneApiMemoryEndAccessDescriptor endDescriptor{};
-    m_juneAPI.ApiMemoryEndAccess(m_juneApiMemory, &endDescriptor);
+    spdlog::debug("gles service2 end access");
+    JuneResourceEndAccessDescriptor endDescriptor{};
+    m_juneAPI.ResourceEndAccess(m_juneResource, &endDescriptor);
 
     glDisableVertexAttribArray(posLoc);
     CHECK_GL_ERROR();
@@ -276,29 +276,28 @@ void JuneGLESService2::setSharedObjects(const JuneServiceShareObjects& sharedObj
 {
     m_sharedObjects = sharedObjects;
 
-    // Create ApiMemory and connect
-    {
-        JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
-        juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
-
-        m_juneApiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
-
-        for (const auto& sharedApiMemory : m_sharedObjects.apiMemories)
-        {
-            m_juneAPI.ApiMemoryConnect(sharedApiMemory, m_juneApiMemory);
-            m_juneAPI.ApiMemoryConnect(m_juneApiMemory, sharedApiMemory);
-        }
-    }
-
-    // Create Resource
+    // Create Resource and connect
     {
         JuneResourceEGLImageDescriptor juneResourceEGLImageDescriptor{};
         juneResourceEGLImageDescriptor.chain.sType = JuneStype_EGLImageResourceDescriptor;
+
         JuneResourceDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
+        juneResourceDescriptor.sharedMemory = m_sharedObjects.sharedMemory;
 
-        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(m_juneApiMemory, &juneResourceDescriptor));
+        m_juneResource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+
+        for (const auto& sharedResource : m_sharedObjects.apiResources)
+        {
+            m_juneAPI.ResourceConnect(sharedResource, m_juneResource);
+            m_juneAPI.ResourceConnect(m_juneResource, sharedResource);
+        }
+    }
+
+    // Get Resource
+    {
+        JuneGetResourceDescriptor juneGetResourceDescriptor{};
+        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ResourceGetResource(m_juneResource, &juneGetResourceDescriptor));
     }
 }
 

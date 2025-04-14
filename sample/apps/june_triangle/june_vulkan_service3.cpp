@@ -48,14 +48,71 @@ void JuneVulkanService3::begin()
         m_sharingObjects.sharedMemory = juneSharedMemory;
     }
 
-    // Create ApiMemory and connect
+    // Create Resource and connect
     {
-        JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
-        juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = juneSharedMemory;
+        {
+            VkImageCreateInfo imageInfo = {};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+            imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+            imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+            imageInfo.extent.width = m_descriptor.width;
+            imageInfo.extent.height = m_descriptor.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+            imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
 
-        m_offscreen.apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
-        m_onscreen.apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
+            JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
+            juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+            juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+
+            JuneResourceDescriptor juneResourceDescriptor{};
+            juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+            juneResourceDescriptor.sharedMemory = juneSharedMemory;
+
+            m_offscreen.resource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+        }
+        {
+
+            VkImageCreateInfo imageInfo = {};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+            imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+            imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+            imageInfo.extent.width = m_descriptor.width;
+            imageInfo.extent.height = m_descriptor.height;
+            imageInfo.extent.depth = 1;
+            imageInfo.mipLevels = 1;
+            imageInfo.arrayLayers = 1;
+            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+            imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
+
+            JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
+            juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+            juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+
+            JuneResourceDescriptor juneResourceDescriptor{};
+            juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+            juneResourceDescriptor.sharedMemory = juneSharedMemory;
+
+            m_onscreen.resource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+        }
     }
 
     // Create Resource
@@ -313,35 +370,9 @@ void JuneVulkanService3::setSharedObjects(const JuneServiceShareObjects& sharedO
 
 void JuneVulkanService3::createOffscreenImage()
 {
-    VkImageCreateInfo imageInfo = {};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
-    imageInfo.extent.width = m_descriptor.width;
-    imageInfo.extent.height = m_descriptor.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
-    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
-
-    JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-    juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-    juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
-
-    JuneResourceDescriptor juneResourceDescriptor{};
-    juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-
-    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(m_offscreen.apiMemory,
-                                                                                    &juneResourceDescriptor));
+    JuneGetResourceDescriptor juneGetResourceDescriptor{};
+    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ResourceGetResource(m_offscreen.resource,
+                                                                                &juneGetResourceDescriptor));
     assert(m_offscreen.image);
 }
 
@@ -581,35 +612,9 @@ void JuneVulkanService3::createOffscreenRenderPipeline()
 
 void JuneVulkanService3::createOnscreenImage()
 {
-    VkImageCreateInfo imageInfo = {};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
-    imageInfo.extent.width = m_descriptor.width;
-    imageInfo.extent.height = m_descriptor.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
-    imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    // imageInfo.flags = VK_IMAGE_CREATE_ALIAS_BIT;
-
-    JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-    juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-    juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
-
-    JuneResourceDescriptor juneResourceDescriptor{};
-    juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-
-    m_onscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(m_onscreen.apiMemory,
-                                                                                   &juneResourceDescriptor));
+    JuneGetResourceDescriptor juneGetResourceDescriptor{};
+    m_onscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ResourceGetResource(m_onscreen.resource,
+                                                                               &juneGetResourceDescriptor));
     assert(m_onscreen.image);
 }
 

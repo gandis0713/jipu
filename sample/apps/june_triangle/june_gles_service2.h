@@ -36,7 +36,7 @@ public:
 private:
     GLuint m_programObject2{ 0 };
     GLuint m_texture{ 0 };
-    JuneApiMemory m_juneApiMemory{ nullptr };
+    JuneResource m_juneResource{ nullptr };
     EGLImageKHR m_eglImage{ nullptr };
 
     JuneServiceShareObjects m_sharedObjects{};

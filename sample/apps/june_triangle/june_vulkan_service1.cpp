@@ -48,15 +48,38 @@ void JuneVulkanService1::begin()
         m_sharingObjects.sharedMemory = juneSharedMemory;
     }
 
-    // Create ApiMemory and connect
-    JuneApiMemory apiMemory{};
+    // Create Resource and connect
+    JuneResource resource{};
     {
-        JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
-        juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+        VkImageCreateInfo imageInfo = {};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+        imageInfo.extent.width = m_descriptor.width;
+        imageInfo.extent.height = m_descriptor.height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        m_offscreen.apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
-        m_sharingObjects.apiMemories.push_back(apiMemory);
+        JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
+        juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+        juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+
+        JuneResourceDescriptor juneResourceDescriptor{};
+        juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+        juneResourceDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+
+        m_offscreen.resource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+        m_sharingObjects.apiResources.push_back(resource);
     }
 
     createOffscreenImage();
@@ -74,13 +97,14 @@ void JuneVulkanService1::begin()
 
 void JuneVulkanService1::work()
 {
+
+    CommandEncoderDescriptor commandDescriptor{};
+    auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
+    auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
+
     {
         auto offscreenRenderView = m_offscreen.renderTextureView.get();
         auto offscreenVulkanRenderTexture = static_cast<VulkanTexture*>(offscreenRenderView->getTexture());
-
-        CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
-        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
 
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -105,8 +129,6 @@ void JuneVulkanService1::work()
         VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
         vulkanCommandEncoder->imageTransition(offscreenVulkanRenderTexture, barrier, srcStage, dstStage);
-        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
-        m_queue->submit({ commandBuffer.get() });
     }
 
     ColorAttachment attachment{
@@ -120,9 +142,6 @@ void JuneVulkanService1::work()
         .colorAttachments = { attachment }
     };
 
-    CommandEncoderDescriptor commandDescriptor{};
-    auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
-
     auto renderPassEncoder = commandEncoder->beginRenderPass(renderPassDescriptor);
     renderPassEncoder->setPipeline(m_offscreen.renderPipeline.get());
     renderPassEncoder->setBindGroup(0, m_offscreen.bindGroup.get());
@@ -133,18 +152,9 @@ void JuneVulkanService1::work()
     renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
     renderPassEncoder->end();
 
-    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
-
-    auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
-    vulkanQueue->submit({ commandBuffer.get() });
-
     {
         auto offscreenRenderView = m_offscreen.renderTextureView.get();
         auto offscreenVulkanRenderTexture = static_cast<VulkanTexture*>(offscreenRenderView->getTexture());
-
-        CommandEncoderDescriptor commandDescriptor{};
-        auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
-        auto vulkanCommandEncoder = static_cast<VulkanCommandEncoder*>(commandEncoder.get());
 
         VkImageSubresourceRange range;
         range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -169,11 +179,20 @@ void JuneVulkanService1::work()
         VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
         vulkanCommandEncoder->imageTransition(offscreenVulkanRenderTexture, barrier, srcStage, dstStage);
-        auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
-        m_queue->submit({ commandBuffer.get() });
     }
 
-    spdlog::info("present offscreen");
+    auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
+    auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
+
+    JuneResourceBeginAccessDescriptor descriptor{};
+    m_juneAPI.ResourceBeginAccess(m_offscreen.resource, &descriptor);
+    spdlog::debug("vulkan service1 begin access");
+
+    vulkanQueue->submit({ commandBuffer.get() });
+
+    spdlog::debug("vulkan service1 end access");
+    JuneResourceEndAccessDescriptor endDescriptor{};
+    m_juneAPI.ResourceEndAccess(m_offscreen.resource, &endDescriptor);
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
@@ -189,34 +208,9 @@ void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedO
 void JuneVulkanService1::createOffscreenImage()
 {
 
-    VkImageCreateInfo imageInfo = {};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
-    imageInfo.extent.width = m_descriptor.width;
-    imageInfo.extent.height = m_descriptor.height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
-    imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-    juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-    juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
-
-    JuneResourceDescriptor juneResourceDescriptor{};
-    juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-
-    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ApiMemoryCreateResource(m_offscreen.apiMemory,
-                                                                                    &juneResourceDescriptor));
+    JuneGetResourceDescriptor juneGetResourceDescriptor{};
+    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ResourceGetResource(m_offscreen.resource,
+                                                                                &juneGetResourceDescriptor));
     assert(m_offscreen.image);
 }
 

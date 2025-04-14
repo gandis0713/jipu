@@ -22,7 +22,7 @@ void JuneTriangleSample::init()
 {
     JuneSample::init();
 
-    uint32_t serviceCase = 4;
+    uint32_t serviceCase = 0;
 
     if (serviceCase == 0)
     {

@@ -152,34 +152,33 @@ void JuneGLESService1::begin()
         m_sharingObjects.sharedMemory = juneSharedMemory;
     }
 
-    // Create ApiMemory
-    JuneApiMemory apiMemory{};
-    {
-        JuneApiMemoryDescriptor juneApiMemoryDescriptor{};
-        juneApiMemoryDescriptor.nextInChain = nullptr;
-        juneApiMemoryDescriptor.sharedMemory = juneSharedMemory;
-
-        apiMemory = m_juneAPI.ApiContextCreateApiMemory(m_juneApiContext, &juneApiMemoryDescriptor);
-        m_sharingObjects.apiMemories.push_back(apiMemory);
-    }
-
     // Create Resource
+    JuneResource resource{};
     {
         JuneResourceEGLImageDescriptor juneResourceEGLImageDescriptor{};
         juneResourceEGLImageDescriptor.chain.sType = JuneStype_EGLImageResourceDescriptor;
+
         JuneResourceDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
+        juneResourceDescriptor.sharedMemory = juneSharedMemory;
 
-        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ApiMemoryCreateResource(apiMemory, &juneResourceDescriptor));
+        resource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+        m_sharingObjects.apiResources.push_back(resource);
+    }
+
+    // Get Resource
+    {
+        JuneGetResourceDescriptor juneGetResourceDescriptor{};
+        m_eglImage = static_cast<EGLImageKHR>(m_juneAPI.ResourceGetResource(resource, &juneGetResourceDescriptor));
     }
 }
 
 void JuneGLESService1::work()
 {
-    for (auto& apiMemory : m_sharingObjects.apiMemories)
+    for (auto& resource : m_sharingObjects.apiResources)
     {
-        JuneApiMemoryBeginAccessDescriptor descriptor{};
-        m_juneAPI.ApiMemoryBeginAccess(apiMemory, &descriptor);
+        JuneResourceBeginAccessDescriptor descriptor{};
+        m_juneAPI.ResourceBeginAccess(resource, &descriptor);
         spdlog::debug("service1 begin access");
     }
 
@@ -268,11 +267,11 @@ void JuneGLESService1::work()
         spdlog::debug("service1 is rendered in pbuffer.");
     }
 
-    for (auto& apiMemory : m_sharingObjects.apiMemories)
+    for (auto& resource : m_sharingObjects.apiResources)
     {
         spdlog::debug("service1 end access");
-        JuneApiMemoryEndAccessDescriptor descriptor{};
-        m_juneAPI.ApiMemoryEndAccess(apiMemory, &descriptor);
+        JuneResourceEndAccessDescriptor descriptor{};
+        m_juneAPI.ResourceEndAccess(resource, &descriptor);
     }
 
     glDisableVertexAttribArray(posLoc);

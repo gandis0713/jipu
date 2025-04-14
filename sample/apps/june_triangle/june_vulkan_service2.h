@@ -51,7 +51,7 @@ private:
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         VkImage image{ VK_NULL_HANDLE };
-        JuneApiMemory apiMemory{ nullptr };
+        JuneResource resource{ nullptr };
     } m_onscreen;
 
     struct MVP

@@ -63,7 +63,7 @@ private:
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-        JuneApiMemory apiMemory{};
+        JuneResource resource{};
         VkImage image{ VK_NULL_HANDLE };
     } m_offscreen;
 
@@ -78,7 +78,7 @@ private:
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-        JuneApiMemory apiMemory{};
+        JuneResource resource{};
         VkImage image{ VK_NULL_HANDLE };
     } m_onscreen;
 
