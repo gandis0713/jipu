@@ -22,7 +22,6 @@ public:
     void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
 
 private:
-    void createOnscreenImage();
     void createOnscreenTexture();
     void createOnscreenTextureView();
     void createOnscreenVertexBuffer();
@@ -51,7 +50,8 @@ private:
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         VkImage image{ VK_NULL_HANDLE };
-        JuneResource resource{ nullptr };
+        VkDeviceMemory deviceMemory{ VK_NULL_HANDLE };
+        JuneFence fence{ nullptr };
     } m_onscreen;
 
     struct MVP

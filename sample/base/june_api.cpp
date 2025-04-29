@@ -35,11 +35,9 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
     GET_PROC(ApiContextCreateFence);
     GET_PROC(ApiContextDestroy);
 
-    GET_PROC(ResourceBeginAccess);
-    GET_PROC(ResourceEndAccess);
-    GET_PROC(ResourceConnect);
-    GET_PROC(ResourceGetResource);
-    GET_PROC(ResourceDestroy);
+    GET_PROC(SharedMemoryBeginAccess);
+    GET_PROC(SharedMemoryEndAccess);
+    GET_PROC(SharedMemoryDestroy);
 
     GET_PROC(FenceDestroy);
 

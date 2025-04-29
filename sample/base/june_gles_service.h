@@ -45,6 +45,10 @@ protected:
     PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{ nullptr };
     PFNEGLDUPNATIVEFENCEFDANDROIDPROC eglDupNativeFenceFDANDROID{ nullptr };
     PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR{ nullptr };
+    PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR{ nullptr };
+    PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR{ nullptr };
+    PFNEGLGETSYNCATTRIBKHRPROC eglGetSyncAttribKHR{ nullptr };
+    PFNEGLWAITSYNCKHRPROC eglWaitSyncKHR{ nullptr };
 };
 
 } // namespace jipu

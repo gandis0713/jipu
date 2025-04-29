@@ -22,7 +22,6 @@ public:
     void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
 
 private:
-    void createOffscreenImage();
     void createOffscreenTexture();
     void createOffscreenTextureView();
     void createOffscreenVertexBuffer();
@@ -32,7 +31,6 @@ private:
     void createOffscreenBindGroup();
     void createOffscreenRenderPipeline();
 
-    void createOnscreenImage();
     void createOnscreenTexture();
     void createOnscreenTextureView();
     void createOnscreenVertexBuffer();
@@ -46,12 +44,6 @@ private:
     void updateOffscreenUniformBuffer();
 
 private:
-    JuneServiceShareObjects m_sharingObjects{};
-    JuneServiceShareObjects m_sharedObjects{};
-
-    bool m_isShared{ false };
-
-private:
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;
@@ -63,8 +55,10 @@ private:
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-        JuneResource resource{};
+        VkDeviceMemory deviceMemory{ VK_NULL_HANDLE };
         VkImage image{ VK_NULL_HANDLE };
+        JuneFence fence{ nullptr };
+        JuneSharedMemory sharedMemory{ nullptr };
     } m_offscreen;
 
     struct
@@ -78,8 +72,9 @@ private:
         std::unique_ptr<BindGroup> bindGroup = nullptr;
         std::unique_ptr<PipelineLayout> renderPipelineLayout = nullptr;
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
-        JuneResource resource{};
+        VkDeviceMemory deviceMemory{ VK_NULL_HANDLE };
         VkImage image{ VK_NULL_HANDLE };
+        JuneFence fence{ nullptr };
     } m_onscreen;
 
     struct MVP

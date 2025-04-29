@@ -112,6 +112,30 @@ void JuneGLESService::begin()
         {
             throw std::runtime_error("eglCreateSyncKHR function pointer acquisition failed");
         }
+
+        eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)eglGetProcAddress("eglDestroySyncKHR");
+        if (!eglDestroySyncKHR)
+        {
+            throw std::runtime_error("eglDestroySyncKHR function pointer acquisition failed");
+        }
+
+        eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)eglGetProcAddress("eglClientWaitSyncKHR");
+        if (!eglClientWaitSyncKHR)
+        {
+            throw std::runtime_error("eglClientWaitSyncKHR function pointer acquisition failed");
+        }
+
+        eglGetSyncAttribKHR = (PFNEGLGETSYNCATTRIBKHRPROC)eglGetProcAddress("eglGetSyncAttribKHR");
+        if (!eglGetSyncAttribKHR)
+        {
+            throw std::runtime_error("eglGetSyncAttribKHR function pointer acquisition failed");
+        }
+
+        eglWaitSyncKHR = (PFNEGLWAITSYNCKHRPROC)eglGetProcAddress("eglWaitSyncKHR");
+        if (!eglWaitSyncKHR)
+        {
+            throw std::runtime_error("eglWaitSyncKHR function pointer acquisition failed");
+        }
     }
 
     // initialize June

@@ -21,11 +21,9 @@ struct JuneAPI
     JuneProcApiContextCreateFence ApiContextCreateFence = nullptr;
     JuneProcApiContextDestroy ApiContextDestroy = nullptr;
 
-    JuneProcResourceBeginAccess ResourceBeginAccess = nullptr;
-    JuneProcResourceEndAccess ResourceEndAccess = nullptr;
-    JuneProcResourceConnect ResourceConnect = nullptr;
-    JuneProcResourceGetResource ResourceGetResource = nullptr;
-    JuneProcResourceDestroy ResourceDestroy = nullptr;
+    JuneProcSharedMemoryBeginAccess SharedMemoryBeginAccess = nullptr;
+    JuneProcSharedMemoryEndAccess SharedMemoryEndAccess = nullptr;
+    JuneProcSharedMemoryDestroy SharedMemoryDestroy = nullptr;
 
     JuneProcFenceDestroy FenceDestroy = nullptr;
 };

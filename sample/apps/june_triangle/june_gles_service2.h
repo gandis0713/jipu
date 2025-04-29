@@ -36,9 +36,12 @@ public:
 private:
     GLuint m_programObject2{ 0 };
     GLuint m_texture{ 0 };
-    JuneResource m_juneResource{ nullptr };
-    EGLImageKHR m_eglImage{ nullptr };
 
+    EGLImageKHR m_eglImage{ nullptr };
+    EGLClientBuffer m_eglClientBuffer{ nullptr };
+
+    JuneFence m_fence{ nullptr };
+    JuneServiceShareObjects m_sharingObjects{};
     JuneServiceShareObjects m_sharedObjects{};
 };
 

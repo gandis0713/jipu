@@ -38,7 +38,7 @@ struct JuneServiceStopDescriptor
 struct JuneServiceShareObjects
 {
     JuneSharedMemory sharedMemory;
-    std::vector<JuneResource> apiResources;
+    std::vector<JuneFence> fences;
 };
 
 class JuneService

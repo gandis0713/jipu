@@ -35,8 +35,13 @@ public:
 private:
     GLuint m_programObject1{ 0 };
     EGLImageKHR m_eglImage{ nullptr };
+    EGLClientBuffer m_eglClientBuffer{ nullptr };
+
+    JuneSharedMemory m_sharedMemory{ nullptr };
+    JuneFence m_fence{ nullptr };
 
     JuneServiceShareObjects m_sharingObjects{};
+    JuneServiceShareObjects m_sharedObjects{};
 };
 
 } // namespace jipu

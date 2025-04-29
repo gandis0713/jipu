@@ -25,7 +25,6 @@ void JuneVulkanService1::begin()
     JuneVulkanService::begin();
 
     // Create Shared Memory
-    JuneSharedMemory juneSharedMemory{};
     {
         JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
 #if defined(__ANDROID__) || defined(ANDROID)
@@ -44,12 +43,19 @@ void JuneVulkanService1::begin()
 
         juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
 #endif
-        juneSharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingObjects.sharedMemory = juneSharedMemory;
+        m_offscreen.sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        m_sharingObjects.sharedMemory = m_offscreen.sharedMemory;
     }
 
-    // Create Resource and connect
-    JuneResource resource{};
+    // Create Fence
+    {
+        JuneFenceDescriptor fenceDescriptor;
+        m_offscreen.fence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
+
+        m_sharingObjects.fences.push_back(m_offscreen.fence);
+    }
+
+    // Create Resource
     {
         VkImageCreateInfo imageInfo = {};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -70,19 +76,26 @@ void JuneVulkanService1::begin()
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+        JuneResourceVkImageCreateInfo vkImageCreateInfo;
+        vkImageCreateInfo.vkImageCreateInfo = &imageInfo;
+
+        JuneResourceVkImageResultInfo vkImageResultInfo;
+
         JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
         juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
-        juneResourceVkImageDescriptor.vkImageCreateInfo = &imageInfo;
+        juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
+        juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
 
         JuneResourceDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
         juneResourceDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
 
-        m_offscreen.resource = m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
-        m_sharingObjects.apiResources.push_back(resource);
+        m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+
+        m_offscreen.image = reinterpret_cast<VkImage>(vkImageResultInfo.vkImage);
+        m_offscreen.deviceMemory = reinterpret_cast<VkDeviceMemory>(vkImageResultInfo.vkDeviceMemory);
     }
 
-    createOffscreenImage();
     createOffscreenTexture();
     createOffscreenTextureView();
     createOffscreenVertexBuffer();
@@ -184,15 +197,29 @@ void JuneVulkanService1::work()
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
 
-    JuneResourceBeginAccessDescriptor descriptor{};
-    m_juneAPI.ResourceBeginAccess(m_offscreen.resource, &descriptor);
+    // JuneSharedMemoryExportedVkSemaphoreSyncObject waitExportedVkSemaphoreSyncObject{};
+    // {
+    //     JuneSharedMemorySyncInfo waitSyncInfo{};
+    //     waitSyncInfo.fences = m_sharedObjects.fences.data();
+    //     waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
+
+    //     waitExportedVkSemaphoreSyncObject.chain.sType = JuneSType_SharedMemoryExportedVkSemaphoreSyncObject;
+
+    //     JuneSharedMemoryExportedSyncObject exportedSyncObject{};
+    //     exportedSyncObject.nextInChain = &waitExportedVkSemaphoreSyncObject.chain;
+
+    //     JuneSharedMemoryBeginAccessDescriptor descriptor{};
+    //     descriptor.waitSyncInfo = &waitSyncInfo;
+    //     descriptor.exportedSyncObject = &exportedSyncObject;
+
+    //     m_juneAPI.SharedMemoryBeginAccess(m_offscreen.sharedMemory, &descriptor);
+    // }
+
     spdlog::debug("vulkan service1 begin access");
 
     vulkanQueue->submit({ commandBuffer.get() });
 
     spdlog::debug("vulkan service1 end access");
-    JuneResourceEndAccessDescriptor endDescriptor{};
-    m_juneAPI.ResourceEndAccess(m_offscreen.resource, &endDescriptor);
 }
 
 JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
@@ -203,15 +230,6 @@ JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
 void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
 {
     m_sharedObjects = sharedObjects;
-}
-
-void JuneVulkanService1::createOffscreenImage()
-{
-
-    JuneGetResourceDescriptor juneGetResourceDescriptor{};
-    m_offscreen.image = reinterpret_cast<VkImage>(m_juneAPI.ResourceGetResource(m_offscreen.resource,
-                                                                                &juneGetResourceDescriptor));
-    assert(m_offscreen.image);
 }
 
 void JuneVulkanService1::createOffscreenTexture()
