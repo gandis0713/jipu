@@ -1,9 +1,81 @@
 #include "june_gles_service.h"
 
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace jipu
 {
+
+GLuint compileShader(GLenum type, const char* source)
+{
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    GLint compiled;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled)
+    {
+        GLint infoLen = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+            free(infoLog);
+        }
+        glDeleteShader(shader);
+        return 0;
+    }
+    return shader;
+}
+
+GLuint createProgram(const char* vertexSource, const char* fragmentSource)
+{
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
+    if (!vertexShader)
+        return 0;
+
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+    if (!fragmentShader)
+        return 0;
+
+    GLuint program = glCreateProgram();
+    if (program == 0)
+        return 0;
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+
+    // 속성 위치 바인딩 (명시적으로 지정)
+    glBindAttribLocation(program, 0, "aPosition");
+    glBindAttribLocation(program, 1, "aTexCoord");
+
+    glLinkProgram(program);
+
+    GLint linked;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
+            spdlog::error("Failed to link program: {}", infoLog);
+            free(infoLog);
+        }
+        glDeleteProgram(program);
+        return 0;
+    }
+
+    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
+}
 
 JuneGLESService::JuneGLESService(const JuneServiceDescriptor& descriptor)
     : JuneService(descriptor)

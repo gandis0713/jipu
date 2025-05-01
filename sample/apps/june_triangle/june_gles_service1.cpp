@@ -4,106 +4,10 @@
 #include <spdlog/spdlog.h>
 #include <thread>
 
+#include "file.h"
+
 namespace jipu
 {
-
-namespace
-{
-
-#define CHECK_GL_ERROR()                                                   \
-    {                                                                      \
-        GLenum err = glGetError();                                         \
-        if (err != GL_NO_ERROR)                                            \
-        {                                                                  \
-            spdlog::error("GL get error: {}", static_cast<uint32_t>(err)); \
-        }                                                                  \
-    }
-
-const char* vertexShaderSource1 =
-    "attribute vec4 aPosition;            \n"
-    "void main() {                        \n"
-    "    gl_Position = aPosition;         \n"
-    "}                                    \n";
-const char* fragmentShaderSource1 =
-    "precision mediump float;             \n"
-    "uniform vec4 uColor;                 \n"
-    "void main() {                        \n"
-    "    gl_FragColor = uColor;           \n"
-    "}                                    \n";
-
-GLuint compileShader(GLenum type, const char* source)
-{
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, NULL);
-    glCompileShader(shader);
-
-    GLint compiled;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-            // 로그 출력 (실제 환경에서는 로그 출력 함수 사용)
-            free(infoLog);
-        }
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
-
-GLuint createProgram(const char* vertexSource, const char* fragmentSource)
-{
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
-    if (!vertexShader)
-        return 0;
-
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-    if (!fragmentShader)
-        return 0;
-
-    GLuint program = glCreateProgram();
-    if (program == 0)
-        return 0;
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-
-    // 속성 위치 바인딩 (명시적으로 지정)
-    glBindAttribLocation(program, 0, "aPosition");
-    glBindAttribLocation(program, 1, "aTexCoord");
-
-    glLinkProgram(program);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
-            spdlog::error("Failed to link program: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteProgram(program);
-        return 0;
-    }
-
-    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return program;
-}
-
-} // namespace
 
 JuneGLESService1::JuneGLESService1(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
@@ -120,7 +24,9 @@ void JuneGLESService1::begin()
 
     //
     {
-        m_programObject1 = createProgram(vertexShaderSource1, fragmentShaderSource1);
+        std::vector<char> vertex = utils::readFile(m_descriptor.appDir / "gles_service1_vert.glsl", m_descriptor.appHandle);
+        std::vector<char> fragment = utils::readFile(m_descriptor.appDir / "gles_service1_frag.glsl", m_descriptor.appHandle);
+        m_programObject1 = createProgram(vertex.data(), fragment.data());
         if (m_programObject1 == 0)
         {
             spdlog::debug("Failed to create program");

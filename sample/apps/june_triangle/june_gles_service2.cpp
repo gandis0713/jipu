@@ -1,139 +1,10 @@
 #include "june_gles_service2.h"
 
+#include "file.h"
 #include <spdlog/spdlog.h>
 
 namespace jipu
 {
-
-namespace
-{
-
-#define CHECK_GL_ERROR()                                                   \
-    {                                                                      \
-        GLenum err = glGetError();                                         \
-        if (err != GL_NO_ERROR)                                            \
-        {                                                                  \
-            spdlog::error("GL get error: {}", static_cast<uint32_t>(err)); \
-        }                                                                  \
-    }
-
-const char* vertexShaderSource2 =
-    "attribute vec4 aPosition;            \n"
-    "attribute vec2 aTexCoord;            \n"
-    "varying vec2 vTexCoord;              \n"
-    "void main() {                      \n"
-    "    gl_Position = aPosition;         \n"
-    "    vTexCoord = aTexCoord;           \n"
-    "}                                    \n";
-const char* fragmentShaderSource2 =
-    //     "precision mediump float;             \n"
-    //     "varying vec2 vTexCoord;              \n"
-    //     "uniform sampler2D uTexture;          \n"
-    //     "void main() {                        \n"
-    //     "    gl_FragColor = texture2D(uTexture, vTexCoord); \n"
-    //     "}                                    \n";
-    "precision mediump float;                                        \n"
-    "varying vec2 vTexCoord;                                             \n"
-    "uniform sampler2D uTexture;                                         \n"
-    "const int texWidth = 32;                                             \n"
-    "const int texHeight = 32;                                            \n"
-    "void main() {                                                     \n"
-    "    // 기준 색상을 texture의 첫번째 texel에서 샘플링                         \n"
-    "    vec4 refColor = texture2D(uTexture, vec2(0.5/float(texWidth),      \n"
-    "                                           0.5/float(texHeight)));    \n"
-    "    bool isUniform = true;                                          \n"
-    "    for (int y = 0; y < texHeight; y++) {                           \n"
-    "        for (int x = 0; x < texWidth; x++) {                        \n"
-    "            vec2 coord = vec2((float(x) + 0.5) / float(texWidth),    \n"
-    "                                (float(y) + 0.5) / float(texHeight));   \n"
-    "            vec4 currentColor = texture2D(uTexture, coord);         \n"
-    "            // 기준 색상과의 차이가 아주 작으면 동일하다고 판단                     \n"
-    "            if (distance(currentColor, refColor) > 0.001) {         \n"
-    "                isUniform = false;                                \n"
-    "            }                                                     \n"
-    "        }                                                         \n"
-    "    }                                                             \n"
-    "    // texture의 모든 색상이 동일하면 기준 색상을, 그렇지 않으면 원래 texture 색상을 출력       \n"
-    "    if (isUniform) {                                              \n"
-    "         gl_FragColor = texture2D(uTexture, vTexCoord);                                 \n"
-    "    } else {                                                      \n"
-    "         gl_FragColor = vec4(0.0, 0.0, 1.0, 1.0);           \n"
-    "    }                                                             \n"
-    "}                                                                 \n";
-
-GLuint compileShader(GLenum type, const char* source)
-{
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, NULL);
-    glCompileShader(shader);
-
-    GLint compiled;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-            // 로그 출력 (실제 환경에서는 로그 출력 함수 사용)
-            free(infoLog);
-        }
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
-
-GLuint createProgram(const char* vertexSource, const char* fragmentSource)
-{
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
-    if (!vertexShader)
-        return 0;
-
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-    if (!fragmentShader)
-        return 0;
-
-    GLuint program = glCreateProgram();
-    if (program == 0)
-        return 0;
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-
-    // 속성 위치 바인딩 (명시적으로 지정)
-    glBindAttribLocation(program, 0, "aPosition");
-    glBindAttribLocation(program, 1, "aTexCoord");
-
-    glLinkProgram(program);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
-            spdlog::error("Failed to link program: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteProgram(program);
-        return 0;
-    }
-
-    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return program;
-}
-
-} // namespace
 
 JuneGLESService2::JuneGLESService2(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
@@ -148,7 +19,9 @@ void JuneGLESService2::begin()
 {
     JuneGLESService::begin();
 
-    m_programObject2 = createProgram(vertexShaderSource2, fragmentShaderSource2);
+    std::vector<char> vertex = utils::readFile(m_descriptor.appDir / "gles_service2_vert.glsl", m_descriptor.appHandle);
+    std::vector<char> fragment = utils::readFile(m_descriptor.appDir / "gles_service2_frag.glsl", m_descriptor.appHandle);
+    m_programObject2 = createProgram(vertex.data(), fragment.data());
     if (m_programObject2 == 0)
     {
         throw std::runtime_error("Failed to create program");
