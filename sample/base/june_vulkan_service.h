@@ -69,7 +69,6 @@ protected:
     VkDevice m_vkDevice = VK_NULL_HANDLE;
 
 protected:
-    JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
 };
 

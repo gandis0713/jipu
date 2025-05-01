@@ -34,10 +34,6 @@ private:
     void createCamera();
 
 private:
-    JuneServiceShareObjects m_sharingObjects{};
-    JuneServiceShareObjects m_sharedObjects{};
-
-private:
     struct
     {
         std::unique_ptr<Texture> renderTexture = nullptr;

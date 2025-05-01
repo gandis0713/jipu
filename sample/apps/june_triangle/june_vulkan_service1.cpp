@@ -208,11 +208,11 @@ void JuneVulkanService1::work()
     //     JuneSharedMemoryExportedSyncObject exportedSyncObject{};
     //     exportedSyncObject.nextInChain = &waitExportedVkSemaphoreSyncObject.chain;
 
-    //     JuneSharedMemoryBeginAccessDescriptor descriptor{};
+    //     JuneApiContextBeginMemoryAccessDescriptor descriptor{};
     //     descriptor.waitSyncInfo = &waitSyncInfo;
     //     descriptor.exportedSyncObject = &exportedSyncObject;
 
-    //     m_juneAPI.SharedMemoryBeginAccess(m_offscreen.sharedMemory, &descriptor);
+    //     m_juneAPI.ApiContextBeginMemoryAccess(m_offscreen.sharedMemory, &descriptor);
     // }
 
     spdlog::debug("vulkan service1 begin access");

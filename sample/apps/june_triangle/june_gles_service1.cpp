@@ -193,11 +193,12 @@ void JuneGLESService1::work()
         JuneSharedMemoryExportedSyncObject exportedSyncObject{};
         exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
 
-        JuneSharedMemoryBeginAccessDescriptor descriptor{};
+        JuneApiContextBeginMemoryAccessDescriptor descriptor{};
+        descriptor.sharedMemory = m_sharedMemory;
         descriptor.waitSyncInfo = &waitSyncInfo;
         descriptor.exportedSyncObject = &exportedSyncObject;
 
-        m_juneAPI.SharedMemoryBeginAccess(m_sharedMemory, &descriptor);
+        m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
     }
 
     EGLSyncKHR* eglSyncs = static_cast<EGLSyncKHR*>(waitExportedEGLSyncKHRSyncObject.eglSyncs);
@@ -311,11 +312,11 @@ void JuneGLESService1::work()
         JuneSharedMemoryExportedSyncObject exportedSyncObject{};
         exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
 
-        JuneSharedMemoryEndAccessDescriptor descriptor{};
+        JuneApiContextEndMemoryAccessDescriptor descriptor{};
         descriptor.signalSyncInfo = &signalSyncInfo;
         descriptor.exportedSyncObject = &exportedSyncObject;
 
-        m_juneAPI.SharedMemoryEndAccess(m_sharedMemory, &descriptor);
+        m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
     }
 
     for (auto count = 0; count < signalExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)

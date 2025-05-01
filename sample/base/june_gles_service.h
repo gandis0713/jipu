@@ -33,13 +33,13 @@ protected:
     void end() override;
 
 protected:
+    JuneApiContext m_juneApiContext{ nullptr };
+
+protected:
     EGLContext m_eglContext = EGL_NO_CONTEXT;
     EGLDisplay m_eglDisplay = EGL_NO_DISPLAY;
     EGLConfig m_eglConfig = EGL_NO_CONFIG_KHR;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
-
-    JuneInstance m_juneInstance{ nullptr };
-    JuneApiContext m_juneApiContext{ nullptr };
 
     PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR{ nullptr };
     PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{ nullptr };

@@ -31,10 +31,6 @@ private:
     void createOnscreenBindGroup();
     void createOnscreenRenderPipeline();
 
-private:
-    JuneServiceShareObjects m_sharingObjects{};
-    JuneServiceShareObjects m_sharedObjects{};
-
     bool m_isShared{ false };
 
 private:

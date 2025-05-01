@@ -35,8 +35,8 @@ const char* fragmentShaderSource2 =
     "precision mediump float;                                        \n"
     "varying vec2 vTexCoord;                                             \n"
     "uniform sampler2D uTexture;                                         \n"
-    "const int texWidth = 4;                                             \n"
-    "const int texHeight = 4;                                            \n"
+    "const int texWidth = 128;                                             \n"
+    "const int texHeight = 128;                                            \n"
     "void main() {                                                     \n"
     "    // 기준 색상을 texture의 첫번째 texel에서 샘플링                         \n"
     "    vec4 refColor = texture2D(uTexture, vec2(0.5/float(texWidth),      \n"
@@ -179,11 +179,12 @@ void JuneGLESService2::work()
         JuneSharedMemoryExportedSyncObject exportedSyncObject{};
         exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
 
-        JuneSharedMemoryBeginAccessDescriptor descriptor{};
+        JuneApiContextBeginMemoryAccessDescriptor descriptor{};
+        descriptor.sharedMemory = m_sharedObjects.sharedMemory;
         descriptor.waitSyncInfo = &waitSyncInfo;
         descriptor.exportedSyncObject = &exportedSyncObject;
 
-        m_juneAPI.SharedMemoryBeginAccess(m_sharedObjects.sharedMemory, &descriptor);
+        m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
     }
 
     EGLSyncKHR* eglSyncs = static_cast<EGLSyncKHR*>(waitExportedEGLSyncKHRSyncObject.eglSyncs);
@@ -294,11 +295,11 @@ void JuneGLESService2::work()
         JuneSharedMemoryExportedSyncObject exportedSyncObject{};
         exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
 
-        JuneSharedMemoryEndAccessDescriptor descriptor{};
+        JuneApiContextEndMemoryAccessDescriptor descriptor{};
         descriptor.signalSyncInfo = &signalSyncInfo;
         descriptor.exportedSyncObject = &exportedSyncObject;
 
-        m_juneAPI.SharedMemoryEndAccess(m_sharedObjects.sharedMemory, &descriptor);
+        m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
     }
 
     for (auto count = 0; count < signalExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)

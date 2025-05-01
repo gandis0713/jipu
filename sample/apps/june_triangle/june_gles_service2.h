@@ -34,15 +34,14 @@ public:
     void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
 
 private:
+    JuneFence m_fence{ nullptr };
+
+private:
     GLuint m_programObject2{ 0 };
     GLuint m_texture{ 0 };
 
     EGLImageKHR m_eglImage{ nullptr };
     EGLClientBuffer m_eglClientBuffer{ nullptr };
-
-    JuneFence m_fence{ nullptr };
-    JuneServiceShareObjects m_sharingObjects{};
-    JuneServiceShareObjects m_sharedObjects{};
 };
 
 } // namespace jipu

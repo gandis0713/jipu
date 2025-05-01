@@ -79,6 +79,9 @@ protected:
 
     JuneInstance m_juneInstance{ nullptr };
 
+    JuneServiceShareObjects m_sharingObjects{};
+    JuneServiceShareObjects m_sharedObjects{};
+
 private:
     Runner m_runner;
 
