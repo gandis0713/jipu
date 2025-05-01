@@ -15,7 +15,7 @@ namespace
 GLuint compileShader(GLenum type, const char* source)
 {
     GLuint shader = glCreateShader(type);
-    if(shader == 0)
+    if (shader == 0)
     {
         spdlog::error("Failed to create shader");
         return shader;
@@ -147,14 +147,14 @@ void JuneGLESService1::begin()
 
     // Create Api Context
     {
-        JuneGLESApiContextDescriptor juenGLESApiContextDescriptor{};
-        juenGLESApiContextDescriptor.chain.sType = JuneSType_GLESApiContext;
-        juenGLESApiContextDescriptor.display = m_eglDisplay;
-        juenGLESApiContextDescriptor.context = m_eglContext;
+        JuneGLESContextDescriptor juenGLESContextDescriptor{};
+        juenGLESContextDescriptor.chain.sType = JuneSType_GLESContext;
+        juenGLESContextDescriptor.display = m_eglDisplay;
+        juenGLESContextDescriptor.context = m_eglContext;
 
         std::string label = "[GLESService1]";
         JuneApiContextDescriptor juneApiContextDescriptor;
-        juneApiContextDescriptor.nextInChain = &juenGLESApiContextDescriptor.chain;
+        juneApiContextDescriptor.nextInChain = &juenGLESContextDescriptor.chain;
         juneApiContextDescriptor.label.data = label.data();
         juneApiContextDescriptor.label.length = label.length();
         m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);

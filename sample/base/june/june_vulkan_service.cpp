@@ -38,14 +38,14 @@ void JuneVulkanService::begin()
         JuneInstanceDescriptor juneInstanceDescriptor{};
         m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 
-        JuneVulkanApiContextDescriptor juenVulkanApiContextDescriptor{};
-        juenVulkanApiContextDescriptor.chain.sType = JuneSType_VulkanApiContext;
-        juenVulkanApiContextDescriptor.vkInstance = m_vkInstance;
-        juenVulkanApiContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
-        juenVulkanApiContextDescriptor.vkDevice = m_vkDevice;
+        JuneVulkanContextDescriptor juenVulkanContextDescriptor{};
+        juenVulkanContextDescriptor.chain.sType = JuneSType_VulkanContext;
+        juenVulkanContextDescriptor.vkInstance = m_vkInstance;
+        juenVulkanContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+        juenVulkanContextDescriptor.vkDevice = m_vkDevice;
 
         JuneApiContextDescriptor juneApiContextDescriptor{
-            .nextInChain = &juenVulkanApiContextDescriptor.chain
+            .nextInChain = &juenVulkanContextDescriptor.chain
         };
         m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
     }
