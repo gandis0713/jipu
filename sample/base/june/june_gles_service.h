@@ -30,9 +30,6 @@
 namespace jipu
 {
 
-GLuint compileShader(GLenum type, const char* source);
-GLuint createProgram(const char* vertexSource, const char* fragmentSource);
-
 class JuneGLESService : public JuneService
 {
 

@@ -9,6 +9,88 @@
 namespace jipu
 {
 
+namespace
+{
+
+GLuint compileShader(GLenum type, const char* source)
+{
+    GLuint shader = glCreateShader(type);
+    if(shader == 0)
+    {
+        spdlog::error("Failed to create shader");
+        return shader;
+    }
+    glShaderSource(shader, 1, &source, NULL);
+    glCompileShader(shader);
+
+    GLint compiled;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (!compiled)
+    {
+        GLint infoLen = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+            free(infoLog);
+        }
+        glDeleteShader(shader);
+        return 0;
+    }
+    return shader;
+}
+
+GLuint createProgram(const char* vertexSource, const char* fragmentSource)
+{
+    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
+    CHECK_GL_ERROR();
+    if (!vertexShader)
+        return 0;
+
+    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
+    CHECK_GL_ERROR();
+    if (!fragmentShader)
+        return 0;
+
+    GLuint program = glCreateProgram();
+    CHECK_GL_ERROR();
+    if (program == 0)
+        return 0;
+
+    glAttachShader(program, vertexShader);
+    CHECK_GL_ERROR();
+    glAttachShader(program, fragmentShader);
+    CHECK_GL_ERROR();
+
+    glLinkProgram(program);
+
+    GLint linked;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (!linked)
+    {
+        GLint infoLen = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
+        if (infoLen > 1)
+        {
+            char* infoLog = (char*)malloc(infoLen);
+            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
+            spdlog::error("Failed to link program: {}", infoLog);
+            free(infoLog);
+        }
+        glDeleteProgram(program);
+        return 0;
+    }
+
+    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
+}
+
+} // namespace
+
 JuneGLESService1::JuneGLESService1(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
@@ -22,16 +104,22 @@ void JuneGLESService1::begin()
 {
     JuneGLESService::begin();
 
-    //
     {
         std::vector<char> vertex = utils::readFile(m_descriptor.appDir / "gles_service1_vert.glsl", m_descriptor.appHandle);
         std::vector<char> fragment = utils::readFile(m_descriptor.appDir / "gles_service1_frag.glsl", m_descriptor.appHandle);
         m_programObject1 = createProgram(vertex.data(), fragment.data());
         if (m_programObject1 == 0)
         {
-            spdlog::debug("Failed to create program");
-            return;
+            throw std::runtime_error("Failed to create program 1");
         }
+
+        glBindAttribLocation(m_programObject1, 0, "aPosition");
+    }
+
+    // Create June Instance
+    {
+        JuneInstanceDescriptor juneInstanceDescriptor{};
+        m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
     }
 
     // Create Shared Memory
@@ -55,6 +143,21 @@ void JuneGLESService1::begin()
 #endif
         m_sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
         m_sharingObjects.sharedMemory = m_sharedMemory;
+    }
+
+    // Create Api Context
+    {
+        JuneGLESApiContextDescriptor juenGLESApiContextDescriptor{};
+        juenGLESApiContextDescriptor.chain.sType = JuneSType_GLESApiContext;
+        juenGLESApiContextDescriptor.display = m_eglDisplay;
+        juenGLESApiContextDescriptor.context = m_eglContext;
+
+        std::string label = "[GLESService1]";
+        JuneApiContextDescriptor juneApiContextDescriptor;
+        juneApiContextDescriptor.nextInChain = &juenGLESApiContextDescriptor.chain;
+        juneApiContextDescriptor.label.data = label.data();
+        juneApiContextDescriptor.label.length = label.length();
+        m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
     }
 
     // Create Fence

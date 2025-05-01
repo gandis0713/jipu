@@ -1,8 +1,8 @@
 precision mediump float;
 varying vec2 vTexCoord;
 uniform sampler2D uTexture;
-const int texWidth = 32;
-const int texHeight = 32;
+const int texWidth = 4;
+const int texHeight = 4;
 
 void main()
 {
