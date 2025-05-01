@@ -1,7 +1,7 @@
 #pragma once
 
 #include "june/june.h"
-#include "june_sample.h"
+#include "june/june_sample.h"
 
 namespace jipu
 {

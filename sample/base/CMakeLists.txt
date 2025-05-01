@@ -56,16 +56,16 @@ list(APPEND SRC_FILES
     webgpu_api.h
     runner.cpp
     runner.h
-    june_api.cpp
-    june_api.h
-    june_sample.cpp
-    june_sample.h
-    june_service.cpp
-    june_service.h
-    june_gles_service.cpp
-    june_gles_service.h
-    june_vulkan_service.cpp
-    june_vulkan_service.h
+    june/june_api.cpp
+    june/june_api.h
+    june/june_sample.cpp
+    june/june_sample.h
+    june/june_service.cpp
+    june/june_service.h
+    june/june_gles_service.cpp
+    june/june_gles_service.h
+    june/june_vulkan_service.cpp
+    june/june_vulkan_service.h
 )
 
 if(ANDROID)

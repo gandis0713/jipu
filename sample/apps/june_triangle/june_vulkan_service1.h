@@ -1,7 +1,7 @@
 #pragma once
 
 #include "june/june.h"
-#include "june_vulkan_service.h"
+#include "june/june_vulkan_service.h"
 
 #include "camera.h"
 #include "file.h"

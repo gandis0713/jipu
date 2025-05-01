@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <mutex>
 #include <queue>
 #include <thread>
 #include <unordered_map>
@@ -81,6 +82,9 @@ protected:
 
     JuneServiceShareObjects m_sharingObjects{};
     JuneServiceShareObjects m_sharedObjects{};
+
+    mutable std::mutex m_sharedMutex;
+    bool m_shared = false;
 
 private:
     Runner m_runner;

@@ -35,8 +35,8 @@ const char* fragmentShaderSource2 =
     "precision mediump float;                                        \n"
     "varying vec2 vTexCoord;                                             \n"
     "uniform sampler2D uTexture;                                         \n"
-    "const int texWidth = 128;                                             \n"
-    "const int texHeight = 128;                                            \n"
+    "const int texWidth = 32;                                             \n"
+    "const int texHeight = 32;                                            \n"
     "void main() {                                                     \n"
     "    // 기준 색상을 texture의 첫번째 texel에서 샘플링                         \n"
     "    vec4 refColor = texture2D(uTexture, vec2(0.5/float(texWidth),      \n"
@@ -168,6 +168,15 @@ void JuneGLESService2::begin()
 
 void JuneGLESService2::work()
 {
+    {
+        std::lock_guard<std::mutex> lock(m_sharedMutex);
+        if (!m_shared)
+        {
+            spdlog::trace("GLES service2 is not shared.");
+            return;
+        }
+    }
+
     JuneSharedMemoryExportedEGLSyncKHRSyncObject waitExportedEGLSyncKHRSyncObject{};
     {
         JuneSharedMemorySyncInfo waitSyncInfo{};
@@ -191,10 +200,11 @@ void JuneGLESService2::work()
     for (auto count = 0; count < waitExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
     {
         EGLSyncKHR* currentEGLSync = eglSyncs + count;
-        EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, *currentEGLSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0);
+        EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, *currentEGLSync, EGL_SIGNALED_KHR, 0);
         if (eglResult == EGL_FALSE)
         {
-            spdlog::error("eglClientWaitSyncKHR failed");
+            CHECK_GL_ERROR();
+            spdlog::error("gles service2 eglClientWaitSyncKHR failed");
             return;
         }
     }
@@ -296,6 +306,7 @@ void JuneGLESService2::work()
         exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
 
         JuneApiContextEndMemoryAccessDescriptor descriptor{};
+        descriptor.sharedMemory = m_sharedObjects.sharedMemory;
         descriptor.signalSyncInfo = &signalSyncInfo;
         descriptor.exportedSyncObject = &exportedSyncObject;
 
@@ -350,6 +361,9 @@ void JuneGLESService2::setSharedObjects(const JuneServiceShareObjects& sharedObj
         m_eglImage = eglImageResultInfo.eglImage;
         m_eglClientBuffer = eglImageResultInfo.eglClientBuffer;
     }
+
+    std::lock_guard<std::mutex> lock(m_sharedMutex);
+    m_shared = true;
 }
 
 } // namespace jipu

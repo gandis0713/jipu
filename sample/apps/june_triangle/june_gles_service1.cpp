@@ -182,34 +182,41 @@ void JuneGLESService1::begin()
 
 void JuneGLESService1::work()
 {
-    JuneSharedMemoryExportedEGLSyncKHRSyncObject waitExportedEGLSyncKHRSyncObject{};
     {
-        JuneSharedMemorySyncInfo waitSyncInfo{};
-        waitSyncInfo.fences = m_sharedObjects.fences.data();
-        waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
-
-        waitExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
-
-        JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-        exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
-
-        JuneApiContextBeginMemoryAccessDescriptor descriptor{};
-        descriptor.sharedMemory = m_sharedMemory;
-        descriptor.waitSyncInfo = &waitSyncInfo;
-        descriptor.exportedSyncObject = &exportedSyncObject;
-
-        m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
-    }
-
-    EGLSyncKHR* eglSyncs = static_cast<EGLSyncKHR*>(waitExportedEGLSyncKHRSyncObject.eglSyncs);
-    for (auto count = 0; count < waitExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
-    {
-        EGLSyncKHR* currentEGLSync = eglSyncs + count;
-        EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, *currentEGLSync, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR, 0);
-        if (eglResult == EGL_FALSE)
+        std::lock_guard<std::mutex> lock(m_sharedMutex);
+        if (m_shared)
         {
-            spdlog::error("eglClientWaitSyncKHR failed");
-            return;
+            JuneSharedMemoryExportedEGLSyncKHRSyncObject waitExportedEGLSyncKHRSyncObject{};
+            {
+                JuneSharedMemorySyncInfo waitSyncInfo{};
+                waitSyncInfo.fences = m_sharedObjects.fences.data();
+                waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
+
+                waitExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
+
+                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
+                exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
+
+                JuneApiContextBeginMemoryAccessDescriptor descriptor{};
+                descriptor.sharedMemory = m_sharedMemory;
+                descriptor.waitSyncInfo = &waitSyncInfo;
+                descriptor.exportedSyncObject = &exportedSyncObject;
+
+                m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
+            }
+
+            EGLSyncKHR* eglSyncs = static_cast<EGLSyncKHR*>(waitExportedEGLSyncKHRSyncObject.eglSyncs);
+            for (auto count = 0; count < waitExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
+            {
+                EGLSyncKHR* currentEGLSync = eglSyncs + count;
+                EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, *currentEGLSync, EGL_SIGNALED_KHR, 0);
+                if (eglResult == EGL_FALSE)
+                {
+                    CHECK_GL_ERROR();
+                    spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
+                    return;
+                }
+            }
         }
     }
 
@@ -301,28 +308,36 @@ void JuneGLESService1::work()
     }
 
     spdlog::debug("gles service1 end access");
-    JuneSharedMemoryExportedEGLSyncKHRSyncObject signalExportedEGLSyncKHRSyncObject{};
+
     {
-        JuneSharedMemorySyncInfo signalSyncInfo{};
-        signalSyncInfo.fences = m_sharingObjects.fences.data();
-        signalSyncInfo.fenceCount = m_sharingObjects.fences.size();
+        std::lock_guard<std::mutex> lock(m_sharedMutex);
+        if (m_shared)
+        {
+            JuneSharedMemoryExportedEGLSyncKHRSyncObject signalExportedEGLSyncKHRSyncObject{};
+            {
+                JuneSharedMemorySyncInfo signalSyncInfo{};
+                signalSyncInfo.fences = m_sharingObjects.fences.data();
+                signalSyncInfo.fenceCount = m_sharingObjects.fences.size();
 
-        signalExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
+                signalExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
 
-        JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-        exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
+                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
+                exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
 
-        JuneApiContextEndMemoryAccessDescriptor descriptor{};
-        descriptor.signalSyncInfo = &signalSyncInfo;
-        descriptor.exportedSyncObject = &exportedSyncObject;
+                JuneApiContextEndMemoryAccessDescriptor descriptor{};
+                descriptor.sharedMemory = m_sharedMemory;
+                descriptor.signalSyncInfo = &signalSyncInfo;
+                descriptor.exportedSyncObject = &exportedSyncObject;
 
-        m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
-    }
+                m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
+            }
 
-    for (auto count = 0; count < signalExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
-    {
-        EGLSyncKHR currentEGLSync = *(static_cast<EGLSyncKHR*>(signalExportedEGLSyncKHRSyncObject.eglSyncs) + count);
-        // sharing currentEGLSync if needed.
+            for (auto count = 0; count < signalExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
+            {
+                EGLSyncKHR currentEGLSync = *(static_cast<EGLSyncKHR*>(signalExportedEGLSyncKHRSyncObject.eglSyncs) + count);
+                // sharing currentEGLSync if needed.
+            }
+        }
     }
 
     glDisableVertexAttribArray(posLoc);
@@ -345,6 +360,9 @@ JuneServiceShareObjects JuneGLESService1::getSharingObject() const
 void JuneGLESService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
 {
     m_sharedObjects = sharedObjects;
+
+    std::lock_guard<std::mutex> lock(m_sharedMutex);
+    m_shared = true;
 }
 
 } // namespace jipu

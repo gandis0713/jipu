@@ -61,8 +61,9 @@ void JuneTriangleSample::init()
         }
 
         auto glesService1SharingObject = m_glesService1->getSharingObject();
-        auto glesService2SharingObject = m_glesService2->getSharingObject();
         m_glesService2->setSharedObjects(glesService1SharingObject);
+
+        auto glesService2SharingObject = m_glesService2->getSharingObject();
         m_glesService1->setSharedObjects(glesService2SharingObject);
     }
 

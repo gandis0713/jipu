@@ -1,7 +1,7 @@
 #pragma once
 
 #include "june/june.h"
-#include "june_gles_service.h"
+#include "june/june_gles_service.h"
 
 #include <GLES/gl.h>
 #include <GLES/glext.h>
