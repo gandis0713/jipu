@@ -62,6 +62,8 @@ list(APPEND SRC_FILES
     june/june_sample.h
     june/june_service.cpp
     june/june_service.h
+    june/june_noapi_service.cpp
+    june/june_noapi_service.h
     june/june_gles_service.cpp
     june/june_gles_service.h
     june/june_vulkan_service.cpp

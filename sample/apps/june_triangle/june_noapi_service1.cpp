@@ -12,16 +12,16 @@ namespace
 
 } // namespace
 
-JuneService1::JuneService1(const JuneServiceDescriptor& descriptor)
+JuneNoApiService1::JuneNoApiService1(const JuneServiceDescriptor& descriptor)
     : JuneService(descriptor)
 {
 }
 
-JuneService1::~JuneService1()
+JuneNoApiService1::~JuneNoApiService1()
 {
 }
 
-void JuneService1::begin()
+void JuneNoApiService1::begin()
 {
     JuneService::begin();
 
@@ -33,12 +33,12 @@ void JuneService1::begin()
 
     // Create Api Context
     {
-        JuneCPUContextDescriptor juneCPUContextDescriptor{};
-        juneCPUContextDescriptor.chain.sType = JuneSType_CPUContext;
+        JuneNoApiContextDescriptor juneNoApiContextDescriptor{};
+        juneNoApiContextDescriptor.chain.sType = JuneSType_NoApiContext;
 
-        std::string label = "[CPUService1]";
+        std::string label = "[NoApiService1]";
         JuneApiContextDescriptor juneApiContextDescriptor;
-        juneApiContextDescriptor.nextInChain = &juneCPUContextDescriptor.chain;
+        juneApiContextDescriptor.nextInChain = &juneNoApiContextDescriptor.chain;
         juneApiContextDescriptor.label.data = label.data();
         juneApiContextDescriptor.label.length = label.length();
         m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
@@ -57,7 +57,7 @@ void JuneService1::begin()
     }
 }
 
-void JuneService1::work()
+void JuneNoApiService1::work()
 {
     {
         std::lock_guard<std::mutex> lock(m_sharedMutex);
@@ -85,6 +85,9 @@ void JuneService1::work()
     }
 
     spdlog::debug("no api service1 begin access");
+
+    {
+    }
 
     spdlog::debug("no api service1 end access");
 
@@ -114,12 +117,12 @@ void JuneService1::work()
     }
 }
 
-JuneServiceShareObjects JuneService1::getSharingObject() const
+JuneServiceShareObjects JuneNoApiService1::getSharingObject() const
 {
     return m_sharingObjects;
 }
 
-void JuneService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
+void JuneNoApiService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
 {
     m_sharedObjects = sharedObjects;
 
