@@ -25,8 +25,7 @@ protected:
     void begin() override;
     void end() override;
 
-protected:
-    JuneApiContext m_juneApiContext{ nullptr };
+    void createApiContext(const std::string& label) override;
 };
 
 } // namespace jipu

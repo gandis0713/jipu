@@ -26,7 +26,6 @@ void JuneVulkanService1::begin()
 
     // Create Shared Memory
     {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
 #if defined(__ANDROID__) || defined(ANDROID)
         AHardwareBuffer_Desc ahbDesc = {
             .width = m_descriptor.width,
@@ -36,23 +35,30 @@ void JuneVulkanService1::begin()
             .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
         };
 
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
+        AHardwareBuffer* ahb = nullptr;
 
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
+        int result = AHardwareBuffer_allocate(&ahbDesc, &ahb);
+        if (result != 0)
+        {
+            spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
+            return;
+        }
+
+        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
+        juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
+        juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = ahb;
+
+        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
+        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
+
+        m_sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
 #endif
-        m_offscreen.sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingObjects.sharedMemory = m_offscreen.sharedMemory;
     }
 
     // Create Fence
     {
-        JuneFenceDescriptor fenceDescriptor;
-        m_offscreen.fence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
-
-        m_sharingObjects.fences.push_back(m_offscreen.fence);
+        JuneFenceCreateDescriptor fenceDescriptor;
+        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
     }
 
     // Create Resource
@@ -81,14 +87,14 @@ void JuneVulkanService1::begin()
 
         JuneResourceVkImageResultInfo vkImageResultInfo;
 
-        JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-        juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+        JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
+        juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
         juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
         juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
 
-        JuneResourceDescriptor juneResourceDescriptor{};
+        JuneResourceCreateDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+        juneResourceDescriptor.sharedMemory = m_sharingMemory;
 
         m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 
@@ -197,15 +203,15 @@ void JuneVulkanService1::work()
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
 
-    // JuneSharedMemoryExportedVkSemaphoreSyncObject waitExportedVkSemaphoreSyncObject{};
+    // JuneFenceVkSemaphoreSyncObject waitExportedVkSemaphoreSyncObject{};
     // {
     //     JuneSharedMemorySyncInfo waitSyncInfo{};
-    //     waitSyncInfo.fences = m_sharedObjects.fences.data();
-    //     waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
+    //     waitSyncInfo.fences = m_waitFences.data();
+    //     waitSyncInfo.fenceCount = m_waitFences.size();
 
-    //     waitExportedVkSemaphoreSyncObject.chain.sType = JuneSType_SharedMemoryExportedVkSemaphoreSyncObject;
+    //     waitExportedVkSemaphoreSyncObject.chain.sType = JuneSType_FenceVkSemaphoreExportDescriptor;
 
-    //     JuneSharedMemoryExportedSyncObject exportedSyncObject{};
+    //     JuneFenceSyncObject exportedSyncObject{};
     //     exportedSyncObject.nextInChain = &waitExportedVkSemaphoreSyncObject.chain;
 
     //     JuneApiContextBeginMemoryAccessDescriptor descriptor{};
@@ -220,16 +226,6 @@ void JuneVulkanService1::work()
     vulkanQueue->submit({ commandBuffer.get() });
 
     spdlog::debug("vulkan service1 end access");
-}
-
-JuneServiceShareObjects JuneVulkanService1::getSharingObject() const
-{
-    return m_sharingObjects;
-}
-
-void JuneVulkanService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
-    m_sharedObjects = sharedObjects;
 }
 
 void JuneVulkanService1::createOffscreenTexture()

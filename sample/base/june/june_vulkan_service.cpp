@@ -28,24 +28,21 @@ void JuneVulkanService::begin()
         createSwapchain();
     }
 
-    // initialize June
+    // Create Api Context
     {
         auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter.get());
         m_vkInstance = vulkanAdapter->getVkInstance();
         m_vkPhysicalDevice = vulkanAdapter->getVkPhysicalDevice(0);
         m_vkDevice = static_cast<VulkanDevice*>(m_device.get())->getVkDevice();
 
-        JuneInstanceDescriptor juneInstanceDescriptor{};
-        m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
-
-        JuneVulkanContextDescriptor juenVulkanContextDescriptor{};
-        juenVulkanContextDescriptor.chain.sType = JuneSType_VulkanContext;
-        juenVulkanContextDescriptor.vkInstance = m_vkInstance;
-        juenVulkanContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
-        juenVulkanContextDescriptor.vkDevice = m_vkDevice;
+        JuneVulkanContextDescriptor juneVulkanContextDescriptor{};
+        juneVulkanContextDescriptor.chain.sType = JuneSType_VulkanContext;
+        juneVulkanContextDescriptor.vkInstance = m_vkInstance;
+        juneVulkanContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+        juneVulkanContextDescriptor.vkDevice = m_vkDevice;
 
         JuneApiContextDescriptor juneApiContextDescriptor{
-            .nextInChain = &juenVulkanContextDescriptor.chain
+            .nextInChain = &juneVulkanContextDescriptor.chain
         };
         m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
     }
@@ -140,6 +137,27 @@ void JuneVulkanService::createQueue()
     QueueDescriptor descriptor{};
 
     m_queue = m_device->createQueue(descriptor);
+}
+
+void JuneVulkanService::createApiContext(const std::string& label)
+{
+    auto vulkanAdapter = static_cast<VulkanAdapter*>(m_adapter.get());
+    m_vkInstance = vulkanAdapter->getVkInstance();
+    m_vkPhysicalDevice = vulkanAdapter->getVkPhysicalDevice(0);
+    m_vkDevice = static_cast<VulkanDevice*>(m_device.get())->getVkDevice();
+
+    JuneVulkanContextDescriptor juneVulkanContextDescriptor{};
+    juneVulkanContextDescriptor.chain.sType = JuneSType_VulkanContext;
+    juneVulkanContextDescriptor.vkInstance = m_vkInstance;
+    juneVulkanContextDescriptor.vkPhysicalDevice = m_vkPhysicalDevice;
+    juneVulkanContextDescriptor.vkDevice = m_vkDevice;
+
+    JuneApiContextDescriptor juneApiContextDescriptor;
+    juneApiContextDescriptor.nextInChain = &juneVulkanContextDescriptor.chain;
+    juneApiContextDescriptor.label.data = label.data();
+    juneApiContextDescriptor.label.length = label.length();
+
+    m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
 }
 
 } // namespace jipu

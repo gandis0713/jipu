@@ -152,4 +152,18 @@ void JuneGLESService::end()
     m_eglConfig = EGL_NO_CONFIG_KHR;
 }
 
+void JuneGLESService::createApiContext(const std::string& label)
+{
+    JuneGLESContextDescriptor juneGLESContextDescriptor{};
+    juneGLESContextDescriptor.chain.sType = JuneSType_GLESContext;
+    juneGLESContextDescriptor.display = m_eglDisplay;
+    juneGLESContextDescriptor.context = m_eglContext;
+
+    JuneApiContextDescriptor juneApiContextDescriptor;
+    juneApiContextDescriptor.nextInChain = &juneGLESContextDescriptor.chain;
+    juneApiContextDescriptor.label.data = label.data();
+    juneApiContextDescriptor.label.length = label.length();
+    m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
+}
+
 } // namespace jipu

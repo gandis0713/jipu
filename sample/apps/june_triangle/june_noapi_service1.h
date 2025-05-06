@@ -16,13 +16,6 @@ public:
     void begin() override;
     void work() override;
 
-    JuneServiceShareObjects getSharingObject() const override;
-    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
-
-private:
-    JuneApiContext m_juneApiContext{ nullptr };
-    JuneFence m_fence{ nullptr };
-
 #if defined(__ANDROID__) || defined(ANDROID)
 private:
     AHardwareBuffer* m_aHardwareBuffer{ nullptr };

@@ -2,6 +2,7 @@
 
 #include "june_gles_service1.h"
 #include "june_gles_service2.h"
+#include "june_noapi_service1.h"
 #include "june_vulkan_service1.h"
 #include "june_vulkan_service2.h"
 #include "june_vulkan_service3.h"
@@ -26,6 +27,20 @@ void JuneTriangleSample::init()
 
     if (serviceCase == 0)
     {
+        {
+            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{ .fps = 30,
+                                                                                         .width = m_width,
+                                                                                         .height = m_height,
+                                                                                         .windowHandle = nullptr,
+                                                                                         .appPath = m_appPath,
+                                                                                         .appDir = m_appDir,
+                                                                                         .appHandle = m_handle });
+            m_noapiService1->start(JuneServiceStartDescriptor{
+                .callback = [this]() {
+                    m_noapiService1Ready = true;
+                } });
+        }
+
         {
             m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 30,
                                                                                        .width = m_width,
@@ -54,17 +69,29 @@ void JuneTriangleSample::init()
                 } });
         }
 
-        while (!m_glesService1Ready ||
+        while (!m_noapiService1Ready ||
+               !m_glesService1Ready ||
                !m_glesService2Ready)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto glesService1SharingObject = m_glesService1->getSharingObject();
-        m_glesService2->setSharedObjects(glesService1SharingObject);
+        auto sharingMemory = m_noapiService1->getSharingMemory();
+        m_glesService1->setSharedMemory(sharingMemory);
+        m_glesService2->setSharedMemory(sharingMemory);
 
-        auto glesService2SharingObject = m_glesService2->getSharingObject();
-        m_glesService1->setSharedObjects(glesService2SharingObject);
+        auto noapiService1SignalFence = m_noapiService1->getSignalFence();
+        auto glesService1SignalFence = m_glesService1->getSignalFence();
+        auto glesService2SignalFence = m_glesService2->getSignalFence();
+
+        m_noapiService1->addWaitFence(glesService1SignalFence);
+        m_noapiService1->addWaitFence(glesService2SignalFence);
+
+        m_glesService1->addWaitFence(noapiService1SignalFence);
+        m_glesService1->addWaitFence(glesService2SignalFence);
+
+        m_glesService2->addWaitFence(noapiService1SignalFence);
+        m_glesService2->addWaitFence(glesService1SignalFence);
     }
 
     if (serviceCase == 1)
@@ -106,8 +133,14 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto vulkanService1SharingObject = m_vulkanService1->getSharingObject();
-        m_vulkanService2->setSharedObjects(vulkanService1SharingObject);
+        auto sharingMemory = m_vulkanService1->getSharingMemory();
+        m_vulkanService2->setSharedMemory(sharingMemory);
+
+        auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
+        auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
+
+        m_vulkanService1->addWaitFence(vulkanService2SignalFence);
+        m_vulkanService2->addWaitFence(vulkanService1SignalFence);
     }
 
     if (serviceCase == 2)
@@ -171,8 +204,14 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto glesService1SharingObject = m_glesService1->getSharingObject();
-        m_vulkanService2->setSharedObjects(glesService1SharingObject);
+        auto sharingMemory = m_glesService1->getSharingMemory();
+        m_vulkanService2->setSharedMemory(sharingMemory);
+
+        auto glesService1SignalFence = m_glesService1->getSignalFence();
+        auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
+
+        m_glesService1->addWaitFence(vulkanService2SignalFence);
+        m_vulkanService2->addWaitFence(glesService1SignalFence);
     }
 
     if (serviceCase == 4)
@@ -213,8 +252,14 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto vulkanService1SharingObject = m_vulkanService1->getSharingObject();
-        m_glesService2->setSharedObjects(vulkanService1SharingObject);
+        auto sharingMemory = m_vulkanService1->getSharingMemory();
+        m_glesService2->setSharedMemory(sharingMemory);
+
+        auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
+        auto glesService2SignalFence = m_glesService2->getSignalFence();
+
+        m_vulkanService1->addWaitFence(glesService2SignalFence);
+        m_glesService2->addWaitFence(vulkanService1SignalFence);
     }
 }
 

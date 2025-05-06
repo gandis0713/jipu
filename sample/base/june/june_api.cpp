@@ -28,17 +28,17 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
     GET_PROC(CreateInstance);
 
     GET_PROC(InstanceCreateApiContext);
-    GET_PROC(InstanceCreateSharedMemory);
+    GET_PROC(InstanceImportSharedMemory);
     GET_PROC(InstanceDestroy);
 
     GET_PROC(ApiContextCreateResource);
     GET_PROC(ApiContextCreateFence);
     GET_PROC(ApiContextDestroy);
 
-    GET_PROC(ApiContextBeginMemoryAccess);
-    GET_PROC(ApiContextEndMemoryAccess);
     GET_PROC(SharedMemoryDestroy);
 
+    GET_PROC(FenceReset);
+    GET_PROC(FenceExport);
     GET_PROC(FenceDestroy);
 
     return true;

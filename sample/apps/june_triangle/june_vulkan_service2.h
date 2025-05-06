@@ -18,8 +18,7 @@ public:
     void begin() override;
     void work() override;
 
-    JuneServiceShareObjects getSharingObject() const override;
-    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
+    void setSharedMemory(JuneSharedMemory sharedMemory) override;
 
 private:
     void createOnscreenTexture();
@@ -30,8 +29,6 @@ private:
     void createOnscreenBindGroupLayout();
     void createOnscreenBindGroup();
     void createOnscreenRenderPipeline();
-
-    bool m_isShared{ false };
 
 private:
     struct
@@ -47,7 +44,6 @@ private:
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         VkImage image{ VK_NULL_HANDLE };
         VkDeviceMemory deviceMemory{ VK_NULL_HANDLE };
-        JuneFence fence{ nullptr };
     } m_onscreen;
 
     struct MVP

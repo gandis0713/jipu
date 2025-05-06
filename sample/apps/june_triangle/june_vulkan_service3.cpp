@@ -26,7 +26,6 @@ void JuneVulkanService3::begin()
 
     // Create Shared Memory
     {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
 #if defined(__ANDROID__) || defined(ANDROID)
         AHardwareBuffer_Desc ahbDesc = {
             .width = m_descriptor.width,
@@ -36,14 +35,25 @@ void JuneVulkanService3::begin()
             .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
         };
 
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
+        AHardwareBuffer* ahb = nullptr;
 
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
+        int result = AHardwareBuffer_allocate(&ahbDesc, &ahb);
+        if (result != 0)
+        {
+            spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
+            return;
+        }
+
+        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
+        juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
+        juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = ahb;
+
+        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
+        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
+        
+        m_sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        m_sharedMemory = m_sharingMemory;
 #endif
-        m_offscreen.sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
     }
 
     // Create Resource
@@ -74,14 +84,14 @@ void JuneVulkanService3::begin()
 
             JuneResourceVkImageResultInfo vkImageResultInfo;
 
-            JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-            juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+            JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
+            juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
             juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
             juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
 
-            JuneResourceDescriptor juneResourceDescriptor{};
+            JuneResourceCreateDescriptor juneResourceDescriptor{};
             juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-            juneResourceDescriptor.sharedMemory = m_offscreen.sharedMemory;
+            juneResourceDescriptor.sharedMemory = m_sharingMemory;
 
             m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 
@@ -115,14 +125,14 @@ void JuneVulkanService3::begin()
 
             JuneResourceVkImageResultInfo vkImageResultInfo;
 
-            JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-            juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+            JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
+            juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
             juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
             juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
 
-            JuneResourceDescriptor juneResourceDescriptor{};
+            JuneResourceCreateDescriptor juneResourceDescriptor{};
             juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-            juneResourceDescriptor.sharedMemory = m_offscreen.sharedMemory; // shared from offscreen
+            juneResourceDescriptor.sharedMemory = m_sharedMemory; // shared from offscreen
 
             m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 
@@ -368,15 +378,6 @@ void JuneVulkanService3::work()
             m_queue->submit({ commandBuffer.get() });
         }
     }
-}
-
-JuneServiceShareObjects JuneVulkanService3::getSharingObject() const
-{
-    return {};
-}
-
-void JuneVulkanService3::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
 }
 
 void JuneVulkanService3::createOffscreenTexture()

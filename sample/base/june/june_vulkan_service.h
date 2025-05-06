@@ -43,6 +43,8 @@ protected:
     void beforeWork() override;
     void end() override;
 
+    void createApiContext(const std::string& label) override;
+
 private:
     void createInstance();
     void createAdapter();
@@ -67,9 +69,6 @@ protected:
     VkInstance m_vkInstance = VK_NULL_HANDLE;
     VkPhysicalDevice m_vkPhysicalDevice = VK_NULL_HANDLE;
     VkDevice m_vkDevice = VK_NULL_HANDLE;
-
-protected:
-    JuneApiContext m_juneApiContext{ nullptr };
 };
 
 } // namespace jipu

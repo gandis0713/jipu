@@ -26,16 +26,14 @@ void JuneVulkanService2::begin()
 
     // Create Fence
     {
-        JuneFenceDescriptor fenceDescriptor;
-        m_onscreen.fence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
-
-        m_sharingObjects.fences.push_back(m_onscreen.fence);
+        JuneFenceCreateDescriptor fenceDescriptor;
+        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
     }
 }
 
 void JuneVulkanService2::work()
 {
-    if (!m_isShared)
+    if (!getSharedMemory())
         return;
 
     CommandEncoderDescriptor commandDescriptor{};
@@ -134,14 +132,10 @@ void JuneVulkanService2::work()
     spdlog::debug("vulkan service2 end access");
 }
 
-JuneServiceShareObjects JuneVulkanService2::getSharingObject() const
+void JuneVulkanService2::setSharedMemory(JuneSharedMemory sharedMemory)
 {
-    return m_sharingObjects;
-}
-
-void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
-    m_sharedObjects = sharedObjects;
+    std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
+    m_sharedMemory = sharedMemory;
 
     // Create Resource
     {
@@ -169,14 +163,14 @@ void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedO
 
         JuneResourceVkImageResultInfo vkImageResultInfo;
 
-        JuneResourceVkImageDescriptor juneResourceVkImageDescriptor{};
-        juneResourceVkImageDescriptor.chain.sType = JuneSType_VkImageResourceDescriptor;
+        JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
+        juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
         juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
         juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
 
-        JuneResourceDescriptor juneResourceDescriptor{};
+        JuneResourceCreateDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharingObjects.sharedMemory;
+        juneResourceDescriptor.sharedMemory = m_sharedMemory;
 
         m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 
@@ -193,8 +187,6 @@ void JuneVulkanService2::setSharedObjects(const JuneServiceShareObjects& sharedO
     createOnscreenBindGroupLayout();
     createOnscreenBindGroup();
     createOnscreenRenderPipeline();
-
-    m_isShared = true;
 }
 
 void JuneVulkanService2::createOnscreenTexture()

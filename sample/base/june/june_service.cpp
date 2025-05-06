@@ -33,6 +33,44 @@ void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
         m_stopCallback();
 }
 
+JuneSharedMemory JuneService::getSharingMemory() const
+{
+    return m_sharingMemory;
+}
+
+void JuneService::setSharedMemory(JuneSharedMemory sharedMemory)
+{
+    std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
+
+    m_sharedMemory = sharedMemory;
+}
+
+JuneFence JuneService::getSignalFence() const
+{
+    return m_signalFence;
+}
+
+void JuneService::addWaitFence(JuneFence fence)
+{
+    std::lock_guard<std::mutex> lock(m_waitFenceMutex);
+
+    m_waitFences.push_back(fence);
+}
+
+std::vector<JuneFence> JuneService::getWaitFences() const
+{
+    std::lock_guard<std::mutex> lock(m_waitFenceMutex);
+
+    return m_waitFences;
+}
+
+JuneSharedMemory JuneService::getSharedMemory() const
+{
+    std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
+
+    return m_sharedMemory;
+}
+
 void JuneService::begin()
 {
 }
@@ -112,6 +150,15 @@ void JuneService::loadJuneLibrary()
     {
         throw std::runtime_error("Failed to load procs");
     }
+}
+
+void JuneService::createInstance(const std::string& label)
+{
+    JuneInstanceDescriptor juneInstanceDescriptor{};
+    juneInstanceDescriptor.label.data = label.data();
+    juneInstanceDescriptor.label.length = label.length();
+
+    m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
 }
 
 } // namespace jipu

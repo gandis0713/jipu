@@ -36,12 +36,6 @@ struct JuneServiceStopDescriptor
     std::function<void()> callback;
 };
 
-struct JuneServiceShareObjects
-{
-    JuneSharedMemory sharedMemory;
-    std::vector<JuneFence> fences;
-};
-
 class JuneService
 {
 public:
@@ -54,8 +48,11 @@ public:
     void stop(const JuneServiceStopDescriptor& descriptor);
 
 public:
-    virtual JuneServiceShareObjects getSharingObject() const = 0;
-    virtual void setSharedObjects(const JuneServiceShareObjects& sharedObjects) = 0;
+    virtual void setSharedMemory(JuneSharedMemory sharedMemory);
+    virtual void addWaitFence(JuneFence fence);
+
+    JuneSharedMemory getSharingMemory() const;
+    JuneFence getSignalFence() const;
 
 protected:
     virtual void begin();
@@ -64,6 +61,12 @@ protected:
 
     void addBeforeWork(const std::function<void()>& work);
     void addAfterWork(const std::function<void()>& work);
+
+    void createInstance(const std::string& label);
+    virtual void createApiContext(const std::string& label) = 0;
+
+    std::vector<JuneFence> getWaitFences() const;
+    JuneSharedMemory getSharedMemory() const;
 
 private:
     void loadJuneLibrary();
@@ -79,12 +82,15 @@ protected:
     JuneAPI m_juneAPI;
 
     JuneInstance m_juneInstance{ nullptr };
+    JuneApiContext m_juneApiContext{ nullptr };
 
-    JuneServiceShareObjects m_sharingObjects{};
-    JuneServiceShareObjects m_sharedObjects{};
+    JuneSharedMemory m_sharingMemory{ nullptr }; // for sharing
+    JuneSharedMemory m_sharedMemory{ nullptr };  // for importing
+    JuneFence m_signalFence{ nullptr };
+    std::vector<JuneFence> m_waitFences{};
 
-    mutable std::mutex m_sharedMutex;
-    bool m_shared = false;
+    mutable std::mutex m_sharedMemoryMutex;
+    mutable std::mutex m_waitFenceMutex;
 
 private:
     Runner m_runner;

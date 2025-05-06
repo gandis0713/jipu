@@ -1,4 +1,4 @@
-#include "june_service1.h"
+#include "june_noapi_service1.h"
 
 #include <random>
 #include <spdlog/spdlog.h>
@@ -13,7 +13,7 @@ namespace
 } // namespace
 
 JuneNoApiService1::JuneNoApiService1(const JuneServiceDescriptor& descriptor)
-    : JuneService(descriptor)
+    : JuneNoApiService(descriptor)
 {
 }
 
@@ -23,33 +23,44 @@ JuneNoApiService1::~JuneNoApiService1()
 
 void JuneNoApiService1::begin()
 {
-    JuneService::begin();
+    JuneNoApiService::begin();
 
-    // Create June Instance
+    std::string label = "noapi service1";
+    createInstance(label);
+    createApiContext(label);
+
+    // Create Shared Memory
     {
-        JuneInstanceDescriptor juneInstanceDescriptor{};
-        m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
-    }
+#if defined(__ANDROID__) || defined(ANDROID)
+        AHardwareBuffer_Desc ahbDesc = {
+            .width = m_descriptor.width,
+            .height = m_descriptor.height,
+            .layers = 1,
+            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
+            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
+        };
 
-    // Create Api Context
-    {
-        JuneNoApiContextDescriptor juneNoApiContextDescriptor{};
-        juneNoApiContextDescriptor.chain.sType = JuneSType_NoApiContext;
+        int result = AHardwareBuffer_allocate(&ahbDesc, &m_aHardwareBuffer);
+        if (result != 0)
+        {
+            spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
+            return;
+        }
 
-        std::string label = "[NoApiService1]";
-        JuneApiContextDescriptor juneApiContextDescriptor;
-        juneApiContextDescriptor.nextInChain = &juneNoApiContextDescriptor.chain;
-        juneApiContextDescriptor.label.data = label.data();
-        juneApiContextDescriptor.label.length = label.length();
-        m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
+        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
+        juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
+        juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = m_aHardwareBuffer;
+
+        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
+        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
+        m_sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+#endif
     }
 
     // Create Fence
     {
-        JuneFenceDescriptor fenceDescriptor;
-        m_fence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
-
-        m_sharingObjects.fences.push_back(m_fence);
+        JuneFenceCreateDescriptor fenceDescriptor;
+        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
     }
 
     // Export AhardwareBuffer from Shared Memory
@@ -60,26 +71,21 @@ void JuneNoApiService1::begin()
 void JuneNoApiService1::work()
 {
     {
-        std::lock_guard<std::mutex> lock(m_sharedMutex);
-        if (m_shared)
+        std::vector<int> waitSyncFDs{};
+        std::vector<JuneFence> waitFences = getWaitFences();
+        for (const auto& fence : waitFences)
         {
-            JuneSharedMemoryExportedEGLSyncKHRSyncObject waitExportedEGLSyncKHRSyncObject{};
+            JuneFenceSyncFDExportDescriptor syncFDExportDescriptor{};
+            syncFDExportDescriptor.chain.sType = JuneSType_FenceSyncFDExportDescriptor;
+
+            JuneFenceExportDescriptor descriptor{};
+            descriptor.nextInChain = &syncFDExportDescriptor.chain;
+
+            m_juneAPI.FenceExport(fence, &descriptor);
+
+            if (syncFDExportDescriptor.syncFD != -1)
             {
-                JuneSharedMemorySyncInfo waitSyncInfo{};
-                waitSyncInfo.fences = m_sharedObjects.fences.data();
-                waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
-
-                waitExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
-
-                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-                exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
-
-                JuneApiContextBeginMemoryAccessDescriptor descriptor{};
-                descriptor.sharedMemory = m_sharedObjects.sharedMemory;
-                descriptor.waitSyncInfo = &waitSyncInfo;
-                descriptor.exportedSyncObject = &exportedSyncObject;
-
-                m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
+                waitSyncFDs.push_back(syncFDExportDescriptor.syncFD);
             }
         }
     }
@@ -92,42 +98,9 @@ void JuneNoApiService1::work()
     spdlog::debug("no api service1 end access");
 
     {
-        std::lock_guard<std::mutex> lock(m_sharedMutex);
-        if (m_shared)
-        {
-            JuneSharedMemoryExportedEGLSyncKHRSyncObject signalExportedEGLSyncKHRSyncObject{};
-            {
-                JuneSharedMemorySyncInfo signalSyncInfo{};
-                signalSyncInfo.fences = m_sharingObjects.fences.data();
-                signalSyncInfo.fenceCount = m_sharingObjects.fences.size();
-
-                signalExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
-
-                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-                exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
-
-                JuneApiContextEndMemoryAccessDescriptor descriptor{};
-                descriptor.sharedMemory = m_sharedObjects.sharedMemory;
-                descriptor.signalSyncInfo = &signalSyncInfo;
-                descriptor.exportedSyncObject = &exportedSyncObject;
-
-                m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
-            }
-        }
+        JuneFenceResetDescriptor descriptor{};
+        m_juneAPI.FenceReset(m_signalFence, &descriptor);
     }
-}
-
-JuneServiceShareObjects JuneNoApiService1::getSharingObject() const
-{
-    return m_sharingObjects;
-}
-
-void JuneNoApiService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
-    m_sharedObjects = sharedObjects;
-
-    std::lock_guard<std::mutex> lock(m_sharedMutex);
-    m_shared = true;
 }
 
 } // namespace jipu

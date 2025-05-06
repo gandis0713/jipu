@@ -18,9 +18,6 @@ public:
     void begin() override;
     void work() override;
 
-    JuneServiceShareObjects getSharingObject() const override;
-    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
-
 private:
     void createOffscreenTexture();
     void createOffscreenTextureView();
@@ -47,8 +44,6 @@ private:
         std::unique_ptr<RenderPipeline> renderPipeline = nullptr;
         VkImage image{ VK_NULL_HANDLE };
         VkDeviceMemory deviceMemory{ VK_NULL_HANDLE };
-        JuneFence fence{ nullptr };
-        JuneSharedMemory sharedMemory{ nullptr };
     } m_offscreen;
 
     struct MVP

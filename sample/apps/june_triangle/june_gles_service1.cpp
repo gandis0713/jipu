@@ -116,122 +116,68 @@ void JuneGLESService1::begin()
         glBindAttribLocation(m_programObject1, 0, "aPosition");
     }
 
-    // Create June Instance
-    {
-        JuneInstanceDescriptor juneInstanceDescriptor{};
-        m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
-    }
+    std::string label = "gles service1";
 
-    // Create Shared Memory
-    {
-        JuneSharedMemoryDescriptor juneSharedMemoryDescriptor{};
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
-        };
-
-        JuneSharedMemoryAHardwareBufferDescriptor juneSharedMemoryAHardwareBufferDescriptor{};
-        juneSharedMemoryAHardwareBufferDescriptor.chain.sType = JuneSType_AHardwareBufferSharedMemory;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBuffer = nullptr;
-        juneSharedMemoryAHardwareBufferDescriptor.aHardwareBufferDesc = &ahbDesc;
-
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferDescriptor.chain;
-#endif
-        m_sharedMemory = m_juneAPI.InstanceCreateSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingObjects.sharedMemory = m_sharedMemory;
-    }
-
-    // Create Api Context
-    {
-        JuneGLESContextDescriptor juenGLESContextDescriptor{};
-        juenGLESContextDescriptor.chain.sType = JuneSType_GLESContext;
-        juenGLESContextDescriptor.display = m_eglDisplay;
-        juenGLESContextDescriptor.context = m_eglContext;
-
-        std::string label = "[GLESService1]";
-        JuneApiContextDescriptor juneApiContextDescriptor;
-        juneApiContextDescriptor.nextInChain = &juenGLESContextDescriptor.chain;
-        juneApiContextDescriptor.label.data = label.data();
-        juneApiContextDescriptor.label.length = label.length();
-        m_juneApiContext = m_juneAPI.InstanceCreateApiContext(m_juneInstance, &juneApiContextDescriptor);
-    }
+    createInstance(label);
+    createApiContext(label);
 
     // Create Fence
     {
-        JuneFenceDescriptor fenceDescriptor;
-        m_fence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
-
-        m_sharingObjects.fences.push_back(m_fence);
-    }
-
-    // Create Resource
-    {
-        JuneResourceEGLImageCreateInfo eglImageCreateInfo;
-        JuneResourceEGLImageResultInfo eglImageResultInfo;
-
-        JuneResourceEGLImageDescriptor juneResourceEGLImageDescriptor{};
-        juneResourceEGLImageDescriptor.chain.sType = JuneSType_EGLImageResourceDescriptor;
-        juneResourceEGLImageDescriptor.eglImageCreateInfo = &eglImageCreateInfo;
-        juneResourceEGLImageDescriptor.eglImageResultInfo = &eglImageResultInfo;
-
-        JuneResourceDescriptor juneResourceDescriptor{};
-        juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharedMemory;
-
-        m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
-
-        m_eglImage = eglImageResultInfo.eglImage;
-        m_eglClientBuffer = eglImageResultInfo.eglClientBuffer;
+        JuneFenceCreateDescriptor fenceDescriptor;
+        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
     }
 }
 
 void JuneGLESService1::work()
 {
+    if (!getSharedMemory())
+        return;
+
     {
-        std::lock_guard<std::mutex> lock(m_sharedMutex);
-        if (m_shared)
+        std::vector<EGLSyncKHR> waitEGLSyncs{};
+        std::vector<JuneFence> waitFences = getWaitFences();
+
+        for (const auto& fence : waitFences)
         {
-            JuneSharedMemoryExportedEGLSyncKHRSyncObject waitExportedEGLSyncKHRSyncObject{};
+            JuneFenceEGLSyncExportDescriptor eglSyncExportDescriptor{};
+            eglSyncExportDescriptor.chain.sType = JuneSType_FenceEGLSyncExportDescriptor;
+
+            JuneFenceExportDescriptor descriptor{};
+            descriptor.nextInChain = &eglSyncExportDescriptor.chain;
+
+            m_juneAPI.FenceExport(fence, &descriptor);
+
+            if (eglSyncExportDescriptor.eglSync)
             {
-                JuneSharedMemorySyncInfo waitSyncInfo{};
-                waitSyncInfo.fences = m_sharedObjects.fences.data();
-                waitSyncInfo.fenceCount = m_sharedObjects.fences.size();
-
-                waitExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
-
-                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-                exportedSyncObject.nextInChain = &waitExportedEGLSyncKHRSyncObject.chain;
-
-                JuneApiContextBeginMemoryAccessDescriptor descriptor{};
-                descriptor.sharedMemory = m_sharedMemory;
-                descriptor.waitSyncInfo = &waitSyncInfo;
-                descriptor.exportedSyncObject = &exportedSyncObject;
-
-                m_juneAPI.ApiContextBeginMemoryAccess(m_juneApiContext, &descriptor);
+                waitEGLSyncs.push_back(eglSyncExportDescriptor.eglSync);
             }
+        }
 
-            EGLSyncKHR* eglSyncs = static_cast<EGLSyncKHR*>(waitExportedEGLSyncKHRSyncObject.eglSyncs);
-            for (auto count = 0; count < waitExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
+        for (auto count = 0; count < waitEGLSyncs.size(); ++count)
+        {
+            if (waitEGLSyncs[count] == nullptr)
+                continue;
+
+            // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
+            // if (eglResult == EGL_FALSE)
+            // {
+            //     CHECK_GL_ERROR();
+            //     spdlog::error("gles service 1 eglWaitSyncKHR failed");
+            //     return;
+            // }
+
+            EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR, 0);
+            if (eglResult == EGL_FALSE)
             {
-                EGLSyncKHR* currentEGLSync = eglSyncs + count;
-                EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, *currentEGLSync, EGL_SIGNALED_KHR, 0);
-                if (eglResult == EGL_FALSE)
-                {
-                    CHECK_GL_ERROR();
-                    spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
-                    return;
-                }
+                CHECK_GL_ERROR();
+                spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
+                return;
             }
         }
     }
 
     spdlog::debug("gles service1 begin access");
 
-    int count = 0;
     GLuint texture;
     glGenTextures(1, &texture);
 
@@ -319,33 +265,18 @@ void JuneGLESService1::work()
     spdlog::debug("gles service1 end access");
 
     {
-        std::lock_guard<std::mutex> lock(m_sharedMutex);
-        if (m_shared)
+        JuneFenceResetDescriptor descriptor{};
+        m_juneAPI.FenceReset(m_signalFence, &descriptor);
+
         {
-            JuneSharedMemoryExportedEGLSyncKHRSyncObject signalExportedEGLSyncKHRSyncObject{};
-            {
-                JuneSharedMemorySyncInfo signalSyncInfo{};
-                signalSyncInfo.fences = m_sharingObjects.fences.data();
-                signalSyncInfo.fenceCount = m_sharingObjects.fences.size();
+            JuneFenceEGLSyncExportDescriptor eglSyncExportDescriptor{};
+            eglSyncExportDescriptor.chain.sType = JuneSType_FenceEGLSyncExportDescriptor;
 
-                signalExportedEGLSyncKHRSyncObject.chain.sType = JuneSType_SharedMemoryExportedEGLSyncKHRSyncObject;
+            JuneFenceExportDescriptor exportDescriptor{};
+            exportDescriptor.nextInChain = &eglSyncExportDescriptor.chain;
+            m_juneAPI.FenceExport(m_signalFence, &exportDescriptor);
 
-                JuneSharedMemoryExportedSyncObject exportedSyncObject{};
-                exportedSyncObject.nextInChain = &signalExportedEGLSyncKHRSyncObject.chain;
-
-                JuneApiContextEndMemoryAccessDescriptor descriptor{};
-                descriptor.sharedMemory = m_sharedMemory;
-                descriptor.signalSyncInfo = &signalSyncInfo;
-                descriptor.exportedSyncObject = &exportedSyncObject;
-
-                m_juneAPI.ApiContextEndMemoryAccess(m_juneApiContext, &descriptor);
-            }
-
-            for (auto count = 0; count < signalExportedEGLSyncKHRSyncObject.eglSyncCount; ++count)
-            {
-                EGLSyncKHR currentEGLSync = *(static_cast<EGLSyncKHR*>(signalExportedEGLSyncKHRSyncObject.eglSyncs) + count);
-                // sharing currentEGLSync if needed.
-            }
+            // EGLSyncKHR eglSync = eglSyncExportDescriptor.eglSync;
         }
     }
 
@@ -361,17 +292,29 @@ void JuneGLESService1::work()
     // std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-JuneServiceShareObjects JuneGLESService1::getSharingObject() const
+void JuneGLESService1::setSharedMemory(JuneSharedMemory sharedMemory)
 {
-    return m_sharingObjects;
-}
+    m_sharedMemory = sharedMemory;
 
-void JuneGLESService1::setSharedObjects(const JuneServiceShareObjects& sharedObjects)
-{
-    m_sharedObjects = sharedObjects;
+    // Create Resource
+    {
+        JuneResourceEGLImageCreateInfo eglImageCreateInfo;
+        JuneResourceEGLImageResultInfo eglImageResultInfo;
 
-    std::lock_guard<std::mutex> lock(m_sharedMutex);
-    m_shared = true;
+        JuneResourceEGLImageCreateDescriptor juneResourceEGLImageDescriptor{};
+        juneResourceEGLImageDescriptor.chain.sType = JuneSType_ResourceEGLImageCreateDescriptor;
+        juneResourceEGLImageDescriptor.eglImageCreateInfo = &eglImageCreateInfo;
+        juneResourceEGLImageDescriptor.eglImageResultInfo = &eglImageResultInfo;
+
+        JuneResourceCreateDescriptor juneResourceDescriptor{};
+        juneResourceDescriptor.nextInChain = &juneResourceEGLImageDescriptor.chain;
+        juneResourceDescriptor.sharedMemory = m_sharedMemory;
+
+        m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+
+        m_eglImage = eglImageResultInfo.eglImage;
+        m_eglClientBuffer = eglImageResultInfo.eglClientBuffer;
+    }
 }
 
 } // namespace jipu

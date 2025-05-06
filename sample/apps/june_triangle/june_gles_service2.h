@@ -30,11 +30,7 @@ public:
     void work() override;
     void end() override;
 
-    JuneServiceShareObjects getSharingObject() const override;
-    void setSharedObjects(const JuneServiceShareObjects& sharedObjects) override;
-
-private:
-    JuneFence m_fence{ nullptr };
+    void setSharedMemory(JuneSharedMemory sharedMemory) override;
 
 private:
     GLuint m_programObject2{ 0 };
