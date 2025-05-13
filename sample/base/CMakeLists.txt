@@ -56,6 +56,8 @@ list(APPEND SRC_FILES
     webgpu_api.h
     runner.cpp
     runner.h
+    unique_handle.cpp
+    unique_handle.h
     june/june_api.cpp
     june/june_api.h
     june/june_sample.cpp
@@ -128,6 +130,7 @@ if(NOT ANDROID)
     )
 else()
     find_package(game-activity REQUIRED CONFIG)
+    find_library(sync-lib sync)
     find_library(log-lib log)
     find_library(egl-lib EGL)
     find_library(glesv2-lib GLESv2)
@@ -138,6 +141,7 @@ else()
         ${log-lib}
         ${egl-lib}
         ${glesv2-lib}
+        ${sync-lib}
     )
 endif()
 
