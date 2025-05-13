@@ -33,7 +33,8 @@ void JuneVulkanService2::begin()
 
 void JuneVulkanService2::work()
 {
-    if (!getSharedMemory())
+    auto sharedMemories = getSharedMemories();
+    if (sharedMemories.empty())
         return;
 
     CommandEncoderDescriptor commandDescriptor{};
@@ -132,10 +133,10 @@ void JuneVulkanService2::work()
     spdlog::debug("vulkan service2 end access");
 }
 
-void JuneVulkanService2::setSharedMemory(JuneSharedMemory sharedMemory)
+void JuneVulkanService2::addSharedMemory(JuneSharedMemory sharedMemory)
 {
     std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
-    m_sharedMemory = sharedMemory;
+    m_sharedMemories.push_back(sharedMemory);
 
     // Create Resource
     {
@@ -170,7 +171,7 @@ void JuneVulkanService2::setSharedMemory(JuneSharedMemory sharedMemory)
 
         JuneResourceCreateDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharedMemory;
+        juneResourceDescriptor.sharedMemory = sharedMemory;
 
         m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 

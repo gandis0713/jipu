@@ -76,9 +76,11 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemory = m_noapiService1->getSharingMemory();
-        m_glesService1->setSharedMemory(sharingMemory);
-        m_glesService2->setSharedMemory(sharingMemory);
+        auto sharingMemories = m_noapiService1->getSharingMemories();
+        m_glesService1->addSharedMemory(sharingMemories[0]);
+        m_glesService1->addSharedMemory(sharingMemories[1]);
+        m_glesService2->addSharedMemory(sharingMemories[1]);
+        m_glesService2->addSharedMemory(sharingMemories[0]);
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
@@ -133,8 +135,8 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemory = m_vulkanService1->getSharingMemory();
-        m_vulkanService2->setSharedMemory(sharingMemory);
+        auto sharingMemories = m_vulkanService1->getSharingMemories();
+        m_vulkanService2->addSharedMemory(sharingMemories[0]);
 
         auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
         auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
@@ -204,8 +206,8 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemory = m_glesService1->getSharingMemory();
-        m_vulkanService2->setSharedMemory(sharingMemory);
+        auto sharingMemories = m_glesService1->getSharingMemories();
+        m_vulkanService2->addSharedMemory(sharingMemories[0]);
 
         auto glesService1SignalFence = m_glesService1->getSignalFence();
         auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
@@ -252,8 +254,8 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemory = m_vulkanService1->getSharingMemory();
-        m_glesService2->setSharedMemory(sharingMemory);
+        auto sharingMemories = m_vulkanService1->getSharingMemories();
+        m_glesService2->addSharedMemory(sharingMemories[0]);
 
         auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
         auto glesService2SignalFence = m_glesService2->getSignalFence();

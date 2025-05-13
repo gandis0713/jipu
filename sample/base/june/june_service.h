@@ -48,10 +48,10 @@ public:
     void stop(const JuneServiceStopDescriptor& descriptor);
 
 public:
-    virtual void setSharedMemory(JuneSharedMemory sharedMemory);
+    virtual void addSharedMemory(JuneSharedMemory sharedMemory);
     virtual void addWaitFence(JuneFence fence);
 
-    JuneSharedMemory getSharingMemory() const;
+    std::vector<JuneSharedMemory> getSharingMemories() const;
     JuneFence getSignalFence() const;
 
 protected:
@@ -66,7 +66,7 @@ protected:
     virtual void createApiContext(const std::string& label) = 0;
 
     std::vector<JuneFence> getWaitFences() const;
-    JuneSharedMemory getSharedMemory() const;
+    std::vector<JuneSharedMemory> getSharedMemories() const;
 
 private:
     void loadJuneLibrary();
@@ -84,8 +84,9 @@ protected:
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
 
-    JuneSharedMemory m_sharingMemory{ nullptr }; // for sharing
-    JuneSharedMemory m_sharedMemory{ nullptr };  // for importing
+    std::vector<JuneSharedMemory> m_sharingMemories{};
+    std::vector<JuneSharedMemory> m_sharedMemories{};
+
     JuneFence m_signalFence{ nullptr };
     std::vector<JuneFence> m_waitFences{};
 

@@ -33,16 +33,16 @@ void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
         m_stopCallback();
 }
 
-JuneSharedMemory JuneService::getSharingMemory() const
+std::vector<JuneSharedMemory> JuneService::getSharingMemories() const
 {
-    return m_sharingMemory;
+    return m_sharingMemories;
 }
 
-void JuneService::setSharedMemory(JuneSharedMemory sharedMemory)
+void JuneService::addSharedMemory(JuneSharedMemory sharedMemory)
 {
     std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
 
-    m_sharedMemory = sharedMemory;
+    m_sharedMemories.push_back(sharedMemory);
 }
 
 JuneFence JuneService::getSignalFence() const
@@ -64,11 +64,11 @@ std::vector<JuneFence> JuneService::getWaitFences() const
     return m_waitFences;
 }
 
-JuneSharedMemory JuneService::getSharedMemory() const
+std::vector<JuneSharedMemory> JuneService::getSharedMemories() const
 {
     std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
 
-    return m_sharedMemory;
+    return m_sharedMemories;
 }
 
 void JuneService::begin()

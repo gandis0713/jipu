@@ -51,7 +51,8 @@ void JuneVulkanService1::begin()
         JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
         juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
 
-        m_sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        auto sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+        m_sharingMemories.push_back(sharingMemory);
 #endif
     }
 
@@ -94,7 +95,7 @@ void JuneVulkanService1::begin()
 
         JuneResourceCreateDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharingMemory;
+        juneResourceDescriptor.sharedMemory = m_sharingMemories[0];
 
         m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 

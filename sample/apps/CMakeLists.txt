@@ -108,6 +108,13 @@ function(configure_sample target)
         file(COPY ${resource} DESTINATION ${BINARY_OUT})
     endforeach(resource)
 
+    # copy shaders
+    file(GLOB_RECURSE shaders "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.*")
+
+    foreach(shader ${shaders})
+        file(COPY ${shader} DESTINATION ${BINARY_OUT})
+    endforeach(shader)
+
     if(ANDROID)
         set(JINLIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../android/apps/${target}/src/main/jniLibs/arm64-v8a)
 

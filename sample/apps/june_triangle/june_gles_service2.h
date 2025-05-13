@@ -30,14 +30,14 @@ public:
     void work() override;
     void end() override;
 
-    void setSharedMemory(JuneSharedMemory sharedMemory) override;
+    void addSharedMemory(JuneSharedMemory sharedMemory) override;
 
 private:
-    GLuint m_programObject2{ 0 };
-    GLuint m_texture{ 0 };
+    GLuint m_programObject{ 0 };
 
-    EGLImageKHR m_eglImage{ nullptr };
-    EGLClientBuffer m_eglClientBuffer{ nullptr };
+    std::vector<GLuint> m_textures;
+    std::vector<EGLImageKHR> m_eglImages;
+    std::vector<EGLClientBuffer> m_eglClientBuffers;
 };
 
 } // namespace jipu

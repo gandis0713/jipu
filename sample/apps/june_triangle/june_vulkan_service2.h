@@ -18,7 +18,7 @@ public:
     void begin() override;
     void work() override;
 
-    void setSharedMemory(JuneSharedMemory sharedMemory) override;
+    void addSharedMemory(JuneSharedMemory sharedMemory) override;
 
 private:
     void createOnscreenTexture();

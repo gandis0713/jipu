@@ -33,12 +33,12 @@ bool JuneAPI::loadProcs(DyLib* juneLib)
 
     GET_PROC(ApiContextCreateResource);
     GET_PROC(ApiContextCreateFence);
+    GET_PROC(ApiContextExportFence);
     GET_PROC(ApiContextDestroy);
 
     GET_PROC(SharedMemoryDestroy);
 
     GET_PROC(FenceReset);
-    GET_PROC(FenceExport);
     GET_PROC(FenceDestroy);
 
     return true;

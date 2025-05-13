@@ -18,6 +18,15 @@
 #include <android/sync.h>
 #endif
 
+#define CHECK_EGL_ERROR()                                                 \
+    {                                                                     \
+        EGLint err = eglGetError();                                       \
+        if (err != EGL_SUCCESS)                                           \
+        {                                                                 \
+            spdlog::error("GL get error: {}", static_cast<int32_t>(err)); \
+        }                                                                 \
+    }
+
 #define CHECK_GL_ERROR()                                                   \
     {                                                                      \
         GLenum err = glGetError();                                         \
