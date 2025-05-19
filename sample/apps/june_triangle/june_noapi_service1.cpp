@@ -35,7 +35,7 @@ void JuneNoApiService1::begin()
     // Create Shared Memory
     {
 #if defined(__ANDROID__) || defined(ANDROID)
-        m_aHardwareBufferDesc1 = {
+        AHardwareBuffer_Desc aHardwareBufferDesc = {
             .width = m_descriptor.width,
             .height = m_descriptor.height,
             .layers = 1,
@@ -43,87 +43,68 @@ void JuneNoApiService1::begin()
             .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT | AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY
         };
 
-        m_aHardwareBufferDesc2 = m_aHardwareBufferDesc1;
-
-        switch (m_aHardwareBufferDesc1.format)
+        uint32_t bytesPerPixel = 0;
+        switch (aHardwareBufferDesc.format)
         {
         case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
         case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
-            m_bytesPerPixel1 = 4;
+            bytesPerPixel = 4;
             break;
         case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
-            m_bytesPerPixel1 = 2;
+            bytesPerPixel = 2;
             break;
         default:
-            spdlog::warn("Unsupported buffer format (0x{:X});", m_aHardwareBufferDesc1.format);
+            spdlog::warn("Unsupported buffer format (0x{:X});", aHardwareBufferDesc.format);
             return;
         }
 
-        m_bytesPerPixel2 = m_bytesPerPixel1;
+        m_aHardwareBufferDescs.push_back(aHardwareBufferDesc);
+        // m_aHardwareBufferDescs.push_back(aHardwareBufferDesc);
 
-        int result = AHardwareBuffer_allocate(&m_aHardwareBufferDesc1, &m_aHardwareBuffer1);
-        if (result != 0)
+        m_bytesPerPixels.push_back(bytesPerPixel);
+        // m_bytesPerPixels.push_back(bytesPerPixel);
+
+        for (auto& desc : m_aHardwareBufferDescs)
         {
-            spdlog::error("Failed to allocate AHardwareBuffer1: {}", result);
-            return;
+            AHardwareBuffer* ahb = nullptr;
+            int result = AHardwareBuffer_allocate(&desc, &ahb);
+            if (result != 0)
+            {
+                spdlog::error("Failed to allocate AHardwareBuffer1: {}", result);
+                return;
+            }
+
+            m_aHardwareBuffers.push_back(ahb);
         }
 
-        result = AHardwareBuffer_allocate(&m_aHardwareBufferDesc2, &m_aHardwareBuffer2);
-        if (result != 0)
-        {
-            spdlog::error("Failed to allocate AHardwareBuffer2: {}", result);
-            return;
-        }
-
-        // Fill color
+        for (auto i = 0; i < m_aHardwareBuffers.size(); ++i)
         {
             void* ptr;
-            result = AHardwareBuffer_lock(m_aHardwareBuffer1, AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1, nullptr, &ptr);
+            int result = AHardwareBuffer_lock(m_aHardwareBuffers[i], AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1, nullptr, &ptr);
             if (result != 0)
             {
                 spdlog::error("Failed to AHardwareBuffer lock to fill color. {}", result);
             }
 
-            std::fill_n(static_cast<uint32_t*>(ptr), m_aHardwareBufferDesc1.width * m_aHardwareBufferDesc1.height, 0xff00ff00);
+            std::fill_n(static_cast<uint32_t*>(ptr), m_aHardwareBufferDescs[i].width * m_aHardwareBufferDescs[i].height, 0xff00ffff);
 
-            result = AHardwareBuffer_unlock(m_aHardwareBuffer1, nullptr);
-            if (result != 0)
-            {
-                spdlog::error("Failed to AHardwareBuffer unlock to fill color. {}", result);
-            }
-        }
-        {
-            void* ptr;
-            result = AHardwareBuffer_lock(m_aHardwareBuffer2, AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1, nullptr, &ptr);
-            if (result != 0)
-            {
-                spdlog::error("Failed to AHardwareBuffer lock to fill color. {}", result);
-            }
-
-            std::fill_n(static_cast<uint32_t*>(ptr), m_aHardwareBufferDesc2.width * m_aHardwareBufferDesc2.height, 0xff0000ff);
-
-            result = AHardwareBuffer_unlock(m_aHardwareBuffer2, nullptr);
+            result = AHardwareBuffer_unlock(m_aHardwareBuffers[i], nullptr);
             if (result != 0)
             {
                 spdlog::error("Failed to AHardwareBuffer unlock to fill color. {}", result);
             }
         }
 
-        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor1{};
-        juneSharedMemoryAHardwareBufferImportDescriptor1.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
-        juneSharedMemoryAHardwareBufferImportDescriptor1.aHardwareBuffer = m_aHardwareBuffer1;
-        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor1{};
-        juneSharedMemoryDescriptor1.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor1.chain;
-        auto sharingMemory1 = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor1);
-        m_sharingMemories.push_back(sharingMemory1);
-
-        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor2{};
-        juneSharedMemoryAHardwareBufferImportDescriptor2.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
-        juneSharedMemoryAHardwareBufferImportDescriptor2.aHardwareBuffer = m_aHardwareBuffer2;
-        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor2{};
-        juneSharedMemoryDescriptor2.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor2.chain;
-        auto sharingMemory2 = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor2);
-        m_sharingMemories.push_back(sharingMemory2);
+        for (auto ahb : m_aHardwareBuffers)
+        {
+            JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
+            juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
+            juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = ahb;
+            JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
+            juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
+            auto sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
+            m_sharingMemories.push_back(sharingMemory);
+        }
 #endif
     }
 
@@ -140,30 +121,27 @@ void JuneNoApiService1::begin()
 void JuneNoApiService1::work()
 {
     std::vector<UniqueHandle> waitSyncFDs{};
+
+    std::vector<JuneFence> waitFences = getWaitFences();
+
+    spdlog::trace("Charles Try to get sync object in noapi service1.");
+    for (const auto& fence : waitFences)
     {
-        std::vector<JuneFence> waitFences = getWaitFences();
+        JuneFenceSyncFDExportDescriptor syncFDExportDescriptor{};
+        syncFDExportDescriptor.chain.sType = JuneSType_FenceSyncFDExportDescriptor;
+        syncFDExportDescriptor.syncFD = -1;
 
-        spdlog::trace("Charles Try to get sync object in noapi service1.");
-        for (const auto& fence : waitFences)
+        JuneFenceExportDescriptor descriptor{};
+        descriptor.nextInChain = &syncFDExportDescriptor.chain;
+        descriptor.fence = fence;
+
+        m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
+
+        if (syncFDExportDescriptor.syncFD != -1)
         {
-            JuneFenceSyncFDExportDescriptor syncFDExportDescriptor{};
-            syncFDExportDescriptor.chain.sType = JuneSType_FenceSyncFDExportDescriptor;
-            syncFDExportDescriptor.syncFD = -1;
-
-            JuneFenceExportDescriptor descriptor{};
-            descriptor.nextInChain = &syncFDExportDescriptor.chain;
-            descriptor.fence = fence;
-
-            m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
-
-            if (syncFDExportDescriptor.syncFD != -1)
-            {
-                waitSyncFDs.push_back(UniqueHandle(syncFDExportDescriptor.syncFD));
-            }
+            waitSyncFDs.push_back(UniqueHandle(syncFDExportDescriptor.syncFD));
         }
     }
-
-    spdlog::debug("no api service1 begin access");
 
 #if defined(__ANDROID__) || defined(ANDROID)
     if (!waitSyncFDs.empty())
@@ -180,7 +158,7 @@ void JuneNoApiService1::work()
             // Ref: https://cgit.freedesktop.org/mesa/mesa/commit/?id=932f51d593418c95bf8f56ac9335d5f6c52c1285
 
             void* ptr;
-            int result = AHardwareBuffer_lock(m_aHardwareBuffer1, AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, syncFD, nullptr, &ptr);
+            int result = AHardwareBuffer_lock(m_aHardwareBuffers[0], AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, syncFD, nullptr, &ptr);
             if (result != 0)
             {
                 spdlog::error("Failed to AHardwareBuffer lock. {}", result);
@@ -188,17 +166,17 @@ void JuneNoApiService1::work()
 
             // 4) 기준 색 추출 (첫 번째 픽셀)
             auto* base = static_cast<const uint8_t*>(ptr);
-            std::vector<uint8_t> reference(base, base + m_bytesPerPixel1);
+            std::vector<uint8_t> reference(base, base + m_bytesPerPixels[0]);
 
             bool isMonochrome = true;
-            const uint32_t rowPitch = m_aHardwareBufferDesc1.stride * m_bytesPerPixel1;
-            for (uint32_t y = 0; y < m_aHardwareBufferDesc1.height && isMonochrome; ++y)
+            const uint32_t rowPitch = m_aHardwareBufferDescs[0].stride * m_bytesPerPixels[0];
+            for (uint32_t y = 0; y < m_aHardwareBufferDescs[0].height && isMonochrome; ++y)
             {
                 const uint8_t* row = base + y * rowPitch;
-                for (uint32_t x = 0; x < m_aHardwareBufferDesc1.width; ++x)
+                for (uint32_t x = 0; x < m_aHardwareBufferDescs[0].width; ++x)
                 {
-                    const uint8_t* pixel = row + x * m_bytesPerPixel1;
-                    if (memcmp(pixel, reference.data(), m_bytesPerPixel1) != 0)
+                    const uint8_t* pixel = row + x * m_bytesPerPixels[0];
+                    if (memcmp(pixel, reference.data(), m_bytesPerPixels[0]) != 0)
                     {
                         isMonochrome = false;
                         spdlog::warn("diff color = ({:3d}, {:3d}, {:3d}, {:3d})",
@@ -226,7 +204,7 @@ void JuneNoApiService1::work()
                 m_signalFD = -1;
             }
 
-            result = AHardwareBuffer_unlock(m_aHardwareBuffer1, &m_signalFD);
+            result = AHardwareBuffer_unlock(m_aHardwareBuffers[0], &m_signalFD);
             if (result != 0)
             {
                 spdlog::error("Failed to AHardwareBuffer unlock. {}", result);
@@ -242,18 +220,16 @@ void JuneNoApiService1::work()
 
     spdlog::debug("no api service1 end access");
 
+    if (m_signalFD != -1)
     {
-        if (m_signalFD != -1)
-        {
-            JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
-            syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
-            syncFDResetDescriptor.syncFD = m_signalFD;
+        JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
+        syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
+        syncFDResetDescriptor.syncFD = m_signalFD;
 
-            JuneFenceResetDescriptor descriptor{};
-            descriptor.nextInChain = &syncFDResetDescriptor.chain;
+        JuneFenceResetDescriptor descriptor{};
+        descriptor.nextInChain = &syncFDResetDescriptor.chain;
 
-            m_juneAPI.FenceReset(m_signalFence, &descriptor);
-        }
+        m_juneAPI.FenceReset(m_signalFence, &descriptor);
     }
 }
 

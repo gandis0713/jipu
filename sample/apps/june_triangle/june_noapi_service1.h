@@ -24,12 +24,9 @@ public:
 
 private:
 #if defined(__ANDROID__) || defined(ANDROID)
-    AHardwareBuffer* m_aHardwareBuffer1{ nullptr };
-    AHardwareBuffer* m_aHardwareBuffer2{ nullptr };
-    AHardwareBuffer_Desc m_aHardwareBufferDesc1{};
-    AHardwareBuffer_Desc m_aHardwareBufferDesc2{};
-    uint32_t m_bytesPerPixel1{ 0 };
-    uint32_t m_bytesPerPixel2{ 0 };
+    std::vector<AHardwareBuffer*> m_aHardwareBuffers;
+    std::vector<AHardwareBuffer_Desc> m_aHardwareBufferDescs;
+    std::vector<uint32_t> m_bytesPerPixels;
 #endif
     int32_t m_signalFD{ -1 };
 };
