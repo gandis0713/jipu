@@ -11,6 +11,7 @@
 #include <optional>
 #include <unordered_set>
 
+#include <jipu/common/dylib.h>
 #include <jipu/native/adapter.h>
 #include <jipu/native/device.h>
 #include <jipu/native/instance.h>
@@ -19,7 +20,8 @@
 #include <jipu/native/surface.h>
 #include <jipu/native/swapchain.h>
 
-#include "hpc/instance.h"
+#include "june/june.h"
+#include "june_api.h"
 
 namespace jipu
 {
@@ -38,8 +40,16 @@ public:
     virtual ~JuneSample() = default;
 
 protected:
+    void loadJuneLibrary();
+    void createInstance(const std::string& label);
+
+protected:
     std::filesystem::path m_appPath;
     std::filesystem::path m_appDir;
+
+    DyLib m_juneLib;
+    JuneAPI m_juneAPI;
+    JuneInstance m_juneInstance{ nullptr };
 };
 
 } // namespace jipu

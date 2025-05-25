@@ -183,9 +183,9 @@ void JuneGLESService1::work()
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> dis(0.0f, 1.0f);
     // float r = dis(gen);
-    r = 1.0f;
+    float r = 1.0f;
     // float g = dis(gen);
-    g = 1.0f;
+    float g = 1.0f;
     float b = dis(gen);
 
     GLint colorLoc = glGetUniformLocation(m_programObject, "uColor");

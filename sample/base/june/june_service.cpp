@@ -1,5 +1,7 @@
 #include "june_service.h"
 
+#include <spdlog/spdlog.h>
+
 namespace jipu
 {
 JuneService::JuneService(const JuneServiceDescriptor& descriptor)
@@ -31,11 +33,6 @@ void JuneService::stop(const JuneServiceStopDescriptor& descriptor)
 
     if (m_stopCallback)
         m_stopCallback();
-}
-
-std::vector<JuneSharedMemory> JuneService::getSharingMemories() const
-{
-    return m_sharingMemories;
 }
 
 void JuneService::addSharedMemory(JuneSharedMemory sharedMemory)
@@ -159,6 +156,11 @@ void JuneService::createInstance(const std::string& label)
     juneInstanceDescriptor.label.length = label.length();
 
     m_juneInstance = m_juneAPI.CreateInstance(&juneInstanceDescriptor);
+    if (!m_juneInstance)
+    {
+        spdlog::error("Failed to create June instance with label: {}", label);
+        return;
+    }
 }
 
 } // namespace jipu

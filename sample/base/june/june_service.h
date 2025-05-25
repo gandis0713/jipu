@@ -50,8 +50,6 @@ public:
 public:
     virtual void addSharedMemory(JuneSharedMemory sharedMemory);
     virtual void addWaitFence(JuneFence fence);
-
-    std::vector<JuneSharedMemory> getSharingMemories() const;
     JuneFence getSignalFence() const;
 
 protected:
@@ -83,10 +81,7 @@ protected:
 
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
-
-    std::vector<JuneSharedMemory> m_sharingMemories{};
     std::vector<JuneSharedMemory> m_sharedMemories{};
-
     JuneFence m_signalFence{ nullptr };
     std::vector<JuneFence> m_waitFences{};
 

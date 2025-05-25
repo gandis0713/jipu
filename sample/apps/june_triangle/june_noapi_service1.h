@@ -22,6 +22,10 @@ public:
     void begin() override;
     void work() override;
 
+#if defined(__ANDROID__) || defined(ANDROID)
+    void addAHardwareBuffer(AHardwareBuffer* aHardwareBuffer);
+#endif
+
 private:
 #if defined(__ANDROID__) || defined(ANDROID)
     std::vector<AHardwareBuffer*> m_aHardwareBuffers;

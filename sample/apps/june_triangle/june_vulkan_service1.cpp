@@ -24,38 +24,6 @@ void JuneVulkanService1::begin()
 {
     JuneVulkanService::begin();
 
-    // Create Shared Memory
-    {
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
-        };
-
-        AHardwareBuffer* ahb = nullptr;
-
-        int result = AHardwareBuffer_allocate(&ahbDesc, &ahb);
-        if (result != 0)
-        {
-            spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
-            return;
-        }
-
-        JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
-        juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
-        juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = ahb;
-
-        JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
-        juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
-
-        auto sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-        m_sharingMemories.push_back(sharingMemory);
-#endif
-    }
-
     // Create Fence
     {
         JuneFenceCreateDescriptor fenceDescriptor;
@@ -95,7 +63,7 @@ void JuneVulkanService1::begin()
 
         JuneResourceCreateDescriptor juneResourceDescriptor{};
         juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharingMemories[0];
+        juneResourceDescriptor.sharedMemory = m_sharedMemories[0];
 
         m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
 

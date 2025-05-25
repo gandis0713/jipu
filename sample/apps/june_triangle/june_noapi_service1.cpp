@@ -32,82 +32,6 @@ void JuneNoApiService1::begin()
     createInstance(label);
     createApiContext(label);
 
-    // Create Shared Memory
-    {
-#if defined(__ANDROID__) || defined(ANDROID)
-        AHardwareBuffer_Desc aHardwareBufferDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT | AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY
-        };
-
-        uint32_t bytesPerPixel = 0;
-        switch (aHardwareBufferDesc.format)
-        {
-        case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
-        case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
-            bytesPerPixel = 4;
-            break;
-        case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
-            bytesPerPixel = 2;
-            break;
-        default:
-            spdlog::warn("Unsupported buffer format (0x{:X});", aHardwareBufferDesc.format);
-            return;
-        }
-
-        m_aHardwareBufferDescs.push_back(aHardwareBufferDesc);
-        // m_aHardwareBufferDescs.push_back(aHardwareBufferDesc);
-
-        m_bytesPerPixels.push_back(bytesPerPixel);
-        // m_bytesPerPixels.push_back(bytesPerPixel);
-
-        for (auto& desc : m_aHardwareBufferDescs)
-        {
-            AHardwareBuffer* ahb = nullptr;
-            int result = AHardwareBuffer_allocate(&desc, &ahb);
-            if (result != 0)
-            {
-                spdlog::error("Failed to allocate AHardwareBuffer1: {}", result);
-                return;
-            }
-
-            m_aHardwareBuffers.push_back(ahb);
-        }
-
-        for (auto i = 0; i < m_aHardwareBuffers.size(); ++i)
-        {
-            void* ptr;
-            int result = AHardwareBuffer_lock(m_aHardwareBuffers[i], AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1, nullptr, &ptr);
-            if (result != 0)
-            {
-                spdlog::error("Failed to AHardwareBuffer lock to fill color. {}", result);
-            }
-
-            std::fill_n(static_cast<uint32_t*>(ptr), m_aHardwareBufferDescs[i].width * m_aHardwareBufferDescs[i].height, 0xff00ffff);
-
-            result = AHardwareBuffer_unlock(m_aHardwareBuffers[i], nullptr);
-            if (result != 0)
-            {
-                spdlog::error("Failed to AHardwareBuffer unlock to fill color. {}", result);
-            }
-        }
-
-        for (auto ahb : m_aHardwareBuffers)
-        {
-            JuneSharedMemoryAHardwareBufferImportDescriptor juneSharedMemoryAHardwareBufferImportDescriptor{};
-            juneSharedMemoryAHardwareBufferImportDescriptor.chain.sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor;
-            juneSharedMemoryAHardwareBufferImportDescriptor.aHardwareBuffer = ahb;
-            JuneSharedMemoryImportDescriptor juneSharedMemoryDescriptor{};
-            juneSharedMemoryDescriptor.nextInChain = &juneSharedMemoryAHardwareBufferImportDescriptor.chain;
-            auto sharingMemory = m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryDescriptor);
-            m_sharingMemories.push_back(sharingMemory);
-        }
-#endif
-    }
-
     // Create Fence
     {
         std::string label = "noapi service1 fence";
@@ -232,5 +156,34 @@ void JuneNoApiService1::work()
         m_juneAPI.FenceReset(m_signalFence, &descriptor);
     }
 }
+#if defined(__ANDROID__) || defined(ANDROID)
+void JuneNoApiService1::addAHardwareBuffer(AHardwareBuffer* aHardwareBuffer)
+{
+    if (aHardwareBuffer)
+    {
+        AHardwareBuffer_Desc aHardwareBufferDesc;
+        AHardwareBuffer_describe(aHardwareBuffer, &aHardwareBufferDesc);
+
+        uint32_t bytesPerPixel = 0;
+        switch (aHardwareBufferDesc.format)
+        {
+        case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
+        case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
+            bytesPerPixel = 4;
+            break;
+        case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
+            bytesPerPixel = 2;
+            break;
+        default:
+            spdlog::warn("Unsupported buffer format (0x{:X});", aHardwareBufferDesc.format);
+            return;
+        }
+
+        m_aHardwareBuffers.push_back(aHardwareBuffer);
+        m_aHardwareBufferDescs.push_back(aHardwareBufferDesc);
+        m_bytesPerPixels.push_back(bytesPerPixel);
+    }
+}
+#endif
 
 } // namespace jipu

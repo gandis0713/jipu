@@ -7,6 +7,8 @@
 #include "june_vulkan_service2.h"
 #include "june_vulkan_service3.h"
 
+#include <spdlog/spdlog.h>
+
 namespace jipu
 {
 
@@ -23,8 +25,17 @@ void JuneTriangleSample::init()
 {
     JuneSample::init();
 
-    uint32_t serviceCase = 0;
+    loadJuneLibrary();
+    createInstance("JuneTriangleSample");
+    createSharedMemories();
 
+    if (m_sharedMemories.empty())
+    {
+        spdlog::error("No shared memories created, exiting.");
+        return;
+    }
+
+    uint32_t serviceCase = 0;
     if (serviceCase == 0)
     {
         {
@@ -76,12 +87,17 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemories = m_noapiService1->getSharingMemories();
-        for (auto sharingMemory : sharingMemories)
+#if defined(__ANDROID__) || defined(ANDROID)
+        for (auto aHardwareBuffer : m_aHardwareBuffers)
         {
-            m_glesService1->addSharedMemory(sharingMemory);
-            m_glesService2->addSharedMemory(sharingMemory);
+            static_cast<JuneNoApiService1*>(m_noapiService1.get())->addAHardwareBuffer(aHardwareBuffer);
         }
+#endif
+
+        m_glesService1->addSharedMemory(m_sharedMemories[0]);
+        m_glesService2->addSharedMemory(m_sharedMemories[0]);
+        // m_glesService1->addSharedMemory(m_sharedMemories[1]);
+        // m_glesService2->addSharedMemory(m_sharedMemories[1]);
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
@@ -149,11 +165,10 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemories = m_noapiService1->getSharingMemories();
-        m_glesService1->addSharedMemory(sharingMemories[0]);
-        // m_glesService1->addSharedMemory(sharingMemories[1]);
-        // m_vulkanService1->addSharedMemory(sharingMemories[1]);
-        m_vulkanService1->addSharedMemory(sharingMemories[0]);
+        m_glesService1->addSharedMemory(m_sharedMemories[0]);
+        // m_glesService1->addSharedMemory(m_sharedMemories[1]);
+        // m_vulkanService1->addSharedMemory(m_sharedMemories[1]);
+        m_vulkanService1->addSharedMemory(m_sharedMemories[0]);
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
@@ -230,8 +245,7 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemories = m_glesService1->getSharingMemories();
-        m_vulkanService2->addSharedMemory(sharingMemories[0]);
+        m_vulkanService2->addSharedMemory(m_sharedMemories[0]);
 
         auto glesService1SignalFence = m_glesService1->getSignalFence();
         auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
@@ -278,8 +292,7 @@ void JuneTriangleSample::init()
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemories = m_vulkanService1->getSharingMemories();
-        m_glesService2->addSharedMemory(sharingMemories[0]);
+        m_glesService2->addSharedMemory(m_sharedMemories[0]);
 
         auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
         auto glesService2SignalFence = m_glesService2->getSignalFence();
@@ -287,6 +300,48 @@ void JuneTriangleSample::init()
         m_vulkanService1->addWaitFence(glesService2SignalFence);
         m_glesService2->addWaitFence(vulkanService1SignalFence);
     }
+}
+
+void JuneTriangleSample::createSharedMemories()
+{
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    {
+        for (size_t i = 0; i < 3; ++i)
+        {
+            AHardwareBuffer* aHardwareBuffer = nullptr;
+
+            AHardwareBuffer_Desc aHardwareBufferDesc = {
+                .width = m_width,
+                .height = m_height,
+                .layers = 1,
+                .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
+                .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT | AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY
+            };
+
+            int result = AHardwareBuffer_allocate(&aHardwareBufferDesc, &aHardwareBuffer);
+            if (result != 0)
+            {
+                spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
+                return;
+            }
+
+            m_aHardwareBuffers.push_back(aHardwareBuffer);
+
+            JuneSharedMemoryAHardwareBufferImportDescriptor aHardwareBufferImportDescriptor{
+                .chain = { .sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor },
+                .aHardwareBuffer = aHardwareBuffer
+            };
+
+            JuneSharedMemoryImportDescriptor juneSharedMemoryImportDescriptor{
+                .nextInChain = &aHardwareBufferImportDescriptor.chain,
+                .label = { .data = "JuneTriangleSampleSharedMemoryAHardwareBuffer", .length = 32 }
+            };
+
+            m_sharedMemories.push_back(m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryImportDescriptor));
+        }
+    }
+#endif
 }
 
 } // namespace jipu

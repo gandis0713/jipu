@@ -3,6 +3,11 @@
 #include "june/june.h"
 #include "june/june_sample.h"
 
+#if defined(__ANDROID__) || defined(ANDROID)
+#include <android/hardware_buffer.h>
+#include <android/native_window.h>
+#endif
+
 namespace jipu
 {
 
@@ -14,6 +19,9 @@ public:
     ~JuneTriangleSample() override;
 
     void init() override;
+
+private:
+    void createSharedMemories();
 
 private:
     std::unique_ptr<JuneService> m_glesService1{ nullptr };
@@ -29,6 +37,11 @@ private:
     [[maybe_unused]] bool m_vulkanService1Ready{ false };
     [[maybe_unused]] bool m_vulkanService2Ready{ false };
     [[maybe_unused]] bool m_vulkanService3Ready{ false };
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    std::vector<AHardwareBuffer*> m_aHardwareBuffers{};
+#endif
+    std::vector<JuneSharedMemory> m_sharedMemories{};
 };
 
 } // namespace jipu
