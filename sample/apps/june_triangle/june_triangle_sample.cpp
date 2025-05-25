@@ -35,7 +35,7 @@ void JuneTriangleSample::init()
         return;
     }
 
-    uint32_t serviceCase = 0;
+    uint32_t serviceCase = 1;
     if (serviceCase == 0)
     {
         {
@@ -144,7 +144,7 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{ .fps = 30,
+            m_vulkanService2 = std::make_unique<JuneVulkanService2>(JuneServiceDescriptor{ .fps = 30,
                                                                                            .width = m_width,
                                                                                            .height = m_height,
                                                                                            .windowHandle = getWindowHandle(),
@@ -152,36 +152,42 @@ void JuneTriangleSample::init()
                                                                                            .appDir = m_appDir,
                                                                                            .appHandle = m_handle });
 
-            m_vulkanService1->start(JuneServiceStartDescriptor{
+            m_vulkanService2->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
-                    m_vulkanService1Ready = true;
+                    m_vulkanService2Ready = true;
                 } });
         }
 
         while (!m_noapiService1Ready ||
                !m_glesService1Ready ||
-               !m_vulkanService1Ready)
+               !m_vulkanService2Ready)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
+#if defined(__ANDROID__) || defined(ANDROID)
+        for (auto aHardwareBuffer : m_aHardwareBuffers)
+        {
+            static_cast<JuneNoApiService1*>(m_noapiService1.get())->addAHardwareBuffer(aHardwareBuffer);
+        }
+#endif
 
         m_glesService1->addSharedMemory(m_sharedMemories[0]);
         // m_glesService1->addSharedMemory(m_sharedMemories[1]);
-        // m_vulkanService1->addSharedMemory(m_sharedMemories[1]);
-        m_vulkanService1->addSharedMemory(m_sharedMemories[0]);
+        // m_vulkanService2->addSharedMemory(m_sharedMemories[1]);
+        m_vulkanService2->addSharedMemory(m_sharedMemories[0]);
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
-        auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
+        auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
 
         m_noapiService1->addWaitFence(glesService1SignalFence);
-        m_noapiService1->addWaitFence(vulkanService1SignalFence);
+        m_noapiService1->addWaitFence(vulkanService2SignalFence);
 
         m_glesService1->addWaitFence(noapiService1SignalFence);
-        m_glesService1->addWaitFence(vulkanService1SignalFence);
+        m_glesService1->addWaitFence(vulkanService2SignalFence);
 
-        m_vulkanService1->addWaitFence(noapiService1SignalFence);
-        m_vulkanService1->addWaitFence(glesService1SignalFence);
+        m_vulkanService2->addWaitFence(noapiService1SignalFence);
+        m_vulkanService2->addWaitFence(glesService1SignalFence);
     }
 
     if (serviceCase == 2)

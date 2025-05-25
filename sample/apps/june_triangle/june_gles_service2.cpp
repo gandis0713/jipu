@@ -112,10 +112,9 @@ void JuneGLESService2::work()
     if (sharedMemories.size() < 1)
         return;
 
+    std::vector<EGLSyncKHR> waitEGLSyncs{};
     {
-        std::vector<EGLSyncKHR> waitEGLSyncs{};
         std::vector<JuneFence> waitFences = getWaitFences();
-
         for (const auto& fence : waitFences)
         {
             JuneFenceEGLSyncExportDescriptor eglSyncExportDescriptor{};
@@ -126,45 +125,46 @@ void JuneGLESService2::work()
             descriptor.fence = fence;
 
             m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
-
-            if (eglSyncExportDescriptor.eglSync)
+            if (!eglSyncExportDescriptor.eglSync)
             {
-                waitEGLSyncs.push_back(eglSyncExportDescriptor.eglSync);
-            }
-        }
-
-        for (auto count = 0; count < waitEGLSyncs.size(); ++count)
-        {
-            if (waitEGLSyncs[count] == nullptr)
-            {
-                spdlog::trace("EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
+                spdlog::trace("EGLSync null in gles service 2: {:p}", eglSyncExportDescriptor.eglSync);
                 continue;
             }
+            waitEGLSyncs.push_back(eglSyncExportDescriptor.eglSync);
+        }
+    }
 
-            // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
-            // CHECK_EGL_ERROR();
-            // if (eglResult == EGL_FALSE)
-            // {
-            //     CHECK_GL_ERROR();
-            //     // spdlog::error("gles service 1 eglWaitSyncKHR failed");
-            //     return;
-            // }
+    for (auto count = 0; count < waitEGLSyncs.size(); ++count)
+    {
+        if (waitEGLSyncs[count] == nullptr)
+        {
+            spdlog::trace("EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
+            continue;
+        }
 
-            EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SYNC_FLUSH_COMMANDS_BIT, 0);
-            CHECK_EGL_ERROR();
-            if (eglResult == EGL_FALSE)
-            {
-                CHECK_GL_ERROR();
-                spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
-                return;
-            }
+        // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
+        // CHECK_EGL_ERROR();
+        // if (eglResult == EGL_FALSE)
+        // {
+        //     CHECK_GL_ERROR();
+        //     // spdlog::error("gles service 1 eglWaitSyncKHR failed");
+        //     return;
+        // }
 
-            auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
-            CHECK_EGL_ERROR();
-            if (!deleted)
-            {
-                spdlog::error("Charles Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
-            }
+        EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SYNC_FLUSH_COMMANDS_BIT, 0);
+        CHECK_EGL_ERROR();
+        if (eglResult == EGL_FALSE)
+        {
+            CHECK_GL_ERROR();
+            spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
+            return;
+        }
+
+        auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
+        CHECK_EGL_ERROR();
+        if (!deleted)
+        {
+            spdlog::error("Charles Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
         }
     }
 
@@ -179,7 +179,6 @@ void JuneGLESService2::work()
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImages[0]);
 
     glUseProgram(m_programObject);
-    CHECK_GL_ERROR();
 
     GLfloat vertices[] = {
         -1.0f, 1.0f, 0.0f,  // 좌측 상단
@@ -196,37 +195,23 @@ void JuneGLESService2::work()
     GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
     GLint posLoc = glGetAttribLocation(m_programObject, "aPosition");
-    CHECK_GL_ERROR();
     GLint texLoc = glGetAttribLocation(m_programObject, "aTexCoord");
-    CHECK_GL_ERROR();
     glEnableVertexAttribArray(posLoc);
-    CHECK_GL_ERROR();
     glEnableVertexAttribArray(texLoc);
-    CHECK_GL_ERROR();
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-    CHECK_GL_ERROR();
     glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
-    CHECK_GL_ERROR();
 
     GLint texUniform = glGetUniformLocation(m_programObject, "uTexture");
-    CHECK_GL_ERROR();
     glUniform1i(texUniform, 0);
-    CHECK_GL_ERROR();
 
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
-    CHECK_GL_ERROR();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    CHECK_GL_ERROR();
     glClear(GL_COLOR_BUFFER_BIT);
-    CHECK_GL_ERROR();
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
-    CHECK_GL_ERROR();
 
     // glFlush();
-    // CHECK_GL_ERROR();
     // glFinish();
-    // CHECK_GL_ERROR();
 
     if (m_descriptor.windowHandle)
     {
@@ -247,9 +232,7 @@ void JuneGLESService2::work()
     }
 
     glDisableVertexAttribArray(posLoc);
-    CHECK_GL_ERROR();
     glDisableVertexAttribArray(texLoc);
-    CHECK_GL_ERROR();
 
     spdlog::debug("gles service2 end work");
 }
@@ -271,7 +254,7 @@ void JuneGLESService2::end()
         if (texture)
         {
             glDeleteTextures(1, &texture);
-            CHECK_GL_ERROR();
+            // CHECK_GL_ERROR();
         }
     }
 

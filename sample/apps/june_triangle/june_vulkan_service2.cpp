@@ -26,7 +26,7 @@ void JuneVulkanService2::begin()
 
     // Create Fence
     {
-        JuneFenceCreateDescriptor fenceDescriptor;
+        JuneFenceCreateDescriptor fenceDescriptor{};
         m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
     }
 }

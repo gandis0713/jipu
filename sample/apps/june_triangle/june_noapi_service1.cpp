@@ -47,8 +47,6 @@ void JuneNoApiService1::work()
     std::vector<UniqueHandle> waitSyncFDs{};
 
     std::vector<JuneFence> waitFences = getWaitFences();
-
-    spdlog::trace("Charles Try to get sync object in noapi service1.");
     for (const auto& fence : waitFences)
     {
         JuneFenceSyncFDExportDescriptor syncFDExportDescriptor{};

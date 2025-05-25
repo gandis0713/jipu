@@ -88,11 +88,9 @@ void JuneGLESService1::work()
     if (sharedMemories.size() < 1)
         return;
 
+    std::vector<EGLSyncKHR> waitEGLSyncs{};
     {
-        std::vector<EGLSyncKHR> waitEGLSyncs{};
         std::vector<JuneFence> waitFences = getWaitFences();
-
-        spdlog::trace("Charles Try to get sync object in gles service1.");
         for (const auto& fence : waitFences)
         {
             JuneFenceEGLSyncExportDescriptor eglSyncExportDescriptor{};
@@ -104,45 +102,47 @@ void JuneGLESService1::work()
 
             m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
 
-            if (eglSyncExportDescriptor.eglSync)
+            if (!eglSyncExportDescriptor.eglSync)
             {
-                waitEGLSyncs.push_back(eglSyncExportDescriptor.eglSync);
-            }
-        }
-
-        for (auto count = 0; count < waitEGLSyncs.size(); ++count)
-        {
-            if (waitEGLSyncs[count] == nullptr)
-            {
-                spdlog::trace("Charles EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
+                spdlog::trace("Charles EGLSync null in gles service 1: {:p}", eglSyncExportDescriptor.eglSync);
                 continue;
             }
+            waitEGLSyncs.push_back(eglSyncExportDescriptor.eglSync);
+        }
+    }
 
-            // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
-            // CHECK_EGL_ERROR();
-            // if (eglResult == EGL_FALSE)
-            // {
-            //     CHECK_GL_ERROR();
-            //     spdlog::error("gles service 1 eglWaitSyncKHR failed");
-            //     return;
-            // }
+    for (auto count = 0; count < waitEGLSyncs.size(); ++count)
+    {
+        if (waitEGLSyncs[count] == nullptr)
+        {
+            spdlog::trace("Charles EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
+            continue;
+        }
 
-            EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SYNC_FLUSH_COMMANDS_BIT, 0);
-            CHECK_EGL_ERROR();
-            if (eglResult == EGL_FALSE)
-            {
-                CHECK_GL_ERROR();
-                spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
-                return;
-            }
+        // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
+        // CHECK_EGL_ERROR();
+        // if (eglResult == EGL_FALSE)
+        // {
+        //     CHECK_GL_ERROR();
+        //     spdlog::error("gles service 1 eglWaitSyncKHR failed");
+        //     return;
+        // }
 
-            spdlog::trace("Charles EGLSync Destroyed in gles service 2: {:p}", waitEGLSyncs[count]);
-            auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
-            CHECK_EGL_ERROR();
-            if (!deleted)
-            {
-                spdlog::error("Charles Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
-            }
+        EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SYNC_FLUSH_COMMANDS_BIT, 0);
+        CHECK_EGL_ERROR();
+        if (eglResult == EGL_FALSE)
+        {
+            CHECK_GL_ERROR();
+            spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
+            return;
+        }
+
+        spdlog::trace("Charles EGLSync Destroyed in gles service 2: {:p}", waitEGLSyncs[count]);
+        auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
+        CHECK_EGL_ERROR();
+        if (!deleted)
+        {
+            spdlog::error("Charles Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
         }
     }
 
@@ -159,14 +159,8 @@ void JuneGLESService1::work()
     GLuint fbo;
     {
         glGenFramebuffers(1, &fbo);
-
-        CHECK_GL_ERROR();
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-        CHECK_GL_ERROR();
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[0], 0);
-
-        CHECK_GL_ERROR();
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
             spdlog::debug("Framebuffer is not complete");
@@ -177,7 +171,6 @@ void JuneGLESService1::work()
     }
 
     glUseProgram(m_programObject);
-    CHECK_GL_ERROR();
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -206,32 +199,22 @@ void JuneGLESService1::work()
     GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
     GLint posLoc = glGetAttribLocation(m_programObject, "aPosition");
-    CHECK_GL_ERROR();
     glEnableVertexAttribArray(posLoc);
-    CHECK_GL_ERROR();
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
-    CHECK_GL_ERROR();
 
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
-    CHECK_GL_ERROR();
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    CHECK_GL_ERROR();
     glClear(GL_COLOR_BUFFER_BIT);
-    CHECK_GL_ERROR();
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
-    CHECK_GL_ERROR();
 
     // glFlush();
-    // CHECK_GL_ERROR();
     // glFinish();
-    // CHECK_GL_ERROR();
 
     if (m_descriptor.windowHandle)
     {
         spdlog::debug("gles service1 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
-        CHECK_EGL_ERROR();
     }
     else
     {
@@ -246,9 +229,7 @@ void JuneGLESService1::work()
     }
 
     glDisableVertexAttribArray(posLoc);
-    CHECK_GL_ERROR();
     glDeleteFramebuffers(1, &fbo);
-    CHECK_GL_ERROR();
 
     spdlog::debug("gles service1 end work");
 }
