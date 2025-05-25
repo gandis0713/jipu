@@ -42,7 +42,7 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 30,
+            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 120,
                                                                                        .width = m_width,
                                                                                        .height = m_height,
                                                                                        .windowHandle = nullptr,
@@ -77,10 +77,11 @@ void JuneTriangleSample::init()
         }
 
         auto sharingMemories = m_noapiService1->getSharingMemories();
-        m_glesService1->addSharedMemory(sharingMemories[0]);
-        m_glesService1->addSharedMemory(sharingMemories[1]);
-        m_glesService2->addSharedMemory(sharingMemories[1]);
-        m_glesService2->addSharedMemory(sharingMemories[0]);
+        for (auto sharingMemory : sharingMemories)
+        {
+            m_glesService1->addSharedMemory(sharingMemory);
+            m_glesService2->addSharedMemory(sharingMemory);
+        }
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
@@ -99,10 +100,38 @@ void JuneTriangleSample::init()
     if (serviceCase == 1)
     {
         {
+            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{ .fps = 30,
+                                                                                         .width = m_width,
+                                                                                         .height = m_height,
+                                                                                         .windowHandle = nullptr,
+                                                                                         .appPath = m_appPath,
+                                                                                         .appDir = m_appDir,
+                                                                                         .appHandle = m_handle });
+            m_noapiService1->start(JuneServiceStartDescriptor{
+                .callback = [this]() {
+                    m_noapiService1Ready = true;
+                } });
+        }
+
+        {
+            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 120,
+                                                                                       .width = m_width,
+                                                                                       .height = m_height,
+                                                                                       .windowHandle = nullptr,
+                                                                                       .appPath = m_appPath,
+                                                                                       .appDir = m_appDir,
+                                                                                       .appHandle = m_handle });
+            m_glesService1->start(JuneServiceStartDescriptor{
+                .callback = [this]() {
+                    m_glesService1Ready = true;
+                } });
+        }
+
+        {
             m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{ .fps = 30,
                                                                                            .width = m_width,
                                                                                            .height = m_height,
-                                                                                           .windowHandle = nullptr,
+                                                                                           .windowHandle = getWindowHandle(),
                                                                                            .appPath = m_appPath,
                                                                                            .appDir = m_appDir,
                                                                                            .appHandle = m_handle });
@@ -113,36 +142,31 @@ void JuneTriangleSample::init()
                 } });
         }
 
-        {
-            m_vulkanService2 = std::make_unique<JuneVulkanService2>(JuneServiceDescriptor{ .fps = 30,
-                                                                                           .width = m_width,
-                                                                                           .height = m_height,
-                                                                                           .windowHandle = getWindowHandle(),
-                                                                                           .appPath = m_appPath,
-                                                                                           .appDir = m_appDir,
-                                                                                           .appHandle = m_handle });
-
-            m_vulkanService2->start(JuneServiceStartDescriptor{
-                .callback = [this]() {
-                    m_vulkanService2Ready = true;
-                } });
-        }
-
-        while (
-            !m_vulkanService1Ready ||
-            !m_vulkanService2Ready)
+        while (!m_noapiService1Ready ||
+               !m_glesService1Ready ||
+               !m_vulkanService1Ready)
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
-        auto sharingMemories = m_vulkanService1->getSharingMemories();
-        m_vulkanService2->addSharedMemory(sharingMemories[0]);
+        auto sharingMemories = m_noapiService1->getSharingMemories();
+        m_glesService1->addSharedMemory(sharingMemories[0]);
+        // m_glesService1->addSharedMemory(sharingMemories[1]);
+        // m_vulkanService1->addSharedMemory(sharingMemories[1]);
+        m_vulkanService1->addSharedMemory(sharingMemories[0]);
 
+        auto noapiService1SignalFence = m_noapiService1->getSignalFence();
+        auto glesService1SignalFence = m_glesService1->getSignalFence();
         auto vulkanService1SignalFence = m_vulkanService1->getSignalFence();
-        auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
 
-        m_vulkanService1->addWaitFence(vulkanService2SignalFence);
-        m_vulkanService2->addWaitFence(vulkanService1SignalFence);
+        m_noapiService1->addWaitFence(glesService1SignalFence);
+        m_noapiService1->addWaitFence(vulkanService1SignalFence);
+
+        m_glesService1->addWaitFence(noapiService1SignalFence);
+        m_glesService1->addWaitFence(vulkanService1SignalFence);
+
+        m_vulkanService1->addWaitFence(noapiService1SignalFence);
+        m_vulkanService1->addWaitFence(glesService1SignalFence);
     }
 
     if (serviceCase == 2)

@@ -1,7 +1,9 @@
 #include "june_gles_service1.h"
 
 #include "file.h"
+#include <random>
 #include <spdlog/spdlog.h>
+#include <thread>
 
 namespace jipu
 {
@@ -9,104 +11,25 @@ namespace jipu
 namespace
 {
 
-const char* vertexShaderSource = R"(#version 300 es
+const char* vertexShaderSource = R"(#version 310 es
 in vec4 aPosition;
-in vec2 aTexCoord;
-out vec2 vTexCoord;
 
 void main()
 {
     gl_Position = aPosition;
-    vTexCoord = aTexCoord;
 }
 )";
 
-const char* fragmentShaderSource = R"(#version 300 es
+const char* fragmentShaderSource = R"(#version 310 es
 precision mediump float;
-in vec2 vTexCoord;
-uniform sampler2D uTexture;
+uniform vec4 uColor;
 out vec4 fragColor;
 
 void main()
 {
-    vec4 color = texture(uTexture, vTexCoord);
-    fragColor = vec4(color.rgb - 0.00, 1.0);
+    fragColor = uColor;
 }
 )";
-
-GLuint compileShader(GLenum type, const char* source)
-{
-    GLuint shader = glCreateShader(type);
-    if (shader == 0)
-    {
-        spdlog::error("Failed to create shader");
-        return shader;
-    }
-    glShaderSource(shader, 1, &source, NULL);
-    glCompileShader(shader);
-
-    GLint compiled;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-        spdlog::error("Failed to compile shader. compiled: {}", compiled);
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-            spdlog::error("Failed to compile shader: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
-
-GLuint createProgram(const char* vertexSource, const char* fragmentSource)
-{
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
-    if (!vertexShader)
-        return 0;
-
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-    if (!fragmentShader)
-        return 0;
-
-    GLuint program = glCreateProgram();
-    if (program == 0)
-        return 0;
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-
-    glLinkProgram(program);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
-            spdlog::error("Failed to link program: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteProgram(program);
-        return 0;
-    }
-
-    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return program;
-}
 
 } // namespace
 
@@ -124,25 +47,24 @@ void JuneGLESService1::begin()
     JuneGLESService::begin();
 
     {
-        // std::vector<char> vertex = utils::readFile(m_descriptor.appDir / "gles_service1_vert.glsl", m_descriptor.appHandle);
-        // std::vector<char> fragment = utils::readFile(m_descriptor.appDir / "gles_service1_frag.glsl", m_descriptor.appHandle);
-        // m_programObject = createProgram(vertex.data(), fragment.data());
-        m_programObject = createProgram(vertexShaderSource, fragmentShaderSource);
+        // {
+        //     std::vector<char> vertex = utils::readFile(m_descriptor.appDir / "gles_service1_vert.glsl", m_descriptor.appHandle);
+        //     std::vector<char> fragment = utils::readFile(m_descriptor.appDir / "gles_service1_frag.glsl", m_descriptor.appHandle);
+        //     m_programObject = createProgram(vertex.data(), fragment.data());
+        // }
+        {
+            m_programObject = createProgram(vertexShaderSource, fragmentShaderSource);
+        }
         if (m_programObject == 0)
         {
             throw std::runtime_error("Failed to create program 1");
         }
 
         glBindAttribLocation(m_programObject, 0, "aPosition");
-        glBindAttribLocation(m_programObject, 1, "aTexCoord");
 
         GLuint texture1;
         glGenTextures(1, &texture1);
         m_textures.push_back(texture1);
-
-        GLuint texture2;
-        glGenTextures(1, &texture2);
-        m_textures.push_back(texture2);
     }
     std::string label = "gles service1";
 
@@ -161,8 +83,9 @@ void JuneGLESService1::begin()
 
 void JuneGLESService1::work()
 {
+    spdlog::debug("gles service1 begin work");
     auto sharedMemories = getSharedMemories();
-    if (sharedMemories.size() < 2)
+    if (sharedMemories.size() < 1)
         return;
 
     {
@@ -225,8 +148,7 @@ void JuneGLESService1::work()
 
     spdlog::debug("gles service1 begin access");
 
-    // ──────────────────────── 1. 샘플링용 텍스처 설정 ────────────────────────
-    glActiveTexture(GL_TEXTURE0); // ★ 샘플링 유닛 선택
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -234,16 +156,6 @@ void JuneGLESService1::work()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImages[0]);
 
-    // ──────────────────────── 2. 렌더 타깃 텍스처(FBO) 설정 ────────────────────────
-    glActiveTexture(GL_TEXTURE1); // ★ 렌더 타깃 유닛 선택
-    glBindTexture(GL_TEXTURE_2D, m_textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // 권장: 파라미터 명시
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImages[1]);
-
-    // 렌더링을 위해 FBO 생성 및 텍스처 부착
     GLuint fbo;
     {
         glGenFramebuffers(1, &fbo);
@@ -252,7 +164,7 @@ void JuneGLESService1::work()
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
         CHECK_GL_ERROR();
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[1], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[0], 0);
 
         CHECK_GL_ERROR();
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -266,6 +178,18 @@ void JuneGLESService1::work()
 
     glUseProgram(m_programObject);
     CHECK_GL_ERROR();
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+    // float r = dis(gen);
+    r = 1.0f;
+    // float g = dis(gen);
+    g = 1.0f;
+    float b = dis(gen);
+
+    GLint colorLoc = glGetUniformLocation(m_programObject, "uColor");
+    glUniform4f(colorLoc, r, g, b, 1.0f);
 
     GLfloat vertices[] = {
         -1.0f, 1.0f, 0.0f,  // 좌측 상단
@@ -283,31 +207,17 @@ void JuneGLESService1::work()
 
     GLint posLoc = glGetAttribLocation(m_programObject, "aPosition");
     CHECK_GL_ERROR();
-    GLint texLoc = glGetAttribLocation(m_programObject, "aTexCoord");
-    CHECK_GL_ERROR();
     glEnableVertexAttribArray(posLoc);
-    CHECK_GL_ERROR();
-    glEnableVertexAttribArray(texLoc);
     CHECK_GL_ERROR();
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     CHECK_GL_ERROR();
-    glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, texCoords);
-    CHECK_GL_ERROR();
-
-    GLint texUniform = glGetUniformLocation(m_programObject, "uTexture");
-    CHECK_GL_ERROR();
-    glUniform1i(texUniform, 0);
-    CHECK_GL_ERROR();
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textures[0]);
 
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
     CHECK_GL_ERROR();
-    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    // CHECK_GL_ERROR();
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // CHECK_GL_ERROR();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_GL_ERROR();
+    glClear(GL_COLOR_BUFFER_BIT);
+    CHECK_GL_ERROR();
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     CHECK_GL_ERROR();
@@ -337,10 +247,10 @@ void JuneGLESService1::work()
 
     glDisableVertexAttribArray(posLoc);
     CHECK_GL_ERROR();
-    glDisableVertexAttribArray(texLoc);
-    CHECK_GL_ERROR();
     glDeleteFramebuffers(1, &fbo);
     CHECK_GL_ERROR();
+
+    spdlog::debug("gles service1 end work");
 }
 
 void JuneGLESService1::end()

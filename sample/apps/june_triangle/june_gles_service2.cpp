@@ -9,104 +9,50 @@ namespace jipu
 namespace
 {
 
-const char* vertexShaderSource = R"(#version 300 es
+const char* vertexShaderSource = R"(#version 320 es
 in vec4 aPosition;
+// flat out int vDiscard;
 in vec2 aTexCoord;
 out vec2 vTexCoord;
+
+// uniform sampler2D uTexture;
 
 void main()
 {
     gl_Position = aPosition;
     vTexCoord = aTexCoord;
+    
+    // int width = 1080;
+    // int height = 2340;
+
+    // float uInvLargestDim = 1.0f / float(max(width, height));
+    // float lod = 1.0 / uInvLargestDim;   // log2(maxDim) 를 컴파일 타임 fold
+    // vec4   sample1x1 = textureLod(uTexture, vec2(0.5), lod);
+    // vec4   refTexel  = texelFetch(uTexture, ivec2(0, 0), 0);
+    // bool   isMono    = all(equal(sample1x1, refTexel));
+
+    // vDiscard = isMono ? 0 : 1;
 }
 )";
 
-const char* fragmentShaderSource = R"(#version 300 es
+const char* fragmentShaderSource = R"(#version 320 es
 precision mediump float;
+// flat in int vDiscard;
 in vec2 vTexCoord;
-uniform sampler2D uTexture;
 out vec4 fragColor;
+
+uniform sampler2D uTexture;
 
 void main()
 {
-    vec4 color = texture(uTexture, vTexCoord);
-    fragColor = vec4(color.rgb - 0.00, 1.0);
+    // if(vDiscard == 1)
+    // {
+    //     discard;
+    // }
+
+    fragColor = texture(uTexture, vTexCoord);
 }
 )";
-
-GLuint compileShader(GLenum type, const char* source)
-{
-    GLuint shader = glCreateShader(type);
-    if (shader == 0)
-    {
-        spdlog::error("Failed to create shader");
-        return shader;
-    }
-    glShaderSource(shader, 1, &source, NULL);
-    glCompileShader(shader);
-
-    GLint compiled;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled)
-    {
-        spdlog::error("Failed to compile shader. compiled: {}", compiled);
-        GLint infoLen = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-            spdlog::error("Failed to compile shader: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteShader(shader);
-        return 0;
-    }
-    return shader;
-}
-
-GLuint createProgram(const char* vertexSource, const char* fragmentSource)
-{
-    GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
-    if (!vertexShader)
-        return 0;
-
-    GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-    if (!fragmentShader)
-        return 0;
-
-    GLuint program = glCreateProgram();
-    if (program == 0)
-        return 0;
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-
-    glLinkProgram(program);
-
-    GLint linked;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
-    if (!linked)
-    {
-        GLint infoLen = 0;
-        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLen);
-        if (infoLen > 1)
-        {
-            char* infoLog = (char*)malloc(infoLen);
-            glGetProgramInfoLog(program, infoLen, NULL, infoLog);
-            spdlog::error("Failed to link program: {}", infoLog);
-            free(infoLog);
-        }
-        glDeleteProgram(program);
-        return 0;
-    }
-
-    // 쉐이더 객체는 프로그램에 첨부 후 삭제 가능
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return program;
-}
 
 } // namespace
 
@@ -161,15 +107,15 @@ void JuneGLESService2::begin()
 
 void JuneGLESService2::work()
 {
+    spdlog::debug("gles service2 begin work");
     auto sharedMemories = getSharedMemories();
-    if (sharedMemories.size() < 2)
+    if (sharedMemories.size() < 1)
         return;
 
     {
         std::vector<EGLSyncKHR> waitEGLSyncs{};
         std::vector<JuneFence> waitFences = getWaitFences();
 
-        spdlog::trace("Charles Try to get sync object in gles service2.");
         for (const auto& fence : waitFences)
         {
             JuneFenceEGLSyncExportDescriptor eglSyncExportDescriptor{};
@@ -191,7 +137,7 @@ void JuneGLESService2::work()
         {
             if (waitEGLSyncs[count] == nullptr)
             {
-                spdlog::trace("Charles EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
+                spdlog::trace("EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
                 continue;
             }
 
@@ -200,7 +146,7 @@ void JuneGLESService2::work()
             // if (eglResult == EGL_FALSE)
             // {
             //     CHECK_GL_ERROR();
-            //     spdlog::error("gles service 1 eglWaitSyncKHR failed");
+            //     // spdlog::error("gles service 1 eglWaitSyncKHR failed");
             //     return;
             // }
 
@@ -213,7 +159,6 @@ void JuneGLESService2::work()
                 return;
             }
 
-            spdlog::trace("Charles EGLSync Destroyed in gles service 2: {:p}", waitEGLSyncs[count]);
             auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
             CHECK_EGL_ERROR();
             if (!deleted)
@@ -225,44 +170,13 @@ void JuneGLESService2::work()
 
     spdlog::debug("gles service2 begin access");
 
-    // ──────────────────────── 1. 샘플링용 텍스처 설정 ────────────────────────
-    glActiveTexture(GL_TEXTURE0); // ★ 샘플링 유닛 선택
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textures[0]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImages[0]);
-
-    // ──────────────────────── 2. 렌더 타깃 텍스처(FBO) 설정 ────────────────────────
-    glActiveTexture(GL_TEXTURE1); // ★ 렌더 타깃 유닛 선택
-    glBindTexture(GL_TEXTURE_2D, m_textures[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // 권장: 파라미터 명시
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, m_eglImages[1]);
-
-    // 렌더링을 위해 FBO 생성 및 텍스처 부착
-    GLuint fbo;
-    {
-        glGenFramebuffers(1, &fbo);
-
-        CHECK_GL_ERROR();
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-        CHECK_GL_ERROR();
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[1], 0);
-
-        CHECK_GL_ERROR();
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            spdlog::debug("Framebuffer is not complete");
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            glDeleteFramebuffers(1, &fbo);
-            return;
-        }
-    }
 
     glUseProgram(m_programObject);
     CHECK_GL_ERROR();
@@ -299,15 +213,12 @@ void JuneGLESService2::work()
     glUniform1i(texUniform, 0);
     CHECK_GL_ERROR();
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textures[0]);
-
     glViewport(0, 0, m_descriptor.width, m_descriptor.height);
     CHECK_GL_ERROR();
-    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    // CHECK_GL_ERROR();
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // CHECK_GL_ERROR();
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_GL_ERROR();
+    glClear(GL_COLOR_BUFFER_BIT);
+    CHECK_GL_ERROR();
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     CHECK_GL_ERROR();
@@ -339,8 +250,8 @@ void JuneGLESService2::work()
     CHECK_GL_ERROR();
     glDisableVertexAttribArray(texLoc);
     CHECK_GL_ERROR();
-    glDeleteFramebuffers(1, &fbo);
-    CHECK_GL_ERROR();
+
+    spdlog::debug("gles service2 end work");
 }
 
 void JuneGLESService2::end()
