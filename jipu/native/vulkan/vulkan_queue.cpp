@@ -23,11 +23,8 @@ VulkanQueue::~VulkanQueue()
     waitIdle();
 }
 
-void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
+void VulkanQueue::submit(const VulkanSubmitContext& submitContext)
 {
-    // generate Submit context.
-    VulkanSubmitContext submitContext = VulkanSubmitContext::create(m_device, commandBuffers);
-
     // submit
     auto submits = submitContext.getSubmits();
     auto future = m_submitter->submitAsync(submits);
@@ -63,6 +60,11 @@ void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
             m_notPresentTasks.push(std::move(future));
         }
     }
+}
+
+void VulkanQueue::submit(std::vector<CommandBuffer*> commandBuffers)
+{
+    submit(VulkanSubmitContext::create(m_device, commandBuffers));
 }
 
 void VulkanQueue::waitIdle()

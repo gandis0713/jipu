@@ -649,6 +649,11 @@ VulkanSubmitContext VulkanSubmitContext::create(VulkanDevice* device, const std:
     return context;
 }
 
+std::vector<VulkanSubmit>& VulkanSubmitContext::getSubmitsRef()
+{
+    return m_submits;
+}
+
 const std::vector<VulkanSubmit>& VulkanSubmitContext::getSubmits() const
 {
     return m_submits;

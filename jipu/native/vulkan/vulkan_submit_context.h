@@ -4,6 +4,7 @@
 
 #include "vulkan_api.h"
 #include "vulkan_command_recorder.h"
+#include "vulkan_export.h"
 #include "vulkan_resource.h"
 
 namespace jipu
@@ -18,7 +19,7 @@ enum class SubmitType
     kPresent,
 };
 
-struct VulkanSubmit
+struct VULKAN_EXPORT VulkanSubmit
 {
     struct Info
     {
@@ -83,7 +84,7 @@ struct VulkanSubmit
 };
 
 class VulkanDevice;
-class VulkanSubmitContext final
+class VULKAN_EXPORT VulkanSubmitContext final
 {
 public:
     VulkanSubmitContext() = default;
@@ -93,6 +94,7 @@ public:
     static VulkanSubmitContext create(VulkanDevice* device, const std::vector<CommandBuffer*>& commandBuffers);
 
 public:
+    std::vector<VulkanSubmit>& getSubmitsRef();
     const std::vector<VulkanSubmit>& getSubmits() const;
     std::vector<VulkanSubmit::Info> getSubmitInfos() const;
     std::vector<VulkanSubmit::Object> getSubmitObjects() const;

@@ -25,6 +25,7 @@ public:
     ~VulkanQueue() override;
 
 public:
+    void submit(const VulkanSubmitContext& submitContext);
     void submit(std::vector<CommandBuffer*> commandBuffers) override;
     void waitIdle() override;
 

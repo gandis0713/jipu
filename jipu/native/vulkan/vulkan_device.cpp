@@ -303,6 +303,7 @@ const std::vector<const char*> VulkanDevice::getRequiredDeviceExtensions()
 #if defined(__ANDROID__) || defined(ANDROID)
     requiredDeviceExtensions.push_back(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
     requiredDeviceExtensions.push_back(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+    requiredDeviceExtensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
 #endif
 
     // TODO: check extension supported.
