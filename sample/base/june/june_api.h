@@ -15,10 +15,12 @@ struct JuneAPI
 
     JuneProcInstanceCreateApiContext InstanceCreateApiContext = nullptr;
     JuneProcInstanceImportSharedMemory InstanceImportSharedMemory = nullptr;
+    JuneProcInstanceCreateSharedMemory InstanceCreateSharedMemory = nullptr;
+    JuneProcInstanceImportFence InstanceImportFence = nullptr;
+    JuneProcInstanceCreateFence InstanceCreateFence = nullptr;
     JuneProcInstanceDestroy InstanceDestroy = nullptr;
 
     JuneProcApiContextCreateResource ApiContextCreateResource = nullptr;
-    JuneProcApiContextCreateFence ApiContextCreateFence = nullptr;
     JuneProcApiContextExportFence ApiContextExportFence = nullptr;
     JuneProcApiContextDestroy ApiContextDestroy = nullptr;
 
