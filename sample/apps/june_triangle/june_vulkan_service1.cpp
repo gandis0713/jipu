@@ -8,6 +8,8 @@
 #include <android/sync.h>
 #endif
 
+#include <random>
+
 namespace jipu
 {
 
@@ -26,65 +28,17 @@ void JuneVulkanService1::begin()
 
     // Create Fence
     {
-        JuneFenceCreateDescriptor fenceDescriptor;
-        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
+        JuneFenceCreateDescriptor fenceDescriptor{};
+        fenceDescriptor.type = JuneFenceType_SyncFD;
+        m_signalFence = m_juneAPI.InstanceCreateFence(m_juneInstance, &fenceDescriptor);
     }
-
-    // Create Resource
-    {
-        VkImageCreateInfo imageInfo = {};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-#if defined(__ANDROID__) || defined(ANDROID)
-        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-#else
-        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
-#endif
-        imageInfo.extent.width = m_descriptor.width;
-        imageInfo.extent.height = m_descriptor.height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
-        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-        JuneResourceVkImageCreateInfo vkImageCreateInfo;
-        vkImageCreateInfo.vkImageCreateInfo = &imageInfo;
-
-        JuneResourceVkImageResultInfo vkImageResultInfo;
-
-        JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
-        juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
-        juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
-        juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
-
-        JuneResourceCreateDescriptor juneResourceDescriptor{};
-        juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
-        juneResourceDescriptor.sharedMemory = m_sharedMemories[0];
-
-        m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
-
-        m_offscreen.image = reinterpret_cast<VkImage>(vkImageResultInfo.vkImage);
-        m_offscreen.deviceMemory = reinterpret_cast<VkDeviceMemory>(vkImageResultInfo.vkDeviceMemory);
-    }
-
-    createOffscreenTexture();
-    createOffscreenTextureView();
-    createOffscreenVertexBuffer();
-    createOffscreenIndexBuffer();
-    createOffscreenUniformBuffer();
-    createOffscreenBindGroupLayout();
-    createOffscreenBindGroup();
-    createOffscreenRenderPipeline();
-
-    createCamera();
 }
 
 void JuneVulkanService1::work()
 {
+    auto sharedMemories = getSharedMemories();
+    if (sharedMemories.empty())
+        return;
 
     CommandEncoderDescriptor commandDescriptor{};
     auto commandEncoder = m_device->createCommandEncoder(commandDescriptor);
@@ -190,11 +144,99 @@ void JuneVulkanService1::work()
     //     m_juneAPI.ApiContextBeginMemoryAccess(m_offscreen.sharedMemory, &descriptor);
     // }
 
+    std::vector<VkSemaphore> waitSemaphore{};
+    {
+        std::vector<JuneFence> waitFences = getWaitFences();
+        for (const auto& fence : waitFences)
+        {
+            JuneFenceVkSemaphoreExportDescriptor vkSemaphoreExportDescriptor{};
+            vkSemaphoreExportDescriptor.chain.sType = JuneSType_FenceVkSemaphoreExportDescriptor;
+
+            JuneFenceExportDescriptor descriptor{};
+            descriptor.nextInChain = &vkSemaphoreExportDescriptor.chain;
+            descriptor.fence = fence;
+
+            m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
+            if (!vkSemaphoreExportDescriptor.vkSemaphore)
+            {
+                spdlog::trace("VkSemaphore null in vulkan service 1: {:p}", vkSemaphoreExportDescriptor.vkSemaphore);
+                continue;
+            }
+            waitSemaphore.push_back(reinterpret_cast<VkSemaphore>(vkSemaphoreExportDescriptor.vkSemaphore));
+        }
+    }
+    std::vector<VkPipelineStageFlags> waitStages(waitSemaphore.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
     spdlog::debug("vulkan service1 begin access");
 
-    vulkanQueue->submit({ commandBuffer.get() });
+    VulkanSubmitContext submitContext = VulkanSubmitContext::create(static_cast<VulkanDevice*>(m_device.get()), { commandBuffer.get() });
+
+    auto& submits = submitContext.getSubmitsRef();
+    for (auto& submit : submits)
+    {
+        submit.addWaitSemaphore(waitSemaphore, waitStages);
+    }
+    vulkanQueue->submit(submitContext);
 
     spdlog::debug("vulkan service1 end access");
+}
+
+void JuneVulkanService1::addSharedMemory(JuneSharedMemory sharedMemory)
+{
+    std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
+    m_sharedMemories.push_back(sharedMemory);
+
+    // Create Resource
+    {
+        VkImageCreateInfo imageInfo = {};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+#if defined(__ANDROID__) || defined(ANDROID)
+        imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+#else
+        imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
+#endif
+        imageInfo.extent.width = m_descriptor.width;
+        imageInfo.extent.height = m_descriptor.height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.tiling = VK_IMAGE_TILING_LINEAR; // VK_IMAGE_TILING_OPTIMAL is better for performance. but size is larger.
+        imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        JuneResourceVkImageCreateInfo vkImageCreateInfo;
+        vkImageCreateInfo.vkImageCreateInfo = &imageInfo;
+
+        JuneResourceVkImageResultInfo vkImageResultInfo;
+
+        JuneResourceVkImageCreateDescriptor juneResourceVkImageDescriptor{};
+        juneResourceVkImageDescriptor.chain.sType = JuneSType_ResourceVkImageCreateDescriptor;
+        juneResourceVkImageDescriptor.createInfo = &vkImageCreateInfo;
+        juneResourceVkImageDescriptor.resultInfo = &vkImageResultInfo;
+
+        JuneResourceCreateDescriptor juneResourceDescriptor{};
+        juneResourceDescriptor.nextInChain = &juneResourceVkImageDescriptor.chain;
+        juneResourceDescriptor.sharedMemory = m_sharedMemories[0];
+
+        m_juneAPI.ApiContextCreateResource(m_juneApiContext, &juneResourceDescriptor);
+
+        m_offscreen.image = reinterpret_cast<VkImage>(vkImageResultInfo.vkImage);
+        m_offscreen.deviceMemory = reinterpret_cast<VkDeviceMemory>(vkImageResultInfo.vkDeviceMemory);
+    }
+
+    createOffscreenTexture();
+    createOffscreenTextureView();
+    createOffscreenVertexBuffer();
+    createOffscreenIndexBuffer();
+    createOffscreenUniformBuffer();
+    createOffscreenBindGroupLayout();
+    createOffscreenBindGroup();
+    createOffscreenRenderPipeline();
+
+    createCamera();
 }
 
 void JuneVulkanService1::createOffscreenTexture()

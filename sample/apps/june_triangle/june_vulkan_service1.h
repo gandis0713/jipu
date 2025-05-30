@@ -18,6 +18,8 @@ public:
     void begin() override;
     void work() override;
 
+    void addSharedMemory(JuneSharedMemory sharedMemory) override;
+
 private:
     void createOffscreenTexture();
     void createOffscreenTextureView();

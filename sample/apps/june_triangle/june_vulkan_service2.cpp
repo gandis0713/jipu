@@ -27,7 +27,8 @@ void JuneVulkanService2::begin()
     // Create Fence
     {
         JuneFenceCreateDescriptor fenceDescriptor{};
-        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
+        fenceDescriptor.type = JuneFenceType_SyncFD;
+        m_signalFence = m_juneAPI.InstanceCreateFence(m_juneInstance, &fenceDescriptor);
     }
 }
 
@@ -125,9 +126,39 @@ void JuneVulkanService2::work()
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
 
+    std::vector<VkSemaphore> waitSemaphore{};
+    {
+        std::vector<JuneFence> waitFences = getWaitFences();
+        for (const auto& fence : waitFences)
+        {
+            JuneFenceVkSemaphoreExportDescriptor vkSemaphoreExportDescriptor{};
+            vkSemaphoreExportDescriptor.chain.sType = JuneSType_FenceVkSemaphoreExportDescriptor;
+
+            JuneFenceExportDescriptor descriptor{};
+            descriptor.nextInChain = &vkSemaphoreExportDescriptor.chain;
+            descriptor.fence = fence;
+
+            m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
+            if (!vkSemaphoreExportDescriptor.vkSemaphore)
+            {
+                spdlog::trace("VkSemaphore null in vulkan service 2: {:p}", vkSemaphoreExportDescriptor.vkSemaphore);
+                continue;
+            }
+            waitSemaphore.push_back(reinterpret_cast<VkSemaphore>(vkSemaphoreExportDescriptor.vkSemaphore));
+        }
+    }
+    std::vector<VkPipelineStageFlags> waitStages(waitSemaphore.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
     spdlog::debug("vulkan service2 begin access");
 
-    vulkanQueue->submit({ commandBuffer.get() });
+    VulkanSubmitContext submitContext = VulkanSubmitContext::create(static_cast<VulkanDevice*>(m_device.get()), { commandBuffer.get() });
+
+    auto& submits = submitContext.getSubmitsRef();
+    for (auto& submit : submits)
+    {
+        submit.addWaitSemaphore(waitSemaphore, waitStages);
+    }
+    vulkanQueue->submit(submitContext);
     m_swapchain->present();
 
     spdlog::debug("vulkan service2 end access");

@@ -38,7 +38,8 @@ void JuneNoApiService1::begin()
         JuneFenceCreateDescriptor fenceDescriptor;
         fenceDescriptor.label.data = label.c_str();
         fenceDescriptor.label.length = static_cast<uint32_t>(label.length());
-        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
+        fenceDescriptor.type = JuneFenceType_SyncFD;
+        m_signalFence = m_juneAPI.InstanceCreateFence(m_juneInstance, &fenceDescriptor);
     }
 }
 
@@ -71,7 +72,7 @@ void JuneNoApiService1::work()
         auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
         int syncFD = mergedHandle.release(); // release for transfer ownership
 
-        spdlog::debug("Charles merged sync fd: {}", syncFD);
+        spdlog::debug("merged sync fd: {}", syncFD);
 
         // Check buffer sync
         if (false)
@@ -142,17 +143,17 @@ void JuneNoApiService1::work()
 
     spdlog::debug("no api service1 end access");
 
-    if (m_signalFD != -1)
-    {
-        JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
-        syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
-        syncFDResetDescriptor.syncFD = m_signalFD;
+    // if (m_signalFD != -1)
+    // {
+    //     JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
+    //     syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
+    //     syncFDResetDescriptor.syncFD = m_signalFD;
 
-        JuneFenceResetDescriptor descriptor{};
-        descriptor.nextInChain = &syncFDResetDescriptor.chain;
+    //     JuneFenceResetDescriptor descriptor{};
+    //     descriptor.nextInChain = &syncFDResetDescriptor.chain;
 
-        m_juneAPI.FenceReset(m_signalFence, &descriptor);
-    }
+    //     m_juneAPI.FenceReset(m_signalFence, &descriptor);
+    // }
 }
 #if defined(__ANDROID__) || defined(ANDROID)
 void JuneNoApiService1::addAHardwareBuffer(AHardwareBuffer* aHardwareBuffer)

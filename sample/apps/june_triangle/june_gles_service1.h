@@ -38,6 +38,7 @@ private:
     std::vector<GLuint> m_textures;
     std::vector<EGLImageKHR> m_eglImages;
     std::vector<EGLClientBuffer> m_eglClientBuffers;
+    EGLSyncKHR m_eglSync{ EGL_NO_SYNC_KHR };
 };
 
 } // namespace jipu

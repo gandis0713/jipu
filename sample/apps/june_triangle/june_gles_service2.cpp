@@ -101,7 +101,8 @@ void JuneGLESService2::begin()
         JuneFenceCreateDescriptor fenceDescriptor;
         fenceDescriptor.label.data = label.c_str();
         fenceDescriptor.label.length = static_cast<uint32_t>(label.length());
-        m_signalFence = m_juneAPI.ApiContextCreateFence(m_juneApiContext, &fenceDescriptor);
+        fenceDescriptor.type = JuneFenceType_SyncFD;
+        m_signalFence = m_juneAPI.InstanceCreateFence(m_juneInstance, &fenceDescriptor);
     }
 }
 
@@ -164,8 +165,24 @@ void JuneGLESService2::work()
         CHECK_EGL_ERROR();
         if (!deleted)
         {
-            spdlog::error("Charles Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
+            spdlog::error("Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
         }
+    }
+
+    // destroy
+    if (m_eglSync != EGL_NO_SYNC_KHR)
+    {
+        EGLint value;
+        eglGetSyncAttribKHR(m_eglDisplay, m_eglSync, EGL_SYNC_STATUS_KHR, &value);
+        spdlog::trace("Current EGLSync status before waiting: {}", value);
+        // EGL_SIGNALED_KHR       12530
+        // EGL_UNSIGNALED_KHR     12531
+
+        if (value == EGL_UNSIGNALED_KHR)
+            eglClientWaitSyncKHR(m_eglDisplay, m_eglSync, 0, EGL_FOREVER_KHR);
+
+        eglDestroySyncKHR(m_eglDisplay, m_eglSync);
+        m_eglSync = EGL_NO_SYNC_KHR;
     }
 
     spdlog::debug("gles service2 begin access");
@@ -224,11 +241,45 @@ void JuneGLESService2::work()
         spdlog::debug("gles service2 is rendered in pbuffer.");
     }
 
+    // create EGLSync
+    {
+        EGLint attribs[] = {
+            EGL_SYNC_NATIVE_FENCE_FD_ANDROID, EGL_NO_NATIVE_FENCE_FD_ANDROID,
+            EGL_NONE
+        };
+        m_eglSync = eglCreateSyncKHR(m_eglDisplay, EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
+        if (m_eglSync == EGL_NO_SYNC_KHR)
+        {
+            spdlog::error("Failed to create a EGLSync");
+            return;
+        }
+
+        spdlog::trace("Succeed create the EGLSync");
+
+        // flush need to be called to make sure the sync object is created.
+        glFlush();
+    }
+
     spdlog::debug("gles service2 end access");
 
+    // reset
     {
-        JuneFenceResetDescriptor descriptor{};
-        m_juneAPI.FenceReset(m_signalFence, &descriptor);
+        int eglSyncFD = static_cast<int>(eglDupNativeFenceFDANDROID(m_eglDisplay, m_eglSync));
+        if (eglSyncFD != EGL_NO_NATIVE_FENCE_FD_ANDROID)
+        {
+            JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
+            syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
+            syncFDResetDescriptor.syncFD = eglSyncFD;
+
+            JuneFenceResetDescriptor descriptor{};
+            descriptor.nextInChain = &syncFDResetDescriptor.chain;
+
+            m_juneAPI.FenceReset(m_signalFence, &descriptor);
+        }
+        else
+        {
+            spdlog::error("Failed to duplicate sync FD from EGLSync");
+        }
     }
 
     glDisableVertexAttribArray(posLoc);
