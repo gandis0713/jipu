@@ -88,14 +88,23 @@ std::future<void> VulkanSubmitter::submitAsync(const std::vector<VulkanSubmit>& 
     std::vector<VkSubmitInfo> submitInfos{};
     submitInfos.resize(submitSize);
 
+    // Collect signal semaphores and external signal semaphores.
+    // We need to merge signal semaphores and external signal semaphores for each submit.
+    std::vector<std::vector<VkSemaphore>> signalSemaphores(submitSize);
+    for (auto i = 0; i < submitSize; ++i)
+    {
+        signalSemaphores[i].insert(signalSemaphores[i].end(), submits[i].info.signalSemaphores.begin(), submits[i].info.signalSemaphores.end());
+        signalSemaphores[i].insert(signalSemaphores[i].end(), submits[i].info.externalSignalSemaphores.begin(), submits[i].info.externalSignalSemaphores.end());
+    }
+
     for (auto i = 0; i < submitSize; ++i)
     {
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = static_cast<uint32_t>(submits[i].info.commandBuffers.size());
         submitInfo.pCommandBuffers = submits[i].info.commandBuffers.data();
-        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(submits[i].info.signalSemaphores.size());
-        submitInfo.pSignalSemaphores = submits[i].info.signalSemaphores.data();
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores[i].size());
+        submitInfo.pSignalSemaphores = signalSemaphores[i].data();
         submitInfo.waitSemaphoreCount = static_cast<uint32_t>(submits[i].info.waitSemaphores.size());
         submitInfo.pWaitSemaphores = submits[i].info.waitSemaphores.data();
         submitInfo.pWaitDstStageMask = submits[i].info.waitStages.data();

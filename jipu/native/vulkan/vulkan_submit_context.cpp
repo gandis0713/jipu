@@ -31,6 +31,16 @@ void VulkanSubmit::addSignalSemaphore(const std::vector<VkSemaphore>& semaphores
     info.signalSemaphores.insert(info.signalSemaphores.end(), semaphores.begin(), semaphores.end());
 }
 
+void VulkanSubmit::addExternalSignalSemaphore(const std::vector<VkSemaphore>& semaphores)
+{
+    if (semaphores.empty())
+    {
+        return;
+    }
+
+    info.externalSignalSemaphores.insert(info.externalSignalSemaphores.end(), semaphores.begin(), semaphores.end());
+}
+
 void VulkanSubmit::addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage)
 {
     if (semaphores.size() != stage.size())

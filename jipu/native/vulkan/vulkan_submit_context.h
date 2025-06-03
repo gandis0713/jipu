@@ -27,6 +27,7 @@ struct VULKAN_EXPORT VulkanSubmit
 
         std::vector<VkCommandBuffer> commandBuffers{};
         std::vector<VkSemaphore> signalSemaphores{};
+        std::vector<VkSemaphore> externalSignalSemaphores{};
         std::vector<VkSemaphore> waitSemaphores{};
         std::vector<VkPipelineStageFlags> waitStages{};
 
@@ -54,6 +55,7 @@ struct VULKAN_EXPORT VulkanSubmit
 
     void add(VkCommandBuffer commandBuffer);
     void addSignalSemaphore(const std::vector<VkSemaphore>& semaphores);
+    void addExternalSignalSemaphore(const std::vector<VkSemaphore>& semaphores);
     void addWaitSemaphore(const std::vector<VkSemaphore>& semaphores, const std::vector<VkPipelineStageFlags>& stage);
 
     void add(VkImageView imageView);
