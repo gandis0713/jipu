@@ -24,7 +24,6 @@ std::unique_ptr<Instance> Instance::create(const InstanceDescriptor& descriptor)
         static auto logger = spdlog::stdout_color_mt("jipu");
 #endif
         spdlog::set_default_logger(logger);
-        spdlog::set_level(spdlog::level::trace);
     }
 
     return std::unique_ptr<Instance>(instance);
