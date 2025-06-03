@@ -44,6 +44,8 @@ struct VulkanDeviceKnobs
     bool swapchain = false;
     bool portabilitySubset = false;
     bool externalMemory = false;
+    bool externalSemaphoreFD = false;
+    bool ahardwareBuffer = false;
 };
 
 /// @brief ref: https://dawn.googlesource.com/dawn/+/refs/heads/main/src/dawn/native/vulkan/ VulkanAPI.h

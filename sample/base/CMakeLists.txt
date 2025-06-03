@@ -60,6 +60,9 @@ list(APPEND SRC_FILES
     unique_handle.h
     june/june_api.cpp
     june/june_api.h
+    june/june_memory_node.cpp
+    june/june_memory_node.h
+    june/june_vulkan_service.h
     june/june_sample.cpp
     june/june_sample.h
     june/june_service.cpp

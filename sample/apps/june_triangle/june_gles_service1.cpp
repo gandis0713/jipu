@@ -84,10 +84,12 @@ void JuneGLESService1::begin()
 
 void JuneGLESService1::work()
 {
-    spdlog::debug("gles service1 begin work");
     auto sharedMemories = getSharedMemories();
     if (sharedMemories.size() < 1)
         return;
+
+    m_memoryNode->beginAccess();
+    spdlog::debug("gles service1 begin access");
 
     std::vector<EGLSyncKHR> waitEGLSyncs{};
     {
@@ -114,12 +116,6 @@ void JuneGLESService1::work()
 
     for (auto count = 0; count < waitEGLSyncs.size(); ++count)
     {
-        if (waitEGLSyncs[count] == nullptr)
-        {
-            spdlog::trace("EGLSync null in gles service 2: {:p}", waitEGLSyncs[count]);
-            continue;
-        }
-
         // EGLint eglResult = eglWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SIGNALED_KHR);
         // CHECK_EGL_ERROR();
         // if (eglResult == EGL_FALSE)
@@ -152,7 +148,6 @@ void JuneGLESService1::work()
     {
         EGLint value;
         eglGetSyncAttribKHR(m_eglDisplay, m_eglSync, EGL_SYNC_STATUS_KHR, &value);
-        spdlog::trace("Current EGLSync status before waiting: {}", value);
         // EGL_SIGNALED_KHR       12530
         // EGL_UNSIGNALED_KHR     12531
 
@@ -162,8 +157,6 @@ void JuneGLESService1::work()
         eglDestroySyncKHR(m_eglDisplay, m_eglSync);
         m_eglSync = EGL_NO_SYNC_KHR;
     }
-
-    spdlog::debug("gles service1 begin access");
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textures[0]);
@@ -180,7 +173,7 @@ void JuneGLESService1::work()
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textures[0], 0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
-            spdlog::debug("Framebuffer is not complete");
+            spdlog::error("Framebuffer is not complete");
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glDeleteFramebuffers(1, &fbo);
             return;
@@ -230,12 +223,12 @@ void JuneGLESService1::work()
 
     if (m_descriptor.windowHandle)
     {
-        spdlog::debug("gles service1 is rendered in swapbuffer.");
+        spdlog::trace("gles service1 is rendered in swapbuffer.");
         eglSwapBuffers(m_eglDisplay, m_eglSurface);
     }
     else
     {
-        spdlog::debug("gles service1 is rendered in pbuffer.");
+        spdlog::trace("gles service1 is rendered in pbuffer.");
     }
 
     // create EGLSync
@@ -251,13 +244,9 @@ void JuneGLESService1::work()
             return;
         }
 
-        spdlog::trace("Succeed create the EGLSync");
-
         // flush need to be called to make sure the sync object is created.
         glFlush();
     }
-
-    spdlog::debug("gles service1 end access");
 
     // reset
     {
@@ -279,10 +268,11 @@ void JuneGLESService1::work()
         }
     }
 
+    spdlog::debug("gles service1 end access");
+    m_memoryNode->endAccess();
+
     glDisableVertexAttribArray(posLoc);
     glDeleteFramebuffers(1, &fbo);
-
-    spdlog::debug("gles service1 end work");
 }
 
 void JuneGLESService1::end()

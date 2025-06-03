@@ -15,8 +15,6 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
-const char kExtensionNameAndroidAHardwareBuffer[] = "VK_ANDROID_external_memory_android_hardware_buffer";
-
 namespace jipu
 {
 

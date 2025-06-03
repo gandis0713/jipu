@@ -45,6 +45,14 @@ void JuneNoApiService1::begin()
 
 void JuneNoApiService1::work()
 {
+    auto sharedMemories = getSharedMemories();
+    if (sharedMemories.size() < 1)
+        return;
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    m_memoryNode->beginAccess();
+    spdlog::debug("no api service1 begin access");
+
     std::vector<UniqueHandle> waitSyncFDs{};
 
     std::vector<JuneFence> waitFences = getWaitFences();
@@ -66,94 +74,89 @@ void JuneNoApiService1::work()
         }
     }
 
-#if defined(__ANDROID__) || defined(ANDROID)
+    void* ptr;
+    int syncFD = -1;
     if (!waitSyncFDs.empty())
     {
-        auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
-        int syncFD = mergedHandle.release(); // release for transfer ownership
+        // auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
+        // syncFD = mergedHandle.release(); // release for transfer ownership
 
         spdlog::debug("merged sync fd: {}", syncFD);
+    }
 
-        // Check buffer sync
-        if (false)
+    // Check buffer sync
+    {
+        // Gralloc takes ownership of the sync fd and closes it when it is done with it.
+        // Ref: https://cgit.freedesktop.org/mesa/mesa/commit/?id=932f51d593418c95bf8f56ac9335d5f6c52c1285
+
+        int result = AHardwareBuffer_lock(m_aHardwareBuffers[0], AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, syncFD, nullptr, &ptr);
+        if (result != 0)
         {
-            // Gralloc takes ownership of the sync fd and closes it when it is done with it.
-            // Ref: https://cgit.freedesktop.org/mesa/mesa/commit/?id=932f51d593418c95bf8f56ac9335d5f6c52c1285
+            spdlog::error("Failed to AHardwareBuffer lock. {}", result);
+        }
 
-            void* ptr;
-            int result = AHardwareBuffer_lock(m_aHardwareBuffers[0], AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, syncFD, nullptr, &ptr);
-            if (result != 0)
+        auto* base = static_cast<const uint8_t*>(ptr);
+        std::vector<uint8_t> reference(base, base + m_bytesPerPixels[0]);
+
+        bool isMonochrome = true;
+        const uint32_t rowPitch = m_aHardwareBufferDescs[0].stride * m_bytesPerPixels[0];
+        for (uint32_t y = 0; y < m_aHardwareBufferDescs[0].height / 2 && isMonochrome; ++y)
+        {
+            const uint8_t* row = base + y * rowPitch;
+            for (uint32_t x = 0; x < m_aHardwareBufferDescs[0].width / 2; ++x)
             {
-                spdlog::error("Failed to AHardwareBuffer lock. {}", result);
-            }
-
-            // 4) 기준 색 추출 (첫 번째 픽셀)
-            auto* base = static_cast<const uint8_t*>(ptr);
-            std::vector<uint8_t> reference(base, base + m_bytesPerPixels[0]);
-
-            bool isMonochrome = true;
-            const uint32_t rowPitch = m_aHardwareBufferDescs[0].stride * m_bytesPerPixels[0];
-            for (uint32_t y = 0; y < m_aHardwareBufferDescs[0].height && isMonochrome; ++y)
-            {
-                const uint8_t* row = base + y * rowPitch;
-                for (uint32_t x = 0; x < m_aHardwareBufferDescs[0].width; ++x)
+                const uint8_t* pixel = row + x * m_bytesPerPixels[0];
+                if (memcmp(pixel, reference.data(), m_bytesPerPixels[0]) != 0)
                 {
-                    const uint8_t* pixel = row + x * m_bytesPerPixels[0];
-                    if (memcmp(pixel, reference.data(), m_bytesPerPixels[0]) != 0)
-                    {
-                        isMonochrome = false;
-                        spdlog::warn("diff color = ({:3d}, {:3d}, {:3d}, {:3d})",
-                                     pixel[0], pixel[1], pixel[2], pixel[3]);
-                        break;
-                    }
+                    isMonochrome = false;
+                    spdlog::warn("diff color = ({:3d}, {:3d}, {:3d}, {:3d})",
+                                 pixel[0], pixel[1], pixel[2], pixel[3]);
+                    break;
                 }
             }
+        }
 
-            spdlog::info("Base color RGBA8 = {:3d} {:3d} {:3d} {:3d}",
-                         reference[0], reference[1], reference[2], reference[3]);
+        spdlog::info("Base color RGBA8 = {:3d} {:3d} {:3d} {:3d}",
+                     reference[0], reference[1], reference[2], reference[3]);
 
-            if (isMonochrome)
-            {
-                spdlog::info("AHardwareBuffer monochrome check: uniform color");
-            }
-            else
-            {
-                spdlog::error("AHardwareBuffer monochrome check: mixed colors");
-            }
-
-            if (m_signalFD != -1)
-            {
-                close(m_signalFD);
-                m_signalFD = -1;
-            }
-
-            result = AHardwareBuffer_unlock(m_aHardwareBuffers[0], &m_signalFD);
-            if (result != 0)
-            {
-                spdlog::error("Failed to AHardwareBuffer unlock. {}", result);
-            }
+        if (isMonochrome)
+        {
+            spdlog::info("AHardwareBuffer monochrome check: uniform color");
         }
         else
         {
-            close(syncFD);
+            spdlog::error("AHardwareBuffer monochrome check: mixed colors");
+        }
+
+        if (m_signalFD != -1)
+        {
+            close(m_signalFD);
+            m_signalFD = -1;
+        }
+
+        result = AHardwareBuffer_unlock(m_aHardwareBuffers[0], &m_signalFD);
+        if (result != 0)
+        {
+            spdlog::error("Failed to AHardwareBuffer unlock. {}", result);
         }
     }
 
-#endif
+    if (m_signalFD != -1)
+    {
+        JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
+        syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
+        syncFDResetDescriptor.syncFD = m_signalFD;
+
+        JuneFenceResetDescriptor descriptor{};
+        descriptor.nextInChain = &syncFDResetDescriptor.chain;
+
+        m_juneAPI.FenceReset(m_signalFence, &descriptor);
+    }
 
     spdlog::debug("no api service1 end access");
+    m_memoryNode->endAccess();
 
-    // if (m_signalFD != -1)
-    // {
-    //     JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
-    //     syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
-    //     syncFDResetDescriptor.syncFD = m_signalFD;
-
-    //     JuneFenceResetDescriptor descriptor{};
-    //     descriptor.nextInChain = &syncFDResetDescriptor.chain;
-
-    //     m_juneAPI.FenceReset(m_signalFence, &descriptor);
-    // }
+#endif
 }
 #if defined(__ANDROID__) || defined(ANDROID)
 void JuneNoApiService1::addAHardwareBuffer(AHardwareBuffer* aHardwareBuffer)

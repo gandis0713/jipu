@@ -411,11 +411,11 @@ bool VulkanAPI::loadDeviceProcs(VkDevice device, const VulkanDeviceKnobs& device
     //     GET_DEVICE_PROC(GetMemoryFdPropertiesKHR);
     // }
 
-    // if (deviceKnobs.externalSemaphoreFD)
-    // {
-    //     GET_DEVICE_PROC(ImportSemaphoreFdKHR);
-    //     GET_DEVICE_PROC(GetSemaphoreFdKHR);
-    // }
+    if (deviceKnobs.externalSemaphoreFD)
+    {
+        GET_DEVICE_PROC(ImportSemaphoreFdKHR);
+        GET_DEVICE_PROC(GetSemaphoreFdKHR);
+    }
 
     // #if VK_USE_PLATFORM_FUCHSIA
     //     if (deviceKnobs.externalMemoryZirconHandle)

@@ -9,6 +9,8 @@ JuneService::JuneService(const JuneServiceDescriptor& descriptor)
     , m_runner(m_descriptor.fps)
 {
     loadJuneLibrary();
+
+    m_memoryNode = std::make_unique<JuneMemoryNode>();
 }
 
 JuneService::~JuneService()
@@ -47,6 +49,18 @@ JuneFence JuneService::getSignalFence() const
     return m_signalFence;
 }
 
+void JuneService::connectMemoryNode(JuneMemoryNode* inputNode)
+{
+    std::lock_guard<std::mutex> lock(m_memoryNodeMutex);
+    m_memoryNode->connect(inputNode);
+}
+
+void JuneService::disconnectMemoryNode(JuneMemoryNode* inputNode)
+{
+    std::lock_guard<std::mutex> lock(m_memoryNodeMutex);
+    m_memoryNode->disconnect(inputNode);
+}
+
 void JuneService::addWaitFence(JuneFence fence)
 {
     std::lock_guard<std::mutex> lock(m_waitFenceMutex);
@@ -66,6 +80,12 @@ std::vector<JuneSharedMemory> JuneService::getSharedMemories() const
     std::lock_guard<std::mutex> lock(m_sharedMemoryMutex);
 
     return m_sharedMemories;
+}
+
+JuneMemoryNode* JuneService::getMemoryNode() const
+{
+    std::lock_guard<std::mutex> lock(m_memoryNodeMutex);
+    return m_memoryNode.get();
 }
 
 void JuneService::begin()

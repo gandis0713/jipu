@@ -7,6 +7,12 @@
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 
+namespace
+{
+const char kExtensionNameKhrExternalSemaphoreFd[] = "VK_KHR_external_semaphore_fd";                                           // VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME
+const char kExtensionNameAndroidExternalMemoryAndroidHardwareBuffer[] = "VK_ANDROID_external_memory_android_hardware_buffer"; // VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME
+} // namespace
+
 namespace jipu
 {
 
@@ -190,6 +196,16 @@ void VulkanPhysicalDevice::gatherPhysicalDeviceInfo()
             if (strncmp(extensionProperty.extensionName, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME, VK_MAX_EXTENSION_NAME_SIZE) == 0)
             {
                 m_info.externalMemory = true;
+            }
+
+            if (strncmp(extensionProperty.extensionName, kExtensionNameKhrExternalSemaphoreFd, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_info.externalSemaphoreFD = true;
+            }
+
+            if (strncmp(extensionProperty.extensionName, kExtensionNameAndroidExternalMemoryAndroidHardwareBuffer, VK_MAX_EXTENSION_NAME_SIZE) == 0)
+            {
+                m_info.ahardwareBuffer = true;
             }
         }
     }

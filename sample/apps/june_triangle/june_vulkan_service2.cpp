@@ -126,6 +126,9 @@ void JuneVulkanService2::work()
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
 
+    m_memoryNode->beginAccess();
+    spdlog::debug("vulkan service2 begin access");
+
     std::vector<VkSemaphore> waitSemaphore{};
     {
         std::vector<JuneFence> waitFences = getWaitFences();
@@ -149,7 +152,34 @@ void JuneVulkanService2::work()
     }
     std::vector<VkPipelineStageFlags> waitStages(waitSemaphore.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
-    spdlog::debug("vulkan service2 begin access");
+    auto vulkanDevice = static_cast<VulkanDevice*>(m_device.get());
+    VkSemaphore signalSemaphore = VK_NULL_HANDLE;
+    {
+        VkExportSemaphoreCreateInfo exportSemCreateInfo = {};
+        exportSemCreateInfo.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
+        exportSemCreateInfo.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+
+        // VkSemaphoreTypeCreateInfo timelineCreateInfo;
+        // timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+        // timelineCreateInfo.pNext = &exportSemCreateInfo;
+        // timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+        // timelineCreateInfo.initialValue = 0;
+
+        VkSemaphoreCreateInfo semaphoreCreateInfo = {};
+        semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        semaphoreCreateInfo.pNext = &exportSemCreateInfo;
+        semaphoreCreateInfo.flags = 0;
+
+        VkDevice device = vulkanDevice->getVkDevice();
+        const auto& vkAPI = vulkanDevice->vkAPI;
+
+        VkResult result = vkAPI.CreateSemaphore(vulkanDevice->getVkDevice(), &semaphoreCreateInfo, nullptr, &signalSemaphore);
+        if (result != VK_SUCCESS)
+        {
+            spdlog::error("Failed to create Vulkan semaphore: {}", static_cast<uint32_t>(result));
+            signalSemaphore = VK_NULL_HANDLE;
+        }
+    }
 
     VulkanSubmitContext submitContext = VulkanSubmitContext::create(static_cast<VulkanDevice*>(m_device.get()), { commandBuffer.get() });
 
@@ -157,11 +187,60 @@ void JuneVulkanService2::work()
     for (auto& submit : submits)
     {
         submit.addWaitSemaphore(waitSemaphore, waitStages);
+        // for (auto waitSema : waitSemaphore)
+        // {
+        //     vulkanDevice->getInflightObjects()->standby(waitSema);
+        //     vulkanDevice->getDeleter()->safeDestroy(waitSema);
+        // }
+
+        if (signalSemaphore != VK_NULL_HANDLE)
+        {
+            submit.addExternalSignalSemaphore({ signalSemaphore });
+            // vulkanDevice->getInflightObjects()->standby(signalSemaphore);
+            // vulkanDevice->getDeleter()->safeDestroy(signalSemaphore);
+        }
+        else
+        {
+            spdlog::trace("Signal semaphore is null in vulkan service 2");
+        }
     }
     vulkanQueue->submit(submitContext);
+
+    {
+        int signalFd = -1;
+        if (signalSemaphore != VK_NULL_HANDLE)
+        {
+            VkDevice device = vulkanDevice->getVkDevice();
+            const auto& vkAPI = vulkanDevice->vkAPI;
+
+            VkSemaphoreGetFdInfoKHR getFdInfo = {};
+            getFdInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR;
+            getFdInfo.semaphore = signalSemaphore;
+            getFdInfo.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
+
+            VkResult result = vkAPI.GetSemaphoreFdKHR(device, &getFdInfo, &signalFd);
+            spdlog::trace("Get semaphore fd: {}", signalFd);
+            if (result != VK_SUCCESS || signalFd < 0)
+            {
+                spdlog::error("Failed to get fd: {}", static_cast<uint32_t>(result));
+            }
+        }
+
+        if (signalFd != -1)
+        {
+            JuneFenceSyncFDResetDescriptor syncFDResetDescriptor{};
+            syncFDResetDescriptor.chain.sType = JuneSType_FenceSyncFDResetDescriptor;
+            syncFDResetDescriptor.syncFD = signalFd;
+
+            JuneFenceResetDescriptor fenceResetDescriptor{};
+            fenceResetDescriptor.nextInChain = &syncFDResetDescriptor.chain;
+            m_juneAPI.FenceReset(m_signalFence, &fenceResetDescriptor);
+        }
+    }
     m_swapchain->present();
 
     spdlog::debug("vulkan service2 end access");
+    m_memoryNode->endAccess();
 }
 
 void JuneVulkanService2::addSharedMemory(JuneSharedMemory sharedMemory)

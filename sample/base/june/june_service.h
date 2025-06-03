@@ -3,10 +3,12 @@
 #include "jipu/common/dylib.h"
 #include "june/june.h"
 #include "june_api.h"
+#include "june_memory_node.h"
 #include "runner.h"
 
 #include <filesystem>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -51,6 +53,9 @@ public:
     virtual void addSharedMemory(JuneSharedMemory sharedMemory);
     virtual void addWaitFence(JuneFence fence);
     JuneFence getSignalFence() const;
+    JuneMemoryNode* getMemoryNode() const;
+    void connectMemoryNode(JuneMemoryNode* inputNode);
+    void disconnectMemoryNode(JuneMemoryNode* inputNode);
 
 protected:
     virtual void begin();
@@ -82,11 +87,13 @@ protected:
     JuneInstance m_juneInstance{ nullptr };
     JuneApiContext m_juneApiContext{ nullptr };
     std::vector<JuneSharedMemory> m_sharedMemories{};
+    std::unique_ptr<JuneMemoryNode> m_memoryNode{ nullptr };
     JuneFence m_signalFence{ nullptr };
     std::vector<JuneFence> m_waitFences{};
 
     mutable std::mutex m_sharedMemoryMutex;
     mutable std::mutex m_waitFenceMutex;
+    mutable std::mutex m_memoryNodeMutex;
 
 private:
     Runner m_runner;
