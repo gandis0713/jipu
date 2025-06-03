@@ -36,6 +36,10 @@ void main()
 JuneGLESService1::JuneGLESService1(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
+    m_memoryNode = std::make_unique<JuneMemoryNode>(JuneMemoryNodeDescriptor{
+        .label = "gles service1 memory node",
+        .sharedMemory = nullptr,
+        .waitAccessCount = 2 });
 }
 
 JuneGLESService1::~JuneGLESService1()

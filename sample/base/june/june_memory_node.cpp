@@ -5,19 +5,20 @@
 namespace jipu
 {
 
-JuneMemoryNode::JuneMemoryNode(JuneSharedMemory sharedMemory)
-    : m_sharedMemory(sharedMemory)
+JuneMemoryNode::JuneMemoryNode(const JuneMemoryNodeDescriptor& descriptor)
+    : m_descriptor(descriptor)
+    , m_waitAccessCount(descriptor.waitAccessCount)
 {
-    if (!m_sharedMemory)
-    {
-        spdlog::error("Invalid shared memory provided to JuneMemoryNode.");
-        return;
-    }
+}
+
+const std::string& JuneMemoryNode::getLabel() const
+{
+    return m_descriptor.label;
 }
 
 JuneSharedMemory JuneMemoryNode::getSharedMemory() const
 {
-    return m_sharedMemory;
+    return m_descriptor.sharedMemory;
 }
 
 void JuneMemoryNode::beginAccess()
@@ -85,6 +86,20 @@ void JuneMemoryNode::signal()
 
 void JuneMemoryNode::slot(JuneMemoryNode* memory)
 {
+    std::lock_guard<std::mutex> lock(m_countMutex);
+    if (m_waitAccessCount > 0)
+    {
+        m_waitAccessCount--;
+    }
+
+    spdlog::trace("input: {}, {} Memory node access count: {}", memory->getLabel(), m_descriptor.label, m_waitAccessCount);
+
+    if (m_waitAccessCount > 0)
+    {
+        return;
+    }
+
+    m_waitAccessCount = m_descriptor.waitAccessCount;
     m_accessMutex.unlock();
 }
 

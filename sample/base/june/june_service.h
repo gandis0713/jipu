@@ -47,6 +47,8 @@ public:
 
 public:
     void start(const JuneServiceStartDescriptor& descriptor);
+    void pause();
+    void resume();
     void stop(const JuneServiceStopDescriptor& descriptor);
 
 public:

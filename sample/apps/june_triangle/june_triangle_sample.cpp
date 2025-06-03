@@ -124,6 +124,7 @@ void JuneTriangleSample::init()
             m_noapiService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_noapiService1Ready = true;
+                    m_noapiService1->pause();
                 } });
         }
 
@@ -138,6 +139,7 @@ void JuneTriangleSample::init()
             m_glesService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_glesService1Ready = true;
+                    m_glesService1->pause();
                 } });
         }
 
@@ -153,6 +155,7 @@ void JuneTriangleSample::init()
             m_vulkanService2->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_vulkanService2Ready = true;
+                    m_vulkanService2->pause();
                 } });
         }
 
@@ -174,16 +177,24 @@ void JuneTriangleSample::init()
         m_vulkanService2->addSharedMemory(m_sharedMemories[0]);
 
         m_glesService1->connectMemoryNode(m_noapiService1->getMemoryNode());
+        m_glesService1->connectMemoryNode(m_vulkanService2->getMemoryNode());
         m_vulkanService2->connectMemoryNode(m_glesService1->getMemoryNode());
-        m_noapiService1->connectMemoryNode(m_vulkanService2->getMemoryNode());
+        m_noapiService1->connectMemoryNode(m_glesService1->getMemoryNode());
 
         auto noapiService1SignalFence = m_noapiService1->getSignalFence();
         auto glesService1SignalFence = m_glesService1->getSignalFence();
         auto vulkanService2SignalFence = m_vulkanService2->getSignalFence();
 
-        m_noapiService1->addWaitFence(vulkanService2SignalFence);
         m_glesService1->addWaitFence(noapiService1SignalFence);
+        m_glesService1->addWaitFence(vulkanService2SignalFence);
+        m_noapiService1->addWaitFence(glesService1SignalFence);
         m_vulkanService2->addWaitFence(glesService1SignalFence);
+
+        m_glesService1->resume();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        m_vulkanService2->resume();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        m_noapiService1->resume();
     }
 
     if (serviceCase == 2)

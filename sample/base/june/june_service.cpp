@@ -9,8 +9,6 @@ JuneService::JuneService(const JuneServiceDescriptor& descriptor)
     , m_runner(m_descriptor.fps)
 {
     loadJuneLibrary();
-
-    m_memoryNode = std::make_unique<JuneMemoryNode>();
 }
 
 JuneService::~JuneService()
@@ -25,6 +23,18 @@ void JuneService::start(const JuneServiceStartDescriptor& descriptor)
 {
     m_startCallback = descriptor.callback;
     start();
+}
+
+void JuneService::pause()
+{
+    if (m_runner.isRunning())
+        m_runner.pause();
+}
+
+void JuneService::resume()
+{
+    if (m_runner.isRunning())
+        m_runner.resume();
 }
 
 void JuneService::stop(const JuneServiceStopDescriptor& descriptor)

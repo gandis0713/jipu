@@ -16,6 +16,10 @@ namespace jipu
 JuneVulkanService1::JuneVulkanService1(const JuneServiceDescriptor& descriptor)
     : JuneVulkanService(descriptor)
 {
+    m_memoryNode = std::make_unique<JuneMemoryNode>(JuneMemoryNodeDescriptor{
+        .label = "vulkan service1 memory node",
+        .sharedMemory = nullptr,
+        .waitAccessCount = 2 });
 }
 
 JuneVulkanService1::~JuneVulkanService1()
@@ -126,24 +130,6 @@ void JuneVulkanService1::work()
     auto commandBuffer = commandEncoder->finish(CommandBufferDescriptor{});
     auto vulkanQueue = static_cast<VulkanQueue*>(m_queue.get());
 
-    // JuneFenceVkSemaphoreSyncObject waitExportedVkSemaphoreSyncObject{};
-    // {
-    //     JuneSharedMemorySyncInfo waitSyncInfo{};
-    //     waitSyncInfo.fences = m_waitFences.data();
-    //     waitSyncInfo.fenceCount = m_waitFences.size();
-
-    //     waitExportedVkSemaphoreSyncObject.chain.sType = JuneSType_FenceVkSemaphoreExportDescriptor;
-
-    //     JuneFenceSyncObject exportedSyncObject{};
-    //     exportedSyncObject.nextInChain = &waitExportedVkSemaphoreSyncObject.chain;
-
-    //     JuneApiContextBeginMemoryAccessDescriptor descriptor{};
-    //     descriptor.waitSyncInfo = &waitSyncInfo;
-    //     descriptor.exportedSyncObject = &exportedSyncObject;
-
-    //     m_juneAPI.ApiContextBeginMemoryAccess(m_offscreen.sharedMemory, &descriptor);
-    // }
-
     std::vector<VkSemaphore> waitSemaphore{};
     {
         std::vector<JuneFence> waitFences = getWaitFences();
@@ -159,9 +145,9 @@ void JuneVulkanService1::work()
             m_juneAPI.ApiContextExportFence(m_juneApiContext, &descriptor);
             if (!vkSemaphoreExportDescriptor.vkSemaphore)
             {
-                spdlog::trace("VkSemaphore null in vulkan service 1: {:p}", vkSemaphoreExportDescriptor.vkSemaphore);
                 continue;
             }
+            spdlog::trace("VkSemaphore in vulkan service 1: {:p}", vkSemaphoreExportDescriptor.vkSemaphore);
             waitSemaphore.push_back(reinterpret_cast<VkSemaphore>(vkSemaphoreExportDescriptor.vkSemaphore));
         }
     }
@@ -174,6 +160,10 @@ void JuneVulkanService1::work()
     auto& submits = submitContext.getSubmitsRef();
     for (auto& submit : submits)
     {
+        for (auto waitSema : waitSemaphore)
+        {
+            spdlog::trace("Add wait semaphore in vulkan service 1: {:p}", reinterpret_cast<void*>(waitSema));
+        }
         submit.addWaitSemaphore(waitSemaphore, waitStages);
     }
     vulkanQueue->submit(submitContext);
@@ -257,7 +247,7 @@ void JuneVulkanService1::createOffscreenTexture()
     vulkanTextureDescriptor.tiling = VK_IMAGE_TILING_LINEAR;
     vulkanTextureDescriptor.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     vulkanTextureDescriptor.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    vulkanTextureDescriptor.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
     vulkanTextureDescriptor.owner = VulkanTextureOwner::kExternal;
     vulkanTextureDescriptor.image = m_offscreen.image;
 

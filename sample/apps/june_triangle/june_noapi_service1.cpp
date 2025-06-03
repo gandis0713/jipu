@@ -18,6 +18,10 @@ namespace
 JuneNoApiService1::JuneNoApiService1(const JuneServiceDescriptor& descriptor)
     : JuneNoApiService(descriptor)
 {
+    m_memoryNode = std::make_unique<JuneMemoryNode>(JuneMemoryNodeDescriptor{
+        .label = "noapi service1 memory node",
+        .sharedMemory = nullptr,
+        .waitAccessCount = 1 });
 }
 
 JuneNoApiService1::~JuneNoApiService1()
@@ -81,7 +85,7 @@ void JuneNoApiService1::work()
         // auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
         // syncFD = mergedHandle.release(); // release for transfer ownership
 
-        spdlog::debug("merged sync fd: {}", syncFD);
+        spdlog::trace("merged sync fd: {}", syncFD);
     }
 
     // Check buffer sync

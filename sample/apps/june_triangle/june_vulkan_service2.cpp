@@ -14,6 +14,10 @@ namespace jipu
 JuneVulkanService2::JuneVulkanService2(const JuneServiceDescriptor& descriptor)
     : JuneVulkanService(descriptor)
 {
+    m_memoryNode = std::make_unique<JuneMemoryNode>(JuneMemoryNodeDescriptor{
+        .label = "vulkan service2 memory node",
+        .sharedMemory = nullptr,
+        .waitAccessCount = 1 });
 }
 
 JuneVulkanService2::~JuneVulkanService2()
