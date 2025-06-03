@@ -28,8 +28,8 @@ void JuneVulkanService3::begin()
     {
 #if defined(__ANDROID__) || defined(ANDROID)
         AHardwareBuffer_Desc ahbDesc = {
-            .width = m_descriptor.width,
-            .height = m_descriptor.height,
+            .width = m_descriptor.sharingData->width,
+            .height = m_descriptor.sharingData->height,
             .layers = 1,
             .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
             .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT
@@ -67,8 +67,8 @@ void JuneVulkanService3::begin()
 #else
             imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
 #endif
-            imageInfo.extent.width = m_descriptor.width;
-            imageInfo.extent.height = m_descriptor.height;
+            imageInfo.extent.width = m_descriptor.sharingData->width;
+            imageInfo.extent.height = m_descriptor.sharingData->height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -108,8 +108,8 @@ void JuneVulkanService3::begin()
 #else
             imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
 #endif
-            imageInfo.extent.width = m_descriptor.width;
-            imageInfo.extent.height = m_descriptor.height;
+            imageInfo.extent.width = m_descriptor.sharingData->width;
+            imageInfo.extent.height = m_descriptor.sharingData->height;
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
@@ -234,8 +234,8 @@ void JuneVulkanService3::work()
         renderPassEncoder->setBindGroup(0, m_offscreen.bindGroup.get());
         renderPassEncoder->setVertexBuffer(0, m_offscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_offscreen.indexBuffer.get(), IndexFormat::kUint16);
-        renderPassEncoder->setScissor(0, 0, m_descriptor.width, m_descriptor.height);
-        renderPassEncoder->setViewport(0, 0, m_descriptor.width, m_descriptor.height, 0, 1);
+        renderPassEncoder->setScissor(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height);
+        renderPassEncoder->setViewport(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_offscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
@@ -335,8 +335,8 @@ void JuneVulkanService3::work()
         renderPassEncoder->setBindGroup(0, m_onscreen.bindGroup.get());
         renderPassEncoder->setVertexBuffer(0, m_onscreen.vertexBuffer.get());
         renderPassEncoder->setIndexBuffer(m_onscreen.indexBuffer.get(), IndexFormat::kUint16);
-        renderPassEncoder->setScissor(0, 0, m_descriptor.width, m_descriptor.height);
-        renderPassEncoder->setViewport(0, 0, m_descriptor.width, m_descriptor.height, 0, 1);
+        renderPassEncoder->setScissor(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height);
+        renderPassEncoder->setViewport(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height, 0, 1);
         renderPassEncoder->drawIndexed(static_cast<uint32_t>(m_onscreenIndices.size()), 1, 0, 0, 0);
         renderPassEncoder->end();
 
@@ -389,8 +389,8 @@ void JuneVulkanService3::createOffscreenTexture()
 #else
     vulkanTextureDescriptor.format = VK_FORMAT_B8G8R8A8_UNORM;
 #endif
-    vulkanTextureDescriptor.extent.width = m_descriptor.width;
-    vulkanTextureDescriptor.extent.height = m_descriptor.height;
+    vulkanTextureDescriptor.extent.width = m_descriptor.sharingData->width;
+    vulkanTextureDescriptor.extent.height = m_descriptor.sharingData->height;
     vulkanTextureDescriptor.extent.depth = 1;
     vulkanTextureDescriptor.mipLevels = 1;
     vulkanTextureDescriptor.arrayLayers = 1;
@@ -542,7 +542,7 @@ void JuneVulkanService3::createOffscreenRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.appDir / "offscreen.vert.spv", m_descriptor.appHandle);
+        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.sharingData->appDir / "offscreen.vert.spv", m_descriptor.sharingData->appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
@@ -583,7 +583,7 @@ void JuneVulkanService3::createOffscreenRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.appDir / "offscreen.frag.spv", m_descriptor.appHandle);
+        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.sharingData->appDir / "offscreen.frag.spv", m_descriptor.sharingData->appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
@@ -623,8 +623,8 @@ void JuneVulkanService3::createOnscreenTexture()
 #else
     vulkanTextureDescriptor.format = VK_FORMAT_B8G8R8A8_UNORM;
 #endif
-    vulkanTextureDescriptor.extent.width = m_descriptor.width;
-    vulkanTextureDescriptor.extent.height = m_descriptor.height;
+    vulkanTextureDescriptor.extent.width = m_descriptor.sharingData->width;
+    vulkanTextureDescriptor.extent.height = m_descriptor.sharingData->height;
     vulkanTextureDescriptor.extent.depth = 1;
     vulkanTextureDescriptor.mipLevels = 1;
     vulkanTextureDescriptor.arrayLayers = 1;
@@ -786,7 +786,7 @@ void JuneVulkanService3::createOnscreenRenderPipeline()
     // vertex shader module
     std::unique_ptr<ShaderModule> vertexShaderModule = nullptr;
     {
-        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.appDir / "onscreen.vert.spv", m_descriptor.appHandle);
+        std::vector<char> vertexShaderSource = utils::readFile(m_descriptor.sharingData->appDir / "onscreen.vert.spv", m_descriptor.sharingData->appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(vertexShaderSource.data(), vertexShaderSource.size());
@@ -827,7 +827,7 @@ void JuneVulkanService3::createOnscreenRenderPipeline()
     // fragment shader module
     std::unique_ptr<ShaderModule> fragmentShaderModule = nullptr;
     {
-        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.appDir / "onscreen.frag.spv", m_descriptor.appHandle);
+        std::vector<char> fragmentShaderSource = utils::readFile(m_descriptor.sharingData->appDir / "onscreen.frag.spv", m_descriptor.sharingData->appHandle);
         ShaderModuleDescriptor descriptor{};
         descriptor.type = ShaderModuleType::kSPIRV;
         descriptor.code = std::string_view(fragmentShaderSource.data(), fragmentShaderSource.size());
@@ -862,12 +862,12 @@ void JuneVulkanService3::createOnscreenRenderPipeline()
 void JuneVulkanService3::createCamera()
 {
     m_camera = std::make_unique<PerspectiveCamera>(45.0f,
-                                                   m_descriptor.width / static_cast<float>(m_descriptor.height),
+                                                   m_descriptor.sharingData->width / static_cast<float>(m_descriptor.sharingData->height),
                                                    0.1f,
                                                    1000.0f);
 
-    // auto halfWidth = m_descriptor.width / 2.0f;
-    // auto halfHeight = m_descriptor.height / 2.0f;
+    // auto halfWidth = m_descriptor.sharingData->width / 2.0f;
+    // auto halfHeight = m_descriptor.sharingData->height / 2.0f;
     // m_camera = std::make_unique<OrthographicCamera>(-halfWidth, halfWidth,
     //                                                 -halfHeight, halfHeight,
     //                                                 -1000, 1000);

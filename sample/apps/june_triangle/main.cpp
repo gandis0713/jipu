@@ -20,7 +20,7 @@ void android_main(struct android_app* app)
 {
     static auto logger = spdlog::android_logger_mt("june_sample");
     spdlog::set_default_logger(logger);
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::info);
 
     jipu::JuneSampleDescriptor descriptor{
         { 1000, 2000, "June Triangle", app },
@@ -36,7 +36,7 @@ void android_main(struct android_app* app)
 
 int main(int argc, char** argv)
 {
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::info);
 
     jipu::JuneSampleDescriptor descriptor{
         { 800, 600, "June Triangle", nullptr },

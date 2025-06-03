@@ -82,8 +82,8 @@ void JuneNoApiService1::work()
     int syncFD = -1;
     if (!waitSyncFDs.empty())
     {
-        // auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
-        // syncFD = mergedHandle.release(); // release for transfer ownership
+        auto mergedHandle = UniqueHandle::merge("no api service1 fences", std::move(waitSyncFDs));
+        syncFD = mergedHandle.release(); // release for transfer ownership
 
         spdlog::trace("merged sync fd: {}", syncFD);
     }

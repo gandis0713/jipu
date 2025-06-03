@@ -1,5 +1,7 @@
 #include "june_service.h"
 
+#include "june/june_sample.h"
+
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -190,6 +192,42 @@ void JuneService::createInstance(const std::string& label)
     {
         spdlog::error("Failed to create June instance with label: {}", label);
         return;
+    }
+}
+
+void JuneService::recordImGui(std::vector<std::function<void()>> cmds)
+{
+    if (m_imgui.has_value())
+    {
+        JuneServiceSharingData* sharingData = m_descriptor.sharingData;
+        // set display size and mouse state.
+        {
+            ImGuiIO& io = ImGui::GetIO();
+            io.DisplaySize = ImVec2((float)sharingData->width, (float)sharingData->height);
+            io.MousePos = ImVec2(sharingData->mouseX, sharingData->mouseY);
+            io.MouseDown[0] = sharingData->leftMouseButton;
+            io.MouseDown[1] = sharingData->rightMouseButton;
+            io.MouseDown[2] = sharingData->middleMouseButton;
+        }
+
+        m_imgui.value().record(cmds);
+        m_imgui.value().build();
+    }
+}
+
+void JuneService::windowImGui(const char* title, std::vector<std::function<void()>> uis)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().window(title, uis);
+    }
+}
+
+void JuneService::drawImGui(CommandEncoder* commandEncoder, TextureView* renderView)
+{
+    if (m_imgui.has_value())
+    {
+        m_imgui.value().draw(commandEncoder, renderView);
     }
 }
 

@@ -218,7 +218,7 @@ void JuneGLESService2::work()
     GLint texUniform = glGetUniformLocation(m_programObject, "uTexture");
     glUniform1i(texUniform, 0);
 
-    glViewport(0, 0, m_descriptor.width, m_descriptor.height);
+    glViewport(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height);
     // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     // glClear(GL_COLOR_BUFFER_BIT);
 
@@ -227,16 +227,7 @@ void JuneGLESService2::work()
     // glFlush();
     // glFinish();
 
-    if (m_descriptor.windowHandle)
-    {
-        spdlog::trace("gles service2 is rendered in swapbuffer.");
-        eglSwapBuffers(m_eglDisplay, m_eglSurface);
-        CHECK_EGL_ERROR();
-    }
-    else
-    {
-        spdlog::trace("gles service2 is rendered in pbuffer.");
-    }
+    eglSwapBuffers(m_eglDisplay, m_eglSurface);
 
     // create EGLSync
     {
@@ -333,6 +324,24 @@ void JuneGLESService2::addSharedMemory(JuneSharedMemory sharedMemory)
         m_eglImages.push_back(eglImageResultInfo.eglImage);
         m_eglClientBuffers.push_back(eglImageResultInfo.eglClientBuffer);
     }
+}
+
+void JuneGLESService2::createEGLSurface()
+{
+    if (!m_descriptor.sharingData->windowHandle)
+    {
+        spdlog::error("No window handle provided for EGL surface creation");
+        return;
+    }
+
+#if defined(__ANDROID__) || defined(ANDROID)
+    ANativeWindow* window = static_cast<ANativeWindow*>(m_descriptor.sharingData->windowHandle);
+    m_eglSurface = eglCreateWindowSurface(m_eglDisplay, m_eglConfig, window, NULL);
+    if (m_eglSurface == EGL_NO_SURFACE)
+    {
+        throw std::runtime_error("Failed to create EGL surface for anative window");
+    }
+#endif
 }
 
 } // namespace jipu

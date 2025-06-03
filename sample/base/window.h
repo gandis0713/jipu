@@ -33,6 +33,7 @@ public:
     uint32_t getWindowHeight() const;
 
     virtual void init();
+    virtual void onEventUpdate() {};
     virtual void onBeforeUpdate() {};
     virtual void onUpdate() {};
     virtual void onAfterUpdate() {};

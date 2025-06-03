@@ -31,6 +31,7 @@ public:
     void end() override;
 
     void addSharedMemory(JuneSharedMemory sharedMemory) override;
+    void createEGLSurface() override;
 
 private:
     GLuint m_programObject{ 0 };

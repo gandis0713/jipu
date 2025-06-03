@@ -216,7 +216,7 @@ void JuneGLESService1::work()
     glEnableVertexAttribArray(posLoc);
     glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
 
-    glViewport(0, 0, m_descriptor.width, m_descriptor.height);
+    glViewport(0, 0, m_descriptor.sharingData->width, m_descriptor.sharingData->height);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -225,15 +225,7 @@ void JuneGLESService1::work()
     // glFlush();
     // glFinish();
 
-    if (m_descriptor.windowHandle)
-    {
-        spdlog::trace("gles service1 is rendered in swapbuffer.");
-        eglSwapBuffers(m_eglDisplay, m_eglSurface);
-    }
-    else
-    {
-        spdlog::trace("gles service1 is rendered in pbuffer.");
-    }
+    // eglSwapBuffers(m_eglDisplay, m_eglSurface);
 
     // create EGLSync
     {
@@ -327,6 +319,22 @@ void JuneGLESService1::addSharedMemory(JuneSharedMemory sharedMemory)
 
         m_eglImages.push_back(eglImageResultInfo.eglImage);
         m_eglClientBuffers.push_back(eglImageResultInfo.eglClientBuffer);
+    }
+}
+
+void JuneGLESService1::createEGLSurface()
+{
+    EGLint pbufferAttribs[] = {
+        EGL_WIDTH,
+        1,
+        EGL_HEIGHT,
+        1,
+        EGL_NONE,
+    };
+    m_eglSurface = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufferAttribs);
+    if (m_eglSurface == EGL_NO_SURFACE)
+    {
+        throw std::runtime_error("Failed to create EGL  for pbuffer");
     }
 }
 

@@ -16,6 +16,7 @@ public:
     ~JuneVulkanService2();
 
     void begin() override;
+    void beforeWork() override;
     void work() override;
 
     void addSharedMemory(JuneSharedMemory sharedMemory) override;
@@ -73,6 +74,8 @@ private:
 
     uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
+
+    bool m_sync = false;
 };
 
 } // namespace jipu

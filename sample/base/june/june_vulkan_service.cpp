@@ -86,14 +86,14 @@ void JuneVulkanService::getPhysicalDevices()
 
 void JuneVulkanService::createSurface()
 {
-    if (!m_descriptor.windowHandle)
+    if (!m_descriptor.sharingData->windowHandle)
     {
         spdlog::debug("Window handle is null.");
         return;
     }
 
     SurfaceDescriptor descriptor;
-    descriptor.windowHandle = m_descriptor.windowHandle;
+    descriptor.windowHandle = m_descriptor.sharingData->windowHandle;
     m_surface = m_adapter->createSurface(descriptor);
 }
 
@@ -115,8 +115,8 @@ void JuneVulkanService::createSwapchain()
         .textureFormat = textureFormat,
         .presentMode = PresentMode::kFifo,
         .colorSpace = ColorSpace::kSRGBNonLinear,
-        .width = m_descriptor.width,
-        .height = m_descriptor.height,
+        .width = m_descriptor.sharingData->width,
+        .height = m_descriptor.sharingData->height,
         .queue = m_queue.get()
     };
 

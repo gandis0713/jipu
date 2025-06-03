@@ -124,7 +124,7 @@ void JuneGLESService::begin()
             EGL_BLUE_SIZE, 8,
             EGL_ALPHA_SIZE, 8,
             EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-            EGL_SURFACE_TYPE, m_descriptor.windowHandle ? EGL_WINDOW_BIT : EGL_PBUFFER_BIT,
+            EGL_SURFACE_TYPE, m_descriptor.sharingData->windowHandle ? EGL_WINDOW_BIT : EGL_PBUFFER_BIT,
             EGL_NONE
         };
 
@@ -134,32 +134,7 @@ void JuneGLESService::begin()
             throw std::runtime_error("Failed to choose EGL config");
         }
 
-        if (!m_descriptor.windowHandle)
-        {
-            EGLint pbufferAttribs[] = {
-                EGL_WIDTH,
-                1,
-                EGL_HEIGHT,
-                1,
-                EGL_NONE,
-            };
-            m_eglSurface = eglCreatePbufferSurface(m_eglDisplay, m_eglConfig, pbufferAttribs);
-            if (m_eglSurface == EGL_NO_SURFACE)
-            {
-                throw std::runtime_error("Failed to create EGL  for pbuffer");
-            }
-        }
-        else
-        {
-#if defined(__ANDROID__) || defined(ANDROID)
-            ANativeWindow* window = static_cast<ANativeWindow*>(m_descriptor.windowHandle);
-            m_eglSurface = eglCreateWindowSurface(m_eglDisplay, m_eglConfig, window, NULL);
-            if (m_eglSurface == EGL_NO_SURFACE)
-            {
-                throw std::runtime_error("Failed to create EGL surface for anative window");
-            }
-#endif
-        }
+        createEGLSurface();
 
         EGLint contextAttribs[] = {
             EGL_CONTEXT_CLIENT_VERSION, 2,

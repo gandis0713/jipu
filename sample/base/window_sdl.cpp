@@ -97,6 +97,7 @@ int Window::exec()
             // spdlog::trace("mouse x: {}, y: {}", m_mouseX, m_mouseY);
         }
 
+        onEventUpdate();
         onBeforeUpdate();
         onUpdate();
         onAfterUpdate();

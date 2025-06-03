@@ -112,6 +112,7 @@ int Window::exec()
                 android_app_clear_motion_events(inputBuffer);
             }
 
+            onEventUpdate();
             onBeforeUpdate();
             onUpdate();
             onAfterUpdate();

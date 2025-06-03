@@ -4,12 +4,14 @@
 #include "june/june.h"
 #include "june_api.h"
 #include "june_memory_node.h"
+#include "native_imgui.h"
 #include "runner.h"
 
 #include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <thread>
 #include <unordered_map>
@@ -17,15 +19,25 @@
 namespace jipu
 {
 
-struct JuneServiceDescriptor
+struct JuneServiceSharingData
 {
-    uint32_t fps{ 0 };
+    std::filesystem::path appPath{};
+    std::filesystem::path appDir{};
     uint32_t width{ 0 };
     uint32_t height{ 0 };
     void* windowHandle{ nullptr };
-    std::filesystem::path appPath;
-    std::filesystem::path appDir;
     void* appHandle{ nullptr };
+    bool leftMouseButton = false;
+    bool rightMouseButton = false;
+    bool middleMouseButton = false;
+    int mouseX = 0;
+    int mouseY = 0;
+};
+
+struct JuneServiceDescriptor
+{
+    JuneServiceSharingData* sharingData = nullptr;
+    uint32_t fps{ 0 };
 };
 
 struct JuneServiceStartDescriptor
@@ -61,7 +73,9 @@ public:
 
 protected:
     virtual void begin();
+    virtual void beforeWork();
     virtual void work();
+    virtual void afterWork();
     virtual void end();
 
     void addBeforeWork(const std::function<void()>& work);
@@ -73,14 +87,15 @@ protected:
     std::vector<JuneFence> getWaitFences() const;
     std::vector<JuneSharedMemory> getSharedMemories() const;
 
+    void recordImGui(std::vector<std::function<void()>> cmds);
+    void windowImGui(const char* title, std::vector<std::function<void()>> uis);
+    void drawImGui(CommandEncoder* commandEncoder, TextureView* renderView);
+
 private:
     void loadJuneLibrary();
 
     void start();
     void stop();
-
-    virtual void beforeWork();
-    virtual void afterWork();
 
 protected:
     const JuneServiceDescriptor m_descriptor;
@@ -96,6 +111,8 @@ protected:
     mutable std::mutex m_sharedMemoryMutex;
     mutable std::mutex m_waitFenceMutex;
     mutable std::mutex m_memoryNodeMutex;
+
+    std::optional<NativeImGui> m_imgui = std::nullopt;
 
 private:
     Runner m_runner;

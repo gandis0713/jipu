@@ -3,7 +3,6 @@
 #include "fps.h"
 #include "hpc_watcher.h"
 #include "june_service.h"
-#include "native_imgui.h"
 #include "window.h"
 
 #include <deque>
@@ -39,17 +38,22 @@ public:
     JuneSample(const JuneSampleDescriptor& descriptor);
     virtual ~JuneSample() = default;
 
+    void init() override;
+
+    JuneServiceSharingData* getSharingData();
+
+    void onEventUpdate() override;
+
 protected:
     void loadJuneLibrary();
     void createInstance(const std::string& label);
 
 protected:
-    std::filesystem::path m_appPath;
-    std::filesystem::path m_appDir;
-
     DyLib m_juneLib;
     JuneAPI m_juneAPI;
     JuneInstance m_juneInstance{ nullptr };
+
+    JuneServiceSharingData m_sharingData{};
 };
 
 } // namespace jipu

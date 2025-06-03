@@ -14,9 +14,38 @@ namespace jipu
 
 JuneSample::JuneSample(const JuneSampleDescriptor& descriptor)
     : Window(descriptor.windowDescriptor)
-    , m_appPath(descriptor.path)
-    , m_appDir(descriptor.path.parent_path())
+    , m_sharingData{
+        .appPath = descriptor.path,
+        .appDir = descriptor.path.parent_path(),
+        .width = descriptor.windowDescriptor.width,
+        .height = descriptor.windowDescriptor.height,
+        .windowHandle = getWindowHandle(),
+        .appHandle = descriptor.windowDescriptor.handle
+    }
 {
+}
+
+void JuneSample::init()
+{
+    m_sharingData.width = getWidth();
+    m_sharingData.height = getHeight();
+    m_sharingData.windowHandle = getWindowHandle();
+
+    Window::init();
+}
+
+JuneServiceSharingData* JuneSample::getSharingData()
+{
+    return &m_sharingData;
+}
+
+void JuneSample::onEventUpdate()
+{
+    m_sharingData.leftMouseButton = m_leftMouseButton;
+    m_sharingData.rightMouseButton = m_rightMouseButton;
+    m_sharingData.middleMouseButton = m_middleMouseButton;
+    m_sharingData.mouseX = m_mouseX;
+    m_sharingData.mouseY = m_mouseY;
 }
 
 void JuneSample::loadJuneLibrary()

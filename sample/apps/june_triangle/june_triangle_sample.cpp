@@ -5,7 +5,6 @@
 #include "june_noapi_service1.h"
 #include "june_vulkan_service1.h"
 #include "june_vulkan_service2.h"
-#include "june_vulkan_service3.h"
 
 #include <spdlog/spdlog.h>
 
@@ -39,13 +38,10 @@ void JuneTriangleSample::init()
     if (serviceCase == 0)
     {
         {
-            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{ .fps = 30,
-                                                                                         .width = m_width,
-                                                                                         .height = m_height,
-                                                                                         .windowHandle = nullptr,
-                                                                                         .appPath = m_appPath,
-                                                                                         .appDir = m_appDir,
-                                                                                         .appHandle = m_handle });
+            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
             m_noapiService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_noapiService1Ready = true;
@@ -53,13 +49,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 120,
-                                                                                       .width = m_width,
-                                                                                       .height = m_height,
-                                                                                       .windowHandle = nullptr,
-                                                                                       .appPath = m_appPath,
-                                                                                       .appDir = m_appDir,
-                                                                                       .appHandle = m_handle });
+            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 120,
+            });
             m_glesService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_glesService1Ready = true;
@@ -67,13 +60,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_glesService2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{ .fps = 30,
-                                                                                       .width = m_width,
-                                                                                       .height = m_height,
-                                                                                       .windowHandle = getWindowHandle(),
-                                                                                       .appPath = m_appPath,
-                                                                                       .appDir = m_appDir,
-                                                                                       .appHandle = m_handle });
+            m_glesService2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
             m_glesService2->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_glesService2Ready = true;
@@ -114,13 +104,10 @@ void JuneTriangleSample::init()
     if (serviceCase == 1)
     {
         {
-            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{ .fps = 30,
-                                                                                         .width = m_width,
-                                                                                         .height = m_height,
-                                                                                         .windowHandle = nullptr,
-                                                                                         .appPath = m_appPath,
-                                                                                         .appDir = m_appDir,
-                                                                                         .appHandle = m_handle });
+            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
             m_noapiService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_noapiService1Ready = true;
@@ -129,13 +116,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{ .fps = 120,
-                                                                                       .width = m_width,
-                                                                                       .height = m_height,
-                                                                                       .windowHandle = nullptr,
-                                                                                       .appPath = m_appPath,
-                                                                                       .appDir = m_appDir,
-                                                                                       .appHandle = m_handle });
+            m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 120,
+            });
             m_glesService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_glesService1Ready = true;
@@ -144,13 +128,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_vulkanService2 = std::make_unique<JuneVulkanService2>(JuneServiceDescriptor{ .fps = 30,
-                                                                                           .width = m_width,
-                                                                                           .height = m_height,
-                                                                                           .windowHandle = getWindowHandle(),
-                                                                                           .appPath = m_appPath,
-                                                                                           .appDir = m_appDir,
-                                                                                           .appHandle = m_handle });
+            m_vulkanService2 = std::make_unique<JuneVulkanService2>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
 
             m_vulkanService2->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
@@ -200,13 +181,10 @@ void JuneTriangleSample::init()
     if (serviceCase == 2)
     {
         {
-            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{ .fps = 30,
-                                                                                         .width = m_width,
-                                                                                         .height = m_height,
-                                                                                         .windowHandle = nullptr,
-                                                                                         .appPath = m_appPath,
-                                                                                         .appDir = m_appDir,
-                                                                                         .appHandle = m_handle });
+            m_noapiService1 = std::make_unique<JuneNoApiService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
             m_noapiService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_noapiService1Ready = true;
@@ -214,13 +192,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{ .fps = 30,
-                                                                                           .width = m_width,
-                                                                                           .height = m_height,
-                                                                                           .windowHandle = nullptr,
-                                                                                           .appPath = m_appPath,
-                                                                                           .appDir = m_appDir,
-                                                                                           .appHandle = m_handle });
+            m_vulkanService1 = std::make_unique<JuneVulkanService1>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
 
             m_vulkanService1->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
@@ -229,13 +204,10 @@ void JuneTriangleSample::init()
         }
 
         {
-            m_glesService2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{ .fps = 120,
-                                                                                       .width = m_width,
-                                                                                       .height = m_height,
-                                                                                       .windowHandle = getWindowHandle(),
-                                                                                       .appPath = m_appPath,
-                                                                                       .appDir = m_appDir,
-                                                                                       .appHandle = m_handle });
+            m_glesService2 = std::make_unique<JuneGLESService2>(JuneServiceDescriptor{
+                .sharingData = &m_sharingData,
+                .fps = 30,
+            });
             m_glesService2->start(JuneServiceStartDescriptor{
                 .callback = [this]() {
                     m_glesService2Ready = true;

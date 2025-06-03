@@ -54,6 +54,7 @@ protected:
     void end() override;
 
     void createApiContext(const std::string& label) override;
+    virtual void createEGLSurface() {};
 
 protected:
     EGLContext m_eglContext = EGL_NO_CONTEXT;
