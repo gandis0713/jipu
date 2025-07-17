@@ -154,3 +154,7 @@ add_subdirectory(instancing)
 add_subdirectory(offscreen)
 
 add_subdirectory(june_triangle)
+
+if(ANDROID)
+    add_subdirectory(june_inference)
+endif()
