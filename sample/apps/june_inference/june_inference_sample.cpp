@@ -1,4 +1,5 @@
 #include "june_inference_sample.h"
+#include "june_gles_service1.h"
 
 #include "file.h"
 #include "image.h"
@@ -39,52 +40,14 @@ void JuneInferenceSample::init()
 {
     JuneSample::init();
 
-    loadJuneLibrary();
-    createInstance("JuneInferenceSample");
-    createSharedMemories();
-
-    if (m_sharedMemories.empty())
-    {
-        spdlog::error("No shared memories created, exiting.");
-        return;
-    }
-}
-
-void JuneInferenceSample::createSharedMemories()
-{
-    for (size_t i = 0; i < 3; ++i)
-    {
-        AHardwareBuffer* aHardwareBuffer = nullptr;
-
-        AHardwareBuffer_Desc aHardwareBufferDesc = {
-            .width = m_width,
-            .height = m_height,
-            .layers = 1,
-            .format = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM,
-            .usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT | AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY
-        };
-
-        int result = AHardwareBuffer_allocate(&aHardwareBufferDesc, &aHardwareBuffer);
-        if (result != 0)
-        {
-            spdlog::error("Failed to allocate AHardwareBuffer: {}", result);
-            return;
-        }
-
-        m_aHardwareBuffers.push_back(aHardwareBuffer);
-
-        JuneSharedMemoryAHardwareBufferImportDescriptor aHardwareBufferImportDescriptor{
-            .chain = { .sType = JuneSType_SharedMemoryAHardwareBufferImportDescriptor },
-            .aHardwareBuffer = aHardwareBuffer
-        };
-
-        JuneSharedMemoryImportDescriptor juneSharedMemoryImportDescriptor{
-            .nextInChain = &aHardwareBufferImportDescriptor.chain,
-            .label = { .data = "JuneInferenceSampleSharedMemoryAHardwareBuffer", .length = 32 }
-        };
-
-        m_sharedMemories.push_back(m_juneAPI.InstanceImportSharedMemory(m_juneInstance, &juneSharedMemoryImportDescriptor));
-    }
+    m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{
+        .sharingData = &m_sharingData,
+        .fps = 120,
+    });
+    m_glesService1->start(JuneServiceStartDescriptor{
+        .callback = [this]() {
+            m_glesService1Ready = true;
+        } });
 }
 
 } // namespace jipu

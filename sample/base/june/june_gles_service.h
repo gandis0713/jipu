@@ -41,6 +41,7 @@ namespace jipu
 
 GLuint compileShader(GLenum type, const char* source);
 GLuint createProgram(const char* vertexSource, const char* fragmentSource);
+GLuint createTexture(unsigned char* imageData, int width, int height, int channels);
 
 class JuneGLESService : public JuneService
 {

@@ -23,15 +23,11 @@ public:
     void init() override;
 
 private:
-    void createSharedMemories();
-
-private:
-#if defined(__ANDROID__) || defined(ANDROID)
-    std::vector<AHardwareBuffer*> m_aHardwareBuffers{};
-#endif
-    std::vector<JuneSharedMemory> m_sharedMemories{};
-
     std::unique_ptr<TFLiteInference> m_tfliteInference{ nullptr };
+
+    std::unique_ptr<JuneService> m_glesService1{ nullptr };
+
+    [[maybe_unused]] bool m_glesService1Ready{ false };
 };
 
 } // namespace jipu
