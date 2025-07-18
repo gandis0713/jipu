@@ -1,15 +1,9 @@
 #include "june_inference_sample.h"
 
 #include "file.h"
+#include "image.h"
 #include <memory>
 #include <spdlog/spdlog.h>
-
-#include "tensorflow/lite/interpreter.h"
-#include "tensorflow/lite/kernels/register.h"
-#include "tensorflow/lite/model.h"
-#include "tensorflow/lite/optional_debug_tools.h"
-
-#include "tflite/c/c_api.h"
 
 namespace jipu
 {
@@ -17,10 +11,24 @@ namespace jipu
 JuneInferenceSample::JuneInferenceSample(const JuneSampleDescriptor& descriptor)
     : JuneSample(descriptor)
 {
-    std::vector<char> buffer = utils::readFile(m_sharingData.appDir / "deeplabv3.tflite", m_sharingData.appHandle);
-    const char* version = TfLiteVersion();
-    spdlog::info("charles TensorFlow Lite version: {}", version);
-    // std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromBuffer(buffer.data(), buffer.size());
+    std::string modelPath = m_sharingData.appDir / "deeplabv3.tflite";
+    std::vector<char> modelBuffer = utils::readFile(modelPath, m_sharingData.appHandle);
+    std::vector<char> imageBuffer = utils::readFile(m_sharingData.appDir / "man.png", m_sharingData.appHandle);
+
+    m_tfliteInference = std::make_unique<TFLiteInference>();
+    m_tfliteInference->setInputImage(std::make_unique<Image>(imageBuffer.data(), imageBuffer.size()));
+    if (!m_tfliteInference->loadModel(modelBuffer))
+    {
+        spdlog::error("Failed to load model");
+        return;
+    }
+
+    std::vector<uint8_t> result = m_tfliteInference->runInference();
+    if (result.empty())
+    {
+        spdlog::error("Inference result is empty");
+        return;
+    }
 }
 
 JuneInferenceSample::~JuneInferenceSample()

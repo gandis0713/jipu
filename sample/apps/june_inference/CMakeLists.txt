@@ -3,6 +3,7 @@ configure_sample(june_inference)
 target_include_directories(june_inference
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/litert_140
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/litert_140/external/org_tensorflow
 )
 
 add_library(litert_140 SHARED IMPORTED)

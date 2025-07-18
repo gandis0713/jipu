@@ -8,6 +8,8 @@
 #include <android/native_window.h>
 #endif
 
+#include "tflite_inference.h"
+
 namespace jipu
 {
 
@@ -28,6 +30,8 @@ private:
     std::vector<AHardwareBuffer*> m_aHardwareBuffers{};
 #endif
     std::vector<JuneSharedMemory> m_sharedMemories{};
+
+    std::unique_ptr<TFLiteInference> m_tfliteInference{ nullptr };
 };
 
 } // namespace jipu
