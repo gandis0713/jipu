@@ -271,7 +271,7 @@ void WGPUTexturedCube::createImageTexture()
     std::vector<char> buffer = utils::readFile(m_appDir / "Di-3d.png", m_handle);
     auto image = std::make_unique<Image>(buffer.data(), buffer.size());
 
-    unsigned char* pixels = static_cast<unsigned char*>(image->getPixels());
+    unsigned char* pixels = image->getPixels();
     uint32_t width = image->getWidth();
     uint32_t height = image->getHeight();
     uint32_t channel = image->getChannel();

@@ -278,7 +278,7 @@ void OBJModelSample::createImageTexture()
     std::vector<char> buffer = utils::readFile(m_appDir / "viking_room.png", m_handle);
     m_image = std::make_unique<Image>(buffer.data(), buffer.size());
 
-    unsigned char* pixels = static_cast<unsigned char*>(m_image->getPixels());
+    unsigned char* pixels = m_image->getPixels();
     uint32_t width = m_image->getWidth();
     uint32_t height = m_image->getHeight();
     uint32_t channel = m_image->getChannel();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <vector>
 
 namespace jipu
 {
@@ -15,7 +16,8 @@ public:
     Image(void* buf, uint64_t len, int targetWidth, int targetHeight, int targetChannels);
     ~Image();
 
-    void* getPixels() const;
+    void setPixels(unsigned char* pixels, int width, int height, int channels);
+    unsigned char* getPixels();
     int getWidth() const;
     int getHeight() const;
     int getChannel() const;
@@ -26,7 +28,7 @@ protected:
     void convert(unsigned char* pixels, int width, int height, int channels, int targetWidth, int targetHeight, int targetChannels);
 
 protected:
-    void* m_pixels = nullptr;
+    std::vector<unsigned char> m_pixels{};
     int m_width = 0;
     int m_height = 0;
     int m_channel = 0;

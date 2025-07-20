@@ -113,12 +113,17 @@ Image::Image(const std::filesystem::path& path)
     int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
     stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &channels, requiredChannels);
 
-    if (pixels == nullptr)
+    size_t size = m_width * m_height * requiredChannels;
+    m_pixels.clear();
+    m_pixels.resize(size);
+    memcpy(m_pixels.data(), pixels, size);
+    stbi_image_free(pixels);
+
+    if (m_pixels.empty())
     {
         throw std::runtime_error("failed to load texture image by path.");
     }
 
-    m_pixels = pixels;
     if (channels != requiredChannels)
     {
         spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
@@ -154,12 +159,17 @@ Image::Image(void* buf, uint64_t len)
     int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
     stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), static_cast<int>(len), &m_width, &m_height, &channels, requiredChannels);
 
-    if (pixels == nullptr)
+    size_t size = m_width * m_height * requiredChannels;
+    m_pixels.clear();
+    m_pixels.resize(size);
+    memcpy(m_pixels.data(), pixels, size);
+    stbi_image_free(pixels);
+
+    if (m_pixels.empty())
     {
-        throw std::runtime_error("Failed to load texture image by buffer.");
+        throw std::runtime_error("failed to load texture image by path.");
     }
 
-    m_pixels = pixels;
     if (channels != requiredChannels)
     {
         spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
@@ -192,13 +202,30 @@ Image::Image(void* buf, uint64_t len, int targetWidth, int targetHeight, int tar
 
 Image::~Image()
 {
-    // if (m_pixels != nullptr)
-    // stbi_image_free(m_pixels);
+    m_pixels.clear();
 }
 
-void* Image::getPixels() const
+void Image::setPixels(unsigned char* pixels, int width, int height, int channels)
 {
-    return m_pixels;
+    m_width = width;
+    m_height = height;
+    m_channel = channels;
+
+    size_t size = width * height * channels;
+    if (size == 0)
+    {
+        throw std::runtime_error("Failed to allocate memory for image pixels.");
+    }
+
+    m_pixels.clear();
+    m_pixels.resize(size);
+
+    memcpy(m_pixels.data(), pixels, size);
+}
+
+unsigned char* Image::getPixels()
+{
+    return m_pixels.data();
 }
 
 int Image::getWidth() const
@@ -218,12 +245,12 @@ int Image::getChannel() const
 
 void Image::save(const std::filesystem::path& path)
 {
-    if (m_pixels == nullptr)
+    if (m_pixels.empty())
     {
         throw std::runtime_error("No image data to save.");
     }
 
-    if (!stbi_write_png(path.string().c_str(), m_width, m_height, m_channel, m_pixels, m_width * m_channel))
+    if (!stbi_write_png(path.string().c_str(), m_width, m_height, m_channel, m_pixels.data(), m_width * m_channel))
     {
         throw std::runtime_error("Failed to save image to " + path.string());
     }
@@ -249,14 +276,14 @@ void Image::convert(unsigned char* pixels, int width, int height, int channels, 
     }
 
     // 2. Resize
-    std::vector<unsigned char> resizedData;
     int finalWidth = (targetWidth > 0) ? targetWidth : width;
     int finalHeight = (targetHeight > 0) ? targetHeight : height;
 
     if (finalWidth != width || finalHeight != height)
     {
         size_t resizedSize = finalWidth * finalHeight * currentChannels;
-        resizedData.resize(resizedSize);
+        m_pixels.clear();
+        m_pixels.resize(resizedSize);
 
         // get pixel layout for stb_image_resize2
         stbir_pixel_layout pixelLayout = getPixelLayout(currentChannels);
@@ -264,21 +291,13 @@ void Image::convert(unsigned char* pixels, int width, int height, int channels, 
         // High-quality resizing using stb_image_resize2
         void* result = stbir_resize(
             pixels, width, height, width * currentChannels,
-            resizedData.data(), finalWidth, finalHeight, finalWidth * currentChannels,
+            m_pixels.data(), finalWidth, finalHeight, finalWidth * currentChannels,
             pixelLayout, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_MITCHELL);
 
         if (!result)
         {
             throw std::runtime_error("Failed to resize image.");
         }
-
-        m_pixels = new unsigned char[resizedSize];
-        if (!m_pixels)
-        {
-            throw std::runtime_error("Failed to allocate memory for resized image.");
-        }
-
-        memcpy(m_pixels, resizedData.data(), resizedSize);
     }
 
     m_width = finalWidth;
