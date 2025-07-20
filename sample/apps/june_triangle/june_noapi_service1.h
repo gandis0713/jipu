@@ -31,8 +31,8 @@ private:
     std::vector<AHardwareBuffer*> m_aHardwareBuffers;
     std::vector<AHardwareBuffer_Desc> m_aHardwareBufferDescs;
     std::vector<uint32_t> m_bytesPerPixels;
-#endif
     int32_t m_signalFD{ -1 };
+#endif
 };
 
 } // namespace jipu

@@ -13,12 +13,3 @@ target_link_libraries(june_inference
     PRIVATE
     litert_140
 )
-
-if(APPLE)
-    find_package(unofficial-angle REQUIRED CONFIG)
-    target_link_libraries(june_inference
-        PRIVATE
-        unofficial::angle::libGLESv2
-        unofficial::angle::libEGL
-    )
-endif()

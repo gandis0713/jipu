@@ -58,7 +58,7 @@ private:
     struct UBO
     {
         MVP mvp;
-    } m_ubo;
+    };
 
     struct OffscreenVertex
     {
@@ -75,6 +75,7 @@ private:
 
     uint32_t m_sampleCount = 1; // use only 1, because there is not resolve texture.
     std::unique_ptr<Camera> m_camera = nullptr;
+    [[maybe_unused]] UBO m_ubo{};
 };
 
 } // namespace jipu

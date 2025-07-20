@@ -57,7 +57,7 @@ private:
     struct UBO
     {
         MVP mvp;
-    } m_ubo;
+    };
 
     struct OnscreenVertex
     {
@@ -76,6 +76,7 @@ private:
     std::unique_ptr<Camera> m_camera = nullptr;
 
     bool m_sync = false;
+    [[maybe_unused]] UBO m_ubo{};
 };
 
 } // namespace jipu
