@@ -23,6 +23,9 @@ public:
     void save(const std::filesystem::path& path);
 
 protected:
+    void convert(unsigned char* pixels, int width, int height, int channels, int targetWidth, int targetHeight, int targetChannels);
+
+protected:
     void* m_pixels = nullptr;
     int m_width = 0;
     int m_height = 0;

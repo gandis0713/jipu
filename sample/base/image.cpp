@@ -7,11 +7,28 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include "stb_image_resize.h"
+#include "stb_image_resize2.h"
 #include <vector>
 
 namespace
 {
+
+stbir_pixel_layout getPixelLayout(int channels)
+{
+    switch (channels)
+    {
+    case 1:
+        return STBIR_1CHANNEL;
+    case 2:
+        return STBIR_2CHANNEL;
+    case 3:
+        return STBIR_RGB;
+    case 4:
+        return STBIR_RGBA;
+    default:
+        return STBIR_RGBA;
+    }
+}
 
 std::vector<unsigned char> convertChannels(const unsigned char* input,
                                            int width, int height,
@@ -20,6 +37,8 @@ std::vector<unsigned char> convertChannels(const unsigned char* input,
 {
     int pixelCount = width * height;
     std::vector<unsigned char> output(pixelCount * outputChannels);
+
+    spdlog::info("inputChannels: {}, outputChannels: {}, pixelCount: {}", inputChannels, outputChannels, pixelCount);
 
     for (int i = 0; i < pixelCount; i++)
     {
@@ -90,8 +109,9 @@ namespace jipu
 
 Image::Image(const std::filesystem::path& path)
 {
-    int components = 0;
-    stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &components, STBI_rgb_alpha);
+    int channels = 0;
+    int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
+    stbi_uc* pixels = stbi_load(path.string().c_str(), &m_width, &m_height, &channels, requiredChannels);
 
     if (pixels == nullptr)
     {
@@ -99,7 +119,11 @@ Image::Image(const std::filesystem::path& path)
     }
 
     m_pixels = pixels;
-    m_channel = static_cast<int>(STBI_rgb_alpha);
+    if (channels != requiredChannels)
+    {
+        spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
+    }
+    m_channel = requiredChannels;
 }
 
 Image::Image(const std::filesystem::path& path, int targetWidth, int targetHeight, int targetChannels)
@@ -108,62 +132,27 @@ Image::Image(const std::filesystem::path& path, int targetWidth, int targetHeigh
     , m_channel(1)
 {
     int width, height, channels;
-    stbi_uc* pixels = stbi_load(path.string().c_str(), &width, &height, nullptr, channels);
+    int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
+    stbi_uc* pixels = stbi_load(path.string().c_str(), &width, &height, &channels, requiredChannels);
 
     if (pixels == nullptr)
     {
         throw std::runtime_error("failed to load texture image by path with specified dimensions.");
     }
 
-    m_pixels = pixels;
-
-    // 메모리 자동 관리를 위한 스마트 포인터
-    std::unique_ptr<unsigned char[], decltype(&stbi_image_free)>
-        dataPtr(pixels, &stbi_image_free);
-
-    // 1. 채널 변환
-    std::vector<unsigned char> channelConverted;
-    int currentChannels = channels;
-
-    if (targetChannels != channels)
+    if (channels != requiredChannels)
     {
-        channelConverted = convertChannels(pixels, width, height, channels, targetChannels);
-        pixels = channelConverted.data();
-        currentChannels = targetChannels;
+        spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
     }
 
-    // 2. 크기 변환
-    std::vector<unsigned char> resizedData;
-    int finalWidth = (targetWidth > 0) ? targetWidth : width;
-    int finalHeight = (targetHeight > 0) ? targetHeight : height;
-
-    if (finalWidth != width || finalHeight != height)
-    {
-        resizedData.resize(finalWidth * finalHeight * currentChannels);
-
-        int result = stbir_resize_uint8(
-            pixels, width, height, 0,
-            resizedData.data(), finalWidth, finalHeight, 0,
-            currentChannels);
-
-        if (!result)
-        {
-            spdlog::error("Failed to resize image from {}x{} to {}x{} with {} channels",
-                          width, height, finalWidth, finalHeight, currentChannels);
-        }
-
-        pixels = resizedData.data();
-    }
-
-    m_width = finalWidth;
-    m_height = finalHeight;
-    m_channel = currentChannels;
+    convert(pixels, width, height, requiredChannels, targetWidth, targetHeight, targetChannels);
 }
 
 Image::Image(void* buf, uint64_t len)
 {
-    int components = 0;
-    stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), static_cast<int>(len), &m_width, &m_height, &components, STBI_rgb_alpha);
+    int channels = 0;
+    int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
+    stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), static_cast<int>(len), &m_width, &m_height, &channels, requiredChannels);
 
     if (pixels == nullptr)
     {
@@ -171,13 +160,40 @@ Image::Image(void* buf, uint64_t len)
     }
 
     m_pixels = pixels;
-    m_channel = static_cast<int>(STBI_rgb_alpha);
+    if (channels != requiredChannels)
+    {
+        spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
+    }
+
+    m_channel = requiredChannels;
+}
+
+Image::Image(void* buf, uint64_t len, int targetWidth, int targetHeight, int targetChannels)
+    : m_width(1)
+    , m_height(1)
+    , m_channel(1)
+{
+    int width, height, channels;
+    int requiredChannels = static_cast<int>(STBI_rgb_alpha); // Always load as RGBA
+    stbi_uc* pixels = stbi_load_from_memory(static_cast<const stbi_uc*>(buf), static_cast<int>(len), &width, &height, &channels, requiredChannels);
+
+    if (pixels == nullptr)
+    {
+        throw std::runtime_error("Failed to load texture image by buffer with specified dimensions.");
+    }
+
+    if (channels != requiredChannels)
+    {
+        spdlog::warn("Loaded image has {} channels, expected {}", channels, requiredChannels);
+    }
+
+    convert(pixels, width, height, requiredChannels, targetWidth, targetHeight, targetChannels);
 }
 
 Image::~Image()
 {
-    if (m_pixels != nullptr)
-        stbi_image_free(m_pixels);
+    // if (m_pixels != nullptr)
+    // stbi_image_free(m_pixels);
 }
 
 void* Image::getPixels() const
@@ -213,6 +229,61 @@ void Image::save(const std::filesystem::path& path)
     }
 
     spdlog::info("Image saved to {}", path.string());
+}
+
+void Image::convert(unsigned char* pixels, int width, int height, int channels, int targetWidth, int targetHeight, int targetChannels)
+{
+    // Memory management using smart pointer
+    std::unique_ptr<unsigned char[], decltype(&stbi_image_free)>
+        dataPtr(pixels, &stbi_image_free);
+
+    // 1. Convert channels
+    std::vector<unsigned char> channelConverted;
+    int currentChannels = channels;
+
+    if (targetChannels != channels)
+    {
+        channelConverted = convertChannels(pixels, width, height, channels, targetChannels);
+        pixels = channelConverted.data();
+        currentChannels = targetChannels;
+    }
+
+    // 2. Resize
+    std::vector<unsigned char> resizedData;
+    int finalWidth = (targetWidth > 0) ? targetWidth : width;
+    int finalHeight = (targetHeight > 0) ? targetHeight : height;
+
+    if (finalWidth != width || finalHeight != height)
+    {
+        size_t resizedSize = finalWidth * finalHeight * currentChannels;
+        resizedData.resize(resizedSize);
+
+        // get pixel layout for stb_image_resize2
+        stbir_pixel_layout pixelLayout = getPixelLayout(currentChannels);
+
+        // High-quality resizing using stb_image_resize2
+        void* result = stbir_resize(
+            pixels, width, height, width * currentChannels,
+            resizedData.data(), finalWidth, finalHeight, finalWidth * currentChannels,
+            pixelLayout, STBIR_TYPE_UINT8, STBIR_EDGE_CLAMP, STBIR_FILTER_MITCHELL);
+
+        if (!result)
+        {
+            throw std::runtime_error("Failed to resize image.");
+        }
+
+        m_pixels = new unsigned char[resizedSize];
+        if (!m_pixels)
+        {
+            throw std::runtime_error("Failed to allocate memory for resized image.");
+        }
+
+        memcpy(m_pixels, resizedData.data(), resizedSize);
+    }
+
+    m_width = finalWidth;
+    m_height = finalHeight;
+    m_channel = currentChannels;
 }
 
 } // namespace jipu
