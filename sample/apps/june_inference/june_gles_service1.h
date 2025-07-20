@@ -1,16 +1,10 @@
 #pragma once
 
+#include "image.h"
 #include "june/june.h"
 #include "june/june_gles_service.h"
+#include "tflite_image_inference.h"
 
-#include "image.h"
-
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-#include <GLES/gl.h>
-#include <GLES/glext.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #if defined(__ANDROID__) || defined(ANDROID)
 #include <android/hardware_buffer.h>
 #include <android/native_window.h>
@@ -36,13 +30,17 @@ public:
 private:
     GLuint m_programObject{ 0 };
     GLuint m_texture{};
+    GLuint m_textureMask{};
     GLuint m_vbo{};
-    GLuint m_vao{};
     GLint m_positionLoc{};
     GLint m_texCoordLoc{};
     GLint m_textureLoc{};
+    GLint m_textureMaskLoc{};
 
     std::unique_ptr<Image> m_image{ nullptr };
+    std::unique_ptr<Image> m_mask{ nullptr };
+
+    std::unique_ptr<TFLiteImageInference> m_tfliteInference{ nullptr };
 };
 
 } // namespace jipu

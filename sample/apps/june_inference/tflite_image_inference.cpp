@@ -1,4 +1,4 @@
-#include "tflite_inference.h"
+#include "tflite_image_inference.h"
 
 #include <algorithm>
 #include <cmath>
@@ -10,14 +10,14 @@
 namespace jipu
 {
 
-TFLiteInference::TFLiteInference()
+TFLiteImageInference::TFLiteImageInference()
     : m_interpreter(nullptr)
     , m_model(nullptr)
     , m_inputImage(nullptr)
 {
 }
 
-TFLiteInference::~TFLiteInference()
+TFLiteImageInference::~TFLiteImageInference()
 {
     if (m_interpreter)
     {
@@ -29,7 +29,7 @@ TFLiteInference::~TFLiteInference()
     }
 }
 
-bool TFLiteInference::setInputImage(std::unique_ptr<Image> image)
+bool TFLiteImageInference::setInputImage(Image* image)
 {
     if (!image)
     {
@@ -37,11 +37,11 @@ bool TFLiteInference::setInputImage(std::unique_ptr<Image> image)
         return false;
     }
 
-    m_inputImage = std::move(image);
+    m_inputImage = image;
     return true;
 }
 
-bool TFLiteInference::loadModel(const std::vector<char>& modelBuffer)
+bool TFLiteImageInference::loadModel(const std::vector<char>& modelBuffer)
 {
     m_model = TfLiteModelCreate(modelBuffer.data(), modelBuffer.size());
     if (!m_model)
@@ -75,30 +75,101 @@ bool TFLiteInference::loadModel(const std::vector<char>& modelBuffer)
     return true;
 }
 
-void TFLiteInference::preprocessImage(std::vector<float>& preprocessed)
+int32_t TFLiteImageInference::getBatchSize()
 {
     TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
     if (!inputTensor)
-        return;
+        return 0;
 
-    int expectedSize = 1;
-    auto numberOfDims = TfLiteTensorNumDims(inputTensor);
-    for (int i = 0; i < numberOfDims; i++)
-    {
-        expectedSize *= TfLiteTensorDim(inputTensor, i);
-    }
+    return TfLiteTensorDim(inputTensor, 0);
+}
+
+int32_t TFLiteImageInference::getWidth()
+{
+    TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
+    if (!inputTensor)
+        return 0;
+
+    int32_t batchSize = TfLiteTensorDim(inputTensor, 1);
+    return batchSize;
+}
+
+int32_t TFLiteImageInference::getHeight()
+{
+    TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
+    if (!inputTensor)
+        return 0;
+
+    int32_t height = TfLiteTensorDim(inputTensor, 2);
+    return height;
+}
+
+int32_t TFLiteImageInference::getInputChannel()
+{
+    TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
+    if (!inputTensor)
+        return 0;
+
+    int32_t channels = TfLiteTensorDim(inputTensor, 3);
+    return channels;
+}
+
+int32_t TFLiteImageInference::getOutputChannel()
+{
+    return getOutputByteSize() / getWidth() / getHeight() / sizeof(float);
+}
+
+size_t TFLiteImageInference::getInputByteSize()
+{
+    TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
+    if (!inputTensor)
+        return 0;
+
+    return TfLiteTensorByteSize(inputTensor);
+}
+
+size_t TFLiteImageInference::getInputSize()
+{
+    TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
+    if (!inputTensor)
+        return 0;
 
     int32_t batchSize = TfLiteTensorDim(inputTensor, 0);
     int32_t width = TfLiteTensorDim(inputTensor, 1);
     int32_t height = TfLiteTensorDim(inputTensor, 2);
     int32_t channels = TfLiteTensorDim(inputTensor, 3);
-    auto byteSize = TfLiteTensorByteSize(inputTensor);
 
-    spdlog::info("Expected input shape: [{}, {}, {}, {}], byte size:[{}], expectedSize:[{}]",
-                 batchSize, height, width, channels, byteSize, expectedSize);
+    return batchSize * width * height * channels;
+}
+
+size_t TFLiteImageInference::getOutputByteSize()
+{
+    const TfLiteTensor* outputTensor = TfLiteInterpreterGetOutputTensor(m_interpreter, 0);
+    if (!outputTensor)
+        return 0;
+
+    return TfLiteTensorByteSize(outputTensor);
+}
+
+size_t TFLiteImageInference::getOutputSize()
+{
+    return getOutputByteSize() / sizeof(float);
+}
+
+void TFLiteImageInference::preprocessImage(std::vector<float>& preprocessed)
+{
+    size_t inputSize = getInputSize();
+    int32_t batchSize = getBatchSize();
+    int32_t width = getWidth();
+    int32_t height = getHeight();
+    int32_t channels = getInputChannel();
+    size_t inputByteSize = getInputByteSize();
+
+    spdlog::info("Expected input shape: [{}, {}, {}, {}], byte size:[{}], inputSize:[{}]",
+                 batchSize, height, width, channels, inputByteSize, inputSize);
 
     preprocessed.clear();
-    preprocessed.resize(expectedSize);
+    preprocessed.resize(inputSize);
 
     auto inputImage = static_cast<uint8_t*>(m_inputImage->getPixels());
     int imgWidth = m_inputImage->getWidth();
@@ -126,25 +197,21 @@ void TFLiteInference::preprocessImage(std::vector<float>& preprocessed)
     spdlog::info("Preprocessed data size: {}", preprocessed.size());
 }
 
-std::vector<uint8_t> TFLiteInference::postprocessOutput(const float* output,
-                                                        int outputSize)
+std::vector<uint8_t> TFLiteImageInference::postprocessOutput(const float* output,
+                                                             int outputSize)
 {
     std::vector<uint8_t> result(outputSize);
 
     // 세그멘테이션 결과를 시각화 가능한 형태로 변환
     for (int i = 0; i < outputSize; i++)
     {
-        // argmax를 통해 클래스 ID 추출
-        int classId = static_cast<int>(output[i]);
-
-        // 클래스별 색상 매핑 (간단한 예시)
-        result[i] = static_cast<uint8_t>(classId * 15 % 255);
+        result[i] = static_cast<uint8_t>(output[i] * 255);
     }
 
     return result;
 }
 
-std::vector<uint8_t> TFLiteInference::runInference()
+std::vector<uint8_t> TFLiteImageInference::runInference()
 {
     if (!m_interpreter)
     {
@@ -198,6 +265,8 @@ std::vector<uint8_t> TFLiteInference::runInference()
     // 출력 데이터 처리
     const float* outputData = static_cast<const float*>(TfLiteTensorData(outputTensor));
     int outputSize = TfLiteTensorByteSize(outputTensor) / sizeof(float);
+
+    spdlog::info("Output tensor size: {}", outputSize);
 
     return postprocessOutput(outputData, outputSize);
 }

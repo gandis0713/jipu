@@ -8,8 +8,6 @@
 #include <android/native_window.h>
 #endif
 
-#include "tflite_inference.h"
-
 namespace jipu
 {
 
@@ -23,8 +21,6 @@ public:
     void init() override;
 
 private:
-    std::unique_ptr<TFLiteInference> m_tfliteInference{ nullptr };
-
     std::unique_ptr<JuneService> m_glesService1{ nullptr };
 
     [[maybe_unused]] bool m_glesService1Ready{ false };

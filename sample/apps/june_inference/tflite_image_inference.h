@@ -14,15 +14,25 @@ struct TfLiteModel;
 namespace jipu
 {
 
-class TFLiteInference
+class TFLiteImageInference
 {
 public:
-    TFLiteInference();
-    ~TFLiteInference();
+    TFLiteImageInference();
+    ~TFLiteImageInference();
 
-    bool setInputImage(std::unique_ptr<Image> image);
+    bool setInputImage(Image* image);
     bool loadModel(const std::vector<char>& modelBuffer);
     std::vector<uint8_t> runInference();
+
+    int32_t getBatchSize();
+    int32_t getWidth();
+    int32_t getHeight();
+    int32_t getInputChannel();
+    int32_t getOutputChannel();
+    size_t getInputByteSize();
+    size_t getInputSize();
+    size_t getOutputByteSize();
+    size_t getOutputSize();
 
 private:
     void preprocessImage(std::vector<float>& preprocessed);
@@ -33,7 +43,7 @@ private:
 private:
     TfLiteInterpreter* m_interpreter{ nullptr };
     TfLiteModel* m_model{ nullptr };
-    std::unique_ptr<Image> m_inputImage{ nullptr };
+    Image* m_inputImage{ nullptr };
 };
 
 } // namespace jipu
