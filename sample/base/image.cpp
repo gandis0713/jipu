@@ -258,12 +258,20 @@ void Image::save(const std::filesystem::path& path)
     spdlog::info("Image saved to {}", path.string());
 }
 
+void Image::convert(int width, int height, int channels)
+{
+    if (width <= 0 || height <= 0 || channels <= 0)
+    {
+        throw std::invalid_argument("Invalid target dimensions or channels for image conversion.");
+    }
+
+    std::vector<unsigned char> pixels = m_pixels;
+
+    convert(pixels.data(), m_width, m_height, m_channel, width, height, channels);
+}
+
 void Image::convert(unsigned char* pixels, int width, int height, int channels, int targetWidth, int targetHeight, int targetChannels)
 {
-    // Memory management using smart pointer
-    std::unique_ptr<unsigned char[], decltype(&stbi_image_free)>
-        dataPtr(pixels, &stbi_image_free);
-
     // 1. Convert channels
     std::vector<unsigned char> channelConverted;
     int currentChannels = channels;

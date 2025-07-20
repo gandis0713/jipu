@@ -10,6 +10,7 @@ class Image
 {
 
 public:
+    Image() = default;
     Image(const std::filesystem::path& path);
     Image(const std::filesystem::path& path, int targetWidth, int targetHeight, int targetChannels);
     Image(void* buf, uint64_t len);
@@ -24,7 +25,9 @@ public:
 
     void save(const std::filesystem::path& path);
 
-protected:
+    void convert(int width, int height, int channels);
+
+private:
     void convert(unsigned char* pixels, int width, int height, int channels, int targetWidth, int targetHeight, int targetChannels);
 
 protected:

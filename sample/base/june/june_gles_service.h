@@ -5,13 +5,14 @@
 #include "june_api.h"
 #include "june_service.h"
 
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
 #include <GLES/gl.h>
 #include <GLES/glext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-// #include <GLES3/gl3ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
 #if defined(__ANDROID__) || defined(ANDROID)
 #include <android/hardware_buffer.h>
 #include <android/native_window.h>

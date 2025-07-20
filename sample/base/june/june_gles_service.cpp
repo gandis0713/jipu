@@ -104,8 +104,22 @@ GLuint createTexture(unsigned char* imageData, int width, int height, int channe
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // 텍스처 데이터 업로드
-    GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
+    GLenum format = [](int channels) -> GLenum {
+        switch (channels)
+        {
+        case 1:
+            return GL_RED;
+        case 2:
+            return GL_RG;
+        case 3:
+            return GL_RGB;
+        case 4:
+            return GL_RGBA;
+        default:
+            spdlog::error("Unsupported number of channels: {}", channels);
+            return GL_RGBA; // Default to RGBA
+        }
+    }(channels);
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
 
     return texture;
