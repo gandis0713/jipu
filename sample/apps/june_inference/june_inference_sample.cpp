@@ -1,5 +1,6 @@
 #include "june_inference_sample.h"
-#include "june_gles_service1.h"
+#include "june_gles_litert_service.h"
+#include "june_gles_tflite_service.h"
 
 #include "file.h"
 #include "image.h"
@@ -22,13 +23,22 @@ void JuneInferenceSample::init()
 {
     JuneSample::init();
 
-    m_glesService1 = std::make_unique<JuneGLESService1>(JuneServiceDescriptor{
+    // m_glesTFLiteService = std::make_unique<JuneGLESTFLiteService>(JuneServiceDescriptor{
+    //     .sharingData = &m_sharingData,
+    //     .fps = 120,
+    // });
+    // m_glesTFLiteService->start(JuneServiceStartDescriptor{
+    //     .callback = [this]() {
+    //         m_glesTFLiteServiceReady = true;
+    //     } });
+
+    m_glesLiteRtService = std::make_unique<JuneGLESLiteRtService>(JuneServiceDescriptor{
         .sharingData = &m_sharingData,
         .fps = 120,
     });
-    m_glesService1->start(JuneServiceStartDescriptor{
+    m_glesLiteRtService->start(JuneServiceStartDescriptor{
         .callback = [this]() {
-            m_glesService1Ready = true;
+            m_glesLiteRtServiceReady = true;
         } });
 }
 

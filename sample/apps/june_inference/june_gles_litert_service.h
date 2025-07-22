@@ -3,23 +3,17 @@
 #include "image.h"
 #include "june/june.h"
 #include "june/june_gles_service.h"
-#include "tflite_image_inference.h"
-
-#if defined(__ANDROID__) || defined(ANDROID)
-#include <android/hardware_buffer.h>
-#include <android/native_window.h>
-#include <android/sync.h>
-#endif
+#include "litert_image_inference.h"
 
 namespace jipu
 {
 
-class JuneGLESService1 : public JuneGLESService
+class JuneGLESLiteRtService : public JuneGLESService
 {
 
 public:
-    JuneGLESService1(const JuneServiceDescriptor& descriptor);
-    ~JuneGLESService1();
+    JuneGLESLiteRtService(const JuneServiceDescriptor& descriptor);
+    ~JuneGLESLiteRtService();
 
     void begin() override;
     void work() override;
@@ -40,7 +34,7 @@ private:
     std::unique_ptr<Image> m_image{ nullptr };
     std::unique_ptr<Image> m_mask{ nullptr };
 
-    std::unique_ptr<TFLiteImageInference> m_tfliteInference{ nullptr };
+    std::unique_ptr<LiteRtImageInference> m_liteRtInference{ nullptr };
 };
 
 } // namespace jipu

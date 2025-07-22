@@ -1,7 +1,9 @@
-#include "june_gles_service1.h"
+#include "june_gles_tflite_service.h"
 
 #include "file.h"
 #include "image.h"
+#include <android/hardware_buffer.h>
+#include <android/native_window.h>
 #include <random>
 #include <spdlog/spdlog.h>
 #include <thread>
@@ -64,16 +66,16 @@ void updateTexture(GLuint textureId, unsigned char* imageData, int width, int he
 
 } // namespace
 
-JuneGLESService1::JuneGLESService1(const JuneServiceDescriptor& descriptor)
+JuneGLESTFLiteService::JuneGLESTFLiteService(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
 }
 
-JuneGLESService1::~JuneGLESService1()
+JuneGLESTFLiteService::~JuneGLESTFLiteService()
 {
 }
 
-void JuneGLESService1::begin()
+void JuneGLESTFLiteService::begin()
 {
     JuneGLESService::begin();
 
@@ -188,7 +190,7 @@ void JuneGLESService1::begin()
     // createApiContext(label);
 }
 
-void JuneGLESService1::work()
+void JuneGLESTFLiteService::work()
 {
     // 화면 클리어
     glClear(GL_COLOR_BUFFER_BIT);
@@ -231,7 +233,7 @@ void JuneGLESService1::work()
     eglSwapBuffers(m_eglDisplay, m_eglSurface);
 }
 
-void JuneGLESService1::end()
+void JuneGLESTFLiteService::end()
 {
     glDeleteBuffers(1, &m_vbo);
     glDeleteTextures(1, &m_texture);
@@ -241,7 +243,7 @@ void JuneGLESService1::end()
     JuneGLESService::end();
 }
 
-void JuneGLESService1::createEGLSurface()
+void JuneGLESTFLiteService::createEGLSurface()
 {
     if (!m_descriptor.sharingData->windowHandle)
     {
