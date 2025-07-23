@@ -9,7 +9,12 @@
 #include "image.h"
 
 #include "litert/c/litert_common.h"
+#include "litert/c/litert_compiled_model.h"
+#include "litert/c/litert_environment.h"
 #include "litert/c/litert_model.h"
+#include "litert/c/litert_options.h"
+#include "litert/c/litert_tensor_buffer.h"
+#include "litert/c/litert_tensor_buffer_requirements.h"
 #include "litert/c/litert_tensor_buffer_types.h"
 
 namespace fs = std::filesystem;
@@ -43,7 +48,11 @@ private:
                                            int outputSize);
 
 private:
-    LiteRtModel* m_model{ nullptr };
+    LiteRtModel m_model{ nullptr };
+    LiteRtCompiledModel m_compiledModel{ nullptr };
+    LiteRtOptions m_options{ nullptr };
+    LiteRtEnvironment m_environment{ nullptr };
+    LiteRtHwAcceleratorSet m_acceleratorType{ kLiteRtHwAcceleratorCpu };
     Image* m_inputImage{ nullptr };
 };
 
