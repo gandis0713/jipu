@@ -88,16 +88,7 @@ void JuneGLESLiteRtService::begin()
 
     // Load TFLite model
     {
-        // std::string modelPath = m_descriptor.sharingData->appDir / "deeplabv3.tflite";
-        std::string modelPath = m_descriptor.sharingData->appDir / "mediapipe.tflite";
-        std::vector<char> modelBuffer = utils::readFile(modelPath, m_descriptor.sharingData->appHandle);
-
         m_liteRtInference = std::make_unique<LiteRtImageInference>();
-        if (!m_liteRtInference->loadModel(modelBuffer))
-        {
-            spdlog::error("Failed to load model");
-            return;
-        }
 
         width = m_liteRtInference->getWidth();
         height = m_liteRtInference->getHeight();
@@ -117,7 +108,6 @@ void JuneGLESLiteRtService::begin()
         }
 
         m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), width, height, inputChannels);
-        m_image->convert(256, 256, inputChannels); // Resize and convert image to target size
         m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
     }
 
@@ -133,6 +123,16 @@ void JuneGLESLiteRtService::begin()
         // set input image and inference
         {
             m_liteRtInference->setInputImage(m_image.get());
+
+            // std::string modelPath = m_descriptor.sharingData->appDir / "deeplabv3.tflite";
+            std::string modelPath = m_descriptor.sharingData->appDir / "mediapipe.tflite";
+            std::vector<char> modelBuffer = utils::readFile(modelPath, m_descriptor.sharingData->appHandle);
+
+            if (!m_liteRtInference->loadModel(modelBuffer))
+            {
+                spdlog::error("Failed to load model");
+                return;
+            }
             result = m_liteRtInference->runInference();
         }
     }
@@ -146,7 +146,6 @@ void JuneGLESLiteRtService::begin()
         }
 
         m_mask->setPixels(result.data(), width, height, outputChannels);
-        m_mask->convert(256, 256, outputChannels); // Resize mask to match texture size
         m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 

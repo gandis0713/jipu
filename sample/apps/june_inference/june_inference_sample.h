@@ -24,6 +24,8 @@ private:
 
     [[maybe_unused]] bool m_glesTFLiteServiceReady{ false };
     [[maybe_unused]] bool m_glesLiteRtServiceReady{ false };
+
+    bool m_runWithLiteRt{ true }; // Use LiteRt by default
 };
 
 } // namespace jipu

@@ -53,6 +53,8 @@ private:
     LiteRtOptions m_options{ nullptr };
     LiteRtEnvironment m_environment{ nullptr };
     LiteRtHwAcceleratorSet m_acceleratorType{ kLiteRtHwAcceleratorCpu };
+    std::vector<LiteRtTensorBuffer> m_inputTensorBuffers{};
+    std::vector<LiteRtTensorBuffer> m_outputTensorBuffers{};
     Image* m_inputImage{ nullptr };
 };
 

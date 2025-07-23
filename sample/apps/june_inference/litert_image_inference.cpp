@@ -85,12 +85,12 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
 
     spdlog::info("Model loaded with {} inputs", numInputs);
 
-    LiteRtLayout layout = { 1, false, { 3, 256, 256 }, { 0 } }; // Example layout for a 3-channel image of size 256x256
+    LiteRtLayout layout = { 1, false, { getInputChannel(), getHeight(), getWidth() }, {} };
     LiteRtRankedTensorType kInput0TensorType{ .element_type = kLiteRtElementTypeFloat32,
                                               .layout = layout };
 
-    std::vector<LiteRtTensorBuffer> inputTensorBuffers;
-    inputTensorBuffers.reserve(numInputs);
+    m_inputTensorBuffers.clear();
+    m_inputTensorBuffers.reserve(numInputs);
     for (auto i = 0; i < numInputs; ++i)
     {
         LiteRtTensorBufferRequirements tensorBufferRequirements;
@@ -133,10 +133,10 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
             return false;
         }
 
-        inputTensorBuffers.push_back(tensorBuffer);
+        m_inputTensorBuffers.push_back(tensorBuffer);
     }
 
-    spdlog::info("Model loaded with {} input tensor buffers", inputTensorBuffers.size());
+    spdlog::info("Model loaded with {} input tensor buffers", m_inputTensorBuffers.size());
 
     LiteRtParamIndex numOutputs;
     status = LiteRtGetNumSubgraphOutputs(subgraph, &numOutputs);
@@ -147,8 +147,9 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
     }
 
     spdlog::info("Model loaded with {} output tensors", numOutputs);
-    std::vector<LiteRtTensorBuffer> outputTensorBuffers;
-    outputTensorBuffers.reserve(numOutputs);
+
+    m_outputTensorBuffers.clear();
+    m_outputTensorBuffers.reserve(numOutputs);
     for (auto i = 0; i < numOutputs; ++i)
     {
         LiteRtTensorBufferRequirements tensorBufferRequirements;
@@ -191,38 +192,32 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
             return false;
         }
         spdlog::info("Created output tensor buffer for index {}", i);
-        outputTensorBuffers.push_back(tensorBuffer);
+        m_outputTensorBuffers.push_back(tensorBuffer);
     }
 
     {
-        void* hostMemAddr;
-        const float kInput0Tensor[] = { 3, 256, 256 }; // Example input tensor data
+        std::vector<float> preprocessed;
+        preprocessImage(preprocessed);
+        if (preprocessed.empty())
+        {
+            spdlog::error("Preprocessed data is empty");
+            return false;
+        }
 
-        status = LiteRtLockTensorBuffer(inputTensorBuffers[0], &hostMemAddr);
+        void* hostMemAddr;
+        status = LiteRtLockTensorBuffer(m_inputTensorBuffers[0], &hostMemAddr);
         if (status != kLiteRtStatusOk)
         {
             spdlog::error("Failed to lock tensor buffer for input index 0");
             return false;
         }
 
-        std::memcpy(hostMemAddr, kInput0Tensor, sizeof(kInput0Tensor));
-        status = LiteRtUnlockTensorBuffer(inputTensorBuffers[0]);
+        std::memcpy(hostMemAddr, preprocessed.data(), preprocessed.size() * sizeof(float));
+        status = LiteRtUnlockTensorBuffer(m_inputTensorBuffers[0]);
 
         if (status != kLiteRtStatusOk)
         {
             spdlog::error("Failed to unlock tensor buffer for input index 0");
-            return false;
-        }
-    }
-
-    {
-        status = LiteRtRunCompiledModel(
-            m_compiledModel, /*signature_index=*/0,
-            inputTensorBuffers.size(), inputTensorBuffers.data(),
-            outputTensorBuffers.size(), outputTensorBuffers.data());
-        if (status != kLiteRtStatusOk)
-        {
-            spdlog::error("Failed to run compiled model");
             return false;
         }
     }
@@ -233,47 +228,47 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
 
 int32_t LiteRtImageInference::getBatchSize()
 {
-    return 0;
+    return 1; // Assuming batch size of 1 for simplicity
 }
 
 int32_t LiteRtImageInference::getWidth()
 {
-    return 0;
+    return 256;
 }
 
 int32_t LiteRtImageInference::getHeight()
 {
-    return 0;
+    return 256;
 }
 
 int32_t LiteRtImageInference::getInputChannel()
 {
-    return 0;
+    return 3; // Assuming RGB input
 }
 
 int32_t LiteRtImageInference::getOutputChannel()
 {
-    return 0;
+    return 1;
 }
 
 size_t LiteRtImageInference::getInputByteSize()
 {
-    return 0;
+    return getInputSize() * sizeof(float);
 }
 
 size_t LiteRtImageInference::getInputSize()
 {
-    return 0;
+    return getInputChannel() * getHeight() * getWidth();
 }
 
 size_t LiteRtImageInference::getOutputByteSize()
 {
-    return 0;
+    return getOutputSize() * sizeof(float);
 }
 
 size_t LiteRtImageInference::getOutputSize()
 {
-    return 0;
+    return getOutputChannel() * getHeight() * getWidth();
 }
 
 void LiteRtImageInference::preprocessImage(std::vector<float>& preprocessed)
@@ -333,7 +328,37 @@ std::vector<uint8_t> LiteRtImageInference::postprocessOutput(const float* output
 
 std::vector<uint8_t> LiteRtImageInference::runInference()
 {
-    return {};
+
+    auto status = LiteRtRunCompiledModel(
+        m_compiledModel, /*signature_index=*/0,
+        m_inputTensorBuffers.size(), m_inputTensorBuffers.data(),
+        m_outputTensorBuffers.size(), m_outputTensorBuffers.data());
+    if (status != kLiteRtStatusOk)
+    {
+        spdlog::error("Failed to run compiled model");
+        return {};
+    }
+
+    void* hostMemAddr;
+    {
+        status = LiteRtLockTensorBuffer(m_outputTensorBuffers[0], &hostMemAddr);
+        if (status != kLiteRtStatusOk)
+        {
+            spdlog::error("Failed to lock output tensor buffer");
+            return {};
+        }
+
+        status = LiteRtUnlockTensorBuffer(m_outputTensorBuffers[0]);
+        if (status != kLiteRtStatusOk)
+        {
+            spdlog::error("Failed to unlock output tensor buffer");
+            return {};
+        }
+    }
+
+    return postprocessOutput(
+        static_cast<const float*>(hostMemAddr),
+        getOutputSize());
 }
 
 } // namespace jipu

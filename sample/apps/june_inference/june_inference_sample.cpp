@@ -23,23 +23,28 @@ void JuneInferenceSample::init()
 {
     JuneSample::init();
 
-    // m_glesTFLiteService = std::make_unique<JuneGLESTFLiteService>(JuneServiceDescriptor{
-    //     .sharingData = &m_sharingData,
-    //     .fps = 120,
-    // });
-    // m_glesTFLiteService->start(JuneServiceStartDescriptor{
-    //     .callback = [this]() {
-    //         m_glesTFLiteServiceReady = true;
-    //     } });
-
-    m_glesLiteRtService = std::make_unique<JuneGLESLiteRtService>(JuneServiceDescriptor{
-        .sharingData = &m_sharingData,
-        .fps = 120,
-    });
-    m_glesLiteRtService->start(JuneServiceStartDescriptor{
-        .callback = [this]() {
-            m_glesLiteRtServiceReady = true;
-        } });
+    if (m_runWithLiteRt)
+    {
+        m_glesLiteRtService = std::make_unique<JuneGLESLiteRtService>(JuneServiceDescriptor{
+            .sharingData = &m_sharingData,
+            .fps = 120,
+        });
+        m_glesLiteRtService->start(JuneServiceStartDescriptor{
+            .callback = [this]() {
+                m_glesLiteRtServiceReady = true;
+            } });
+    }
+    else
+    {
+        m_glesTFLiteService = std::make_unique<JuneGLESTFLiteService>(JuneServiceDescriptor{
+            .sharingData = &m_sharingData,
+            .fps = 120,
+        });
+        m_glesTFLiteService->start(JuneServiceStartDescriptor{
+            .callback = [this]() {
+                m_glesTFLiteServiceReady = true;
+            } });
+    }
 }
 
 } // namespace jipu
