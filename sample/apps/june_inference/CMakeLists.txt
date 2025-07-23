@@ -6,6 +6,8 @@ target_include_directories(june_inference
     ${CMAKE_CURRENT_SOURCE_DIR}/include/litert_140/external/org_tensorflow
 
     ${CMAKE_CURRENT_SOURCE_DIR}/include/litert_200
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_library(litert_140_jni SHARED IMPORTED)
