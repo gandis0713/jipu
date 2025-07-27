@@ -184,6 +184,12 @@ void JuneGLESService::begin()
             throw std::runtime_error("Failed to make EGL context current");
         }
 
+        eglCreateImageKHR = (PFNEGLCREATEIMAGEKHRPROC)eglGetProcAddress("eglCreateImageKHR");
+        if (!eglCreateImageKHR)
+        {
+            throw std::runtime_error("eglCreateImageKHR function pointer acquisition failed");
+        }
+
         eglDestroyImageKHR = (PFNEGLDESTROYIMAGEKHRPROC)eglGetProcAddress("eglDestroyImageKHR");
         if (!eglDestroyImageKHR)
         {
@@ -200,6 +206,12 @@ void JuneGLESService::begin()
         if (!eglDupNativeFenceFDANDROID)
         {
             throw std::runtime_error("eglDupNativeFenceFDANDROID function pointer acquisition failed");
+        }
+
+        eglGetNativeClientBufferANDROID = (PFNEGLGETNATIVECLIENTBUFFERANDROIDPROC)eglGetProcAddress("eglGetNativeClientBufferANDROID");
+        if (!eglGetNativeClientBufferANDROID)
+        {
+            throw std::runtime_error("eglGetNativeClientBufferANDROID function pointer acquisition failed");
         }
 
         eglCreateSyncKHR = (PFNEGLCREATESYNCKHRPROC)eglGetProcAddress("eglCreateSyncKHR");

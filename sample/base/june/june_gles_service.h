@@ -64,9 +64,11 @@ protected:
     EGLConfig m_eglConfig = EGL_NO_CONFIG_KHR;
     EGLSurface m_eglSurface = EGL_NO_SURFACE;
 
+    PFNEGLCREATEIMAGEKHRPROC eglCreateImageKHR{ nullptr };
     PFNEGLDESTROYIMAGEKHRPROC eglDestroyImageKHR{ nullptr };
     PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOES{ nullptr };
     PFNEGLDUPNATIVEFENCEFDANDROIDPROC eglDupNativeFenceFDANDROID{ nullptr };
+    PFNEGLGETNATIVECLIENTBUFFERANDROIDPROC eglGetNativeClientBufferANDROID{ nullptr };
     PFNEGLCREATESYNCKHRPROC eglCreateSyncKHR{ nullptr };
     PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR{ nullptr };
     PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR{ nullptr };
