@@ -69,6 +69,21 @@ void updateTexture(GLuint textureId, unsigned char* imageData, int width, int he
 JuneGLESLiteRtService::JuneGLESLiteRtService(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
+    m_androidCamera.setResolution(480, 640);
+    m_androidCamera.setCallback([this](AImage* image) {
+        std::lock_guard<std::mutex> lock(m_frameMutex);
+        AHardwareBuffer* hardwareBuffer = nullptr;
+        auto status = AImage_getHardwareBuffer(image, &hardwareBuffer);
+        if (status != AMEDIA_OK || !hardwareBuffer)
+        {
+            m_currentHardwareBuffer = nullptr;
+        }
+        else
+        {
+            m_currentHardwareBuffer = hardwareBuffer;
+        }
+    });
+    m_androidCamera.startCamera();
 }
 
 JuneGLESLiteRtService::~JuneGLESLiteRtService()
@@ -191,6 +206,80 @@ void JuneGLESLiteRtService::begin()
 
 void JuneGLESLiteRtService::work()
 {
+    AHardwareBuffer* currentHardwareBuffer = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(m_frameMutex);
+        if (m_currentHardwareBuffer)
+            currentHardwareBuffer = m_currentHardwareBuffer;
+
+        m_currentHardwareBuffer = nullptr;
+    }
+
+    auto getEGLImageKHRFromAHardwareBuffer = [this](AHardwareBuffer* hardwareBuffer) -> EGLImageKHR {
+        EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
+        if (hardwareBuffer)
+        {
+            // AHardwareBuffer를 EGLClientBuffer로 변환
+            auto it = m_frames.find(hardwareBuffer);
+            if (it == m_frames.end())
+            {
+                EGLClientBuffer eglClientBuffer = eglGetNativeClientBufferANDROID(hardwareBuffer);
+                if (!eglClientBuffer)
+                {
+                    spdlog::error("Failed to get EGLClientBuffer from AHardwareBuffer");
+                    return currentEGLImage;
+                }
+
+                EGLint imageAttribs[] = {
+                    EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+                    EGL_NONE
+                };
+
+                EGLImageKHR eglImage = eglCreateImageKHR(
+                    m_eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
+                    eglClientBuffer, nullptr);
+
+                if (eglImage == EGL_NO_IMAGE_KHR)
+                {
+                    spdlog::error("Failed to create EGLImage from AHardwareBuffer");
+                    return currentEGLImage;
+                }
+
+                m_frames[hardwareBuffer] = eglImage;
+                currentEGLImage = eglImage;
+            }
+            else
+            {
+                currentEGLImage = it->second;
+            }
+        }
+
+        return currentEGLImage;
+    };
+
+    if (currentHardwareBuffer)
+    {
+        auto currentEGLImage = getEGLImageKHRFromAHardwareBuffer(currentHardwareBuffer);
+        if (currentEGLImage != EGL_NO_IMAGE_KHR)
+        {
+            if (m_liteRtInference->nextFrame(currentEGLImage))
+            {
+                spdlog::info("Frame processed successfully");
+            }
+            else
+            {
+                spdlog::error("Failed to process frame");
+            }
+            // 현재 EGLImage를 사용하여 후처리 작업 수행
+            // 예: 텍스처 업데이트, 렌더링 등
+            // updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
+        }
+        else
+        {
+            spdlog::error("No valid EGLImage available for processing");
+        }
+    }
+
     // 화면 클리어
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

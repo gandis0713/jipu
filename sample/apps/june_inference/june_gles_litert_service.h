@@ -1,9 +1,12 @@
 #pragma once
 
+#include "android_camera.h"
 #include "image.h"
 #include "june/june.h"
 #include "june/june_gles_service.h"
 #include "litert_image_inference.h"
+
+#include <mutex>
 
 namespace jipu
 {
@@ -35,6 +38,11 @@ private:
     std::unique_ptr<Image> m_mask{ nullptr };
 
     std::unique_ptr<LiteRtImageInference> m_liteRtInference{ nullptr };
+
+    std::mutex m_frameMutex;
+    AHardwareBuffer* m_currentHardwareBuffer{ nullptr };
+    std::unordered_map<AHardwareBuffer*, EGLImageKHR> m_frames{};
+    AndroidCamera m_androidCamera;
 };
 
 } // namespace jipu

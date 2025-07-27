@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "file.h"
@@ -17,6 +18,18 @@
 #include "litert/c/litert_tensor_buffer_requirements.h"
 #include "litert/c/litert_tensor_buffer_types.h"
 
+#include <GLES/gl.h>
+#include <GLES/glext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+// #include <GLES3/gl3ext.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#include <android/hardware_buffer.h>
+// #include <android/native_window.h>
+// #include <android/sync.h>
+
 namespace fs = std::filesystem;
 namespace jipu
 {
@@ -30,6 +43,7 @@ public:
     bool setInputImage(Image* image);
     bool loadModel(const std::vector<char>& modelBuffer);
     std::vector<uint8_t> runInference();
+    bool nextFrame(EGLImageKHR image);
 
     int32_t getBatchSize();
     int32_t getWidth();

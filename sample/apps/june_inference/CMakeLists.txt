@@ -1,5 +1,8 @@
 configure_sample(june_inference)
 
+find_library(camera2ndk-lib camera2ndk)
+find_library(mediandk-lib mediandk)
+
 target_include_directories(june_inference
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/litert_140
@@ -32,4 +35,6 @@ target_link_libraries(june_inference
     litert_200_jni
     litert_200_RuntimeCApi
     litert_200_GpuAccelerator
+    ${camera2ndk-lib}
+    ${mediandk-lib}
 )
