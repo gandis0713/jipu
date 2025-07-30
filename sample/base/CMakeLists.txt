@@ -42,6 +42,8 @@ list(APPEND SRC_FILES
     native_imgui.h
     model.cpp
     model.h
+    pixel_converter.cpp
+    pixel_converter.h
     file.cpp
     file.h
     light.cpp

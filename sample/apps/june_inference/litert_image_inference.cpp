@@ -26,6 +26,13 @@ bool LiteRtImageInference::setInputImage(Image* image)
     }
 
     m_inputImage = image;
+
+    preprocessImage(m_preprocessed);
+    if (m_preprocessed.empty())
+    {
+        spdlog::error("Preprocessed data is empty");
+        return false;
+    }
     return true;
 }
 
@@ -116,12 +123,13 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
         size_t tensorBufferSize;
         status = LiteRtGetTensorBufferRequirementsBufferSize(
             tensorBufferRequirements, &tensorBufferSize);
-
         if (status != kLiteRtStatusOk)
         {
             spdlog::error("Failed to get tensor buffer size {}", static_cast<uint32_t>(status));
             return false;
         }
+
+        spdlog::info("Creating input tensor buffer for index {} with size {}", i, tensorBufferSize);
 
         LiteRtTensorBuffer tensorBuffer;
         status = LiteRtCreateManagedTensorBuffer(
@@ -193,33 +201,6 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
         }
         spdlog::info("Created output tensor buffer for index {}", i);
         m_outputTensorBuffers.push_back(tensorBuffer);
-    }
-
-    {
-        std::vector<float> preprocessed;
-        preprocessImage(preprocessed);
-        if (preprocessed.empty())
-        {
-            spdlog::error("Preprocessed data is empty");
-            return false;
-        }
-
-        void* hostMemAddr;
-        status = LiteRtLockTensorBuffer(m_inputTensorBuffers[0], &hostMemAddr);
-        if (status != kLiteRtStatusOk)
-        {
-            spdlog::error("Failed to lock tensor buffer for input index 0, status: {}", static_cast<uint32_t>(status));
-            return false;
-        }
-
-        std::memcpy(hostMemAddr, preprocessed.data(), preprocessed.size() * sizeof(float));
-        status = LiteRtUnlockTensorBuffer(m_inputTensorBuffers[0]);
-
-        if (status != kLiteRtStatusOk)
-        {
-            spdlog::error("Failed to unlock tensor buffer for input index 0, status: {}", static_cast<uint32_t>(status));
-            return false;
-        }
     }
 
     spdlog::info("Model loaded successfully");
@@ -328,6 +309,24 @@ std::vector<uint8_t> LiteRtImageInference::postprocessOutput(const float* output
 
 std::vector<uint8_t> LiteRtImageInference::runInference()
 {
+    void* hostInputMemAddr;
+    {
+        auto status = LiteRtLockTensorBuffer(m_inputTensorBuffers[0], &hostInputMemAddr);
+        if (status != kLiteRtStatusOk)
+        {
+            spdlog::error("Failed to lock tensor buffer for input index 0, status: {}", static_cast<uint32_t>(status));
+            return {};
+        }
+
+        std::memcpy(hostInputMemAddr, m_preprocessed.data(), m_preprocessed.size() * sizeof(float));
+        status = LiteRtUnlockTensorBuffer(m_inputTensorBuffers[0]);
+
+        if (status != kLiteRtStatusOk)
+        {
+            spdlog::error("Failed to unlock tensor buffer for input index 0, status: {}", static_cast<uint32_t>(status));
+            return {};
+        }
+    }
 
     auto status = LiteRtRunCompiledModel(
         m_compiledModel, /*signature_index=*/0,
@@ -339,9 +338,9 @@ std::vector<uint8_t> LiteRtImageInference::runInference()
         return {};
     }
 
-    void* hostMemAddr;
+    void* hostOutputMemAddr;
     {
-        status = LiteRtLockTensorBuffer(m_outputTensorBuffers[0], &hostMemAddr);
+        status = LiteRtLockTensorBuffer(m_outputTensorBuffers[0], &hostOutputMemAddr);
         if (status != kLiteRtStatusOk)
         {
             spdlog::error("Failed to lock output tensor buffer");
@@ -357,7 +356,7 @@ std::vector<uint8_t> LiteRtImageInference::runInference()
     }
 
     return postprocessOutput(
-        static_cast<const float*>(hostMemAddr),
+        static_cast<const float*>(hostOutputMemAddr),
         getOutputSize());
 }
 

@@ -70,6 +70,7 @@ private:
     std::vector<LiteRtTensorBuffer> m_inputTensorBuffers{};
     std::vector<LiteRtTensorBuffer> m_outputTensorBuffers{};
     Image* m_inputImage{ nullptr };
+    std::vector<float> m_preprocessed{};
 };
 
 } // namespace jipu

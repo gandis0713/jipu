@@ -13,8 +13,8 @@ AndroidCamera::AndroidCamera()
     , m_imageReader(nullptr)
     , m_imageReaderWindow(nullptr)
     , m_state(State::kReady)
-    , m_imageWidth(640)
-    , m_imageHeight(480)
+    , m_imageWidth(1)
+    , m_imageHeight(1)
 {
     _initialize();
 }
@@ -153,9 +153,57 @@ std::vector<std::string> AndroidCamera::getAvailableCameraIds()
         return cameraIds;
     }
 
+    // for (int i = 0; i < cameraIdList->numCameras; i++)
+    // {
+    //     cameraIds.push_back(std::string(cameraIdList->cameraIds[i]));
+    // }
+
+    const char* frontCameraId = nullptr;
     for (int i = 0; i < cameraIdList->numCameras; i++)
     {
-        cameraIds.push_back(std::string(cameraIdList->cameraIds[i]));
+        const char* cameraId = cameraIdList->cameraIds[i];
+
+        ACameraMetadata* cameraMetadata = nullptr;
+        ACameraManager_getCameraCharacteristics(m_cameraManager, cameraId, &cameraMetadata);
+
+        ACameraMetadata_const_entry entry = {};
+        ACameraMetadata_getConstEntry(cameraMetadata, ACAMERA_LENS_FACING, &entry);
+        if (entry.data.u8[0] == ACAMERA_LENS_FACING_FRONT) // only front camera
+        {
+            status = ACameraMetadata_getConstEntry(cameraMetadata,
+                                                   ACAMERA_SENSOR_ORIENTATION, &entry);
+
+            int sensorOrientation = 0;
+            if (status == ACAMERA_OK && entry.count > 0)
+            {
+                sensorOrientation = entry.data.i32[0];
+                spdlog::info("Sensor orientation: {} degrees", sensorOrientation);
+            }
+
+            // 지원하는 해상도 목록 확인
+            status = ACameraMetadata_getConstEntry(cameraMetadata,
+                                                   ACAMERA_SCALER_AVAILABLE_STREAM_CONFIGURATIONS, &entry);
+
+            if (status == ACAMERA_OK)
+            {
+                spdlog::info("Available stream configurations:");
+                for (int i = 0; i < entry.count; i += 4)
+                {
+                    int32_t format = entry.data.i32[i];
+                    int32_t width = entry.data.i32[i + 1];
+                    int32_t height = entry.data.i32[i + 2];
+                    int32_t input = entry.data.i32[i + 3];
+
+                    if (format == AIMAGE_FORMAT_YUV_420_888 && input == 0)
+                    {
+                        spdlog::info("  Format: YUV_420_888, Size: {}x{}", width, height);
+                    }
+                }
+            }
+            cameraIds.push_back(cameraId);
+        }
+
+        ACameraMetadata_free(cameraMetadata);
     }
 
     ACameraManager_deleteCameraIdList(cameraIdList);
@@ -165,9 +213,11 @@ std::vector<std::string> AndroidCamera::getAvailableCameraIds()
 // 이미지 리더 생성
 bool AndroidCamera::_createImageReader()
 {
-    //    uint64_t usage = AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN ;
-    uint64_t usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_CPU_READ_NEVER;
+    uint64_t usage = AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN;
+    // uint64_t usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN;
+    // uint64_t usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_CPU_READ_NEVER;
 
+    spdlog::info("Creating image reader with resolution: {}x{}, usage: {}", m_imageWidth, m_imageHeight, usage);
     media_status_t status = AImageReader_newWithUsage(m_imageWidth, m_imageHeight,
                                                       AIMAGE_FORMAT_YUV_420_888, usage, 2, &m_imageReader);
     if (status != AMEDIA_OK)
@@ -210,6 +260,10 @@ bool AndroidCamera::_createCaptureRequest()
         spdlog::error("Failed to create capture request");
         return false;
     }
+
+    // 회전 설정 (필요한 경우)
+    int32_t orientation = 0; // 90도 회전으로 세로 방향
+    ACaptureRequest_setEntry_i32(m_captureRequest, ACAMERA_JPEG_ORIENTATION, 1, &orientation);
 
     // ANativeWindow를 ACameraOutputTarget으로 변환
     ACameraOutputTarget* outputTarget = nullptr;

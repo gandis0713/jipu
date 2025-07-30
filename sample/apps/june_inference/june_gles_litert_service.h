@@ -40,7 +40,9 @@ private:
     std::unique_ptr<LiteRtImageInference> m_liteRtInference{ nullptr };
 
     std::mutex m_frameMutex;
+    AImage* m_currentImage{ nullptr };
     AHardwareBuffer* m_currentHardwareBuffer{ nullptr };
+    std::vector<uint8_t> m_frameData{};
     std::unordered_map<AHardwareBuffer*, EGLImageKHR> m_frames{};
     AndroidCamera m_androidCamera;
 };

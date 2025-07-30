@@ -8,6 +8,8 @@
 #include <spdlog/spdlog.h>
 #include <thread>
 
+#include "pixel_converter.h"
+
 namespace jipu
 {
 
@@ -71,16 +73,127 @@ JuneGLESLiteRtService::JuneGLESLiteRtService(const JuneServiceDescriptor& descri
 {
     m_androidCamera.setResolution(480, 640);
     m_androidCamera.setCallback([this](AImage* image) {
-        std::lock_guard<std::mutex> lock(m_frameMutex);
         AHardwareBuffer* hardwareBuffer = nullptr;
         auto status = AImage_getHardwareBuffer(image, &hardwareBuffer);
         if (status != AMEDIA_OK || !hardwareBuffer)
         {
-            m_currentHardwareBuffer = nullptr;
+            spdlog::error("Failed to get hardware buffer from image, status: {}", static_cast<uint32_t>(status));
+            return;
         }
-        else
+
         {
-            m_currentHardwareBuffer = hardwareBuffer;
+            // 이미지 크기 얻기
+            int32_t width, height;
+            if (AImage_getWidth(image, &width) != AMEDIA_OK ||
+                AImage_getHeight(image, &height) != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get image dimensions");
+                return;
+            }
+
+            // 플레인 수 확인
+            int32_t numPlanes;
+            if (AImage_getNumberOfPlanes(image, &numPlanes) != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get number of planes");
+                return;
+            }
+
+            if (numPlanes != 3)
+            {
+                spdlog::error("Expected 3 planes for YUV_420_888, got %d", numPlanes);
+                return;
+            }
+
+            // 각 플레인의 데이터 포인터와 스트라이드 정보 얻기
+            uint8_t* yData = nullptr;
+            uint8_t* uData = nullptr;
+            uint8_t* vData = nullptr;
+            int32_t yPixelStride, yRowStride;
+            int32_t uPixelStride, uRowStride;
+            int32_t vPixelStride, vRowStride;
+            int32_t yDataLen, uDataLen, vDataLen;
+
+            // Y 플레인 (인덱스 0)
+            auto result = AImage_getPlaneData(image, 0, &yData, &yDataLen);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get Y plane data, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlanePixelStride(image, 0, &yPixelStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get Y plane pixel stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlaneRowStride(image, 0, &yRowStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get Y plane row stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            // U 플레인 (인덱스 1)
+            result = AImage_getPlaneData(image, 1, &uData, &uDataLen);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get U plane data, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlanePixelStride(image, 1, &uPixelStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get U plane pixel stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlaneRowStride(image, 1, &uRowStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get U plane row stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            // V 플레인 (인덱스 2)
+            result = AImage_getPlaneData(image, 2, &vData, &vDataLen);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get V plane data, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlanePixelStride(image, 2, &vPixelStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get V plane pixel stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            result = AImage_getPlaneRowStride(image, 2, &vRowStride);
+            if (result != AMEDIA_OK)
+            {
+                spdlog::error("Failed to get V plane row stride, status: {}", static_cast<uint32_t>(result));
+                return;
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(m_frameMutex);
+                m_currentImage = image;
+                m_currentHardwareBuffer = hardwareBuffer;
+
+                m_frameData.clear();
+                m_frameData.resize(width * height * 3);
+
+                yuv420toRgb(yData, uData, vData, width, height,
+                            yRowStride, uRowStride, uPixelStride, m_frameData.data());
+
+                spdlog::info(" yRowStride: {}, uRowStride: {}, vRowStride: {}, width: {}, height: {}",
+                             yRowStride, uRowStride, vRowStride, width, height);
+            }
         }
     });
     m_androidCamera.startCamera();
@@ -210,9 +323,10 @@ void JuneGLESLiteRtService::work()
     {
         std::lock_guard<std::mutex> lock(m_frameMutex);
         if (m_currentHardwareBuffer)
+        {
             currentHardwareBuffer = m_currentHardwareBuffer;
-
-        m_currentHardwareBuffer = nullptr;
+            m_currentHardwareBuffer = nullptr;
+        }
     }
 
     auto getEGLImageKHRFromAHardwareBuffer = [this](AHardwareBuffer* hardwareBuffer) -> EGLImageKHR {
@@ -237,7 +351,7 @@ void JuneGLESLiteRtService::work()
 
                 EGLImageKHR eglImage = eglCreateImageKHR(
                     m_eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
-                    eglClientBuffer, nullptr);
+                    eglClientBuffer, imageAttribs);
 
                 if (eglImage == EGL_NO_IMAGE_KHR)
                 {
@@ -257,9 +371,10 @@ void JuneGLESLiteRtService::work()
         return currentEGLImage;
     };
 
+    EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
     if (currentHardwareBuffer)
     {
-        auto currentEGLImage = getEGLImageKHRFromAHardwareBuffer(currentHardwareBuffer);
+        currentEGLImage = getEGLImageKHRFromAHardwareBuffer(currentHardwareBuffer);
         if (currentEGLImage != EGL_NO_IMAGE_KHR)
         {
             if (m_liteRtInference->nextFrame(currentEGLImage))
@@ -277,6 +392,37 @@ void JuneGLESLiteRtService::work()
         else
         {
             spdlog::error("No valid EGLImage available for processing");
+        }
+
+        {
+            m_image->setPixels(m_frameData.data(), 640, 480, 3);
+            m_image->convert(256, 256, 3);
+            updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
+        }
+
+        std::vector<uint8_t> result{};
+        // set input image and inference
+        {
+            m_liteRtInference->setInputImage(m_image.get());
+            result = m_liteRtInference->runInference();
+        }
+
+        // Update mask texture with inference result
+        {
+            if (result.empty()) {
+                spdlog::error("Inference result is empty");
+                return;
+            }
+
+            if (result.size() != m_liteRtInference->getWidth() * m_liteRtInference->getHeight())
+            {
+                spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
+                              m_liteRtInference->getWidth() * m_liteRtInference->getHeight(), result.size());
+                return;
+            }
+
+            m_mask->setPixels(result.data(), m_liteRtInference->getWidth(), m_liteRtInference->getHeight(), 1);
+            updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
         }
     }
 
