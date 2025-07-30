@@ -17,6 +17,8 @@
 #include "litert/c/litert_tensor_buffer.h"
 #include "litert/c/litert_tensor_buffer_requirements.h"
 #include "litert/c/litert_tensor_buffer_types.h"
+#include "litert/c/options/litert_cpu_options.h"
+#include "litert/c/options/litert_gpu_options.h"
 
 #include <GLES/gl.h>
 #include <GLES/glext.h>
@@ -55,7 +57,54 @@ public:
     size_t getOutputByteSize();
     size_t getOutputSize();
 
+public:
+    enum class AcceleratorType
+    {
+        kCPU = 0,
+        kGPU,
+        kNPU
+    };
+
 private:
+    LiteRtOptions _createGpuOptions();
+    LiteRtOptions _createCpuOptions();
+    LiteRtHwAcceleratorSet _getAcceleratorTypeSet(AcceleratorType type);
+    LiteRtRankedTensorType _getInputTensorType(LiteRtEnvironment environment,
+                                               LiteRtCompiledModel compiledModel,
+                                               LiteRtModel model,
+                                               int signatureIndex,
+                                               int inputIndex);
+    LiteRtRankedTensorType _getInputTensorType(LiteRtEnvironment environment,
+                                               LiteRtCompiledModel compiledModel,
+                                               LiteRtModel model,
+                                               int signatureIndex,
+                                               std::string_view inputName);
+
+    LiteRtRankedTensorType _getOutputTensorType(LiteRtEnvironment environment,
+                                                LiteRtCompiledModel compiledModel,
+                                                LiteRtModel model,
+                                                int signatureIndex,
+                                                int outputIndex);
+    LiteRtRankedTensorType _getOutputTensorType(LiteRtEnvironment environment,
+                                                LiteRtCompiledModel compiledModel,
+                                                LiteRtModel model,
+                                                int signatureIndex,
+                                                std::string_view outputName);
+
+    std::vector<LiteRtTensorBuffer> _createGLInputTensorBuffer(LiteRtEnvironment environment,
+                                                               LiteRtModel model,
+                                                               LiteRtCompiledModel compiledModel,
+                                                               int signatureIndex);
+
+    std::vector<LiteRtTensorBuffer> _createGLOutputTensorBuffer(LiteRtEnvironment environment,
+                                                                LiteRtModel model,
+                                                                LiteRtCompiledModel compiledModel,
+                                                                int signatureIndex);
+
+    std::vector<LiteRtSignature> _getSignatures(LiteRtEnvironment environment,
+                                                LiteRtCompiledModel compiledModel,
+                                                LiteRtModel model);
+
     void preprocessImage(std::vector<float>& preprocessed);
 
     std::vector<uint8_t> postprocessOutput(const float* output,
@@ -65,12 +114,15 @@ private:
     LiteRtModel m_model{ nullptr };
     LiteRtCompiledModel m_compiledModel{ nullptr };
     LiteRtOptions m_options{ nullptr };
+    LiteRtOpaqueOptions m_gpuOptions{ nullptr };
     LiteRtEnvironment m_environment{ nullptr };
-    LiteRtHwAcceleratorSet m_acceleratorType{ kLiteRtHwAcceleratorCpu };
+    AcceleratorType m_acceleratorType{ AcceleratorType::kCPU };
     std::vector<LiteRtTensorBuffer> m_inputTensorBuffers{};
     std::vector<LiteRtTensorBuffer> m_outputTensorBuffers{};
+    std::vector<LiteRtSignature> m_signatures{};
     Image* m_inputImage{ nullptr };
     std::vector<float> m_preprocessed{};
+    bool m_isUseGLBuffer{ false }; // Use GLBuffer for input/output
 };
 
 } // namespace jipu
