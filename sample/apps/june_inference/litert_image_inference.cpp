@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <dlfcn.h>
 #include <spdlog/spdlog.h>
 
 namespace jipu
@@ -11,6 +12,20 @@ LiteRtImageInference::LiteRtImageInference()
     : m_model(nullptr)
     , m_inputImage(nullptr)
 {
+    const char* libOpenCLPath = "libOpenCL.so"; // Adjust this path as needed
+    if (auto libopenCL = dlopen(libOpenCLPath, RTLD_NOW | RTLD_GLOBAL))
+    {
+        spdlog::info("Successfully loaded OpenCL library: {}", libOpenCLPath);
+
+        m_acceleratorType = kLiteRtHwAcceleratorGpu; // set to GPU by default
+
+        dlclose(libopenCL);
+    }
+    else
+    {
+        m_acceleratorType = kLiteRtHwAcceleratorCpu; // fallback to CPU if loading fails
+        spdlog::error("Failed to load OpenCL library: {}", dlerror());
+    }
 }
 
 LiteRtImageInference::~LiteRtImageInference()
@@ -59,7 +74,6 @@ bool LiteRtImageInference::loadModel(const std::vector<char>& modelBuffer)
         return false;
     }
 
-    // m_acceleratorType = kLiteRtHwAcceleratorGpu; // set it to CPUDefault to GPU, can be changed later
     status = LiteRtSetOptionsHardwareAccelerators(m_options, m_acceleratorType);
     if (status != kLiteRtStatusOk)
     {
