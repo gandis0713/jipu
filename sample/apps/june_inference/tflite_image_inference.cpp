@@ -75,7 +75,7 @@ bool TFLiteImageInference::loadModel(const std::vector<char>& modelBuffer)
     return true;
 }
 
-int32_t TFLiteImageInference::getBatchSize()
+int32_t TFLiteImageInference::getInputBatchSize()
 {
     TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
     if (!inputTensor)
@@ -84,24 +84,22 @@ int32_t TFLiteImageInference::getBatchSize()
     return TfLiteTensorDim(inputTensor, 0);
 }
 
-int32_t TFLiteImageInference::getWidth()
+int32_t TFLiteImageInference::getInputHeight()
 {
     TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
     if (!inputTensor)
         return 0;
 
-    int32_t batchSize = TfLiteTensorDim(inputTensor, 1);
-    return batchSize;
+    return TfLiteTensorDim(inputTensor, 1);
 }
 
-int32_t TFLiteImageInference::getHeight()
+int32_t TFLiteImageInference::getInputWidth()
 {
     TfLiteTensor* inputTensor = TfLiteInterpreterGetInputTensor(m_interpreter, 0);
     if (!inputTensor)
         return 0;
 
-    int32_t height = TfLiteTensorDim(inputTensor, 2);
-    return height;
+    return TfLiteTensorDim(inputTensor, 2);
 }
 
 int32_t TFLiteImageInference::getInputChannel()
@@ -110,13 +108,43 @@ int32_t TFLiteImageInference::getInputChannel()
     if (!inputTensor)
         return 0;
 
-    int32_t channels = TfLiteTensorDim(inputTensor, 3);
-    return channels;
+    return TfLiteTensorDim(inputTensor, 3);
+}
+
+int32_t TFLiteImageInference::getOutputBatchSize()
+{
+    const TfLiteTensor* outputTensor = TfLiteInterpreterGetOutputTensor(m_interpreter, 0);
+    if (!outputTensor)
+        return 0;
+
+    return TfLiteTensorDim(outputTensor, 0);
+}
+
+int32_t TFLiteImageInference::getOutputHeight()
+{
+    const TfLiteTensor* outputTensor = TfLiteInterpreterGetOutputTensor(m_interpreter, 0);
+    if (!outputTensor)
+        return 0;
+
+    return TfLiteTensorDim(outputTensor, 1);
+}
+
+int32_t TFLiteImageInference::getOutputWidth()
+{
+    const TfLiteTensor* outputTensor = TfLiteInterpreterGetOutputTensor(m_interpreter, 0);
+    if (!outputTensor)
+        return 0;
+
+    return TfLiteTensorDim(outputTensor, 2);
 }
 
 int32_t TFLiteImageInference::getOutputChannel()
 {
-    return getOutputByteSize() / getWidth() / getHeight() / sizeof(float);
+    const TfLiteTensor* outputTensor = TfLiteInterpreterGetOutputTensor(m_interpreter, 0);
+    if (!outputTensor)
+        return 0;
+
+    return TfLiteTensorDim(outputTensor, 3);
 }
 
 size_t TFLiteImageInference::getInputByteSize()
@@ -159,14 +187,14 @@ size_t TFLiteImageInference::getOutputSize()
 void TFLiteImageInference::preprocessImage(std::vector<float>& preprocessed)
 {
     size_t inputSize = getInputSize();
-    int32_t batchSize = getBatchSize();
-    int32_t width = getWidth();
-    int32_t height = getHeight();
+    int32_t intputBatchSize = getInputBatchSize();
+    int32_t width = getInputWidth();
+    int32_t height = getInputHeight();
     int32_t channels = getInputChannel();
     size_t inputByteSize = getInputByteSize();
 
     spdlog::info("Expected input shape: [{}, {}, {}, {}], byte size:[{}], inputSize:[{}]",
-                 batchSize, height, width, channels, inputByteSize, inputSize);
+                 intputBatchSize, height, width, channels, inputByteSize, inputSize);
 
     preprocessed.clear();
     preprocessed.resize(inputSize);

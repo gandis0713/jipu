@@ -79,9 +79,11 @@ void JuneGLESTFLiteService::begin()
 {
     JuneGLESService::begin();
 
-    int width = 0;
-    int height = 0;
+    int inputHeight = 0;
+    int inputWidth = 0;
     int inputChannels = 0;
+    int outputHeight = 0;
+    int outputWidth = 0;
     int outputChannels = 0;
 
     std::vector<uint8_t> result{};
@@ -99,12 +101,14 @@ void JuneGLESTFLiteService::begin()
             return;
         }
 
-        width = m_tfliteInference->getWidth();
-        height = m_tfliteInference->getHeight();
+        inputHeight = m_tfliteInference->getOutputHeight();
+        inputWidth = m_tfliteInference->getInputWidth();
         inputChannels = m_tfliteInference->getInputChannel();
+        outputHeight = m_tfliteInference->getOutputHeight();
+        outputWidth = m_tfliteInference->getOutputWidth();
         outputChannels = m_tfliteInference->getOutputChannel();
 
-        spdlog::info("Model loaded with input size: {}x{}, channels: {}, output channels: {}", width, height, inputChannels, outputChannels);
+        spdlog::info("Model loaded with input size: {}x{}, channels: {}, output size: {}x{}, channels: {}", inputWidth, inputHeight, inputChannels, outputWidth, outputHeight, outputChannels);
     }
 
     // Load image
@@ -116,7 +120,7 @@ void JuneGLESTFLiteService::begin()
             return;
         }
 
-        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), width, height, inputChannels);
+        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), inputWidth, inputHeight, inputChannels);
         m_image->convert(256, 256, inputChannels); // Resize and convert image to target size
         m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
     }
@@ -125,8 +129,8 @@ void JuneGLESTFLiteService::begin()
     {
 
         m_mask = std::make_unique<Image>();
-        std::vector<unsigned char> maskPixels(width * height * outputChannels, 0); // Initialize with zeros
-        m_mask->setPixels(maskPixels.data(), width, height, outputChannels);
+        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 0); // Initialize with zeros
+        m_mask->setPixels(maskPixels.data(), outputWidth, outputHeight, outputChannels);
     }
 
     {
@@ -145,8 +149,8 @@ void JuneGLESTFLiteService::begin()
             return;
         }
 
-        m_mask->setPixels(result.data(), width, height, outputChannels);
-        m_mask->convert(256, 256, outputChannels); // Resize mask to match texture size
+        m_mask->setPixels(result.data(), outputWidth, outputHeight, outputChannels);
+        m_mask->convert(outputWidth, outputHeight, outputChannels); // Resize mask to match texture size
         m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 

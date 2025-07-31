@@ -453,7 +453,7 @@ void AndroidCamera::onImageAvailable(void* context, AImageReader* reader)
 
     if (status != AMEDIA_OK)
     {
-        spdlog::error("Failed to acquire image");
+        spdlog::error("Failed to acquire image, {}", static_cast<uint32_t>(status));
         return;
     }
 

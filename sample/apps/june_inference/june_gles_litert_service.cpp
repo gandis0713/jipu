@@ -191,8 +191,8 @@ JuneGLESLiteRtService::JuneGLESLiteRtService(const JuneServiceDescriptor& descri
                 yuv420toRgb(yData, uData, vData, width, height,
                             yRowStride, uRowStride, uPixelStride, m_frameData.data());
 
-                spdlog::info(" yRowStride: {}, uRowStride: {}, vRowStride: {}, width: {}, height: {}",
-                             yRowStride, uRowStride, vRowStride, width, height);
+                // spdlog::info(" yRowStride: {}, uRowStride: {}, vRowStride: {}, width: {}, height: {}",
+                //              yRowStride, uRowStride, vRowStride, width, height);
             }
         }
     });
@@ -207,23 +207,27 @@ void JuneGLESLiteRtService::begin()
 {
     JuneGLESService::begin();
 
-    int width = 0;
-    int height = 0;
+    int inputWidth = 0;
+    int inputHeight = 0;
     int inputChannels = 0;
+    int outputWidth = 0;
+    int outputHeight = 0;
     int outputChannels = 0;
 
     std::vector<uint8_t> result{};
 
     // Load TFLite model
     {
-        m_liteRtInference = std::make_unique<LiteRtImageInference>();
+        m_liteRtInference = std::make_unique<LiteRtImageInference>(m_eglContext, m_eglDisplay);
 
-        width = m_liteRtInference->getWidth();
-        height = m_liteRtInference->getHeight();
+        inputWidth = m_liteRtInference->getInputWidth();
+        inputHeight = m_liteRtInference->getInputHeight();
         inputChannels = m_liteRtInference->getInputChannel();
+        outputWidth = m_liteRtInference->getOutputWidth();
+        outputHeight = m_liteRtInference->getOutputHeight();
         outputChannels = m_liteRtInference->getOutputChannel();
 
-        spdlog::info("Model loaded with input size: {}x{}, channels: {}, output channels: {}", width, height, inputChannels, outputChannels);
+        spdlog::info("Model loaded with input size: {}x{}, channels: {}, output size: {}x{}, channels: {}", inputWidth, inputHeight, inputChannels, outputWidth, outputHeight, outputChannels);
     }
 
     // Load image
@@ -235,7 +239,7 @@ void JuneGLESLiteRtService::begin()
             return;
         }
 
-        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), width, height, inputChannels);
+        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), inputWidth, inputHeight, inputChannels);
         m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
     }
 
@@ -243,23 +247,40 @@ void JuneGLESLiteRtService::begin()
     {
 
         m_mask = std::make_unique<Image>();
-        std::vector<unsigned char> maskPixels(width * height * outputChannels, 0); // Initialize with zeros
-        m_mask->setPixels(maskPixels.data(), width, height, outputChannels);
+        std::vector<unsigned char> maskPixels(inputWidth * inputHeight * outputChannels, 0); // Initialize with zeros
+        m_mask->setPixels(maskPixels.data(), inputWidth, inputHeight, outputChannels);
     }
 
     {
         // set input image and inference
         {
-            m_liteRtInference->setInputImage(m_image.get());
-
             // std::string modelPath = m_descriptor.sharingData->appDir / "deeplabv3.tflite";
             std::string modelPath = m_descriptor.sharingData->appDir / "mediapipe.tflite";
+            // std::string modelPath = m_descriptor.sharingData->appDir / "selfie_multiclass.tflite";
             std::vector<char> modelBuffer = utils::readFile(modelPath, m_descriptor.sharingData->appHandle);
 
             if (!m_liteRtInference->loadModel(modelBuffer))
             {
                 spdlog::error("Failed to load model");
                 return;
+            }
+
+            {
+                m_liteRtInference->setInputImage(m_image.get());
+                auto preprocessed = m_liteRtInference->getPreprocessedData();
+                if (preprocessed.empty())
+                {
+                    spdlog::error("Preprocessed data is empty");
+                    return;
+                }
+
+                auto liteRtInputGlBuffer = m_liteRtInference->getInputGlBuffer();
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, liteRtInputGlBuffer.id);
+                CHECK_EGL_ERROR();
+                CHECK_GL_ERROR();
+                glBufferData(GL_SHADER_STORAGE_BUFFER, preprocessed.size() * sizeof(float), preprocessed.data(), GL_DYNAMIC_COPY);
+                CHECK_EGL_ERROR();
+                CHECK_GL_ERROR();
             }
             result = m_liteRtInference->runInference();
         }
@@ -273,7 +294,7 @@ void JuneGLESLiteRtService::begin()
             return;
         }
 
-        m_mask->setPixels(result.data(), width, height, outputChannels);
+        m_mask->setPixels(result.data(), inputWidth, inputHeight, outputChannels);
         m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 
@@ -409,19 +430,20 @@ void JuneGLESLiteRtService::work()
 
         // Update mask texture with inference result
         {
-            if (result.empty()) {
+            if (result.empty())
+            {
                 spdlog::error("Inference result is empty");
                 return;
             }
 
-            if (result.size() != m_liteRtInference->getWidth() * m_liteRtInference->getHeight())
+            if (result.size() != m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight())
             {
                 spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
-                              m_liteRtInference->getWidth() * m_liteRtInference->getHeight(), result.size());
+                              m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight(), result.size());
                 return;
             }
 
-            m_mask->setPixels(result.data(), m_liteRtInference->getWidth(), m_liteRtInference->getHeight(), 1);
+            m_mask->setPixels(result.data(), m_liteRtInference->getOutputWidth(), m_liteRtInference->getOutputHeight(), m_liteRtInference->getOutputChannel());
             updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
         }
     }

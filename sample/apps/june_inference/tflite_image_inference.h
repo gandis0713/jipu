@@ -24,11 +24,15 @@ public:
     bool loadModel(const std::vector<char>& modelBuffer);
     std::vector<uint8_t> runInference();
 
-    int32_t getBatchSize();
-    int32_t getWidth();
-    int32_t getHeight();
+    int32_t getInputBatchSize();
+    int32_t getInputHeight();
+    int32_t getInputWidth();
     int32_t getInputChannel();
+    int32_t getOutputBatchSize();
+    int32_t getOutputHeight();
+    int32_t getOutputWidth();
     int32_t getOutputChannel();
+
     size_t getInputByteSize();
     size_t getInputSize();
     size_t getOutputByteSize();

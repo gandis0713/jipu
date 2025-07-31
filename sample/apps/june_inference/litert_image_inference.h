@@ -36,10 +36,18 @@ namespace fs = std::filesystem;
 namespace jipu
 {
 
+struct LiteRt_GlBuffer
+{
+    LiteRtGLenum target;
+    LiteRtGLuint id;
+    size_t size; // Size in bytes
+    size_t offset;
+};
+
 class LiteRtImageInference
 {
 public:
-    LiteRtImageInference();
+    LiteRtImageInference(EGLContext context, EGLDisplay display);
     ~LiteRtImageInference();
 
     bool setInputImage(Image* image);
@@ -47,15 +55,24 @@ public:
     std::vector<uint8_t> runInference();
     bool nextFrame(EGLImageKHR image);
 
-    int32_t getBatchSize();
-    int32_t getWidth();
-    int32_t getHeight();
+    int32_t getInputBatchSize();
+    int32_t getInputHeight();
+    int32_t getInputWidth();
     int32_t getInputChannel();
+    int32_t getOutputBatchSize();
+    int32_t getOutputHeight();
+    int32_t getOutputWidth();
     int32_t getOutputChannel();
+
     size_t getInputByteSize();
     size_t getInputSize();
     size_t getOutputByteSize();
     size_t getOutputSize();
+
+    LiteRt_GlBuffer getInputGlBuffer();
+    LiteRt_GlBuffer getOutputGlBuffer();
+
+    std::vector<float> getPreprocessedData() const;
 
 public:
     enum class AcceleratorType
@@ -65,45 +82,42 @@ public:
         kNPU
     };
 
+    enum class InputOutputType
+    {
+        kInput = 0,
+        kOutput
+    };
+
 private:
     LiteRtOptions _createGpuOptions();
     LiteRtOptions _createCpuOptions();
     LiteRtHwAcceleratorSet _getAcceleratorTypeSet(AcceleratorType type);
-    LiteRtRankedTensorType _getInputTensorType(LiteRtEnvironment environment,
-                                               LiteRtCompiledModel compiledModel,
-                                               LiteRtModel model,
-                                               int signatureIndex,
-                                               int inputIndex);
-    LiteRtRankedTensorType _getInputTensorType(LiteRtEnvironment environment,
-                                               LiteRtCompiledModel compiledModel,
-                                               LiteRtModel model,
-                                               int signatureIndex,
-                                               std::string_view inputName);
+    LiteRtRankedTensorType _getTensorType(LiteRtModel model,
+                                          int signatureIndex,
+                                          int index,
+                                          InputOutputType type);
+    LiteRtRankedTensorType _getTensorType(LiteRtModel model,
+                                          int signatureIndex,
+                                          std::string_view name,
+                                          InputOutputType type);
+    std::vector<LiteRtTensorBuffer> _createGLTensorBuffer(LiteRtEnvironment environment,
+                                                          LiteRtModel model,
+                                                          LiteRtCompiledModel compiledModel,
+                                                          int signatureIndex,
+                                                          InputOutputType type);
+    std::vector<LiteRtTensorBuffer> _createTensorBuffer(LiteRtEnvironment environment,
+                                                        LiteRtModel model,
+                                                        LiteRtCompiledModel compiledModel,
+                                                        int signatureIndex,
+                                                        InputOutputType type);
 
-    LiteRtRankedTensorType _getOutputTensorType(LiteRtEnvironment environment,
-                                                LiteRtCompiledModel compiledModel,
-                                                LiteRtModel model,
-                                                int signatureIndex,
-                                                int outputIndex);
-    LiteRtRankedTensorType _getOutputTensorType(LiteRtEnvironment environment,
-                                                LiteRtCompiledModel compiledModel,
-                                                LiteRtModel model,
-                                                int signatureIndex,
-                                                std::string_view outputName);
-
-    std::vector<LiteRtTensorBuffer> _createGLInputTensorBuffer(LiteRtEnvironment environment,
-                                                               LiteRtModel model,
-                                                               LiteRtCompiledModel compiledModel,
-                                                               int signatureIndex);
-
-    std::vector<LiteRtTensorBuffer> _createGLOutputTensorBuffer(LiteRtEnvironment environment,
-                                                                LiteRtModel model,
-                                                                LiteRtCompiledModel compiledModel,
-                                                                int signatureIndex);
-
-    std::vector<LiteRtSignature> _getSignatures(LiteRtEnvironment environment,
-                                                LiteRtCompiledModel compiledModel,
-                                                LiteRtModel model);
+    std::vector<LiteRtSignature> _getSignatures(LiteRtModel model);
+    LiteRtParamIndex _getNumSignatureInOuts(LiteRtSignature signature,
+                                            InputOutputType type);
+    std::vector<LiteRtTensorBufferRequirements> _getTensorBufferRequirementsList(LiteRtCompiledModel compiledModel,
+                                                                                 int signatureIndex,
+                                                                                 InputOutputType type);
+    std::vector<LiteRtTensorBufferType> _getSupportedTensorBufferTypes(LiteRtTensorBufferRequirements tensorBufferRequirements);
 
     void preprocessImage(std::vector<float>& preprocessed);
 
@@ -120,9 +134,13 @@ private:
     std::vector<LiteRtTensorBuffer> m_inputTensorBuffers{};
     std::vector<LiteRtTensorBuffer> m_outputTensorBuffers{};
     std::vector<LiteRtSignature> m_signatures{};
+    int m_signatureIndex{ 0 };
     Image* m_inputImage{ nullptr };
     std::vector<float> m_preprocessed{};
     bool m_isUseGLBuffer{ false }; // Use GLBuffer for input/output
+
+    EGLContext m_context{ nullptr };
+    EGLDisplay m_display{ nullptr };
 };
 
 } // namespace jipu
