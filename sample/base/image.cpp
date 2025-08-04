@@ -38,7 +38,7 @@ std::vector<unsigned char> convertChannels(const unsigned char* input,
     int pixelCount = width * height;
     std::vector<unsigned char> output(pixelCount * outputChannels);
 
-    spdlog::info("inputChannels: {}, outputChannels: {}, pixelCount: {}", inputChannels, outputChannels, pixelCount);
+    spdlog::info("Image Convert from inputChannels {} to outputChannels {}, pixelCount: {}", inputChannels, outputChannels, pixelCount);
 
     for (int i = 0; i < pixelCount; i++)
     {
