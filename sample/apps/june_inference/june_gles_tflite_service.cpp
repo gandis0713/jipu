@@ -58,8 +58,7 @@ void updateTexture(GLuint textureId, unsigned char* imageData, int width, int he
     glBindTexture(GL_TEXTURE_2D, textureId);
     GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imageData);
-    CHECK_EGL_ERROR();
-    CHECK_GL_ERROR();
+    CHECK_GL_ERROR(glTexSubImage2D);
     // glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
