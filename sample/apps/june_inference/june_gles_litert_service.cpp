@@ -58,12 +58,13 @@ const char* fragmentShaderSource =
 void updateTexture(GLuint textureId, unsigned char* imageData, int width, int height, int channels)
 {
     glBindTexture(GL_TEXTURE_2D, textureId);
+    CHECK_GL_ERROR(glBindTexture);
     GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imageData);
-    CHECK_EGL_ERROR();
-    CHECK_GL_ERROR();
+    CHECK_GL_ERROR(glTexSubImage2D);
     // glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
     glBindTexture(GL_TEXTURE_2D, 0);
+    CHECK_GL_ERROR(glBindTexture);
 }
 
 } // namespace
@@ -71,132 +72,132 @@ void updateTexture(GLuint textureId, unsigned char* imageData, int width, int he
 JuneGLESLiteRtService::JuneGLESLiteRtService(const JuneServiceDescriptor& descriptor)
     : JuneGLESService(descriptor)
 {
-    m_androidCamera.setResolution(480, 640);
-    m_androidCamera.setCallback([this](AImage* image) {
-        AHardwareBuffer* hardwareBuffer = nullptr;
-        auto status = AImage_getHardwareBuffer(image, &hardwareBuffer);
-        if (status != AMEDIA_OK || !hardwareBuffer)
-        {
-            spdlog::error("Failed to get hardware buffer from image, status: {}", static_cast<uint32_t>(status));
-            return;
-        }
-
-        {
-            // 이미지 크기 얻기
-            int32_t width, height;
-            if (AImage_getWidth(image, &width) != AMEDIA_OK ||
-                AImage_getHeight(image, &height) != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get image dimensions");
-                return;
-            }
-
-            // 플레인 수 확인
-            int32_t numPlanes;
-            if (AImage_getNumberOfPlanes(image, &numPlanes) != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get number of planes");
-                return;
-            }
-
-            if (numPlanes != 3)
-            {
-                spdlog::error("Expected 3 planes for YUV_420_888, got %d", numPlanes);
-                return;
-            }
-
-            // 각 플레인의 데이터 포인터와 스트라이드 정보 얻기
-            uint8_t* yData = nullptr;
-            uint8_t* uData = nullptr;
-            uint8_t* vData = nullptr;
-            int32_t yPixelStride, yRowStride;
-            int32_t uPixelStride, uRowStride;
-            int32_t vPixelStride, vRowStride;
-            int32_t yDataLen, uDataLen, vDataLen;
-
-            // Y 플레인 (인덱스 0)
-            auto result = AImage_getPlaneData(image, 0, &yData, &yDataLen);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get Y plane data, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlanePixelStride(image, 0, &yPixelStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get Y plane pixel stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlaneRowStride(image, 0, &yRowStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get Y plane row stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            // U 플레인 (인덱스 1)
-            result = AImage_getPlaneData(image, 1, &uData, &uDataLen);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get U plane data, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlanePixelStride(image, 1, &uPixelStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get U plane pixel stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlaneRowStride(image, 1, &uRowStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get U plane row stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            // V 플레인 (인덱스 2)
-            result = AImage_getPlaneData(image, 2, &vData, &vDataLen);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get V plane data, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlanePixelStride(image, 2, &vPixelStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get V plane pixel stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            result = AImage_getPlaneRowStride(image, 2, &vRowStride);
-            if (result != AMEDIA_OK)
-            {
-                spdlog::error("Failed to get V plane row stride, status: {}", static_cast<uint32_t>(result));
-                return;
-            }
-
-            {
-                std::lock_guard<std::mutex> lock(m_frameMutex);
-                m_currentImage = image;
-                m_currentHardwareBuffer = hardwareBuffer;
-
-                m_frameData.clear();
-                m_frameData.resize(width * height * 3);
-
-                yuv420toRgb(yData, uData, vData, width, height,
-                            yRowStride, uRowStride, uPixelStride, m_frameData.data());
-
-                // spdlog::info(" yRowStride: {}, uRowStride: {}, vRowStride: {}, width: {}, height: {}",
-                //              yRowStride, uRowStride, vRowStride, width, height);
-            }
-        }
-    });
-    m_androidCamera.startCamera();
+    //    m_androidCamera.setResolution(480, 640);
+    //    m_androidCamera.setCallback([this](AImage* image) {
+    //        AHardwareBuffer* hardwareBuffer = nullptr;
+    //        auto status = AImage_getHardwareBuffer(image, &hardwareBuffer);
+    //        if (status != AMEDIA_OK || !hardwareBuffer)
+    //        {
+    //            spdlog::error("Failed to get hardware buffer from image, status: {}", static_cast<uint32_t>(status));
+    //            return;
+    //        }
+    //
+    //        {
+    //            // 이미지 크기 얻기
+    //            int32_t width, height;
+    //            if (AImage_getWidth(image, &width) != AMEDIA_OK ||
+    //                AImage_getHeight(image, &height) != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get image dimensions");
+    //                return;
+    //            }
+    //
+    //            // 플레인 수 확인
+    //            int32_t numPlanes;
+    //            if (AImage_getNumberOfPlanes(image, &numPlanes) != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get number of planes");
+    //                return;
+    //            }
+    //
+    //            if (numPlanes != 3)
+    //            {
+    //                spdlog::error("Expected 3 planes for YUV_420_888, got %d", numPlanes);
+    //                return;
+    //            }
+    //
+    //            // 각 플레인의 데이터 포인터와 스트라이드 정보 얻기
+    //            uint8_t* yData = nullptr;
+    //            uint8_t* uData = nullptr;
+    //            uint8_t* vData = nullptr;
+    //            int32_t yPixelStride, yRowStride;
+    //            int32_t uPixelStride, uRowStride;
+    //            int32_t vPixelStride, vRowStride;
+    //            int32_t yDataLen, uDataLen, vDataLen;
+    //
+    //            // Y 플레인 (인덱스 0)
+    //            auto result = AImage_getPlaneData(image, 0, &yData, &yDataLen);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get Y plane data, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlanePixelStride(image, 0, &yPixelStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get Y plane pixel stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlaneRowStride(image, 0, &yRowStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get Y plane row stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            // U 플레인 (인덱스 1)
+    //            result = AImage_getPlaneData(image, 1, &uData, &uDataLen);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get U plane data, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlanePixelStride(image, 1, &uPixelStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get U plane pixel stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlaneRowStride(image, 1, &uRowStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get U plane row stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            // V 플레인 (인덱스 2)
+    //            result = AImage_getPlaneData(image, 2, &vData, &vDataLen);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get V plane data, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlanePixelStride(image, 2, &vPixelStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get V plane pixel stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            result = AImage_getPlaneRowStride(image, 2, &vRowStride);
+    //            if (result != AMEDIA_OK)
+    //            {
+    //                spdlog::error("Failed to get V plane row stride, status: {}", static_cast<uint32_t>(result));
+    //                return;
+    //            }
+    //
+    //            {
+    //                std::lock_guard<std::mutex> lock(m_frameMutex);
+    //                m_currentImage = image;
+    //                m_currentHardwareBuffer = hardwareBuffer;
+    //
+    //                m_frameData.clear();
+    //                m_frameData.resize(width * height * 3);
+    //
+    //                yuv420toRgb(yData, uData, vData, width, height,
+    //                            yRowStride, uRowStride, uPixelStride, m_frameData.data());
+    //
+    //                // spdlog::info(" yRowStride: {}, uRowStride: {}, vRowStride: {}, width: {}, height: {}",
+    //                //              yRowStride, uRowStride, vRowStride, width, height);
+    //            }
+    //        }
+    //    });
+    //    m_androidCamera.startCamera();
 }
 
 JuneGLESLiteRtService::~JuneGLESLiteRtService()
@@ -206,97 +207,6 @@ JuneGLESLiteRtService::~JuneGLESLiteRtService()
 void JuneGLESLiteRtService::begin()
 {
     JuneGLESService::begin();
-
-    int inputWidth = 0;
-    int inputHeight = 0;
-    int inputChannels = 0;
-    int outputWidth = 0;
-    int outputHeight = 0;
-    int outputChannels = 0;
-
-    std::vector<uint8_t> result{};
-
-    // Load TFLite model
-    {
-        m_liteRtInference = std::make_unique<LiteRtImageInference>(m_eglContext, m_eglDisplay);
-
-        inputWidth = m_liteRtInference->getInputWidth();
-        inputHeight = m_liteRtInference->getInputHeight();
-        inputChannels = m_liteRtInference->getInputChannel();
-        outputWidth = m_liteRtInference->getOutputWidth();
-        outputHeight = m_liteRtInference->getOutputHeight();
-        outputChannels = m_liteRtInference->getOutputChannel();
-
-        spdlog::info("Model loaded with input size: {}x{}, channels: {}, output size: {}x{}, channels: {}", inputWidth, inputHeight, inputChannels, outputWidth, outputHeight, outputChannels);
-    }
-
-    // Load image
-    {
-        std::vector<char> imageBuffer = utils::readFile(m_descriptor.sharingData->appDir / "man.png", m_descriptor.sharingData->appHandle);
-        if (imageBuffer.empty())
-        {
-            spdlog::error("Failed to read image file");
-            return;
-        }
-
-        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), inputWidth, inputHeight, inputChannels);
-        m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
-    }
-
-    // Create mask image
-    {
-
-        m_mask = std::make_unique<Image>();
-        std::vector<unsigned char> maskPixels(inputWidth * inputHeight * outputChannels, 0); // Initialize with zeros
-        m_mask->setPixels(maskPixels.data(), inputWidth, inputHeight, outputChannels);
-    }
-
-    {
-        // set input image and inference
-        {
-            // std::string modelPath = m_descriptor.sharingData->appDir / "deeplabv3.tflite";
-            std::string modelPath = m_descriptor.sharingData->appDir / "mediapipe.tflite";
-            // std::string modelPath = m_descriptor.sharingData->appDir / "selfie_multiclass.tflite";
-            std::vector<char> modelBuffer = utils::readFile(modelPath, m_descriptor.sharingData->appHandle);
-
-            if (!m_liteRtInference->loadModel(modelBuffer))
-            {
-                spdlog::error("Failed to load model");
-                return;
-            }
-
-            {
-                m_liteRtInference->setInputImage(m_image.get());
-                auto preprocessed = m_liteRtInference->getPreprocessedData();
-                if (preprocessed.empty())
-                {
-                    spdlog::error("Preprocessed data is empty");
-                    return;
-                }
-
-                auto liteRtInputGlBuffer = m_liteRtInference->getInputGlBuffer();
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, liteRtInputGlBuffer.id);
-                CHECK_EGL_ERROR();
-                CHECK_GL_ERROR();
-                glBufferData(GL_SHADER_STORAGE_BUFFER, preprocessed.size() * sizeof(float), preprocessed.data(), GL_DYNAMIC_COPY);
-                CHECK_EGL_ERROR();
-                CHECK_GL_ERROR();
-            }
-            result = m_liteRtInference->runInference();
-        }
-    }
-
-    // Update mask texture with inference result
-    {
-        if (result.empty())
-        {
-            spdlog::error("Inference result is empty");
-            return;
-        }
-
-        m_mask->setPixels(result.data(), inputWidth, inputHeight, outputChannels);
-        m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
-    }
 
     // Create and compile shaders, create program
     {
@@ -330,6 +240,92 @@ void JuneGLESLiteRtService::begin()
         m_texCoordLoc = glGetAttribLocation(m_programObject, "a_texCoord");
         m_textureLoc = glGetUniformLocation(m_programObject, "u_texture");
         m_textureMaskLoc = glGetUniformLocation(m_programObject, "u_texture_mask");
+        CHECK_GL_ERROR(glGetUniformLocation)
+    }
+
+    m_liteRtInference = std::make_unique<LiteRtImageInference>(m_eglContext, m_eglDisplay);
+
+    // Load model
+    {
+        // std::string modelPath = m_descriptor.sharingData->appDir / "deeplabv3.tflite";
+        std::string modelPath = m_descriptor.sharingData->appDir / "mediapipe.tflite";
+
+        std::vector<char> modelBuffer = utils::readFile(modelPath, m_descriptor.sharingData->appHandle);
+        if (!m_liteRtInference->loadModel(modelBuffer))
+        {
+            spdlog::error("Failed to load model");
+            return;
+        }
+    }
+
+    int inputWidth = m_liteRtInference->getInputWidth();
+    int inputHeight = m_liteRtInference->getInputHeight();
+    int inputChannels = m_liteRtInference->getInputChannel();
+    int outputWidth = m_liteRtInference->getOutputWidth();
+    int outputHeight = m_liteRtInference->getOutputHeight();
+    int outputChannels = m_liteRtInference->getOutputChannel();
+
+    spdlog::info("Model loaded with input size: {}x{}, channels: {}, output size: {}x{}, channels: {}", inputWidth, inputHeight, inputChannels, outputWidth, outputHeight, outputChannels);
+
+    // Create input image
+    {
+        std::vector<char> imageBuffer = utils::readFile(m_descriptor.sharingData->appDir / "man.png", m_descriptor.sharingData->appHandle);
+        if (imageBuffer.empty())
+        {
+            spdlog::error("Failed to read image file");
+            return;
+        }
+
+        m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), inputWidth, inputHeight, inputChannels);
+        m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
+
+        m_liteRtInference->setInputImage(m_image.get());
+
+        if (m_liteRtInference->getAcceleratorType() == LiteRtImageInference::AcceleratorType::kGPU)
+        {
+            auto preprocessed = m_liteRtInference->getPreprocessedData();
+            if (preprocessed.empty())
+            {
+                spdlog::error("Preprocessed data is empty");
+                return;
+            }
+
+            auto liteRtInputGlBuffer = m_liteRtInference->getInputGlBuffer();
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, liteRtInputGlBuffer.id);
+            glBufferData(GL_SHADER_STORAGE_BUFFER, preprocessed.size() * sizeof(float), preprocessed.data(), GL_DYNAMIC_COPY);
+        }
+    }
+
+    // Create output image
+    {
+        m_mask = std::make_unique<Image>();
+        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 255); // Initialize with zeros
+        m_mask->setPixels(maskPixels.data(), outputWidth, outputHeight, outputChannels);
+        // m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
+    }
+
+    // inference
+    std::vector<uint8_t> result{};
+    {
+        result = m_liteRtInference->runInference();
+        if (result.empty())
+        {
+            spdlog::error("Inference result is empty");
+            return;
+        }
+
+        spdlog::info("Inference result size: {}", result.size());
+        if (result.size() != outputWidth * outputHeight * outputChannels)
+        {
+            spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
+                          outputWidth * outputHeight * outputChannels, result.size());
+            return;
+        }
+
+        m_mask->setPixels(result.data(), outputWidth, outputHeight, outputChannels);
+        m_mask->convert(outputWidth, outputHeight, 3); // Convert to 3 channels
+        // updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
+        m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 
     // std::string label = "gles service1";
@@ -340,147 +336,158 @@ void JuneGLESLiteRtService::begin()
 
 void JuneGLESLiteRtService::work()
 {
-    AHardwareBuffer* currentHardwareBuffer = nullptr;
-    {
-        std::lock_guard<std::mutex> lock(m_frameMutex);
-        if (m_currentHardwareBuffer)
-        {
-            currentHardwareBuffer = m_currentHardwareBuffer;
-            m_currentHardwareBuffer = nullptr;
-        }
-    }
+    // AHardwareBuffer* currentHardwareBuffer = nullptr;
+    // {
+    //     std::lock_guard<std::mutex> lock(m_frameMutex);
+    //     if (m_currentHardwareBuffer)
+    //     {
+    //         currentHardwareBuffer = m_currentHardwareBuffer;
+    //         m_currentHardwareBuffer = nullptr;
+    //     }
+    // }
 
-    auto getEGLImageKHRFromAHardwareBuffer = [this](AHardwareBuffer* hardwareBuffer) -> EGLImageKHR {
-        EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
-        if (hardwareBuffer)
-        {
-            // AHardwareBuffer를 EGLClientBuffer로 변환
-            auto it = m_frames.find(hardwareBuffer);
-            if (it == m_frames.end())
-            {
-                EGLClientBuffer eglClientBuffer = eglGetNativeClientBufferANDROID(hardwareBuffer);
-                if (!eglClientBuffer)
-                {
-                    spdlog::error("Failed to get EGLClientBuffer from AHardwareBuffer");
-                    return currentEGLImage;
-                }
+    // auto getEGLImageKHRFromAHardwareBuffer = [this](AHardwareBuffer* hardwareBuffer) -> EGLImageKHR {
+    //     EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
+    //     if (hardwareBuffer)
+    //     {
+    //         // AHardwareBuffer를 EGLClientBuffer로 변환
+    //         auto it = m_frames.find(hardwareBuffer);
+    //         if (it == m_frames.end())
+    //         {
+    //             EGLClientBuffer eglClientBuffer = eglGetNativeClientBufferANDROID(hardwareBuffer);
+    //             if (!eglClientBuffer)
+    //             {
+    //                 spdlog::error("Failed to get EGLClientBuffer from AHardwareBuffer");
+    //                 return currentEGLImage;
+    //             }
 
-                EGLint imageAttribs[] = {
-                    EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
-                    EGL_NONE
-                };
+    //             EGLint imageAttribs[] = {
+    //                 EGL_IMAGE_PRESERVED_KHR, EGL_TRUE,
+    //                 EGL_NONE
+    //             };
 
-                EGLImageKHR eglImage = eglCreateImageKHR(
-                    m_eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
-                    eglClientBuffer, imageAttribs);
+    //             EGLImageKHR eglImage = eglCreateImageKHR(
+    //                 m_eglDisplay, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID,
+    //                 eglClientBuffer, imageAttribs);
 
-                if (eglImage == EGL_NO_IMAGE_KHR)
-                {
-                    spdlog::error("Failed to create EGLImage from AHardwareBuffer");
-                    return currentEGLImage;
-                }
+    //             if (eglImage == EGL_NO_IMAGE_KHR)
+    //             {
+    //                 spdlog::error("Failed to create EGLImage from AHardwareBuffer");
+    //                 return currentEGLImage;
+    //             }
 
-                m_frames[hardwareBuffer] = eglImage;
-                currentEGLImage = eglImage;
-            }
-            else
-            {
-                currentEGLImage = it->second;
-            }
-        }
+    //             m_frames[hardwareBuffer] = eglImage;
+    //             currentEGLImage = eglImage;
+    //         }
+    //         else
+    //         {
+    //             currentEGLImage = it->second;
+    //         }
+    //     }
 
-        return currentEGLImage;
-    };
+    //     return currentEGLImage;
+    // };
 
-    EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
-    if (currentHardwareBuffer)
-    {
-        currentEGLImage = getEGLImageKHRFromAHardwareBuffer(currentHardwareBuffer);
-        if (currentEGLImage != EGL_NO_IMAGE_KHR)
-        {
-            if (m_liteRtInference->nextFrame(currentEGLImage))
-            {
-                spdlog::info("Frame processed successfully");
-            }
-            else
-            {
-                spdlog::error("Failed to process frame");
-            }
-            // 현재 EGLImage를 사용하여 후처리 작업 수행
-            // 예: 텍스처 업데이트, 렌더링 등
-            // updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
-        }
-        else
-        {
-            spdlog::error("No valid EGLImage available for processing");
-        }
+    // EGLImageKHR currentEGLImage = EGL_NO_IMAGE_KHR;
+    // if (currentHardwareBuffer)
+    // {
+    //     currentEGLImage = getEGLImageKHRFromAHardwareBuffer(currentHardwareBuffer);
+    //     if (currentEGLImage != EGL_NO_IMAGE_KHR)
+    //     {
+    //         if (m_liteRtInference->nextFrame(currentEGLImage))
+    //         {
+    //             spdlog::info("Frame processed successfully");
+    //         }
+    //         else
+    //         {
+    //             spdlog::error("Failed to process frame");
+    //         }
+    //         // 현재 EGLImage를 사용하여 후처리 작업 수행
+    //         // 예: 텍스처 업데이트, 렌더링 등
+    //         // updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
+    //     }
+    //     else
+    //     {
+    //         spdlog::error("No valid EGLImage available for processing");
+    //     }
 
-        {
-            m_image->setPixels(m_frameData.data(), 640, 480, 3);
-            m_image->convert(256, 256, 3);
-            updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
-        }
+    //     {
+    //         m_image->setPixels(m_frameData.data(), 640, 480, 3);
+    //         m_image->convert(256, 256, 3);
+    //         updateTexture(m_texture, m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
+    //     }
 
-        std::vector<uint8_t> result{};
-        // set input image and inference
-        {
-            m_liteRtInference->setInputImage(m_image.get());
-            result = m_liteRtInference->runInference();
-        }
+    //     std::vector<uint8_t> result{};
+    //     // set input image and inference
+    //     {
+    //         m_liteRtInference->setInputImage(m_image.get());
+    //         result = m_liteRtInference->runInference();
+    //     }
 
-        // Update mask texture with inference result
-        {
-            if (result.empty())
-            {
-                spdlog::error("Inference result is empty");
-                return;
-            }
+    //     // Update mask texture with inference result
+    //     {
+    //         if (result.empty())
+    //         {
+    //             spdlog::error("Inference result is empty");
+    //             return;
+    //         }
 
-            if (result.size() != m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight())
-            {
-                spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
-                              m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight(), result.size());
-                return;
-            }
+    //         if (result.size() != m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight())
+    //         {
+    //             spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
+    //                           m_liteRtInference->getOutputWidth() * m_liteRtInference->getOutputHeight(), result.size());
+    //             return;
+    //         }
 
-            m_mask->setPixels(result.data(), m_liteRtInference->getOutputWidth(), m_liteRtInference->getOutputHeight(), m_liteRtInference->getOutputChannel());
-            updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
-        }
-    }
+    //         m_mask->setPixels(result.data(), m_liteRtInference->getOutputWidth(), m_liteRtInference->getOutputHeight(), m_liteRtInference->getOutputChannel());
+    //         updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
+    //     }
+    // }
 
     // 화면 클리어
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    CHECK_GL_ERROR(glClear);
 
     // 알파 블렌딩 활성화
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    CHECK_GL_ERROR(glEnable);
 
     // 프로그램 사용
     glUseProgram(m_programObject);
+    CHECK_GL_ERROR(glUseProgram);
 
     // 버퍼 바인딩
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    CHECK_GL_ERROR(glBindBuffer);
 
     // 정점 어트리뷰트 설정
     glEnableVertexAttribArray(m_positionLoc);
     glVertexAttribPointer(m_positionLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    CHECK_GL_ERROR(glVertexAttribPointer);
 
     glEnableVertexAttribArray(m_texCoordLoc);
     glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    CHECK_GL_ERROR(glVertexAttribPointer);
 
     // 메인 텍스처 바인딩 (텍스처 유닛 0)
     glActiveTexture(GL_TEXTURE0);
+    CHECK_GL_ERROR(glActiveTexture)
     glBindTexture(GL_TEXTURE_2D, m_texture);
+    CHECK_GL_ERROR(glBindTexture)
     glUniform1i(m_textureLoc, 0);
 
     // 마스크 텍스처 바인딩 (텍스처 유닛 1)
     glActiveTexture(GL_TEXTURE1);
+    CHECK_GL_ERROR(glActiveTexture)
     glBindTexture(GL_TEXTURE_2D, m_textureMask);
+    CHECK_GL_ERROR(glBindTexture)
     glUniform1i(m_textureMaskLoc, 1);
 
     // 삼각형 스트립으로 사각형 그리기
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    CHECK_GL_ERROR(glDrawArrays);
 
     // 정리
     glDisableVertexAttribArray(m_positionLoc);
