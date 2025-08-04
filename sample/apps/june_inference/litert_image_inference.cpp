@@ -44,9 +44,6 @@ LiteRtImageInference::LiteRtImageInference(EGLContext context, EGLDisplay displa
         m_acceleratorType = AcceleratorType::kCPU;
         spdlog::error("Failed to load OpenCL library: {}", dlerror());
     }
-
-    // set default options
-    m_acceleratorType = AcceleratorType::kCPU;
 }
 
 LiteRtImageInference::~LiteRtImageInference()
@@ -830,21 +827,11 @@ void LiteRtImageInference::preprocessImage(std::vector<float>& preprocessed)
 std::vector<uint8_t> LiteRtImageInference::postprocessOutput(const float* output,
                                                              int outputSize)
 {
-    // std::vector<uint8_t> result(outputSize);
+    std::vector<uint8_t> result(outputSize);
 
-    // // 세그멘테이션 결과를 시각화 가능한 형태로 변환
-    // for (int i = 0; i < outputSize; i++)
-    // {
-    //     result[i] = static_cast<uint8_t>(output[i] * 255.0f); // Assuming output is normalized between 0 and 1
-    // }
-
-    // return result;
-    std::vector<uint8_t> result{};
-
-    // 세그멘테이션 결과를 시각화 가능한 형태로 변환
-    for (int i = 0; i < outputSize * 6; i += 6)
+    for (int i = 0; i < outputSize; i++)
     {
-        result.push_back(static_cast<uint8_t>(output[i] * 255.0f));
+        result[i] = static_cast<uint8_t>(output[i] * 255.0f); // Assuming output is normalized between 0 and 1
     }
 
     return result;
