@@ -287,7 +287,7 @@ void Image::convert(unsigned char* pixels, int width, int height, int channels, 
     int finalWidth = (targetWidth > 0) ? targetWidth : width;
     int finalHeight = (targetHeight > 0) ? targetHeight : height;
 
-    if (finalWidth != width || finalHeight != height)
+    if (finalWidth != width || finalHeight != height || currentChannels != channels)
     {
         size_t resizedSize = finalWidth * finalHeight * currentChannels;
         m_pixels.clear();
