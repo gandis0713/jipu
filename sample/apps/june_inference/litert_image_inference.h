@@ -47,6 +47,20 @@ struct LiteRt_GlBuffer
 class LiteRtImageInference
 {
 public:
+    enum class AcceleratorType
+    {
+        kCPU = 0,
+        kGPU,
+        kNPU
+    };
+
+    enum class InputOutputType
+    {
+        kInput = 0,
+        kOutput
+    };
+
+public:
     LiteRtImageInference(EGLContext context, EGLDisplay display);
     ~LiteRtImageInference();
 
@@ -72,21 +86,9 @@ public:
     LiteRt_GlBuffer getInputGlBuffer();
     LiteRt_GlBuffer getOutputGlBuffer();
 
+    AcceleratorType getAcceleratorType() const;
+
     std::vector<float> getPreprocessedData() const;
-
-public:
-    enum class AcceleratorType
-    {
-        kCPU = 0,
-        kGPU,
-        kNPU
-    };
-
-    enum class InputOutputType
-    {
-        kInput = 0,
-        kOutput
-    };
 
 private:
     LiteRtOptions _createGpuOptions();
@@ -109,6 +111,7 @@ private:
                                                         LiteRtModel model,
                                                         LiteRtCompiledModel compiledModel,
                                                         int signatureIndex,
+                                                        LiteRtTensorBufferType tensorBufferType,
                                                         InputOutputType type);
 
     std::vector<LiteRtSignature> _getSignatures(LiteRtModel model);
