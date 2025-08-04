@@ -104,7 +104,7 @@ GLuint createTexture(unsigned char* imageData, int width, int height, int channe
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLenum format = [](int channels) -> GLenum {
+    GLint format = [](int channels) -> GLint {
         switch (channels)
         {
         case 1:
@@ -120,7 +120,9 @@ GLuint createTexture(unsigned char* imageData, int width, int height, int channe
             return GL_RGBA; // Default to RGBA
         }
     }(channels);
+
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+    CHECK_GL_ERROR(glTexImage2D);
 
     return texture;
 }

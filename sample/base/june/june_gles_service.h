@@ -19,22 +19,22 @@
 #include <android/sync.h>
 #endif
 
-#define CHECK_EGL_ERROR()                                                 \
-    {                                                                     \
-        EGLint err = eglGetError();                                       \
-        if (err != EGL_SUCCESS)                                           \
-        {                                                                 \
-            spdlog::error("GL get error: {}", static_cast<int32_t>(err)); \
-        }                                                                 \
+#define CHECK_EGL_ERROR(func_name)                                                                                \
+    {                                                                                                             \
+        EGLint err = eglGetError();                                                                               \
+        if (err != EGL_SUCCESS)                                                                                   \
+        {                                                                                                         \
+            spdlog::error("EGL function '{}' failed with error code: {}", #func_name, static_cast<int32_t>(err)); \
+        }                                                                                                         \
     }
 
-#define CHECK_GL_ERROR()                                                   \
-    {                                                                      \
-        GLenum err = glGetError();                                         \
-        if (err != GL_NO_ERROR)                                            \
-        {                                                                  \
-            spdlog::error("GL get error: {}", static_cast<uint32_t>(err)); \
-        }                                                                  \
+#define CHECK_GL_ERROR(func_name)                                                                                 \
+    {                                                                                                             \
+        GLenum err = glGetError();                                                                                \
+        if (err != GL_NO_ERROR)                                                                                   \
+        {                                                                                                         \
+            spdlog::error("GL function '{}' failed with error code: {}", #func_name, static_cast<uint32_t>(err)); \
+        }                                                                                                         \
     }
 
 namespace jipu

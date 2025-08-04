@@ -130,17 +130,16 @@ void JuneGLESService1::work()
         // }
 
         EGLint eglResult = eglClientWaitSyncKHR(m_eglDisplay, waitEGLSyncs[count], EGL_SYNC_FLUSH_COMMANDS_BIT, 0);
-        CHECK_EGL_ERROR();
+        CHECK_EGL_ERROR(eglClientWaitSyncKHR);
         if (eglResult == EGL_FALSE)
         {
-            CHECK_GL_ERROR();
             spdlog::error("gles service 1 eglClientWaitSyncKHR failed");
             return;
         }
 
         spdlog::trace("EGLSync Destroyed in gles service 2: {:p}", waitEGLSyncs[count]);
         auto deleted = eglDestroySyncKHR(m_eglDisplay, waitEGLSyncs[count]);
-        CHECK_EGL_ERROR();
+        CHECK_EGL_ERROR(eglDestroySyncKHR);
         if (!deleted)
         {
             spdlog::error("Failed to destroy in gles service 2: {:p}", waitEGLSyncs[count]);
@@ -288,7 +287,7 @@ void JuneGLESService1::end()
         if (texture)
         {
             glDeleteTextures(1, &texture);
-            CHECK_GL_ERROR();
+            CHECK_GL_ERROR(glDeleteTextures);
         }
     }
 
