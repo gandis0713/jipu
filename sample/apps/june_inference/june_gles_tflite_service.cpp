@@ -121,7 +121,7 @@ void JuneGLESTFLiteService::begin()
         }
 
         m_image = std::make_unique<Image>(imageBuffer.data(), imageBuffer.size(), inputWidth, inputHeight, inputChannels);
-        m_image->convert(256, 256, inputChannels); // Resize and convert image to target size
+        m_image->convert(inputWidth, inputHeight, inputChannels); // Resize and convert image to target size
         m_texture = createTexture(m_image->getPixels(), m_image->getWidth(), m_image->getHeight(), m_image->getChannel());
     }
 
@@ -129,7 +129,7 @@ void JuneGLESTFLiteService::begin()
     {
 
         m_mask = std::make_unique<Image>();
-        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 0); // Initialize with zeros
+        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 0); // Initialize with ones
         m_mask->setPixels(maskPixels.data(), outputWidth, outputHeight, outputChannels);
     }
 
@@ -149,8 +149,18 @@ void JuneGLESTFLiteService::begin()
             return;
         }
 
+        spdlog::info("Inference result size: {}", result.size());
+        if (result.size() != outputWidth * outputHeight * outputChannels)
+        {
+            spdlog::error("Inference result size does not match mask image size: expected {}, got {}",
+                          outputWidth * outputHeight * outputChannels, result.size());
+            return;
+        }
+
         m_mask->setPixels(result.data(), outputWidth, outputHeight, outputChannels);
-        m_mask->convert(outputWidth, outputHeight, outputChannels); // Resize mask to match texture size
+        // Resize mask to 3 channels
+        // because createTexture fails if channels is 1 or 2.
+        m_mask->convert(outputWidth, outputHeight, 3);
         m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 
