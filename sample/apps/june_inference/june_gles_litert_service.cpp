@@ -55,18 +55,6 @@ const char* fragmentShaderSource =
     "    gl_FragColor = vec4(color, alpha);\n"                     // 최종 색상에 마스크를 알파값으로 적용
     "}\n";
 
-void updateTexture(GLuint textureId, unsigned char* imageData, int width, int height, int channels)
-{
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    CHECK_GL_ERROR(glBindTexture);
-    GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imageData);
-    CHECK_GL_ERROR(glTexSubImage2D);
-    // glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    CHECK_GL_ERROR(glBindTexture);
-}
-
 } // namespace
 
 JuneGLESLiteRtService::JuneGLESLiteRtService(const JuneServiceDescriptor& descriptor)
@@ -243,7 +231,7 @@ void JuneGLESLiteRtService::begin()
         CHECK_GL_ERROR(glGetUniformLocation)
     }
 
-    m_liteRtInference = std::make_unique<LiteRtImageInference>(m_eglContext, m_eglDisplay);
+    m_liteRtInference = std::make_unique<LiteRtImageInference>(nullptr, nullptr);
 
     // Load model
     {
@@ -293,15 +281,16 @@ void JuneGLESLiteRtService::begin()
             auto liteRtInputGlBuffer = m_liteRtInference->getInputGlBuffer();
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, liteRtInputGlBuffer.id);
             glBufferData(GL_SHADER_STORAGE_BUFFER, preprocessed.size() * sizeof(float), preprocessed.data(), GL_DYNAMIC_COPY);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
     }
 
     // Create output image
     {
         m_mask = std::make_unique<Image>();
-        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 255); // Initialize with zeros
+        std::vector<unsigned char> maskPixels(outputWidth * outputHeight * outputChannels, 0); // Initialize with zeros
         m_mask->setPixels(maskPixels.data(), outputWidth, outputHeight, outputChannels);
-        // m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
+        m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 
     // inference
@@ -323,9 +312,7 @@ void JuneGLESLiteRtService::begin()
         }
 
         m_mask->setPixels(result.data(), outputWidth, outputHeight, outputChannels);
-        m_mask->convert(outputWidth, outputHeight, 3); // Convert to 3 channels
-        // updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
-        m_textureMask = createTexture(m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
+        updateTexture(m_textureMask, m_mask->getPixels(), m_mask->getWidth(), m_mask->getHeight(), m_mask->getChannel());
     }
 
     // std::string label = "gles service1";

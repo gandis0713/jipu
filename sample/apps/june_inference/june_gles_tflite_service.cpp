@@ -53,16 +53,6 @@ const char* fragmentShaderSource =
     "    gl_FragColor = vec4(color, alpha);\n"                     // 최종 색상에 마스크를 알파값으로 적용
     "}\n";
 
-void updateTexture(GLuint textureId, unsigned char* imageData, int width, int height, int channels)
-{
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    GLenum format = (channels == 4) ? GL_RGBA : GL_RGB;
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imageData);
-    CHECK_GL_ERROR(glTexSubImage2D);
-    // glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 } // namespace
 
 JuneGLESTFLiteService::JuneGLESTFLiteService(const JuneServiceDescriptor& descriptor)
