@@ -6,6 +6,47 @@
 namespace jipu
 {
 
+namespace
+{
+
+GLenum getGLFormat(int channels)
+{
+    switch (channels)
+    {
+    case 1:
+        return GL_RED;
+    case 2:
+        return GL_RG;
+    case 3:
+        return GL_RGB;
+    case 4:
+        return GL_RGBA;
+    default:
+        spdlog::error("Unsupported number of channels: {}", channels);
+        return GL_RGBA; // Default to RGBA
+    }
+}
+
+GLint getGLInternalFormat(int channels)
+{
+    switch (channels)
+    {
+    case 1:
+        return GL_R8;
+    case 2:
+        return GL_RG8;
+    case 3:
+        return GL_RGB8;
+    case 4:
+        return GL_RGBA8;
+    default:
+        spdlog::error("Unsupported number of channels: {}", channels);
+        return GL_RGBA8; // Default to RGBA8
+    }
+}
+
+} // namespace
+
 GLuint compileShader(GLenum type, const char* source)
 {
     GLuint shader = glCreateShader(type);
@@ -104,27 +145,25 @@ GLuint createTexture(unsigned char* imageData, int width, int height, int channe
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    GLint format = [](int channels) -> GLint {
-        switch (channels)
-        {
-        case 1:
-            return GL_RED;
-        case 2:
-            return GL_RG;
-        case 3:
-            return GL_RGB;
-        case 4:
-            return GL_RGBA;
-        default:
-            spdlog::error("Unsupported number of channels: {}", channels);
-            return GL_RGBA; // Default to RGBA
-        }
-    }(channels);
+    GLint internalFormat = getGLInternalFormat(channels);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
+    GLint format = getGLFormat(channels);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, imageData);
     CHECK_GL_ERROR(glTexImage2D);
 
     return texture;
+}
+
+void updateTexture(GLuint textureId, unsigned char* imageData, int width, int height, int channels)
+{
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    CHECK_GL_ERROR(glBindTexture);
+    GLenum format = getGLFormat(channels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, imageData);
+    CHECK_GL_ERROR(glTexSubImage2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    CHECK_GL_ERROR(glBindTexture);
 }
 
 JuneGLESService::JuneGLESService(const JuneServiceDescriptor& descriptor)
